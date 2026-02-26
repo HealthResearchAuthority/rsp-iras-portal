@@ -18,7 +18,7 @@ public class GetSponsorOrganisationUserTests : TestServiceBase<SponsorOrganisati
             { RtsId = "123" });
 
         var client = Mocker.GetMock<ISponsorOrganisationsServiceClient>();
-        client.Setup(c => c.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+        client.Setup(c => c.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(apiResponse);
 
         var rtsService = Mocker.GetMock<IRtsService>();
@@ -26,7 +26,7 @@ public class GetSponsorOrganisationUserTests : TestServiceBase<SponsorOrganisati
         var sut = new SponsorOrganisationService(client.Object, rtsService.Object);
 
         // Act
-        var result = await sut.GetSponsorOrganisationUser(Guid.NewGuid());
+        var result = await sut.GetSponsorOrganisationUser(Guid.NewGuid(), It.IsAny<string>());
 
         // Assert
         result.IsSuccessStatusCode.ShouldBeTrue();

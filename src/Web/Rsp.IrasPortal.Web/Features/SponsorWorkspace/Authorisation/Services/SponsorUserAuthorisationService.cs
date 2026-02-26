@@ -85,7 +85,7 @@ public sealed class SponsorUserAuthorisationService : ISponsorUserAuthorisationS
             .FirstOrDefault()?
             .Users?
             .FirstOrDefault(u => u.UserId == gid)?
-            .Id;
+            .UserId;
 
         if (sponsorOrganisationUserId != userId)
         {

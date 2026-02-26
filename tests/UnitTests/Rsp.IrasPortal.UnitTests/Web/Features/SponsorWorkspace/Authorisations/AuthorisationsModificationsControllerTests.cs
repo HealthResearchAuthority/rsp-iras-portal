@@ -64,7 +64,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                    .ReturnsAsync(SponsorUserAuthorisationResult.Ok(Guid.NewGuid()));
 
         Mocker.GetMock<ISponsorOrganisationService>()
-           .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+           .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
            {
                StatusCode = HttpStatusCode.OK,
@@ -400,7 +400,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
         sponsorOrganisationService
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -441,7 +441,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             });
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -475,7 +475,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                    .ReturnsAsync(SponsorUserAuthorisationResult.Ok(Guid.NewGuid()));
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -521,7 +521,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             );
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -549,7 +549,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
         sponsorOrganisationService
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.NotFound,
@@ -582,7 +582,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
         sponsorOrganisationService
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -608,7 +608,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             .ReturnsAsync(true);
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -641,7 +641,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
         sponsorOrganisationService
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -792,7 +792,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
         var vm = SetupAuthoriseOutcomeViewModel();
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId))
+            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId,vm.RtsId))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.BadRequest
@@ -811,7 +811,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
         sponsorOrganisationService
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -838,7 +838,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
         sponsorOrganisationService
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -866,7 +866,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
         sponsorOrganisationService
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -893,7 +893,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
         sponsorOrganisationService
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -924,7 +924,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             .ReturnsAsync(new ValidationResult(new[] { new ValidationFailure("RevisionDescription", "required") }));
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId))
+            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId,vm.RtsId))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.BadRequest,
@@ -947,7 +947,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             .ReturnsAsync(new ValidationResult(new[] { new ValidationFailure("RevisionDescription", "required") }));
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId))
+            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId,vm.RtsId))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -978,7 +978,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             .ReturnsAsync(new ValidationResult(new[] { new ValidationFailure("RevisionDescription", "required") }));
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId))
+            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId, vm.RtsId))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -1010,7 +1010,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             .ReturnsAsync(new ValidationResult(new[] { new ValidationFailure("RevisionDescription", "required") }));
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId))
+            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId, vm.RtsId))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -1071,7 +1071,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         await Sut.SendRequestRevisions(vm);
 
-        sponsor.Verify(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()), Times.Never);
+        sponsor.Verify(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
         mods.Verify(s => s.GetModificationReviewResponses(It.IsAny<string>(), It.IsAny<Guid>()), Times.Never);
     }
 
@@ -1544,7 +1544,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
         sponsorOrganisationService
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -1572,7 +1572,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
         sponsorOrganisationService
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -1599,7 +1599,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
         sponsorOrganisationService
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -1626,7 +1626,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
         sponsorOrganisationService
-            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()))
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -1652,7 +1652,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
         var vm = SetupAuthoriseOutcomeViewModel();
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId))
+            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId, vm.RtsId))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.BadRequest
@@ -1674,7 +1674,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             .ReturnsAsync(new ValidationResult(new[] { new ValidationFailure("NotAuthorised", "required") }));
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId))
+            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId,vm.RtsId))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -1706,7 +1706,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             .ReturnsAsync(new ValidationResult(new[] { new ValidationFailure("NotAuthorised", "required") }));
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId))
+            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId, vm.RtsId))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -1736,7 +1736,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             .ReturnsAsync(new ValidationResult(new[] { new ValidationFailure("NotAuthorised", "required") }));
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId))
+            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId,vm.RtsId))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -1768,7 +1768,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             .ReturnsAsync(new ValidationResult(new[] { new ValidationFailure("NotAuthorised", "required") }));
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId))
+            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId, vm.RtsId))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.BadRequest,
@@ -1796,7 +1796,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         await Sut.SaveModificationReasonNotApproved(vm);
 
-        sponsor.Verify(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>()), Times.Never);
+        sponsor.Verify(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
         mods.Verify(s => s.GetModificationReviewResponses(It.IsAny<string>(), It.IsAny<Guid>()), Times.Never);
     }
 

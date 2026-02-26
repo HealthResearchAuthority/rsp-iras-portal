@@ -149,7 +149,7 @@ public class ModificationAuthoriseFilter : IAsyncAuthorizationFilter, IAsyncActi
 
             // 5. Check if current user is Authoriser
             var sponsorOrganisationUser =
-                await _sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserIdGuid);
+                await _sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserIdGuid, rtsId);
 
             if (!sponsorOrganisationUser.IsSuccessStatusCode)
             {

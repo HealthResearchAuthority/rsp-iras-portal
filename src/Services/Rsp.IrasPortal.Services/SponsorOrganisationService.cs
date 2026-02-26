@@ -137,9 +137,9 @@ public class SponsorOrganisationService(ISponsorOrganisationsServiceClient clien
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<SponsorOrganisationUserDto>> GetSponsorOrganisationUser(Guid sponsorOrgUserId)
+    public async Task<ServiceResponse<SponsorOrganisationUserDto>> GetSponsorOrganisationUser(Guid sponsorOrgUserId, string rtsId)
     {
-        var apiResponse = await client.GetSponsorOrganisationUser(sponsorOrgUserId);
+        var apiResponse = await client.GetSponsorOrganisationUser(sponsorOrgUserId, rtsId);
         return apiResponse.ToServiceResponse();
     }
 }

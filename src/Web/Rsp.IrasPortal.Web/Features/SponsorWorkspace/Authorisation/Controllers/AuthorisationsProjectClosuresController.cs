@@ -298,7 +298,7 @@ public class AuthorisationsProjectClosuresController
         }
 
         var sponsorOrganisationUser =
-            await sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserId);
+            await sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserId, rtsId);
 
         if (!sponsorOrganisationUser.IsSuccessStatusCode)
         {
@@ -329,7 +329,7 @@ public class AuthorisationsProjectClosuresController
 
         if (!ModelState.IsValid)
         {
-            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId);
+            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId, model.RtsId);
 
             if (!sponsorOrganisationUser.IsSuccessStatusCode)
             {

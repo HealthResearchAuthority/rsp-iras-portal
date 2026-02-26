@@ -41,5 +41,5 @@ public interface ISponsorOrganisationService : IInterceptable
 
     Task<ServiceResponse<SponsorOrganisationUserDto>> UpdateSponsorOrganisationUser(SponsorOrganisationUserDto user);
 
-    Task<ServiceResponse<SponsorOrganisationUserDto>> GetSponsorOrganisationUser(Guid sponsorOrgUserId);
+    Task<ServiceResponse<SponsorOrganisationUserDto>> GetSponsorOrganisationUser(Guid sponsorOrgUserId, string rtsId);
 }

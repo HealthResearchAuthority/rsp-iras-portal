@@ -271,7 +271,7 @@ public class SponsorUserAuthorisationServiceTests
             .ReturnsAsync(sponsorOrgsResponse);
 
         // Act
-        var result = await Sut.AuthoriseAsync(controller, membershipId, principal);
+        var result = await Sut.AuthoriseAsync(controller, gid, principal);
 
         // Assert CHANGE IF NEEDED: adapt these property names to your SponsorUserAuthorisationResult
         result.ShouldNotBeNull();
