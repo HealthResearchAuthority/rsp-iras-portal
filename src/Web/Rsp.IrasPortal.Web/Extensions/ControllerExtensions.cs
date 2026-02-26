@@ -142,10 +142,21 @@ public static class ControllerExtensions
                     if (error.CustomState is QuestionViewModel qvm)
                     {
                         var adjustedPropertyName = PropertyNameHelper.AdjustPropertyName(error.PropertyName, qvm.Index);
+                        // FIX: Remove existing stale ModelState entry first
+                        if (controller.ModelState.ContainsKey(adjustedPropertyName))
+                        {
+                            controller.ModelState.Remove(adjustedPropertyName);
+                        }
+
                         controller.ModelState.AddModelError(adjustedPropertyName, error.ErrorMessage);
                     }
                     else
                     {
+                        if (controller.ModelState.ContainsKey(error.PropertyName))
+                        {
+                            controller.ModelState.Remove(error.PropertyName);
+                        }
+
                         controller.ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
                     }
                 }

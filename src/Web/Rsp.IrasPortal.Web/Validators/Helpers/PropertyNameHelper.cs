@@ -7,6 +7,9 @@ public static class PropertyNameHelper
     // Replace Questions[anyNumber] with the correct index
     public static string AdjustPropertyName(string propertyName, int index)
     {
+        if (string.IsNullOrEmpty(propertyName) || !propertyName.StartsWith("Questions["))
+            return propertyName;
+
         // Pattern: match "Questions[<any number>]."
         var pattern = @"Questions\[\d+\]\.";
 
