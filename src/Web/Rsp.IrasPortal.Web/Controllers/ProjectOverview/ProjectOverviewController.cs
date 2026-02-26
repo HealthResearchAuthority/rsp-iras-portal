@@ -209,7 +209,7 @@ public class ProjectOverviewController
                 {
                     TransactionId = pc.TransactionId,
                     ClosureDate = pc.ClosureDate,
-                    UserEmail = GetUserEmail(pc.UserId),
+                    UserEmail = GetUserEmail(pc.CreatedBy),
                     SentToSponsorDate = pc.SentToSponsorDate,
                     Status = pc.Status,
                 }).ToList() ?? [];
