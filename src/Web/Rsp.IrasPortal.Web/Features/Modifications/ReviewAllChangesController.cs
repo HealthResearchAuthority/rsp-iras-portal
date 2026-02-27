@@ -455,10 +455,10 @@ public class ReviewAllChangesController : ModificationsControllerBase
         var viewModel = await this.BuildSponsorQuestionnaireViewModel(modificationId, projectRecordId, CategoryId);
         //var isValid = await this.ValidateQuestionnaire(validator, viewModel, true);
 
-        if (!isValid)
-        {
-            return View("SponsorReference", viewModel);
-        }
+        //if (!isValid)
+        //{
+        //    return View("SponsorReference", viewModel);
+        //}
 
         var viewModel = await this.BuildSponsorQuestionnaireViewModel(Guid.Parse(model.ModificationId), model.ProjectRecordId, CategoryId);
         //var isValid = await this.ValidateQuestionnaire(validator, viewModel, true);
