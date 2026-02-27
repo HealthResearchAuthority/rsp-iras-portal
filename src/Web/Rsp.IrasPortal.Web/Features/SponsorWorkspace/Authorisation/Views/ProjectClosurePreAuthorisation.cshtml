@@ -11,6 +11,8 @@
 
     var heading = pageContent.GetValueOrDefault("SponsorWorkspace.ProjectClosurePreAuthorisation.Header", null);    
     var messageText = pageContent.GetValueOrDefault("SponsorWorkspace.ProjectClosurePreAuthorisation.MessageText", null);
+
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 }
 
 @section BackNavigation {
