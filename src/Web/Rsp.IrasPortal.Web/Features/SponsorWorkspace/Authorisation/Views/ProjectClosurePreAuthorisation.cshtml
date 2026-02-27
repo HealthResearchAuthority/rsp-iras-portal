@@ -3,13 +3,13 @@
 @using Rsp.Portal.Domain.AccessControl
 @model Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseProjectClosuresOutcomeViewModel
 
-@{    
+@{
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
 
-    var heading = pageContent.GetValueOrDefault("SponsorWorkspace.ProjectClosurePreAuthorisation.Header", null);    
+    var heading = pageContent.GetValueOrDefault("SponsorWorkspace.ProjectClosurePreAuthorisation.Header", null);
     var messageText = pageContent.GetValueOrDefault("SponsorWorkspace.ProjectClosurePreAuthorisation.MessageText", null);
 
 	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
@@ -47,7 +47,7 @@
         </dl>
 
         <p class="govuk-body">
-            @Html.Raw(messageText?.Value)            
+            @Html.Raw(messageText?.Value)
         </p>
 
         <div class="save-buttons">
@@ -63,13 +63,14 @@
                     </button>
                 </form>
             </authorized>
-            <form method="get">   
+            <form method="get">
                 <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
                 <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+                <input type="hidden" name="RtsId" value="@Model.RtsId" />
                 @{
-                    ViewBag.Style = "govuk-button govuk-button--secondary";                    
+                    ViewBag.Style = "govuk-button govuk-button--secondary";
                 }
-                <partial name="_SubmitButton"                         
+                <partial name="_SubmitButton"
                          model="@("sws:checkandauthoriseprojectclosure", "Go back to check and authorise", new Dictionary<string, string>
                          {
                              ["ProjectRecordId"] = Model.ProjectRecordId,
