@@ -39,11 +39,18 @@ public abstract class ModificationsControllerBase
     protected readonly IProjectModificationsService projectModificationsService = projectModificationsService;
     protected readonly ICmsQuestionsetService cmsQuestionsetService = cmsQuestionsetService;
     protected IValidator<ModificationDetailsViewModel>? ModificationValidator { get; private set; }
+    protected IValidator<QuestionnaireViewModel>? QuestionnaireViewModel { get; private set; }
 
     protected void SetModificationValidator(
            IValidator<ModificationDetailsViewModel> validator)
     {
         ModificationValidator = validator;
+    }
+
+    protected void SetQuestionnaireViewModel(
+         IValidator<QuestionnaireViewModel> questionnaireValidator)
+    {
+        QuestionnaireViewModel = questionnaireValidator;
     }
 
     protected async Task<(IActionResult?, ModificationDetailsViewModel?)> GetModificationDetails(Guid projectModificationId, string irasId, string shortTitle, string projectRecordId)
@@ -94,7 +101,8 @@ public abstract class ModificationsControllerBase
             ReasonNotApproved = modification?.ReasonNotApproved ?? string.Empty,
             ReviewerComments = modification?.ReviewerComments,
             RevisionDescription = modification?.RevisionDescription ?? string.Empty,
-            RequestForInformationReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? []
+            RequestForInformationReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? [],
+            ApplicantRevisionResponse = modification?.ApplicantRevisionResponse ?? string.Empty
         });
     }
 

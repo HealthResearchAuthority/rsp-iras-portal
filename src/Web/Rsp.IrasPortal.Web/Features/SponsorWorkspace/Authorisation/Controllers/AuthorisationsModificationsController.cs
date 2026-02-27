@@ -257,6 +257,7 @@ public class AuthorisationsModificationsController
         authoriseOutcomeViewModel.ShortTitle = shortTitle;
         authoriseOutcomeViewModel.ProjectRecordId = projectRecordId;
         authoriseOutcomeViewModel.RtsId = rtsId;
+        //authoriseOutcomeViewModel.ApplicantRevisionResponse = rtsId;
 
         return authoriseOutcomeViewModel;
     }

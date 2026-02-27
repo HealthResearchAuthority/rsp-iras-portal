@@ -17,7 +17,6 @@
     ViewData[ViewDataKeys.IsSponsorCheckAndAuthorise] = true;
     ViewData[ViewDataKeys.ShowModificationDetails] = Model.Status != ModificationStatus.WithSponsor && Model.Status != ModificationStatus.ReviseAndAuthorise;
 
-
     ViewBag.SponsorOrganisationUserId = Model.SponsorOrganisationUserId;
     ViewBag.RtsId = Model.RtsId;
 
@@ -32,12 +31,15 @@
     var outcomeTitle = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.OutcomeTitle", null);
     var outcome = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.Outcome", null);
 
+    var revisionDescriptionBySponsorTitle = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.RevisionBySponsorHeadline", null);
+    var revisionResponseByApplicantTitle = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.RevisionByApplicantHeadline", null);
+
     // Detect field error for summary styling
-    var hasError = ViewData.ModelState.TryGetValue(nameof(Model.Outcome), out var entry) && entry!.Errors.Any();       
+    var hasError = ViewData.ModelState.TryGetValue(nameof(Model.Outcome), out var entry) && entry!.Errors.Any();
 
     // Radio options for the TagHelper
     var outcomeOptions = new List<GdsOption>
-    {
+{
         new() { Value = "Authorised", Label = "Authorised" },
         new() { Value = "NotAuthorised", Label = "Not authorised" }
     };
@@ -89,8 +91,8 @@
         <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
         <partial name="~/Features/Modifications/Shared/_ProjectModificationSummary.cshtml"
-        model="Model"
-        view-data="ViewData" />
+                 model="Model"
+                 view-data="ViewData" />
 
         <h2 class="govuk-heading-m">Summary details</h2>
         <div class="govuk-summary-card">
@@ -109,20 +111,47 @@
                     };
                 }
                 <partial name="~/Features/Modifications/Shared/RankingOfChange.cshtml"
-                model="ranking" />
+                         model="ranking" />
             </div>
         </div>
     </div>
 </div>
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
-        <partial name="~/Features/Modifications/Views/_NavigationTabPartial.cshtml"
-        model="Model"
-        view-data="ViewData" />
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-heading-m">
+            <strong> @Html.Raw(revisionDescriptionBySponsorTitle?.Value)</strong>
+        </div>
     </div>
 </div>
-
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-body">
+            @Model.RevisionDescription
+        </div>
+    </div>
+</div>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-heading-m">
+            @Html.Raw(revisionResponseByApplicantTitle?.Value)
+        </div>
+    </div>
+</div>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-body">
+            @Model.ApplicantRevisionResponse
+        </div>
+    </div>
+</div>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+        <partial name="~/Features/Modifications/Views/_NavigationTabPartial.cshtml"
+                 model="Model"
+                 view-data="ViewData" />
+    </div>
+</div>
 @if (isAuthoriser)
 {
     <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
