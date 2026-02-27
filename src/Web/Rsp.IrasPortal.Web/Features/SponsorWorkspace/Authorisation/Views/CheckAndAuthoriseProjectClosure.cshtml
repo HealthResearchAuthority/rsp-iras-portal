@@ -33,7 +33,10 @@
 }
 
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("sws:projectclosures", "Back", new Dictionary<string, string> { { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() } })" />
+    <partial name="_BackNavigation" model="@("sws:projectclosures", "Back",
+                                                new Dictionary<string, string> {
+                                                    { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() },
+                                                    { "rtsId", Model.RtsId } })" />
 }
 
 <div class="govuk-grid-row">
