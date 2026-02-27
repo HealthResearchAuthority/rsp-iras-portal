@@ -38,8 +38,8 @@ public abstract class ModificationsControllerBase
     private const string DocumentDetailsSection = "pdm-document-metadata";
     protected readonly IProjectModificationsService projectModificationsService = projectModificationsService;
     protected readonly ICmsQuestionsetService cmsQuestionsetService = cmsQuestionsetService;
-    protected IValidator<ModificationDetailsViewModel>? ModificationValidator { get; private set; }
     protected IValidator<QuestionnaireViewModel>? QuestionnaireViewModel { get; private set; }
+    protected IValidator<ModificationDetailsViewModel>? ModificationValidator { get; private set; }
 
     protected void SetModificationValidator(
            IValidator<ModificationDetailsViewModel> validator)
@@ -100,9 +100,8 @@ public abstract class ModificationsControllerBase
             DateCreated = DateHelper.ConvertDateToString(modification.CreatedDate),
             ReasonNotApproved = modification?.ReasonNotApproved ?? string.Empty,
             ReviewerComments = modification?.ReviewerComments,
-            RevisionDescription = modification?.RevisionDescription ?? string.Empty,
-            RequestForInformationReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? [],
-            ApplicantRevisionResponse = modification?.ApplicantRevisionResponse ?? string.Empty
+            RevisionDescription = modification?.RevisionDescription,
+            RequestForInformationReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? []
         });
     }
 
