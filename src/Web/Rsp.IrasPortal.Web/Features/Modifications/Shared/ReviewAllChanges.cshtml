@@ -76,13 +76,16 @@ else
 <authorized role-is="@Roles.Applicant">
     @if (Model.Status is ModificationStatus.InDraft)
     {
-        // TODO -  or ModificationStatus.RequestRevisions has been added temporarly, to make it possible to send back to sponsor, before Make revisions page is done
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <h2 class="govuk-heading-m">Now send to sponsor</h2>
                 <p class="govuk-body">
                     By sending this modification you are confirming that, to the best of your knowledge, the details you are providing are correct.
                 </p>
+            </div>
+        </div>
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
                 <form method="post">
                     <div class="save-buttons">
                         @{
@@ -96,10 +99,10 @@ else
                             else if (Model.ChangesReadyForSubmission)
                             {
                                 <partial name="_SubmitButton" model="@("pmc:sendmodificationtosponsor", "Send modification to sponsor", new Dictionary<string, string>()
-                                                              {
-                                                                  ["projectModificationId"] = Model.ModificationId!,
-                                                                  ["projectRecordId"] = Model.ProjectRecordId
-                                                              })" />
+                                                       {
+                                                           ["projectModificationId"] = Model.ModificationId!,
+                                                           ["projectRecordId"] = Model.ProjectRecordId
+                                                       })" />
                             }
                             else
                             {
@@ -126,6 +129,13 @@ else
     }
 </authorized>
 
+<feature name="@FeatureFlags.RequestRevisions">
+    <authorized role-in="@(new []{Roles.Applicant, Roles.Sponsor})"
+                status-for="@Model.Status"
+                status-is="@ModificationStatus.RequestRevisions">
+        <partial name="MakeRevision" model="Model" view-data="ViewData" />
+    </authorized>
+</feature>
 <authorized permission="@Permissions.MyResearch.Modifications_Approve"
             status-for="Status"
             status-is="@ModificationStatus.WithReviewBody">
