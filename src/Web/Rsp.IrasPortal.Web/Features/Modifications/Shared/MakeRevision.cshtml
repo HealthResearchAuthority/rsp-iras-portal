@@ -47,18 +47,16 @@
                     </div>
                 </noscript>
 
-                    <div id="ApplicantRevisionResponse-info"
-                         aria-hidden="true"
-                         class="govuk-hint govuk-character-count__message">
-                    </div>
+                <div id="ApplicantRevisionResponse-info"
+                     aria-hidden="true"
+                     class="govuk-hint govuk-character-count__message">
                 </div>
-
-                <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
-                <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
-                <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
-                <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
-                <input type="hidden" name="IrasId" value="@Model.IrasId" />
-                <input type="hidden" name="RtsId" value="@Model.RtsId" />
+            </div>
+                        <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
+                        <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+                        <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
+                        <input type="hidden" name="IrasId" value="@Model.IrasId" />
+                        <input type="hidden" name="RtsId" value="@Model.RtsId" />
                         @if (Model.NoChangesToSubmit)
                         {
                             <a asp-route="pmc:nochangestosubmit" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
