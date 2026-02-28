@@ -3,7 +3,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
-using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -31,7 +30,6 @@ public class ModificationDetailsController
     IValidator<QuestionnaireViewModel> validator,
     IFeatureManager featureManager
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
-
 {
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
     private const string DocumentDetailsSection = "pdm-document-metadata";
@@ -92,13 +90,11 @@ public class ModificationDetailsController
         }
 
         // If its sponsor revision - validate if sponsor is authoriser
-        if ((modification.Status is ModificationStatus.ReviseAndAuthorise && sponsorOrganisationUserId != null && rtsId != null) ||
-            modification.Status is ModificationStatus.RequestRevisions)
-
+        if (modification.Status is ModificationStatus.ReviseAndAuthorise && sponsorOrganisationUserId != null && rtsId != null)
         {
             // Add sponsor details
-            modification.SponsorOrganisationUserId = sponsorOrganisationUserId.ToString() ?? string.Empty;
-            modification.RtsId = rtsId ?? string.Empty;
+            modification.SponsorOrganisationUserId = sponsorOrganisationUserId.Value.ToString();
+            modification.RtsId = rtsId;
 
             var revisionDescription = TempData[TempDataKeys.RevisionDescription];
             if (!string.IsNullOrEmpty(revisionDescription?.ToString()))
@@ -141,8 +137,8 @@ public class ModificationDetailsController
                     { "irasId", irasId },
                     { "shortTitle", shortTitle },
                     { "projectModificationId", projectModificationId.ToString() },
-                    { "sponsorOrganisationUserId", sponsorOrganisationUserId.ToString()?? string.Empty },
-                    { "rtsId", rtsId?? string.Empty }
+                    { "sponsorOrganisationUserId", sponsorOrganisationUserId.Value.ToString() },
+                    { "rtsId", rtsId }
                 }
             };
         }
@@ -237,31 +233,5 @@ public class ModificationDetailsController
             sponsorOrganisationUserId = viewModel.SponsorOrganisationUserId,
             rtsId = viewModel.RtsId
         });
-    }
-
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
-    [FeatureGate(FeatureFlags.RequestRevisions)]
-    [HttpGet]
-    public async Task<IActionResult> RequestForRevision(string projectRecordId,
-    string irasId,
-    string shortTitle,
-    Guid projectModificationId)
-    {
-        var (result, modification) = await PrepareModificationAsync(projectModificationId, irasId, shortTitle, projectRecordId);
-        if (result is not null)
-        {
-            return result;
-        }
-
-        if (modification is null)
-        {
-            return this.ServiceError(new ServiceResponse
-            {
-                StatusCode = HttpStatusCode.BadRequest,
-                Error = $"There is no modification for modification id {projectModificationId}",
-            });
-        }
-
-        return View("MakeRevisonByApplicant", modification);
     }
 }

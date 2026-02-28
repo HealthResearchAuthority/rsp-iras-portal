@@ -23,7 +23,8 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
     public async Task SendModificationToSponsor_Should_Return_View_When_Success
     (
         string projectRecordId,
-        Guid projectModificationId
+        Guid projectModificationId,
+       string applicantResponse
     )
     {
         // Arrange
@@ -60,7 +61,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
             .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
         // Act
-        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId);
+        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId, applicantResponse);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -75,7 +76,8 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
     public async Task SendModificationToSponsor_Should_Return_StatusCode_When_Failure
     (
         string projectRecordId,
-        Guid projectModificationId
+        Guid projectModificationId,
+        string applicantResponse
     )
     {
         // Arrange
@@ -112,7 +114,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
             .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
         // Act
-        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId);
+        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId, applicantResponse);
 
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();
@@ -123,7 +125,8 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
     public async Task SendModificationToSponsor_Should_Redirect_When_MalwareScanNotCompleted
     (
         string projectRecordId,
-        Guid projectModificationId
+        Guid projectModificationId,
+        string applicantResponse
     )
     {
         var http = new DefaultHttpContext();
@@ -179,7 +182,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
 
         // Act
-        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId);
+        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId, applicantResponse);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -189,7 +192,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
     [Theory, AutoData]
     public async Task SendModificationToSponsor_Should_Redirect_When_Document_Details_Incomplete(
         string projectRecordId,
-        Guid projectModificationId)
+        Guid projectModificationId, string applicantResponse)
     {
         var http = new DefaultHttpContext();
         Sut.ControllerContext = new ControllerContext { HttpContext = http };
@@ -257,7 +260,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
 
         // Act
-        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId);
+        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId, applicantResponse);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -267,7 +270,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
     [Theory, AutoData]
     public async Task SendModificationToSponsor_Should_Redirect_When_Malware_Scan_Incomplete(
     string projectRecordId,
-    Guid projectModificationId)
+    Guid projectModificationId, string applicantResponse)
     {
         // Arrange
         var http = new DefaultHttpContext();
@@ -318,7 +321,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
 
         // Act
-        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId);
+        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId, applicantResponse);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();

@@ -38,20 +38,6 @@ public abstract class ModificationsControllerBase
     private const string DocumentDetailsSection = "pdm-document-metadata";
     protected readonly IProjectModificationsService projectModificationsService = projectModificationsService;
     protected readonly ICmsQuestionsetService cmsQuestionsetService = cmsQuestionsetService;
-    protected IValidator<QuestionnaireViewModel>? QuestionnaireViewModel { get; private set; }
-    protected IValidator<ModificationDetailsViewModel>? ModificationValidator { get; private set; }
-
-    protected void SetModificationValidator(
-           IValidator<ModificationDetailsViewModel> validator)
-    {
-        ModificationValidator = validator;
-    }
-
-    protected void SetQuestionnaireViewModel(
-         IValidator<QuestionnaireViewModel> questionnaireValidator)
-    {
-        QuestionnaireViewModel = questionnaireValidator;
-    }
 
     protected async Task<(IActionResult?, ModificationDetailsViewModel?)> GetModificationDetails(Guid projectModificationId, string irasId, string shortTitle, string projectRecordId)
     {
