@@ -25,34 +25,26 @@ namespace Rsp.Portal.Web.Features.Modifications;
 
 [Authorize(Policy = Workspaces.MyResearch)]
 [Route("/modifications/[action]", Name = "pmc:[action]")]
-public class ReviewAllChangesController : ModificationsControllerBase
+public class ReviewAllChangesController
+(
+    IProjectModificationsService projectModificationsService,
+    ICmsQuestionsetService cmsQuestionsetService,
+    IRespondentService respondentService,
+    IValidator<QuestionnaireViewModel> validator,
+    IFeatureManager featureManager,
+    IViewHelper viewHelper
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
 {
-    private readonly IRespondentService _respondentService;
-    private readonly IViewHelper _viewHelper;
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
     private const string CategoryId = "Sponsor reference";
+    private readonly IRespondentService _respondentService = respondentService;
 
     private readonly ServiceResponse _reviewOutcomeNotFoundError = new()
     {
         StatusCode = HttpStatusCode.NotFound,
         Error = "Unable to retrieve modification review outcome details from session."
     };
-
-    public ReviewAllChangesController(
-        IProjectModificationsService projectModificationsService,
-        ICmsQuestionsetService cmsQuestionsetService,
-        IRespondentService respondentService,
-        IValidator<QuestionnaireViewModel> validator,
-        IFeatureManager featureManager,
-        IViewHelper viewHelper,
-        IValidator<ModificationDetailsViewModel> modificationValidator)
-        : base(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
-    {
-        _respondentService = respondentService;
-        _viewHelper = viewHelper;
-        SetModificationValidator(modificationValidator);
-    }
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
     [HttpGet]
@@ -411,18 +403,13 @@ public class ReviewAllChangesController : ModificationsControllerBase
     }
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Submit)]
-    public async Task<IActionResult> SendModificationToSponsor(string projectRecordId, Guid modificationId)
-    {
-        return await BuildSendModificationToSponsor(projectRecordId, modificationId);
-    }
-
-    private async Task<IActionResult> BuildSendModificationToSponsor(string projectRecordId, Guid modificationId, string? revisionResponsoeByApplicat = null)
+    public async Task<IActionResult> SendModificationToSponsor(string projectRecordId, Guid projectModificationId)
     {
         // Fetch all modification documents (up to 200)
         var searchQuery = new ProjectOverviewDocumentSearchRequest();
         searchQuery.AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document);
         var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(
-            modificationId,
+            projectModificationId,
             searchQuery, 1, 300,
             nameof(ProjectOverviewDocumentDto.DocumentType),
             SortDirections.Ascending);
@@ -452,13 +439,13 @@ public class ReviewAllChangesController : ModificationsControllerBase
             return RedirectToRoute("pmc:DocumentsScanInProgress");
         }
 
-        var viewModel = await this.BuildSponsorQuestionnaireViewModel(modificationId, projectRecordId, CategoryId);
-        //var isValid = await this.ValidateQuestionnaire(validator, viewModel, true);
+        var viewModel = await this.BuildSponsorQuestionnaireViewModel(projectModificationId, projectRecordId, CategoryId);
+        var isValid = await this.ValidateQuestionnaire(validator, viewModel, true);
 
-        //if (!isValid)
-        //{
-        //    return View("SponsorReference", viewModel);
-        //}
+        if (!isValid)
+        {
+            return View("SponsorReference", viewModel);
+        }
 
         var viewModel = await this.BuildSponsorQuestionnaireViewModel(Guid.Parse(model.ModificationId), model.ProjectRecordId, CategoryId);
         //var isValid = await this.ValidateQuestionnaire(validator, viewModel, true);
@@ -471,43 +458,9 @@ public class ReviewAllChangesController : ModificationsControllerBase
         // PASS ALL CHECKS → CONTINUE WORKFLOW
         return await HandleModificationStatusUpdate(
             projectRecordId,
-            modificationId,
+            projectModificationId,
             ModificationStatus.WithSponsor,
-            revisionResponsoeByApplicat,
             onSuccess: () => View("ModificationSentToSponsor"));
-    }
-
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
-    [FeatureGate(FeatureFlags.RequestRevisions)]
-    [HttpPost]
-    public async Task<IActionResult> SendRevisionResponseToSponsor(ModificationDetailsViewModel model)
-    {
-        if (string.IsNullOrWhiteSpace(model.ApplicantRevisionResponse))
-        {
-            var context = new ValidationContext<ModificationDetailsViewModel>(model);
-            var validationResult = await ModificationValidator.ValidateAsync(context);
-            if (!validationResult.IsValid)
-            {
-                foreach (var error in validationResult.Errors)
-                {
-                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                }
-
-                TempData.Remove(TempDataKeys.ModelState);
-                TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
-
-                return RedirectToRoute("pmc:ModificationDetails", new
-                {
-                    projectRecordId = model.ProjectRecordId,
-                    irasId = model.IrasId,
-                    shortTitle = model.ShortTitle,
-                    projectModificationId = Guid.Parse(model.ModificationId),
-                    sponsorOrganisationUserId = model.SponsorOrganisationUserId,
-                    rtsId = model.RtsId
-                });
-            }
-        }
-        return await BuildSendModificationToSponsor(model.ProjectRecordId, Guid.Parse(model.ModificationId), model.ApplicantRevisionResponse);
     }
 
     /// <summary>
@@ -552,7 +505,6 @@ public class ReviewAllChangesController : ModificationsControllerBase
             projectRecordId,
             projectModificationId,
             ModificationStatus.Withdrawn,
-            string.Empty,
             onSuccess: () => View(model));
     }
 
@@ -569,9 +521,9 @@ public class ReviewAllChangesController : ModificationsControllerBase
             });
         }
 
-        var html = await _viewHelper.RenderViewAsString("_ReviewModificationPdf", modification, ControllerContext);
+        var html = await viewHelper.RenderViewAsString("_ReviewModificationPdf", modification, ControllerContext);
 
-        var pdf = await _viewHelper.GeneratePdf(html, $"Modification ID: {modification.ModificationIdentifier}");
+        var pdf = await viewHelper.GeneratePdf(html, $"Modification ID: {modification.ModificationIdentifier}");
 
         return File
         (
@@ -585,7 +537,6 @@ public class ReviewAllChangesController : ModificationsControllerBase
         string projectRecordId,
         Guid projectModificationId,
         string newStatus,
-        string revisionResponseByApplicant,
         Func<IActionResult> onSuccess)
     {
         TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
@@ -595,7 +546,7 @@ public class ReviewAllChangesController : ModificationsControllerBase
         (
             projectRecordId,
             projectModificationId,
-            newStatus, null, null, revisionResponseByApplicant
+            newStatus
         );
 
         if (!updateResponse.IsSuccessStatusCode)
