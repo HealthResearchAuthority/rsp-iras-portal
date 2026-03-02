@@ -12,15 +12,15 @@
             var title = Model.Status switch
             {
                 ModificationStatus.InDraft when TempData[TempDataKeys.IsDuplicateModification] is not null
-                    => "Review modification",
+                => "Review modification",
 
                 ModificationStatus.InDraft
-                    => "Review all changes",
+                => "Review all changes",
 
                 _ => "Modification"
             };
         }
-        <h1 class="govuk-heading-l">@heading</h1>
+        <h1 class="govuk-heading-l">@title</h1>
         @{
             <partial name="_ProjectModificationSummary" model="Model" viewData="ViewData" />
         }
@@ -30,36 +30,36 @@
             {
                 <div status-for="@Model.Status"
                      status-in="@([ModificationStatus.WithSponsor,
-                        ModificationStatus.NotAuthorised,
-                        ModificationStatus.WithReviewBody,
-                        ModificationStatus.Approved,
-                        ModificationStatus.NotApproved,
-                        ModificationStatus.ReviseAndAuthorise,
-                        ModificationStatus.ReviewInProgress,
-                        ModificationStatus.RequestForInformation])">
-                    <h2 class="govuk-heading-m">Download a PDF of the modification information</h2>
-                    <p class="govuk-body">
-                        You'll need to send this to participating organisations along with your cover letter and copies of any supporting documents.
-                    </p>
-                    <a asp-controller="ReviewAllChanges" asp-action="DownloadModificationPdfFromHtml" class="govuk-button govuk-button--secondary">
-                        Download modification information
-                    </a>
-                </div>
-            }
+                                   ModificationStatus.NotAuthorised,
+                                   ModificationStatus.WithReviewBody,
+                                   ModificationStatus.Approved,
+                                   ModificationStatus.NotApproved,
+                                   ModificationStatus.ReviseAndAuthorise,
+                                   ModificationStatus.ReviewInProgress,
+                                   ModificationStatus.RequestForInformation])">
+                <h2 class="govuk-heading-m">Download a PDF of the modification information</h2>
+                <p class="govuk-body">
+                    You'll need to send this to participating organisations along with your cover letter and copies of any supporting documents.
+                </p>
+                <a asp-controller="ReviewAllChanges" asp-action="DownloadModificationPdfFromHtml" class="govuk-button govuk-button--secondary">
+                    Download modification information
+                </a>
+            </div>
+                        }
             else if (User.HasPermission(Permissions.MyResearch.Modifications_Download_Limited))
             {
                 <div status-for="@Model.Status"
                      status-in="@([ModificationStatus.Approved,
-                        ModificationStatus.NotApproved,])">
-                    <h2 class="govuk-heading-m">Download a PDF of the modification information</h2>
-                    <p class="govuk-body">
-                        You'll need to send this to participating organisations along with your cover letter and copies of any supporting documents.
-                    </p>
-                    <a asp-controller="ReviewAllChanges" asp-action="DownloadModificationPdfFromHtml" class="govuk-button govuk-button--secondary">
-                        Download modification information
-                    </a>
-                </div>
-            }
+                                                                                                                                                                                                                                                                                    ModificationStatus.NotApproved,])">
+                <h2 class="govuk-heading-m">Download a PDF of the modification information</h2>
+                <p class="govuk-body">
+                    You'll need to send this to participating organisations along with your cover letter and copies of any supporting documents.
+                </p>
+                <a asp-controller="ReviewAllChanges" asp-action="DownloadModificationPdfFromHtml" class="govuk-button govuk-button--secondary">
+                    Download modification information
+                </a>
+            </div>
+                        }
         </feature>
 
         <h2 class="govuk-heading-m">Summary details</h2>

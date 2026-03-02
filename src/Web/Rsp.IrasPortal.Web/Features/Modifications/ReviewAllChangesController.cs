@@ -47,43 +47,11 @@ public class ReviewAllChangesController
         Error = "Unable to retrieve modification review outcome details from session."
     };
 
-    public ReviewAllChangesController
-    (
-        IProjectModificationsService projectModificationsService,
-        ICmsQuestionsetService cmsQuestionsetService,
-        IRespondentService respondentService,
-        IValidator<QuestionnaireViewModel> validator,
-        IFeatureManager featureManager,
-        IViewHelper viewHelper,
-        IValidator<ModificationDetailsViewModel> modificationValidator
-    ) : base(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
-    {
-        _respondentService = respondentService;
-        _viewHelper = viewHelper;
-        SetModificationValidator(modificationValidator);
-    }
-
     private readonly ServiceResponse _duplicateModifictionError = new()
     {
         StatusCode = HttpStatusCode.NotFound,
         Error = "Unable to duplicate modification from session."
     };
-
-    public ReviewAllChangesController
-    (
-        IProjectModificationsService projectModificationsService,
-        ICmsQuestionsetService cmsQuestionsetService,
-        IRespondentService respondentService,
-        IValidator<QuestionnaireViewModel> validator,
-        IFeatureManager featureManager,
-        IViewHelper viewHelper,
-        IValidator<ModificationDetailsViewModel> modificationValidator
-    ) : base(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
-    {
-        _respondentService = respondentService;
-        _viewHelper = viewHelper;
-        SetModificationValidator(modificationValidator);
-    }
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
     [HttpGet]
@@ -566,58 +534,53 @@ public class ReviewAllChangesController
         );
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
-    [FeatureGate(FeatureFlags.RequestRevisions)]
-    [HttpPost]
-    public async Task<IActionResult> SendRevisionResponseToSponsor(ModificationDetailsViewModel model, bool isSaveForLater)
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Resubmission)]
+    [FeatureGate(FeatureFlags.ModificationResubmission)]
+    [HttpGet]
+    public async Task<IActionResult> DuplicateModification()
     {
-        bool validation = isSaveForLater && string.IsNullOrWhiteSpace(model.ApplicantRevisionResponse);
-        if (!validation)
+        var model = GetFromTempData();
+
+        if (model is null)
         {
-            var context = new ValidationContext<ModificationDetailsViewModel>(model);
-            var validationResult = await modificationValidator.ValidateAsync(context);
-            if (!validationResult.IsValid)
+            return this.ServiceError(_duplicateModifictionError);
+        }
+
+        var getModificationResponse = await projectModificationsService.GetModification(model.ModificationDetails.ProjectRecordId,
+            Guid.Parse(model.ModificationDetails.ModificationId!));
+
+        if (getModificationResponse.IsSuccessStatusCode)
+        {
+            var currentModification = getModificationResponse.Content;
+
+            // Create a duplicate modification request
+            var duplicateModificationRequest = new DuplicateModificationRequest()
             {
-                foreach (var error in validationResult.Errors)
-                {
-                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                }
+                ProjectRecordId = currentModification.ProjectRecordId,
+                ExistingModificationId = currentModification.Id
+            };
 
-                TempData.Remove(TempDataKeys.ModelState);
-                TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+            //Call the service to duplicate the modification
+            var duplicateModificationResponse = await projectModificationsService.DuplicateModification(duplicateModificationRequest);
 
-                return RedirectToRoute("pmc:ModificationDetails", new
-                {
-                    projectRecordId = model.ProjectRecordId,
-                    irasId = model.IrasId,
-                    shortTitle = model.ShortTitle,
-                    projectModificationId = Guid.Parse(model.ModificationId),
-                    sponsorOrganisationUserId = model.SponsorOrganisationUserId,
-                    rtsId = model.RtsId
-                });
+            if (duplicateModificationResponse.IsSuccessStatusCode)
+            {
+                var duplicateModification = duplicateModificationResponse.Content;
+
+                TempData[TempDataKeys.IsDuplicateModification] = true;
+                TempData[TempDataKeys.ShowNotificationBanner] = true;
+
+                return RedirectToAction(nameof(ReviewAllChanges),
+                   new
+                   {
+                       projectRecordId = model.ModificationDetails.ProjectRecordId,
+                       irasId = model.ModificationDetails.IrasId,
+                       shortTitle = model.ModificationDetails.ShortTitle,
+                       projectModificationId = duplicateModification.Id
+                   });
             }
         }
-
-        if (isSaveForLater)
-        {
-            await projectModificationsService.UpdateModificationStatus
-                (
-                    model.ProjectRecordId,
-                    Guid.Parse(model.ModificationId),
-                    ModificationStatus.RequestRevisions,
-                    model.RevisionDescription,
-                    model.ReasonNotApproved,
-                    model.ApplicantRevisionResponse
-                );
-            return RedirectToRoute("pov:postapproval", new { projectRecordId = model.ProjectRecordId });
-        }
-
-        return RedirectToAction(nameof(SendModificationToSponsor), new
-        {
-            projectRecordId = model.ProjectRecordId,
-            projectModificationId = Guid.Parse(model.ModificationId),
-            applicantRevisionResponse = model.ApplicantRevisionResponse
-        });
+        return this.ServiceError(_duplicateModifictionError);
     }
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
