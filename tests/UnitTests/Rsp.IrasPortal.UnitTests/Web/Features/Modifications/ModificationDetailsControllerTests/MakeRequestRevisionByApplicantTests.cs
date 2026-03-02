@@ -78,7 +78,6 @@ public class MakeRequestRevisionByApplicantTests : TestServiceBase<ModificationD
             [TempDataKeys.ShortProjectTitle] = "Test Project",
         };
         Sut.TempData = tempData;
-        var modId = Guid.NewGuid();
         Mocker
           .GetMock<IProjectModificationsService>()
           .Setup(s => s.GetModification(It.IsAny<string>(), It.IsAny<Guid>()))
@@ -99,5 +98,46 @@ public class MakeRequestRevisionByApplicantTests : TestServiceBase<ModificationD
         // Assert
         Assert.IsType<StatusCodeResult>(result);
         Mocker.GetMock<IProjectModificationsService>().Verify(s => s.GetModification(It.IsAny<string>(), It.IsAny<Guid>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RequestForRevision_WhenContentIsNull_ReturnsBadRequestServiceError()
+    {
+        // Arrange
+        var projectRecordId = "PR123";
+        var irasId = "IRAS456";
+        var shortTitle = "Sample Short Title";
+        var modificationId = Guid.NewGuid();
+        var httpContext = new DefaultHttpContext { Session = new InMemorySession() };
+        httpContext.User = new ClaimsPrincipal(
+        new ClaimsIdentity());
+        Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
+        var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.IrasId] = "123456",
+            [TempDataKeys.ShortProjectTitle] = "Test Project",
+        };
+        Sut.TempData = tempData;
+
+        // Mock service to return success but with Content = null
+        Mocker
+          .GetMock<IProjectModificationsService>()
+          .Setup(s => s.GetModification(It.IsAny<string>(), It.IsAny<Guid>()))
+          .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
+          {
+              StatusCode = HttpStatusCode.OK,
+              Content = null
+          });
+
+        // Act
+        var result = await Sut.RequestForRevision(
+            projectRecordId,
+            irasId,
+            shortTitle,
+            modificationId);
+
+        // Assert
+        var status = result.ShouldBeOfType<StatusCodeResult>();
+        status.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
     }
 }
