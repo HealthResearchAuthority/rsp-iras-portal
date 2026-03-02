@@ -61,6 +61,22 @@ public class ReviewAllChangesController : ModificationsControllerBase
         Error = "Unable to duplicate modification from session."
     };
 
+    public ReviewAllChangesController
+    (
+        IProjectModificationsService projectModificationsService,
+        ICmsQuestionsetService cmsQuestionsetService,
+        IRespondentService respondentService,
+        IValidator<QuestionnaireViewModel> validator,
+        IFeatureManager featureManager,
+        IViewHelper viewHelper,
+        IValidator<ModificationDetailsViewModel> modificationValidator
+    ) : base(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
+    {
+        _respondentService = respondentService;
+        _viewHelper = viewHelper;
+        SetModificationValidator(modificationValidator);
+    }
+
     [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
     [HttpGet]
     public async Task<IActionResult> ReviewAllChanges
@@ -530,9 +546,9 @@ public class ReviewAllChangesController : ModificationsControllerBase
             });
         }
 
-        var html = await viewHelper.RenderViewAsString("_ReviewModificationPdf", modification, ControllerContext);
+        var html = await _viewHelper.RenderViewAsString("_ReviewModificationPdf", modification, ControllerContext);
 
-        var pdf = await viewHelper.GeneratePdf(html, $"Modification ID: {modification.ModificationIdentifier}");
+        var pdf = await _viewHelper.GeneratePdf(html, $"Modification ID: {modification.ModificationIdentifier}");
 
         return File
         (

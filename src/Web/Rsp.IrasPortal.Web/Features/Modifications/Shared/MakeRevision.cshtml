@@ -66,60 +66,64 @@
 </div>
 
 <form method="post" asp-route="pmc:sendrevisionresponsetosponsor" class="govuk-button-group">
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
             <div id="revision-description-label">
-                @Html.Raw(description?.Value)
+        @Html.Raw(description?.Value)
             </div>
-            <div class="govuk-form-group govuk-character-count"
-                 data-module="govuk-character-count"
-                 data-maxlength="500"
-                 error-class-for="ApplicantRevisionResponse">
+        <div class="govuk-form-group govuk-character-count"
+             data-module="govuk-character-count"
+             data-maxlength="500"
+             error-class-for="ApplicantRevisionResponse">
 
-                @Html.ValidationMessageFor(model => model.ApplicantRevisionResponse, "", new { @class = "govuk-error-message" })
-                <textarea asp-for="ApplicantRevisionResponse"
-                          name="ApplicantRevisionResponse"
-                          class="govuk-textarea govuk-js-character-count"
-                          rows="5"
+            @Html.ValidationMessageFor(model => model.ApplicantRevisionResponse, "", new { @class = "govuk-error-message" })
+            <textarea asp-for="ApplicantRevisionResponse"
+                      name="ApplicantRevisionResponse"
+                      class="govuk-textarea govuk-js-character-count"
+                      rows="5"
                           aria-describedby="with-hint-info with-hint-hint"
                           aria-labelledby="revision-description-label">
-                 </textarea>
-                <noscript>
-                    <div id="ApplicantRevisionResponse-info"
-                         class="govuk-hint govuk-character-count__message">
-                        <p class='govuk-hint'>You can enter up to 500 characters</p>
-                    </div>
-                </noscript>
-
+                            </textarea>
+            <noscript>
                 <div id="ApplicantRevisionResponse-info"
-                     aria-hidden="true"
                      class="govuk-hint govuk-character-count__message">
+                    <p class='govuk-hint'>You can enter up to 500 characters</p>
                 </div>
+            </noscript>
+
+            <div id="ApplicantRevisionResponse-info"
+                 aria-hidden="true"
+                 class="govuk-hint govuk-character-count__message">
             </div>
-            <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
-            <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
-            <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
-            <input type="hidden" name="IrasId" value="@Model.IrasId" />
-            <input type="hidden" name="RtsId" value="@Model.RtsId" />
+        </div>
+    </div>
+</div>
+<div class="govuk-button-group">
+    <form method="post" class="govuk-button-group">
+        <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
+        <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+        <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
+        <input type="hidden" name="IrasId" value="@Model.IrasId" />
+        <input type="hidden" name="RtsId" value="@Model.RtsId" />
             <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
-            @if (Model.NoChangesToSubmit)
-            {
-                <a asp-route="pmc:nochangestosubmit" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
-                    Send modification to sponsor
-                </a>
-            }
-            else if (Model.ChangesReadyForSubmission)
-            {
+        @if (Model.NoChangesToSubmit)
+        {
+            <a asp-route="pmc:nochangestosubmit" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
+                Send modification to sponsor
+            </a>
+        }
+        else if (Model.ChangesReadyForSubmission)
+        {
                 <button type="submit" class="govuk-button" data-module="govuk-button">
                     Send modification to sponsor
                 </button>
-            }
-            else
-            {
-                <a asp-route="pmc:unfinishedchanges" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
-                    Send modification to sponsor
-                </a>
-            }
+        }
+        else
+        {
+            <a asp-route="pmc:unfinishedchanges" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
+                Send modification to sponsor
+            </a>
+        }
 
             <button type="submit"
                     name="isSaveForLater"
@@ -129,7 +133,9 @@
             </button>
         </div>
     </div>
-</form>
+    </form>
+</div>
+
 <a asp-route="pmc:deletemodification"
    asp-route-projectRecordId="@Model.ProjectRecordId"
    asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
