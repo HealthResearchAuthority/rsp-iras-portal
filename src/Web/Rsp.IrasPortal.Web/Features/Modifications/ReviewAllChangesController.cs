@@ -25,13 +25,21 @@ namespace Rsp.Portal.Web.Features.Modifications;
 
 [Authorize(Policy = Workspaces.MyResearch)]
 [Route("/modifications/[action]", Name = "pmc:[action]")]
-public class ReviewAllChangesController : ModificationsControllerBase
+public class ReviewAllChangesController
+(
+    IProjectModificationsService projectModificationsService,
+    ICmsQuestionsetService cmsQuestionsetService,
+    IRespondentService respondentService,
+    IValidator<QuestionnaireViewModel> validator,
+    IFeatureManager featureManager,
+    IViewHelper viewHelper,
+    IValidator<ModificationDetailsViewModel> modificationValidator
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
 {
-    private readonly IRespondentService _respondentService;
-    private readonly IViewHelper _viewHelper;
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
     private const string CategoryId = "Sponsor reference";
+    private readonly IRespondentService _respondentService = respondentService;
 
     private readonly ServiceResponse _reviewOutcomeNotFoundError = new()
     {
@@ -470,8 +478,8 @@ public class ReviewAllChangesController : ModificationsControllerBase
             return RedirectToRoute("pmc:DocumentsScanInProgress");
         }
 
-        var viewModel = await BuildSponsorQuestionnaireViewModel(projectModificationId, projectRecordId, CategoryId);
-        var isValid = await ValidateQuestionnaires(viewModel, true);
+        var viewModel = await this.BuildSponsorQuestionnaireViewModel(projectModificationId, projectRecordId, CategoryId);
+        var isValid = await this.ValidateQuestionnaire(validator, viewModel, true);
 
         if (!isValid)
         {
@@ -546,9 +554,9 @@ public class ReviewAllChangesController : ModificationsControllerBase
             });
         }
 
-        var html = await _viewHelper.RenderViewAsString("_ReviewModificationPdf", modification, ControllerContext);
+        var html = await viewHelper.RenderViewAsString("_ReviewModificationPdf", modification, ControllerContext);
 
-        var pdf = await _viewHelper.GeneratePdf(html, $"Modification ID: {modification.ModificationIdentifier}");
+        var pdf = await viewHelper.GeneratePdf(html, $"Modification ID: {modification.ModificationIdentifier}");
 
         return File
         (
@@ -567,7 +575,7 @@ public class ReviewAllChangesController : ModificationsControllerBase
         if (!validation)
         {
             var context = new ValidationContext<ModificationDetailsViewModel>(model);
-            var validationResult = await ModificationValidator.ValidateAsync(context);
+            var validationResult = await modificationValidator.ValidateAsync(context);
             if (!validationResult.IsValid)
             {
                 foreach (var error in validationResult.Errors)

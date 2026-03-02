@@ -17,7 +17,6 @@ using Rsp.Portal.Web.Features.Modifications.Helpers;
 using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
-using Rsp.Portal.Web.Validators.Helpers;
 
 namespace Rsp.Portal.Web.Features.Modifications;
 
@@ -39,15 +38,6 @@ public abstract class ModificationsControllerBase
     private const string DocumentDetailsSection = "pdm-document-metadata";
     protected readonly IProjectModificationsService projectModificationsService = projectModificationsService;
     protected readonly ICmsQuestionsetService cmsQuestionsetService = cmsQuestionsetService;
-    protected IValidator<ModificationDetailsViewModel> ModificationValidator { get; private set; }
-
-    protected void SetModificationValidator(
-        IValidator<ModificationDetailsViewModel> modificationDetailsViewModel)
-    {
-        ModificationValidator = modificationDetailsViewModel;
-    }
-
-    protected IValidator<QuestionnaireViewModel> QuestionnaireValidator { get; } = validator;
 
     protected async Task<(IActionResult?, ModificationDetailsViewModel?)> GetModificationDetails(Guid projectModificationId, string irasId, string shortTitle, string projectRecordId)
     {
@@ -100,58 +90,6 @@ public abstract class ModificationsControllerBase
             RequestForInformationReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? [],
             ApplicantRevisionResponse = modification?.ApplicantRevisionResponse
         });
-    }
-
-    protected async Task<bool> ValidateQuestionnaires(
-            QuestionnaireViewModel model,
-            bool validateMandatory = false,
-            bool addModelErrors = true,
-            CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(model);
-
-        var context = new ValidationContext<QuestionnaireViewModel>(model);
-        if (validateMandatory)
-        {
-            context.RootContextData["ValidateMandatoryOnly"] = true;
-        }
-        context.RootContextData["questions"] = model.Questions;
-
-        var result = await QuestionnaireValidator.ValidateAsync(context, cancellationToken);
-
-        if (!result.IsValid && addModelErrors)
-        {
-            // Group failures by final model-state key to mutate ModelState once per key
-            var errorMap = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var failure in result.Errors)
-            {
-                string key = failure.CustomState is QuestionViewModel qvm
-                    ? PropertyNameHelper.AdjustPropertyName(failure.PropertyName, qvm.Index)
-                    : failure.PropertyName;
-
-                if (!errorMap.TryGetValue(key, out var list))
-                {
-                    list = new List<string>();
-                    errorMap[key] = list;
-                }
-                if (!string.IsNullOrWhiteSpace(failure.ErrorMessage))
-                {
-                    list.Add(failure.ErrorMessage);
-                }
-            }
-
-            foreach (var kvp in errorMap)
-            {
-                ModelState.Remove(kvp.Key);
-                foreach (var message in kvp.Value)
-                {
-                    ModelState.AddModelError(kvp.Key, message);
-                }
-            }
-        }
-
-        return result.IsValid;
     }
 
     /// <summary>
