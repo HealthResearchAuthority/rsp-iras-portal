@@ -15,6 +15,7 @@ using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Domain.Enums;
+using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
@@ -285,7 +286,7 @@ public class DocumentsController
         {
             ModificationAddDocumentDetailsViewModel? documentDetail = allDocumentDetails[docIndex];
             var isValid = await this.ValidateQuestionnaire(validator, documentDetail, true);
-            if (supersedeEnabled)
+            if (supersedeEnabled && documentDetail.ShowSupersedeDocumentSection)
             {
                 if (documentDetail.ReplacesDocumentId is null
                     || string.IsNullOrEmpty(documentDetail.DocumentType)
@@ -983,6 +984,57 @@ public class DocumentsController
             : RedirectAfterSubmit(viewModel);
     }
 
+    [Authorize(Policy = Workspaces.SystemAdministration)]
+    [HttpGet]
+    public async Task<IActionResult> GetAuditHistory
+    (
+        string projectRecordId,
+        string? backRoute,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(ModificationDocumentsAuditTrailDto.DateTimeStamp),
+        string sortDirection = SortDirections.Descending
+    )
+    {
+        var context = GetProjectContext();
+
+        var auditHistoryResponse = await projectModificationsService.GetProjectDocumentsAuditTrail
+        (
+            projectRecordId,
+            pageNumber,
+            pageSize,
+            sortField,
+            sortDirection
+        );
+
+        if (!auditHistoryResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(auditHistoryResponse);
+        }
+
+        var viewModel = new ProjectDocumentsAuditTrailViewModel
+        {
+            AuditTrails = auditHistoryResponse?.Content?.Items ?? [],
+            Pagination = new PaginationViewModel(pageNumber, pageSize, auditHistoryResponse?.Content?.TotalCount ?? 0)
+            {
+                SortDirection = sortDirection,
+                SortField = sortField,
+                FormName = "projectdocumentsaudit-selection",
+                RouteName = "pmc:getaudithistory",
+                AdditionalParameters = new Dictionary<string, string>() { { "projectRecordId", projectRecordId } }
+            },
+
+            ProjectOverviewModel = new ProjectOverviewModel
+            {
+                ProjectRecordId = context.ProjectRecordId,
+                ProjectTitle = context.ShortTitle,
+                IrasId = int.TryParse(context.IrasId, out var irasId) ? irasId : null
+            }
+        };
+
+        return View("DocumentAuditHistory", viewModel);
+    }
+
     private async Task SaveLinkedDocumentAnswers
     (
         IEnumerable<ProjectModificationDocumentAnswerDto> currentAnswers,
@@ -1210,7 +1262,7 @@ public class DocumentsController
                     projectModificationId,
                     fileName,
                     DocumentAuditEvents.UploadFailedUnsupported,
-                    user));
+                    HttpContext.Items[ContextItemKeys.Email]?.ToString() ?? string.Empty));
 
                 continue;
             }
@@ -1227,7 +1279,7 @@ public class DocumentsController
                     projectModificationId,
                     fileName,
                     DocumentAuditEvents.UploadFailedDuplicate,
-                    user));
+                    HttpContext.Items[ContextItemKeys.Email]?.ToString() ?? string.Empty));
 
                 continue;
             }
@@ -1243,7 +1295,7 @@ public class DocumentsController
                     projectModificationId,
                     fileName,
                     DocumentAuditEvents.UploadFailedFileSize,
-                    user));
+                    HttpContext.Items[ContextItemKeys.Email]?.ToString() ?? string.Empty));
 
                 continue;
             }
@@ -1256,7 +1308,7 @@ public class DocumentsController
                 projectModificationId,
                 fileName,
                 DocumentAuditEvents.UploadSuccessful,
-                user));
+                HttpContext.Items[ContextItemKeys.Email]?.ToString() ?? string.Empty));
         }
 
         // 4. Combined file size check
@@ -1993,7 +2045,7 @@ public class DocumentsController
                 DateTimeStamp = DateTime.UtcNow,
                 Description = DocumentAuditEvents.DocumentSuperseded,
                 FileName = answersResponse.Content?.FileName ?? string.Empty,
-                User = HttpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty
+                User = HttpContext.Items[ContextItemKeys.Email]?.ToString() ?? string.Empty
             });
         }
 

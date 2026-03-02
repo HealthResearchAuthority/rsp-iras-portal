@@ -344,6 +344,14 @@ public interface IProjectModificationsServiceClient
     /// <param name="projectRecordId">The unique identifier of the project</param>
     /// <returns>A list of modification audit trail records and total record count</returns>
     [Get("/documents/projectdocumentsaudittrail")]
+    public Task<ApiResponse<ProjectDocumentsAuditTrailResponse>> GetProjectDocumentsAuditTrail
+    (
+       string projectRecordId,
+       int pageNumber,
+       int pageSize,
+       string sortField,
+       string sortDirection
+    );
     public Task<ApiResponse<ProjectDocumentsAuditTrailResponse>> GetProjectDocumentsAuditTrail(Guid projectRecordId);
 
     /// <summary>

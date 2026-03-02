@@ -457,9 +457,23 @@ public class ProjectModificationsService(
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<ProjectDocumentsAuditTrailResponse>> GetProjectDocumentsAuditTrail(Guid projectRecordId)
+    public async Task<ServiceResponse<ProjectDocumentsAuditTrailResponse>> GetProjectDocumentsAuditTrail
+    (
+       string projectRecordId,
+       int pageNumber,
+       int pageSize,
+       string sortField,
+       string sortDirection
+    )
     {
-        var apiResponse = await projectModificationsServiceClient.GetProjectDocumentsAuditTrail(projectRecordId);
+        var apiResponse = await projectModificationsServiceClient.GetProjectDocumentsAuditTrail
+        (
+            projectRecordId,
+            pageNumber,
+            pageSize,
+            sortField,
+            sortDirection
+        );
 
         return apiResponse.ToServiceResponse();
     }
