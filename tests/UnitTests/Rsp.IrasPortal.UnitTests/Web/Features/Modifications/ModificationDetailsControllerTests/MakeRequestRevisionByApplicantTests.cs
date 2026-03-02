@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.Portal.Application.Constants;
@@ -16,13 +17,16 @@ public class MakeRequestRevisionByApplicantTests : TestServiceBase<ModificationD
     public async Task RequestForRevision_WhenPrepareReturnsActionResult_ReturnsThatResult()
     {
         // Arrange
-        var ctx = new DefaultHttpContext();
-        ctx.Session = new InMemorySession(); // ensure Session is available to controller
-        Sut.ControllerContext = new() { HttpContext = ctx };
-        Sut.TempData = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>())
+        var httpContext = new DefaultHttpContext { Session = new InMemorySession() };
+        httpContext.User = new ClaimsPrincipal(
+        new ClaimsIdentity());
+        Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
+        var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectRecordId] = "PR1"
+            [TempDataKeys.IrasId] = "123456",
+            [TempDataKeys.ShortProjectTitle] = "Test Project",
         };
+        Sut.TempData = tempData;
         var modId = Guid.NewGuid();
         Mocker
           .GetMock<IProjectModificationsService>()
@@ -50,6 +54,8 @@ public class MakeRequestRevisionByApplicantTests : TestServiceBase<ModificationD
         // Act
         var result = await Sut.RequestForRevision(
                 projectRecordId: "PRJ-1",
+                irasId: "12345",
+                shortTitle: "test",
                 projectModificationId: Guid.NewGuid());
 
         // Assert
@@ -62,13 +68,16 @@ public class MakeRequestRevisionByApplicantTests : TestServiceBase<ModificationD
     public async Task RequestForRevision_WhenModificationIsNull_ReturnsBadRequestServiceError()
     {
         // Arrange
-        var ctx = new DefaultHttpContext();
-        ctx.Session = new InMemorySession(); // ensure Session is available to controller
-        Sut.ControllerContext = new() { HttpContext = ctx };
-        Sut.TempData = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>())
+        var httpContext = new DefaultHttpContext { Session = new InMemorySession() };
+        httpContext.User = new ClaimsPrincipal(
+        new ClaimsIdentity());
+        Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
+        var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectRecordId] = "PR1"
+            [TempDataKeys.IrasId] = "123456",
+            [TempDataKeys.ShortProjectTitle] = "Test Project",
         };
+        Sut.TempData = tempData;
         var modId = Guid.NewGuid();
         Mocker
           .GetMock<IProjectModificationsService>()
@@ -80,8 +89,11 @@ public class MakeRequestRevisionByApplicantTests : TestServiceBase<ModificationD
           });
 
         // Act
+        // Act
         var result = await Sut.RequestForRevision(
                 projectRecordId: "PRJ-1",
+                irasId: "12345",
+                shortTitle: "test",
                 projectModificationId: Guid.NewGuid());
 
         // Assert

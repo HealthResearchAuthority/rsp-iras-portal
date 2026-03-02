@@ -361,7 +361,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<ModificationDetailsViewModel>>(), default))
             .ReturnsAsync(validationResult);
 
-        Sut.SetModificationValidator(mockValidator.Object);
+        //Sut.SetModificationValidator(mockValidator.Object);
 
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
@@ -408,7 +408,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<ModificationDetailsViewModel>>(), default))
             .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
-        Sut.SetModificationValidator(mockValidator.Object);
+        //Sut.SetModificationValidator(mockValidator.Object);
 
         var model = new ModificationDetailsViewModel
         {

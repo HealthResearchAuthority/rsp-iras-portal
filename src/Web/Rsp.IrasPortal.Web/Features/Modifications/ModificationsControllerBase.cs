@@ -41,7 +41,7 @@ public abstract class ModificationsControllerBase
     protected readonly ICmsQuestionsetService cmsQuestionsetService = cmsQuestionsetService;
     protected IValidator<ModificationDetailsViewModel> ModificationValidator { get; private set; }
 
-    public void SetModificationValidator(
+    protected void SetModificationValidator(
         IValidator<ModificationDetailsViewModel> modificationDetailsViewModel)
     {
         ModificationValidator = modificationDetailsViewModel;

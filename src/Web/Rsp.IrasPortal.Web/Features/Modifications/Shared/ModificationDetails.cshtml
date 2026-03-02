@@ -107,7 +107,7 @@ else
         }
 
         <h1 class="govuk-heading-l">@heading</h1>
-
+        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
         @{
             ViewData[ViewDataKeys.ShowModificationStatus] = true;
             <partial name="_ProjectModificationSummary" model="Model" view-data="ViewData" />

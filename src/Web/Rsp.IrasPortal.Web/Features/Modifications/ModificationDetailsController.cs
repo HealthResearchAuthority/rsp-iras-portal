@@ -240,7 +240,10 @@ public class ModificationDetailsController
     [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
     [FeatureGate(FeatureFlags.RequestRevisions)]
     [HttpGet]
-    public async Task<IActionResult> RequestForRevision(string projectRecordId, Guid projectModificationId)
+    public async Task<IActionResult> RequestForRevision(string projectRecordId,
+    string irasId,
+    string shortTitle,
+    Guid projectModificationId)
     {
         var modification = await projectModificationsService.GetModification(projectRecordId, projectModificationId);
 
@@ -248,7 +251,24 @@ public class ModificationDetailsController
         {
             return this.ServiceError(modification);
         }
+        if (modification.Content is null)
+        {
+            return this.ServiceError(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Error = $"There is no modification for modification id {projectModificationId}",
+            });
+        }
 
-        return View("MakeRevisonByApplicant", modification);
+        var model = new ModificationDetailsViewModel
+        {
+            IrasId = irasId,
+            ShortTitle = shortTitle,
+            RevisionDescription = modification.Content.RevisionDescription,
+            ProjectRecordId = projectRecordId,
+            ModificationId = projectModificationId.ToString(),
+            ModificationIdentifier = modification.Content.ModificationIdentifier
+        };
+        return View("MakeRevisonByApplicant", model);
     }
 }

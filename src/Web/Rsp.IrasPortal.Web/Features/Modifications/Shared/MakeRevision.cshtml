@@ -39,10 +39,13 @@
         </div>
         <div class="govuk-button-group">
             <form method="get">
-                @{
-                    ViewBag.Style = "govuk-button govuk-button--secondary";
-                }
-                <partial name="_SubmitButton" model="@("pmc:projectdocument", "Add documents", new Dictionary<string, string> { })" />
+
+                <button type="submit"
+                        name="isSaveForLater"
+                        value="true"
+                        class="govuk-button govuk-button--secondary" asp-route="pmc:projectdocument">
+                    Add documents
+                </button>
             </form>
         </div>
     }
@@ -61,86 +64,64 @@
     </div>
 </div>
 
-<div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        @Html.Raw(description?.Value)
-        <div class="govuk-form-group govuk-character-count"
-             data-module="govuk-character-count"
-             data-maxlength="500"
-             error-class-for="ApplicantRevisionResponse">
+<form method="post" asp-route="pmc:sendRevisionresponsetosponsor" class="govuk-button-group">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            @Html.Raw(description?.Value)
+            <div class="govuk-form-group govuk-character-count"
+                 data-module="govuk-character-count"
+                 data-maxlength="500"
+                 error-class-for="ApplicantRevisionResponse">
 
-            @Html.ValidationMessageFor(model => model.ApplicantRevisionResponse, "", new { @class = "govuk-error-message" })
-            <textarea asp-for="ApplicantRevisionResponse"
-                      name="ApplicantRevisionResponse"
-                      class="govuk-textarea govuk-js-character-count"
-                      rows="5"
-                      aria-describedby="with-hint-info with-hint-hint">
+                @Html.ValidationMessageFor(model => model.ApplicantRevisionResponse, "", new { @class = "govuk-error-message" })
+                <textarea asp-for="ApplicantRevisionResponse"
+                          name="ApplicantRevisionResponse"
+                          class="govuk-textarea govuk-js-character-count"
+                          rows="5"
+                          aria-describedby="with-hint-info with-hint-hint">
                             </textarea>
-            <noscript>
-                <div id="ApplicantRevisionResponse-info"
-                     class="govuk-hint govuk-character-count__message">
-                    <p class='govuk-hint'>You can enter up to 500 characters</p>
-                </div>
-            </noscript>
+                <noscript>
+                    <div id="ApplicantRevisionResponse-info"
+                         class="govuk-hint govuk-character-count__message">
+                        <p class='govuk-hint'>You can enter up to 500 characters</p>
+                    </div>
+                </noscript>
 
-            <div id="ApplicantRevisionResponse-info"
-                 aria-hidden="true"
-                 class="govuk-hint govuk-character-count__message">
+                <div id="ApplicantRevisionResponse-info"
+                     aria-hidden="true"
+                     class="govuk-hint govuk-character-count__message">
+                </div>
             </div>
+            <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
+            <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+            <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
+            <input type="hidden" name="IrasId" value="@Model.IrasId" />
+            <input type="hidden" name="RtsId" value="@Model.RtsId" />
+            @if (Model.NoChangesToSubmit)
+            {
+                <a asp-route="pmc:nochangestosubmit" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
+                    Send modification to sponsor
+                </a>
+            }
+            else if (Model.ChangesReadyForSubmission)
+            {
+                <button type="submit" class="govuk-button" data-module="govuk-button">
+                    Send modification to sponsor
+                </button>
+            }
+            else
+            {
+                <a asp-route="pmc:unfinishedchanges" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
+                    Send modification to sponsor
+                </a>
+            }
+
+            @{ ViewBag.Style = "govuk-button govuk-button--secondary"; }
+
+            <partial name="_SubmitButton" class="govuk-button" model="@("pmc:saveforlater", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId, ["routeName"] = "pov:postapproval" })" />
         </div>
     </div>
-</div>
-<div class="govuk-button-group">
-    <form method="post" class="govuk-button-group">
-        <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
-        <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
-        <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
-        <input type="hidden" name="IrasId" value="@Model.IrasId" />
-        <input type="hidden" name="RtsId" value="@Model.RtsId" />
-        @if (Model.NoChangesToSubmit)
-        {
-            <a asp-route="pmc:nochangestosubmit" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
-                Send modification to sponsor
-            </a>
-        }
-        else if (Model.ChangesReadyForSubmission)
-        {
-            <partial name="_SubmitButton"
-                     model='("pmc:sendrevisionresponsetosponsor",
-                             "Send modification to sponsor",
-                             new Dictionary<string, string>
-                             {
-                                 ["projectModificationId"] = Model.ModificationId!,
-                                 ["projectRecordId"] = Model.ProjectRecordId
-                             })'
-                     view-data='new ViewDataDictionary(ViewData)
-                     {
-                         ["CssClass"] = "govuk-button" // PRIMARY (green)
-                     }' />
-
-        }
-        else
-        {
-            <a asp-route="pmc:unfinishedchanges" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
-                Send modification to sponsor
-            </a>
-        }
-
-        <partial name="_SubmitButton"
-                 model='("pmc:saveforlater",
-                           "Save for later",
-                           new Dictionary<string, string>
-                           {
-                               ["projectRecordId"] = Model.ProjectRecordId,
-                               ["routeName"] = "pov:postapproval"
-                           })'
-                 view-data='new ViewDataDictionary(ViewData)
-                {
-                ["CssClass"] = "govuk-button govuk-button--secondary" // GREY
-                }' />
-    </form>
-</div>
-
+</form>
 <a asp-route="pmc:deletemodification"
    asp-route-projectRecordId="@Model.ProjectRecordId"
    asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
