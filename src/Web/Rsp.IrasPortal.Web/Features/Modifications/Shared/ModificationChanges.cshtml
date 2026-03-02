@@ -91,7 +91,7 @@
                     </dd>
                 </div>
                 @if ((Model.ModificationChanges.Any() && showModificationDetails.GetValueOrDefault()) ||
-		     (Model.Status is ModificationStatus.RequestRevisions or ModificationStatus.ReviseAndAuthorise))
+(Model.Status is ModificationStatus.RequestRevisions or ModificationStatus.ReviseAndAuthorise))
                 {
                     @foreach (var question in change.Questions)
                     {
