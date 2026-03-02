@@ -102,7 +102,7 @@ public abstract class ModificationsControllerBase
         });
     }
 
-    protected async Task<bool> ValidateQuestionnaire1(
+    protected async Task<bool> ValidateQuestionnaires(
             QuestionnaireViewModel model,
             bool validateMandatory = false,
             bool addModelErrors = true,
