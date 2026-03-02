@@ -14,7 +14,14 @@
         }
         else
         {
-            <h1 class="govuk-heading-l">Review all changes</h1>
+            @if (TempData[TempDataKeys.IsDuplicateModification] is not null)
+            {
+                <h1 class="govuk-heading-l">Review modification</h1>
+            }
+            else
+            {
+                <h1 class="govuk-heading-l">Review all changes</h1>
+            }
         }
 
         @{
