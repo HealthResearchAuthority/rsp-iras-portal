@@ -455,7 +455,7 @@ public class ReviewAllChangesController : ModificationsControllerBase
         }
 
         var viewModel = await BuildSponsorQuestionnaireViewModel(projectModificationId, projectRecordId, CategoryId);
-        var isValid = await ValidateQuestionnaire1(viewModel, true);
+        var isValid = await ValidateQuestionnaires(viewModel, true);
 
         if (!isValid)
         {
