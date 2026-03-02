@@ -130,59 +130,28 @@ public static class ControllerExtensions
         // this will trigger the fluentvalidation using the injected validator if configured
         var result = await validator.ValidateAsync(context);
 
-        if (!result.IsValid && addModelErrors)
+        if (!result.IsValid)
         {
-            // We cannot safely remove/add ModelState entries inside the raw error loop
-            // because FluentValidation may return multiple failures for the SAME property.
-            // Repeated Remove + Add on the same key in one pass can corrupt the internal
-            // ModelState error collection and cause:
-            // - Index was outside the bounds of the array
-            // - Destination array was not long enough
-            //
-            // So we first GROUP errors by their final (adjusted) property key,
-            // then mutate ModelState only ONCE per key.
-            var errorMap = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var error in result.Errors)
+            if (addModelErrors)
             {
-                string key;
-
-                if (error.CustomState is QuestionViewModel qvm)
+                // Copy the validation results into ModelState.
+                // ASP.NET uses the ModelState collection to populate
+                // error messages in the View.
+                foreach (var error in result.Errors)
                 {
-                    key = PropertyNameHelper.AdjustPropertyName(error.PropertyName, qvm.Index);
-                }
-                else
-                {
-                    // Fallback to the original property name if no custom state is provided
-                    key = error.PropertyName;
-                }
+                    if (error.CustomState is QuestionViewModel qvm)
+                    {
+                        var adjustedPropertyName = PropertyNameHelper.AdjustPropertyName(error.PropertyName, qvm.Index);
 
-                // This prevents duplicate ModelState mutations for the same key.
-                if (!errorMap.TryGetValue(key, out var messages))
-                {
-                    messages = new List<string>();
-                    errorMap[key] = messages;
-                }
-
-                messages.Add(error.ErrorMessage);
-            }
-
-            // Now safely update ModelState once per key
-            foreach (var kvp in errorMap)
-            {
-                var modelStateKey = kvp.Key;
-                var messages = kvp.Value;
-
-                // Remove the existing entry only ONCE per key.
-                // Remove() is safe even if the key does not exist.
-                controller.ModelState.Remove(modelStateKey);
-
-                // Add all validation messages for this key.
-                // ModelState supports multiple errors per field, so we append them
-                // instead of overwriting or re-removing the key.
-                foreach (var message in messages)
-                {
-                    controller.ModelState.AddModelError(modelStateKey, message);
+                        if (!controller.ModelState.ContainsKey(adjustedPropertyName))
+                        {
+                            controller.ModelState.AddModelError(adjustedPropertyName, error.ErrorMessage);
+                        }
+                    }
+                    else if (!controller.ModelState.ContainsKey(error.PropertyName))
+                    {
+                        controller.ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                    }
                 }
             }
 
