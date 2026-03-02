@@ -307,11 +307,18 @@ public abstract class ModificationsControllerBase
             return [];
 
         // Evaluate each document's completeness
-        var tasks = response.Content
-            .OrderBy(a => a.FileName, StringComparer.OrdinalIgnoreCase)
-            .Select(a => GetDocumentSummary(a, questionnaire));
+        var documents = response.Content.OrderBy(a => a.FileName, StringComparer.OrdinalIgnoreCase);
 
-        return [.. await Task.WhenAll(tasks)];
+        var documentSummaryItems = new List<DocumentSummaryItemDto>();
+
+        foreach (var doc in documents)
+        {
+            var summary = await GetDocumentSummary(doc, questionnaire);
+
+            documentSummaryItems.Add(summary);
+        }
+
+        return documentSummaryItems;
     }
 
     protected async Task<QuestionnaireViewModel> PopulateAnswersFromDocuments(
