@@ -362,7 +362,7 @@ else
 </authorized>
 
 <feature name="@FeatureFlags.RequestRevisions">
-    <authorized role-in="@(new []{Roles.Applicant, Roles.Sponsor})"
+    <authorized role-in="@(new []{Roles.Applicant})"
                 status-for="@Model.Status"
                 status-is="@ModificationStatus.RequestRevisions">
 
