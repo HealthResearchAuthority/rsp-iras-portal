@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
+using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -90,10 +91,11 @@ public class ModificationDetailsController
         }
 
         // If its sponsor revision - validate if sponsor is authoriser
-        if (modification.Status is ModificationStatus.ReviseAndAuthorise && sponsorOrganisationUserId != null && rtsId != null)
+        if ((modification.Status is ModificationStatus.ReviseAndAuthorise && sponsorOrganisationUserId != null && rtsId != null) ||
+            (modification.Status is ModificationStatus.RequestRevisions))
         {
             // Add sponsor details
-            modification.SponsorOrganisationUserId = sponsorOrganisationUserId.Value.ToString();
+            modification.SponsorOrganisationUserId = sponsorOrganisationUserId?.ToString();
             modification.RtsId = rtsId;
 
             var revisionDescription = TempData[TempDataKeys.RevisionDescription];
@@ -137,8 +139,8 @@ public class ModificationDetailsController
                     { "irasId", irasId },
                     { "shortTitle", shortTitle },
                     { "projectModificationId", projectModificationId.ToString() },
-                    { "sponsorOrganisationUserId", sponsorOrganisationUserId.Value.ToString() },
-                    { "rtsId", rtsId }
+                    { "sponsorOrganisationUserId", sponsorOrganisationUserId.ToString()?? string.Empty },
+                    { "rtsId", rtsId ?? string.Empty }
                 }
             };
         }
@@ -233,5 +235,20 @@ public class ModificationDetailsController
             sponsorOrganisationUserId = viewModel.SponsorOrganisationUserId,
             rtsId = viewModel.RtsId
         });
+    }
+
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
+    [FeatureGate(FeatureFlags.RequestRevisions)]
+    [HttpGet]
+    public async Task<IActionResult> RequestForRevision(string projectRecordId, Guid projectModificationId)
+    {
+        var modification = await projectModificationsService.GetModification(projectRecordId, projectModificationId);
+
+        if (!modification.IsSuccessStatusCode)
+        {
+            return this.ServiceError(modification);
+        }
+
+        return View("MakeRevisonByApplicant", modification);
     }
 }

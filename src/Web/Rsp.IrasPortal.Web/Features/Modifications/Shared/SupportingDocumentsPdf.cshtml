@@ -4,7 +4,6 @@
 @using Rsp.Portal.Web.Helpers
 @model ModificationDetailsViewModel
 
-
 @{
     bool isRevisionBySponsor = ViewBag.IsRevisionBySponsor as bool? ?? false;
 }
@@ -84,7 +83,7 @@
                                             <td class="govuk-table__cell">
                                             </td>
                                         }
-                                        @if (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise)
+                                        @if ((isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise) || Model.Status is ModificationStatus.RequestRevisions)
                                         {
                                             <td class="govuk-table__cell">
                                             </td>

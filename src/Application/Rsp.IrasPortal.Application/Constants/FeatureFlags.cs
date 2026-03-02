@@ -47,8 +47,11 @@ public static class FeatureFlags
     // Show back button in project overview page
     public const string BackButton = "ProjectOverview.BackButton";
 
-    //All to enter reason for not authorising the modification
+    //Allow to enter reason for not authorising the modification
     public const string NotAuthorisedReason = "Modifications.NotAuthorisedReason";
+
+    //Allow to enter revision response by appllicant for the modification
+    public const string RequestRevisions = "Modifications.RequestRevisions";
 
     //Allows to display malware scanning results in modification documents table
     public const string DocumentsMalware = "Modifications.DocumentsMalware";

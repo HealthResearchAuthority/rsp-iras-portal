@@ -341,9 +341,17 @@ else
 
                                     var modificationReviewRoute = "pmc:modificationdetails";
 
-                                    if (modification.Status != ModificationStatus.InDraft)
+                                    if (modification.Status != ModificationStatus.InDraft && modification.Status != ModificationStatus.RequestRevisions)
                                     {
                                         modificationReviewRoute = "pmc:reviewallchanges";
+                                    }
+                                    else if (modification.Status == ModificationStatus.RequestRevisions)
+                                    {
+                                        modificationReviewRoute = "pmc:requestforrevision";
+                                    }
+                                    else
+                                    {
+                                        modificationReviewRoute = "pmc:modificationdetails";
                                     }
                                     if (modification.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions)
                                     {

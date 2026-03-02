@@ -7,23 +7,16 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-
-        @if (Model.Status != ModificationStatus.InDraft)
-        {
-            <h1 class="govuk-heading-l">Modification</h1>
-        }
-        else
-        {
-            @if (TempData[TempDataKeys.IsDuplicateModification] is not null)
+        @{
+            string heading = Model.Status switch
             {
-                <h1 class="govuk-heading-l">Review modification</h1>
-            }
-            else
-            {
-                <h1 class="govuk-heading-l">Review all changes</h1>
-            }
+                ModificationStatus.ReviseAndAuthorise => "Revise and authorise",
+                ModificationStatus.RequestRevisions => "Make revisions",
+                ModificationStatus.InDraft => "Review all changes",
+                _ => "Modification"
+            };
         }
-
+        <h1 class="govuk-heading-l">@heading</h1>
         @{
             <partial name="_ProjectModificationSummary" model="Model" viewData="ViewData" />
         }
@@ -31,11 +24,10 @@
         <feature name="@FeatureFlags.DownloadPack">
             @if (User.HasPermission(Permissions.MyResearch.Modifications_Download))
             {
-                <div
-                status-for="@Model.Status"  
-                status-in="@([ModificationStatus.WithSponsor,
+                <div status-for="@Model.Status"
+                     status-in="@([ModificationStatus.WithSponsor,
                         ModificationStatus.NotAuthorised,
-                        ModificationStatus.WithReviewBody, 
+                        ModificationStatus.WithReviewBody,
                         ModificationStatus.Approved,
                         ModificationStatus.NotApproved,
                         ModificationStatus.ReviseAndAuthorise,
@@ -91,7 +83,7 @@
 </div>
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-        @if (Model.Status != ModificationStatus.InDraft)
+        @if (Model.Status != ModificationStatus.InDraft && Model.Status != ModificationStatus.RequestRevisions)
         {
             <partial name="_NavigationTabPartial" model="Model" view-data="ViewData" />
         }
@@ -103,7 +95,6 @@
             <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
 
             <partial name="SponsorDetails" model="Model" view-data="ViewData" />
-        }  
-       
+        }
     </div>
 </div>

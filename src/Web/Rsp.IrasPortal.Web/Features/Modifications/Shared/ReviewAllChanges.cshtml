@@ -89,7 +89,7 @@ else
 <partial name="_ReviewModification" model="Model"/>
 
 <authorized role-is="@Roles.Applicant">
-    @if (Model.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions)
+    @if (Model.Status is ModificationStatus.InDraft)
     {
         // TODO -  or ModificationStatus.RequestRevisions has been added temporarly, to make it possible to send back to sponsor, before Make revisions page is done
         <div class="govuk-grid-row">

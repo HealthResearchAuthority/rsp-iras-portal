@@ -192,7 +192,7 @@ public class ModificationChangesController
 
                 TempData[ProjectModificationChange.Navigation] = JsonSerializer.Serialize(navigation);
 
-                if (modificationModel.Status is ModificationStatus.ReviseAndAuthorise)
+                if (modificationModel.Status is ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestRevisions)
                 {
                     return RedirectToRoute("pmc:ModificationDetails", new
                     {
@@ -229,7 +229,7 @@ public class ModificationChangesController
             navigation.NextSection.IsLastSectionBeforeReview ||
             navigation.NextSection.StaticViewName.Equals(nameof(ReviewChanges), StringComparison.OrdinalIgnoreCase))
         {
-            if (modificationModel.Status is ModificationStatus.ReviseAndAuthorise)
+            if (modificationModel.Status is ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestRevisions)
             {
                 return RedirectToRoute("pmc:ModificationDetails", new
                 {

@@ -285,11 +285,10 @@ public class ProjectModificationsService(
     /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
     /// that reflects the success or failure of the update operation.
     /// </returns>
-    public async Task<ServiceResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId,
-        string status, string? revisionDescription = null, string? reasonNotApproved = null)
+
+    public async Task<ServiceResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId, string status, string? revisionDescription = null, string? reasonNotApproved = null, string? applicantRevisionResponse = null)
     {
-        var apiResponse = await projectModificationsServiceClient.UpdateModificationStatus(projectRecordId,
-            modificationId, status, revisionDescription, reasonNotApproved);
+        var apiResponse = await projectModificationsServiceClient.UpdateModificationStatus(projectRecordId, modificationId, status, revisionDescription, reasonNotApproved, applicantRevisionResponse);
 
         return apiResponse.ToServiceResponse();
     }

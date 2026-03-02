@@ -770,7 +770,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                 modificationId,
                 ModificationStatus.ReviseAndAuthorise,
                 string.Empty,
-                null))
+                null, null))
             .ReturnsAsync(new ServiceResponse { StatusCode = System.Net.HttpStatusCode.OK });
 
         var result = await Sut.CheckAndAuthorise(viewModel);
@@ -792,7 +792,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
         var vm = SetupAuthoriseOutcomeViewModel();
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId,vm.RtsId))
+            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId, vm.RtsId))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.BadRequest
@@ -924,7 +924,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             .ReturnsAsync(new ValidationResult(new[] { new ValidationFailure("RevisionDescription", "required") }));
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId,vm.RtsId))
+            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId, vm.RtsId))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.BadRequest,
@@ -947,7 +947,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             .ReturnsAsync(new ValidationResult(new[] { new ValidationFailure("RevisionDescription", "required") }));
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId,vm.RtsId))
+            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId, vm.RtsId))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -1049,7 +1049,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                     vm.ProjectRecordId,
                     Guid.Parse(vm.ModificationId),
                     ModificationStatus.RequestRevisions,
-                    vm.RevisionDescription, vm.ReasonNotApproved),
+                    vm.RevisionDescription, vm.ReasonNotApproved, vm.ApplicantRevisionResponse),
             Times.Once);
 
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
@@ -1674,7 +1674,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             .ReturnsAsync(new ValidationResult(new[] { new ValidationFailure("NotAuthorised", "required") }));
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId,vm.RtsId))
+            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId, vm.RtsId))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -1736,7 +1736,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
             .ReturnsAsync(new ValidationResult(new[] { new ValidationFailure("NotAuthorised", "required") }));
 
         Mocker.GetMock<ISponsorOrganisationService>()
-            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId,vm.RtsId))
+            .Setup(s => s.GetSponsorOrganisationUser(vm.SponsorOrganisationUserId, vm.RtsId))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -1819,7 +1819,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                     vm.ProjectRecordId,
                     Guid.Parse(vm.ModificationId),
                     ModificationStatus.NotAuthorised,
-                    vm.RevisionDescription, vm.ReasonNotApproved),
+                    vm.RevisionDescription, vm.ReasonNotApproved, vm.ApplicantRevisionResponse),
             Times.Once);
 
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
@@ -1850,7 +1850,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                     vm.ProjectRecordId,
                     Guid.Parse(vm.ModificationId),
                     ModificationStatus.NotAuthorised,
-                    vm.RevisionDescription, vm.ReasonNotApproved),
+                    vm.RevisionDescription, vm.ReasonNotApproved, vm.ApplicantRevisionResponse),
             Times.Once);
     }
 
@@ -1894,7 +1894,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                 Guid.Parse(model.ModificationId),
                 ModificationStatus.ReviseAndAuthorise,
                 model.RevisionDescription,
-                null))
+                null, null))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         var result = await Sut.AuthoriseRevision(model, isSaveForLater: true);
@@ -1936,7 +1936,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                 Guid.Parse(model.ModificationId),
                 ModificationStatus.ReviseAndAuthorise,
                 model.RevisionDescription,
-                null))
+                null, null))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         var result = await Sut.AuthoriseRevision(model, false);
@@ -1972,7 +1972,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                 Guid.Parse(model.ModificationId),
                 ModificationStatus.WithReviewBody,
                 model.RevisionDescription,
-                null))
+                null, null))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         var result = await Sut.AuthoriseRevision(model, false);
@@ -2008,7 +2008,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                 Guid.Parse(model.ModificationId),
                 ModificationStatus.Approved,
                 model.RevisionDescription,
-                null))
+                null, null))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         var result = await Sut.AuthoriseRevision(model, false);
