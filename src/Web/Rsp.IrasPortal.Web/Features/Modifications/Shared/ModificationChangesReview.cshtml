@@ -10,7 +10,7 @@
 
 @model QuestionnaireViewModel
 @{
-    var prefix = ViewData.ModelState.IsValid ? "" : "Error - ";    
+    var prefix = ViewData.ModelState.IsValid ? "" : "Error - ";
 
     var errorSummaryTitle = "There is a problem";
 
@@ -163,7 +163,7 @@
                     </div>
                 }
             </dl>
-        }       
+        }
 
         <form method="post">
             <div class="save-buttons">
@@ -172,8 +172,16 @@
                 @{
                     ViewBag.Style = "govuk-button govuk-button--secondary";
                 }
-
-                <partial name="_SubmitButton" model="@("pmc:saveforlater", "Save for later", saveForLaterParams)" />
+                @if (modification.Status is ModificationStatus.RequestRevisions)
+                {
+                    <a asp-route="pov:postapproval" asp-route-projectRecordId="@modification.ProjectRecordId" class="govuk-button govuk-button--secondary">
+                        Save for later
+                    </a>
+                }
+                else
+                {
+                    <partial name="_SubmitButton" model="@("pmc:saveforlater", "Save for later", saveForLaterParams)" />
+                }
             </div>
         </form>
     </div>

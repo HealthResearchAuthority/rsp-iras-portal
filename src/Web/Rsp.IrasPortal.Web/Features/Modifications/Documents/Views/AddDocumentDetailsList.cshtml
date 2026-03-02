@@ -82,6 +82,12 @@
                             Save for later
                         </a>
                     }
+                    else if(Model.Status is ModificationStatus.RequestRevisions)
+                    {
+                         <a asp-route="pov:postapproval" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button govuk-button--secondary">
+                            Save for later
+                        </a>
+                    }
                     else
                     {
                         <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">

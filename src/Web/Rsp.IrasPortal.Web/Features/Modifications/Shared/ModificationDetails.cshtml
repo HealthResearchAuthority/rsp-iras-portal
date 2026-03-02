@@ -11,7 +11,7 @@
 
 @{
 
-	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     var isAuthoriser = TempData[TempDataKeys.IsAuthoriser] as bool? ?? false;
     var isRevisionBySponsor = false;
@@ -44,31 +44,31 @@
 }
 @if (Model.Status is ModificationStatus.RequestRevisions)
 {
-<partial name="_BackNavigation" model="@("pmc:requestforrevision", "Back", modificationParams)" />
+    <partial name="_BackNavigation" model="@("pmc:requestforrevision", "Back", modificationParams)" />
 }
 else
 {
-@section BackNavigation {
+    @section BackNavigation {
 
-    @* if we have a urlReferrer use that for back navigation *@
-    @{
-        // set this TempData key to true on the referrer page like PostApprovals
-        // or any other BackStage or FrontStage page so that we can link back to that page.
-        // If this Key is not set, the Back link won't be displayed
-        var linkBackToReferrer = TempData[TempDataKeys.ProjectModification.LinkBackToReferrer];
-        var urlReferrer = TempData[TempDataKeys.ProjectModification.UrlReferrer];
+        @* if we have a urlReferrer use that for back navigation *@
+        @{
+            // set this TempData key to true on the referrer page like PostApprovals
+            // or any other BackStage or FrontStage page so that we can link back to that page.
+            // If this Key is not set, the Back link won't be displayed
+            var linkBackToReferrer = TempData[TempDataKeys.ProjectModification.LinkBackToReferrer];
+            var urlReferrer = TempData[TempDataKeys.ProjectModification.UrlReferrer];
 
-        if (linkBackToReferrer is true && urlReferrer is not null && !isRevisionBySponsor)
-        {
-            ViewData[ViewDataKeys.UrlReferrer] = urlReferrer;
+            if (linkBackToReferrer is true && urlReferrer is not null && !isRevisionBySponsor)
+            {
+                ViewData[ViewDataKeys.UrlReferrer] = urlReferrer;
 
-            // no route for back navigation, as this page will
-            // only show back button when you are navigating from some other url
-            // given the LinkBackToReferrer is set
-        <partial name="_BackNavigation" model="@("", "Back", new Dictionary<string, string>())" />
+                // no route for back navigation, as this page will
+                // only show back button when you are navigating from some other url
+                // given the LinkBackToReferrer is set
+                <partial name="_BackNavigation" model="@("", "Back", new Dictionary<string, string>())" />
+            }
         }
     }
-}
 }
 @{
     // display the notification banner if change is removed
@@ -77,8 +77,8 @@ else
 
     if (changeRemoved is true)
     {
-    <partial name="_NotificationBanner"
-             model="@(new NotificationBannerModel
+        <partial name="_NotificationBanner"
+                 model="@(new NotificationBannerModel
                         {
                             Title = "Success",
                             Heading = $"{changeName} has been removed"
@@ -99,11 +99,11 @@ else
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         @{
-    string heading = isRevisionBySponsor
-        ? "Revise and authorise"
-        : Model.Status == ModificationStatus.RequestRevisions
-            ? "Make revisions"
-            : "Modification details";
+            string heading = isRevisionBySponsor
+                ? "Revise and authorise"
+                : Model.Status == ModificationStatus.RequestRevisions
+                    ? "Make revisions"
+                    : "Modification details";
         }
 
         <h1 class="govuk-heading-l">@heading</h1>
@@ -116,15 +116,15 @@ else
         @* Only show the Overall ranking if we have the changes *@
         @if (Model.ModificationChanges.Any())
         {
-        <h2 class="govuk-heading-m">Summary details</h2>
-        <div class="govuk-summary-card">
-            <div class="govuk-summary-card__title-wrapper">
-                <h2 class="govuk-summary-card__title">
-                    Ranking
-                </h2>
-            </div>
-            <div class="govuk-summary-card__content">
-                @{
+            <h2 class="govuk-heading-m">Summary details</h2>
+            <div class="govuk-summary-card">
+                <div class="govuk-summary-card__title-wrapper">
+                    <h2 class="govuk-summary-card__title">
+                        Ranking
+                    </h2>
+                </div>
+                <div class="govuk-summary-card__content">
+                    @{
                         var ranking = new RankingOfChangeViewModel
                         {
                             ModificationType = Model.ModificationType,
@@ -132,10 +132,10 @@ else
                             ReviewType = Model.ReviewType
                         };
 
-                    <partial name="RankingOfChange" model="ranking" />
-                }
+                        <partial name="RankingOfChange" model="ranking" />
+                    }
+                </div>
             </div>
-        </div>
         }
     </div>
 </div>
@@ -146,28 +146,28 @@ else
 
         @if (Model.ModificationChanges.Count == 10)
         {
-        <div class="govuk-warning-text govuk-!-margin-top-3">
-            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-            <strong class="govuk-warning-text__text">
-                <span class="govuk-visually-hidden">Warning</span>
-                @Html.Raw(maxChangesWarning?.Value)
-            </strong>
-        </div>
+            <div class="govuk-warning-text govuk-!-margin-top-3">
+                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                <strong class="govuk-warning-text__text">
+                    <span class="govuk-visually-hidden">Warning</span>
+                    @Html.Raw(maxChangesWarning?.Value)
+                </strong>
+            </div>
         }
 
         <div class="save-buttons">
             @if ((Model.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions || isRevisionBySponsor) && Model.ModificationChanges.Count < 10)
             {
-            <a asp-route="pmc:areaofchange" asp-route-projectModificationId="@Model.ModificationId" class="govuk-button govuk-button--secondary">
-                Add another change to this modification
-            </a>
+                <a asp-route="pmc:areaofchange" asp-route-projectModificationId="@Model.ModificationId" class="govuk-button govuk-button--secondary">
+                    Add another change to this modification
+                </a>
             }
 
-            @if (!Model.ModificationChanges.Any() && Model.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions)
+            @if (!Model.ModificationChanges.Any() && Model.Status is ModificationStatus.InDraft)
             {
-            <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
-                Save for later
-            </a>
+                <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
+                    Save for later
+                </a>
             }            
 
             @if(!Model.ModificationChanges.Any())
@@ -196,45 +196,45 @@ else
     @* Only show the Overall ranking if we have the changes *@
     @if (Model.ModificationChanges.Any() && Model.Status is ModificationStatus.InDraft)
     {
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <h2 class="govuk-heading-m">Supporting documents</h2>
-            <p class="govuk-body">
-                If any of the changes you're making involve an update to any project documents, make sure you add a copy of the original and updated documents.
-            </p>
-        </div>
-    </div>
-    <div class="govuk-button-group">
-        <form method="get">
-            @{
-                    ViewBag.Style = "govuk-button govuk-button--secondary";
-            }
-            <partial name="_SubmitButton" model="@("pmc:projectdocument", "Add documents", new Dictionary<string, string> { })" />
-        </form>
-    </div>
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <h2 class="govuk-heading-m">Add summary and review modification before sending to sponsor</h2>
-            <p class="govuk-body">
-                You'll have the option to add a brief summary and edit your modification before sending it to the sponsor on the next page.
-            </p>
-
-            <div class="save-buttons">
-                <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
-                @{
-                        var routeName = Model.ChangesReadyForSubmission ? "pmc:sponsorreference" : "pmc:unfinishedchanges";
-
-                    <a asp-route="@routeName" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
-                        Save and continue to review
-                    </a>
-
-                    <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
-                        Save for later
-                    </a>
-                }
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h2 class="govuk-heading-m">Supporting documents</h2>
+                <p class="govuk-body">
+                    If any of the changes you're making involve an update to any project documents, make sure you add a copy of the original and updated documents.
+                </p>
             </div>
         </div>
-    </div>
+        <div class="govuk-button-group">
+            <form method="get">
+                @{
+                    ViewBag.Style = "govuk-button govuk-button--secondary";
+                }
+                <partial name="_SubmitButton" model="@("pmc:projectdocument", "Add documents", new Dictionary<string, string> { })" />
+            </form>
+        </div>
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h2 class="govuk-heading-m">Add summary and review modification before sending to sponsor</h2>
+                <p class="govuk-body">
+                    You'll have the option to add a brief summary and edit your modification before sending it to the sponsor on the next page.
+                </p>
+
+                <div class="save-buttons">
+                    <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
+                    @{
+                        var routeName = Model.ChangesReadyForSubmission ? "pmc:sponsorreference" : "pmc:unfinishedchanges";
+
+                        <a asp-route="@routeName" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
+                            Save and continue to review
+                        </a>
+
+                        <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
+                            Save for later
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
     }
 
     <a status-for="Status"
@@ -254,79 +254,79 @@ else
             status-is="@ModificationStatus.ReviseAndAuthorise">
     @if (isAuthoriser && Model.ModificationChanges.Any())
     {
-    <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
-    @if (Model?.ProjectOverviewDocumentViewModel?.Documents is null || !Model.ProjectOverviewDocumentViewModel.Documents.Any())
+        <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+        @if (Model?.ProjectOverviewDocumentViewModel?.Documents is null || !Model.ProjectOverviewDocumentViewModel.Documents.Any())
         {
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <h2 class="govuk-heading-m">Supporting documents</h2>
-            <p class="govuk-body">
-                If any of the changes you're making involve an update to any project documents, make sure you add a copy of the original and updated documents.
-            </p>
-        </div>
-    </div>
-    <div class="govuk-button-group">
-        <form method="get">
-            @{
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-two-thirds">
+                    <h2 class="govuk-heading-m">Supporting documents</h2>
+                    <p class="govuk-body">
+                        If any of the changes you're making involve an update to any project documents, make sure you add a copy of the original and updated documents.
+                    </p>
+                </div>
+            </div>
+            <div class="govuk-button-group">
+                <form method="get">
+                    @{
                         ViewBag.Style = "govuk-button govuk-button--secondary";
-            }
-            <partial name="_SubmitButton" model="@("pmc:projectdocument", "Add documents", new Dictionary<string, string> { })" />
-        </form>
-    </div>
+                    }
+                    <partial name="_SubmitButton" model="@("pmc:projectdocument", "Add documents", new Dictionary<string, string> { })" />
+                </form>
+            </div>
         }
         else
         {
-    <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
+            <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
         }
-    <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
-    <partial name="SponsorDetails" model="Model" view-data="ViewData" />
+        <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+        <partial name="SponsorDetails" model="Model" view-data="ViewData" />
 
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <h1 class="govuk-heading-m">
-                @Html.Raw(headline?.Value)
-            </h1>
-        </div>
-    </div>
-
-        <form method="post">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
+                <h1 class="govuk-heading-m">
+                    @Html.Raw(headline?.Value)
+                </h1>
+            </div>
+        </div>
+
+        <form method="post">
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-two-thirds">
                     <div id="revision-description-label">
                     @Html.Raw(description?.Value)
                     </div>                    
-                <div class="govuk-form-group govuk-character-count"
-                     data-module="govuk-character-count"
-                     data-maxlength="500"
-                     error-class-for="RevisionDescription">
+                    <div class="govuk-form-group govuk-character-count"
+                         data-module="govuk-character-count"
+                         data-maxlength="500"
+                         error-class-for="RevisionDescription">
 
-                    @Html.ValidationMessageFor(model => model.RevisionDescription, "", new { @class = "govuk-error-message" })
-                    <textarea asp-for="RevisionDescription"
-                              name="RevisionDescription"
-                              class="govuk-textarea govuk-js-character-count"
-                              rows="5"
+                        @Html.ValidationMessageFor(model => model.RevisionDescription, "", new { @class = "govuk-error-message" })
+                        <textarea asp-for="RevisionDescription"
+                                  name="RevisionDescription"
+                                  class="govuk-textarea govuk-js-character-count"
+                                  rows="5"
                                   aria-describedby="with-hint-info with-hint-hint"
                                   aria-labelledby="revision-description-label">
                             </textarea>
-                    <noscript>
+                        <noscript>
+                            <div id="RevisionDescription-info"
+                                 class="govuk-hint govuk-character-count__message">
+                                <p class='govuk-hint'>You can enter up to 500 characters</p>
+                            </div>
+                        </noscript>
+
                         <div id="RevisionDescription-info"
+                             aria-hidden="true"
                              class="govuk-hint govuk-character-count__message">
-                            <p class='govuk-hint'>You can enter up to 500 characters</p>
                         </div>
-                    </noscript>
-
-                    <div id="RevisionDescription-info"
-                         aria-hidden="true"
-                         class="govuk-hint govuk-character-count__message">
                     </div>
-                </div>
 
-                <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
-                <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
-                <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
-                <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
-                <input type="hidden" name="IrasId" value="@Model.IrasId" />
-                <input type="hidden" name="RtsId" value="@Model.RtsId" />
+                    <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
+                    <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
+                    <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+                    <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
+                    <input type="hidden" name="IrasId" value="@Model.IrasId" />
+                    <input type="hidden" name="RtsId" value="@Model.RtsId" />
                     <input type="hidden" name="ReviewType" value="@Model.ReviewType" /> 
 
                     <div class="save-buttons">
@@ -336,7 +336,7 @@ else
                                     asp-route="sws:authoriserevision"
                                     class="govuk-button">
                             Authorise
-                        </button>                    
+                    </button>
                         }
                         else
                         {
@@ -347,17 +347,17 @@ else
                             </a>
                         }                                 
 
-                    <button type="submit"
+                        <button type="submit"
                                 asp-route="sws:authoriserevision"
-                            name="isSaveForLater"
-                            value="true"
-                            class="govuk-button govuk-button--secondary">
-                        Save for later
-                    </button>
+                                name="isSaveForLater"
+                                value="true"
+                                class="govuk-button govuk-button--secondary">
+                            Save for later
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-    </form>
+        </form>
     }
 </authorized>
 

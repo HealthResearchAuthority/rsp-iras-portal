@@ -22,6 +22,7 @@
         { "projectRecordId", Model.ProjectRecordId },
         { "projectModificationId", Model.ModificationId?? string.Empty}
     };
+
 }
 
 @if (Model.ModificationChanges.Any())
@@ -64,10 +65,12 @@
     </div>
 </div>
 
-<form method="post" asp-route="pmc:sendRevisionresponsetosponsor" class="govuk-button-group">
+<form method="post" asp-route="pmc:sendrevisionresponsetosponsor" class="govuk-button-group">
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-            @Html.Raw(description?.Value)
+            <div id="revision-description-label">
+                @Html.Raw(description?.Value)
+            </div>
             <div class="govuk-form-group govuk-character-count"
                  data-module="govuk-character-count"
                  data-maxlength="500"
@@ -78,8 +81,9 @@
                           name="ApplicantRevisionResponse"
                           class="govuk-textarea govuk-js-character-count"
                           rows="5"
-                          aria-describedby="with-hint-info with-hint-hint">
-                            </textarea>
+                          aria-describedby="with-hint-info with-hint-hint"
+                          aria-labelledby="revision-description-label">
+                 </textarea>
                 <noscript>
                     <div id="ApplicantRevisionResponse-info"
                          class="govuk-hint govuk-character-count__message">
@@ -97,6 +101,7 @@
             <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
             <input type="hidden" name="IrasId" value="@Model.IrasId" />
             <input type="hidden" name="RtsId" value="@Model.RtsId" />
+            <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
             @if (Model.NoChangesToSubmit)
             {
                 <a asp-route="pmc:nochangestosubmit" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
@@ -116,9 +121,12 @@
                 </a>
             }
 
-            @{ ViewBag.Style = "govuk-button govuk-button--secondary"; }
-
-            <partial name="_SubmitButton" class="govuk-button" model="@("pmc:saveforlater", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId, ["routeName"] = "pov:postapproval" })" />
+            <button type="submit"
+                    name="isSaveForLater"
+                    value="true"
+                    class="govuk-button govuk-button--secondary">
+                Save for later
+            </button>
         </div>
     </div>
 </form>

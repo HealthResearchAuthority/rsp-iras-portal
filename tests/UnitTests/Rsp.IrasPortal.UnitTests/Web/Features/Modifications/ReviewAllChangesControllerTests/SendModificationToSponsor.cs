@@ -384,7 +384,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         };
 
         // Act
-        var result = await Sut.SendRevisionResponseToSponsor(model);
+        var result = await Sut.SendRevisionResponseToSponsor(model, false);
 
         // Assert
         var redirect = Assert.IsType<RedirectToRouteResult>(result);
@@ -422,7 +422,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         };
 
         // Act
-        var result = await Sut.SendRevisionResponseToSponsor(model);
+        var result = await Sut.SendRevisionResponseToSponsor(model, true);
 
         // Assert
         var redirect = Assert.IsType<RedirectToActionResult>(result);

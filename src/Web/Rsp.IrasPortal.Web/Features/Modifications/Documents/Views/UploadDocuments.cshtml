@@ -140,24 +140,30 @@
 				</table>
 			}
 
-            <div class="govuk-button-group govuk-!-margin-top-4">
-                <button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
-                @{
-                    ViewBag.Style = "govuk-button govuk-button--secondary";
-                }
-                @if (Model.Status is ModificationStatus.ReviseAndAuthorise)
-                {
-                    <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId" asp-route-rtsId="@Model.RtsId" asp-route-routeName="sws:modifications" class="govuk-button govuk-button--secondary">
-                        Save for later
-                    </a>
-                }
-                else
-                {
-                    <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
-                        Save for later
-                    </a>
-                }                
-            </div>
+        <div class="govuk-button-group govuk-!-margin-top-4">
+            <button class="govuk-button" data-module="govuk-button" name="action" value="continue">Save and continue</button>
+            @{
+                ViewBag.Style = "govuk-button govuk-button--secondary";
+            }
+            @if (Model.Status is ModificationStatus.ReviseAndAuthorise)
+            {
+                <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId" asp-route-rtsId="@Model.RtsId" asp-route-routeName="sws:modifications" class="govuk-button govuk-button--secondary">
+                    Save for later
+                </a>
+            }
+            else if (Model.Status is ModificationStatus.RequestRevisions)
+            {
+                <a asp-route="pov:postapproval" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button govuk-button--secondary">
+                    Save for later
+                </a>
+            }
+            else
+            {
+                <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
+                    Save for later
+                </a>
+            }
+        </div>
         </form>
     </div>
 </div>

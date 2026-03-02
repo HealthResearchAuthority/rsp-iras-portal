@@ -545,30 +545,49 @@ public class ReviewAllChangesController : ModificationsControllerBase
     [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
     [FeatureGate(FeatureFlags.RequestRevisions)]
     [HttpPost]
-    public async Task<IActionResult> SendRevisionResponseToSponsor(ModificationDetailsViewModel model)
+    public async Task<IActionResult> SendRevisionResponseToSponsor(ModificationDetailsViewModel model, bool isSaveForLater)
     {
-        var context = new ValidationContext<ModificationDetailsViewModel>(model);
-        var validationResult = await ModificationValidator.ValidateAsync(context);
-        if (!validationResult.IsValid)
+        bool validation = isSaveForLater && string.IsNullOrWhiteSpace(model.ApplicantRevisionResponse);
+        if (!validation)
         {
-            foreach (var error in validationResult.Errors)
+            var context = new ValidationContext<ModificationDetailsViewModel>(model);
+            var validationResult = await ModificationValidator.ValidateAsync(context);
+            if (!validationResult.IsValid)
             {
-                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+
+                TempData.Remove(TempDataKeys.ModelState);
+                TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+
+                return RedirectToRoute("pmc:ModificationDetails", new
+                {
+                    projectRecordId = model.ProjectRecordId,
+                    irasId = model.IrasId,
+                    shortTitle = model.ShortTitle,
+                    projectModificationId = Guid.Parse(model.ModificationId),
+                    sponsorOrganisationUserId = model.SponsorOrganisationUserId,
+                    rtsId = model.RtsId
+                });
             }
-
-            TempData.Remove(TempDataKeys.ModelState);
-            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
-
-            return RedirectToRoute("pmc:ModificationDetails", new
-            {
-                projectRecordId = model.ProjectRecordId,
-                irasId = model.IrasId,
-                shortTitle = model.ShortTitle,
-                projectModificationId = Guid.Parse(model.ModificationId),
-                sponsorOrganisationUserId = model.SponsorOrganisationUserId,
-                rtsId = model.RtsId
-            });
         }
+
+        if (isSaveForLater)
+        {
+            await projectModificationsService.UpdateModificationStatus
+                (
+                    model.ProjectRecordId,
+                    Guid.Parse(model.ModificationId),
+                    ModificationStatus.RequestRevisions,
+                    null,
+                    null,
+                    model.ApplicantRevisionResponse
+                );
+            return RedirectToRoute("pov:postapproval", new { projectRecordId = model.ProjectRecordId });
+        }
+
         return RedirectToAction(nameof(SendModificationToSponsor), new
         {
             projectRecordId = model.ProjectRecordId,
