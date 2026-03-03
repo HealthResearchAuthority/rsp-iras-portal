@@ -93,6 +93,7 @@ else
 
     var maxChangesWarning = pageContent.GetValueOrDefault("ModificationDetails.MaxChangesWarning", null);
     var headline = pageContent.GetValueOrDefault("ModificationDetails.RevisionDescriptionHeadline", null);
+    var headlineSponsor = pageContent.GetValueOrDefault("ModificationDetails.SponsorRevisionDescriptionHeadline", null);
     var description = pageContent.GetValueOrDefault("ModificationDetails.RevisionDescriptionBody", null);
 }
 
@@ -139,6 +140,17 @@ else
         }
     </div>
 </div>
+@if (Model.Status is ModificationStatus.RequestRevisions)
+{
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <div class="govuk-heading-m">
+                @Html.Raw(headlineSponsor?.Value)
+                <p class="govuk-body">@Model.RevisionDescription</p>
+            </div>
+        </div>
+    </div>
+}
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
         <h2 class="govuk-heading-m">Changes</h2>
