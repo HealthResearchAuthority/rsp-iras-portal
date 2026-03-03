@@ -5,8 +5,8 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.FeatureManagement.Mvc;
 using Microsoft.FeatureManagement;
+using Microsoft.FeatureManagement.Mvc;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -44,6 +44,12 @@ public class ReviewAllChangesController
     {
         StatusCode = HttpStatusCode.NotFound,
         Error = "Unable to retrieve modification review outcome details from session."
+    };
+
+    private readonly ServiceResponse _duplicateModifictionError = new()
+    {
+        StatusCode = HttpStatusCode.NotFound,
+        Error = "Unable to duplicate modification from session."
     };
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
@@ -523,6 +529,55 @@ public class ReviewAllChangesController
             "application/pdf",
             $"{modification.ModificationIdentifier} {DateTime.UtcNow}.pdf"
         );
+    }
+
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Resubmission)]
+    [FeatureGate(FeatureFlags.ModificationResubmission)]
+    [HttpGet]
+    public async Task<IActionResult> DuplicateModification()
+    {
+        var model = GetFromTempData();
+
+        if (model is null)
+        {
+            return this.ServiceError(_duplicateModifictionError);
+        }
+
+        var getModificationResponse = await projectModificationsService.GetModification(model.ModificationDetails.ProjectRecordId,
+            Guid.Parse(model.ModificationDetails.ModificationId!));
+
+        if (getModificationResponse.IsSuccessStatusCode)
+        {
+            var currentModification = getModificationResponse.Content;
+
+            // Create a duplicate modification request
+            var duplicateModificationRequest = new DuplicateModificationRequest()
+            {
+                ProjectRecordId = currentModification.ProjectRecordId,
+                ExistingModificationId = currentModification.Id
+            };
+
+            //Call the service to duplicate the modification
+           var duplicateModificationResponse = await projectModificationsService.DuplicateModification(duplicateModificationRequest);
+
+           if (duplicateModificationResponse.IsSuccessStatusCode)
+           {
+               var duplicateModification = duplicateModificationResponse.Content;
+
+                TempData[TempDataKeys.IsDuplicateModification] = true;
+                TempData[TempDataKeys.ShowNotificationBanner] = true;
+
+                return RedirectToAction(nameof(ReviewAllChanges),
+                   new
+                   {
+                       projectRecordId = model.ModificationDetails.ProjectRecordId,
+                       irasId = model.ModificationDetails.IrasId,
+                       shortTitle = model.ModificationDetails.ShortTitle,
+                       projectModificationId = duplicateModification.Id
+                   });
+            }
+        }
+        return this.ServiceError(_duplicateModifictionError);
     }
 
     private async Task<IActionResult> HandleModificationStatusUpdate(

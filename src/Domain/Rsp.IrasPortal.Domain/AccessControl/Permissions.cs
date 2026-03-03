@@ -152,6 +152,11 @@ public static class Permissions
         /// allows limited downloading modifications depending on status
         /// </summary>
         public const string Modifications_Download_Limited = "myresearch.modifications.download_limited";
+
+        /// <summary>
+        /// allows duplicating modifications
+        /// </summary>
+        public const string Modifications_Resubmission = "myresearch.modifications.resubmission";
     }
 
     // Sponsor Workspace Permissions

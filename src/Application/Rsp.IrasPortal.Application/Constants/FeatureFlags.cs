@@ -49,4 +49,7 @@ public static class FeatureFlags
 
     //All to enter reason for not authorising the modification
     public const string NotAuthorisedReason = "Modifications.NotAuthorisedReason";
+
+    // Allows duplicating modifications
+    public const string ModificationResubmission = "Modifications.Resubmission";
 }

@@ -336,4 +336,14 @@ public interface IProjectModificationsServiceClient
     /// </returns>
     [Post("/projectmodifications/deletedocumentanswers")]
     public Task<IApiResponse> DeleteDocumentAnswers(List<ProjectModificationDocumentRequest> projectModificationChangeRequest);
+
+    /// <summary>
+    /// Creates a new project modification.
+    /// </summary>
+    /// <param name="projectModificationRequest">
+    /// The request object containing details for the new project modification.
+    /// </param>
+    /// <returns>An asynchronous operation that returns the newly created project modification.</returns>
+    [Post("/projectmodifications/duplicatemodification")]
+    public Task<ApiResponse<ProjectModificationResponse>> DuplicateModification(DuplicateModificationRequest duplicateModificationRequest);
 }
