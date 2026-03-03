@@ -1029,7 +1029,8 @@ public class DocumentsController
             {
                 ProjectRecordId = context.ProjectRecordId,
                 ProjectTitle = context.ShortTitle,
-                IrasId = int.TryParse(context.IrasId, out var irasId) ? irasId : null
+                IrasId = int.TryParse(context.IrasId, out var irasId) ? irasId : null,
+                PageHeaderText = "Document audit"
             }
         };
 

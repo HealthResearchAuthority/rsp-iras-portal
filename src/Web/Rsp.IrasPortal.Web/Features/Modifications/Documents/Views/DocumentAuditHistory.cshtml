@@ -17,7 +17,7 @@
 	var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
 	var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
 							?? new Dictionary<string, string>();
-	var projectTitle = !string.IsNullOrEmpty(Model?.ProjectOverviewModel?.ProjectTitle) ? Model.ProjectOverviewModel.ProjectTitle : "Project overview";
+	var projectTitle = !string.IsNullOrEmpty(Model?.ProjectOverviewModel?.ProjectTitle) ? Model.ProjectOverviewModel.ProjectTitle : "Document audit";
 
 	var tdBackRouteValues = TempData.Peek(TempDataKeys.ProjectOverviewReferrer.BackRouteValues);
 
