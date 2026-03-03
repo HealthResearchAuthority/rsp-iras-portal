@@ -13,7 +13,9 @@
             { "projectRecordId", Model.ProjectRecordId },
             { "irasId", Model.IrasId  },
             { "shortTitle", Model.ShortTitle ?? string.Empty },
-            { "projectModificationId", Model.ModificationId ?? string.Empty }
+            { "projectModificationId", Model.ModificationId ?? string.Empty },
+            { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId ?? string.Empty },
+            { "rtsId", Model.RtsId ?? string.Empty }
         };
 }
 
@@ -25,9 +27,18 @@
     <div class="govuk-grid-column-two-thirds">
         <h1 class="govuk-heading-l">Your modification needs to contain at least one change</h1>
         <partial name="_ProjectModificationSummary" model="Model" view-data="ViewData" />
-        <p class="govuk-body">
-            You can't send this modification to sponsor for review until you've added at least one change. Return to the modification details page where you can add a change.
-        </p>
+        @if (Model.Status is ModificationStatus.ReviseAndAuthorise)
+        {
+            <p class="govuk-body">
+                You can't authorise this modification until you've added at least one change. Return to the modification details page where you can add a change.
+            </p>
+        }
+        else
+        {
+            <p class="govuk-body">
+                You can't send this modification to sponsor for review until you've added at least one change. Return to the modification details page where you can add a change.
+            </p>
+        }        
         <div class="save-buttons">
             <a class="govuk-button" asp-route="pmc:modificationdetails" asp-all-route-data="modificationParams">
                 Return to modification details

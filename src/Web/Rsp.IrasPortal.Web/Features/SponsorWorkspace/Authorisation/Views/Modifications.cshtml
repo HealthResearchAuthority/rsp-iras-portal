@@ -6,6 +6,7 @@
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @using Rsp.Portal.Web.Areas.Admin.Models
 @using Rsp.Portal.Web.Helpers
+@inject IFeatureManager featureManager
 
 @model AuthorisationsModificationsViewModel
 
@@ -41,6 +42,20 @@
 
     var headline = pageContent.GetValueOrDefault("SponsorWorkspace.Modifications.Title", null);
     var searchHint = pageContent.GetValueOrDefault("SponsorWorkspace.Modifications.SearchHint", null);
+}
+
+@if (await featureManager.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+{
+    @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
+    {
+        <partial name="_NotificationBanner"
+                 model="@(new NotificationBannerModel
+                 {
+                     Title = "Success",
+                     Heading = "Modification progress saved"
+                 })" />
+
+    }
 }
 
 <div class="govuk-grid-row">

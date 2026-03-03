@@ -123,7 +123,7 @@
 								</td>
 								<td class="govuk-table__cell" style="width: 20%;">
 									<strong class="govuk-tag @(doc.Status?.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) == true ? "govuk-tag--red" : "govuk-tag--green")">
-										@doc.Status
+										@ModificationStatusHelper.ToUiStatus(doc.Status)
 									</strong>
 								</td>
 								<td class="govuk-table__cell govuk-!-text-align-right" style="width: 20%;">

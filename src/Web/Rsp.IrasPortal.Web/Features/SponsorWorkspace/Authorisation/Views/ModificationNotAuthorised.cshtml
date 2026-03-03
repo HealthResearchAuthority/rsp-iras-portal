@@ -40,7 +40,9 @@
 <form asp-route="sws:savemodificationreasonnotapproved" method="post">
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-            @Html.Raw(body?.Value)
+            <div id="reason-not-authorising-label">
+                @Html.Raw(body?.Value)
+            </div>
 
             <div class="govuk-form-group govuk-character-count"
                  data-module="govuk-character-count"
@@ -52,8 +54,9 @@
                           name="ReasonNotApproved"
                           class="govuk-textarea govuk-js-character-count"
                           rows="5"
-                          aria-describedby="with-hint-info with-hint-hint">
-                    </textarea>
+                          aria-describedby="with-hint-info with-hint-hint"
+                          aria-labelledby="reason-not-authorising-label">
+                    </textarea>                
                 <noscript>
                     <div id="ReasonNotApproved-info"
                          class="govuk-hint govuk-character-count__message">

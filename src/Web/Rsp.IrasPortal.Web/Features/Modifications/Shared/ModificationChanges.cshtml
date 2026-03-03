@@ -90,7 +90,7 @@
                         @change.SpecificChangeAnswer
                     </dd>
                 </div>
-				@if (Model.ModificationChanges.Any() && showModificationDetails.GetValueOrDefault())
+                @if (Model.ModificationChanges.Any() && (showModificationDetails.GetValueOrDefault() || isRevisionBySponsor))
                 {
                     @foreach (var question in change.Questions)
                     {

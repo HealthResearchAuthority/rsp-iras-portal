@@ -149,6 +149,18 @@
                     Save for later
                 </a>
             }
+
+            @if (!Model.ModificationChanges.Any() && Model.Status is ModificationStatus.ReviseAndAuthorise)
+            {
+                <a asp-route="pmc:saveforlater"
+                   asp-route-projectRecordId="@Model.ProjectRecordId"
+                   asp-route-routeName="sws:modifications"
+                   asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
+                   asp-route-rtsId="@Model.RtsId"
+                   class="govuk-button govuk-button--secondary">
+                    Save for later
+                </a>
+            }
         </div>
     </div>
 </div>
@@ -250,10 +262,12 @@
             </div>
         </div>
 
-        <form asp-route="sws:authoriserevision" method="post">
+        <form method="post">
             <div class="govuk-grid-row">
                 <div class="govuk-grid-column-two-thirds">
-                    @Html.Raw(description?.Value)
+                    <div id="revision-description-label">
+                        @Html.Raw(description?.Value)
+                    </div>                    
                     <div class="govuk-form-group govuk-character-count"
                          data-module="govuk-character-count"
                          data-maxlength="500"
@@ -264,7 +278,8 @@
                                   name="RevisionDescription"
                                   class="govuk-textarea govuk-js-character-count"
                                   rows="5"
-                                  aria-describedby="with-hint-info with-hint-hint">
+                                  aria-describedby="with-hint-info with-hint-hint"
+                                  aria-labelledby="revision-description-label">
                             </textarea>
                         <noscript>
                             <div id="RevisionDescription-info"
@@ -285,13 +300,28 @@
                     <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
                     <input type="hidden" name="IrasId" value="@Model.IrasId" />   
                     <input type="hidden" name="RtsId" value="@Model.RtsId" />
+                    <input type="hidden" name="ReviewType" value="@Model.ReviewType" /> 
                     
-                    <div class="save-buttons">
-                        <button type="submit" class="govuk-button" data-module="govuk-button">
-                            Authorise
-                        </button>                    
+                    <div class="save-buttons">                        
+                        @if (Model.ChangesReadyForSubmission)
+                        {                            
+                            <button type="submit"
+                                    asp-route="sws:authoriserevision"
+                                    class="govuk-button">
+                                Authorise
+                            </button>
+                        }
+                        else
+                        {
+                            <a class="govuk-button"
+                               asp-route="pmc:unfinishedchanges"
+                               asp-route-projectRecordId="@Model.ProjectRecordId">
+                                Authorise
+                            </a>
+                        }                                 
                     
                         <button type="submit"
+                                asp-route="sws:authoriserevision"
                                 name="isSaveForLater"
                                 value="true"
                                 class="govuk-button govuk-button--secondary">
