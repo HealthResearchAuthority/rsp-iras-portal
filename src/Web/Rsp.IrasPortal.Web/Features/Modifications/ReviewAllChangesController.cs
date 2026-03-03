@@ -532,6 +532,7 @@ public class ReviewAllChangesController
     }
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Duplicate)]
+    [FeatureGate(FeatureFlags.ResubmissionModification)]
     [HttpGet]
     public async Task<IActionResult> DuplicateModification()
     {
