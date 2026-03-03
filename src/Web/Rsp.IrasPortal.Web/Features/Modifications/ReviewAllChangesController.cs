@@ -605,8 +605,8 @@ public class ReviewAllChangesController
                     model.ProjectRecordId,
                     Guid.Parse(model.ModificationId),
                     ModificationStatus.RequestRevisions,
-                    null,
-                    null,
+                    model.RevisionDescription,
+                    model.ReasonNotApproved,
                     model.ApplicantRevisionResponse
                 );
             return RedirectToRoute("pov:postapproval", new { projectRecordId = model.ProjectRecordId });
