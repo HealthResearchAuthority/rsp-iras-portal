@@ -352,7 +352,6 @@ public interface IProjectModificationsServiceClient
        string sortField,
        string sortDirection
     );
-    public Task<ApiResponse<ProjectDocumentsAuditTrailResponse>> GetProjectDocumentsAuditTrail(Guid projectRecordId);
 
     /// <summary>
     /// Creates a new project modification.

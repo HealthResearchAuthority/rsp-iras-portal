@@ -346,7 +346,6 @@ public interface IProjectModificationsService : IInterceptable
        string sortField,
        string sortDirection
     );
-    //Task<ApiResponse<ProjectDocumentsAuditTrailResponse>> GetProjectDocumentsAuditTrail(Guid projectRecordId);
 
     /// <summary>
     /// Duplicates a project modification.
