@@ -156,7 +156,7 @@ public static class Permissions
         /// <summary>
         /// allows duplicating modifications
         /// </summary>
-        public const string Modifications_Duplicate = "myresearch.modifications.duplicate";
+        public const string Modifications_Resubmission = "myresearch.modifications.resubmission";
     }
 
     // Sponsor Workspace Permissions

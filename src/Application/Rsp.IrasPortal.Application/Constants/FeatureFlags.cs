@@ -51,5 +51,5 @@ public static class FeatureFlags
     public const string NotAuthorisedReason = "Modifications.NotAuthorisedReason";
 
     // Allows duplicating modifications
-    public const string ResubmissionModification = "Modifications.Resubmission";
+    public const string ModificationResubmission = "Modifications.Resubmission";
 }
