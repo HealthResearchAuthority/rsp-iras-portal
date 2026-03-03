@@ -1,10 +1,12 @@
-﻿@using Rsp.Portal.Application.Constants;
+﻿@using Microsoft.FeatureManagement
+@using Rsp.Portal.Application.Constants;
 @using Rsp.Portal.Application.DTOs
 @using Rsp.Portal.Domain.AccessControl
 @using Rsp.Portal.Web.Helpers
 @using Rsp.Portal.Web.Models
 @using System.Text.Json
 @model ProjectOverviewDocumentViewModel
+@inject IFeatureManager featureManager
 
 @{
 	ViewBag.Title = "Project overview";
@@ -235,14 +237,18 @@ else
 		<partial name="_Pagination" model="@Model.Pagination" />
 	</div>
 </div>
-<div permission="@Permissions.SystemAdministration.Workspace_Access"
-	 class="govuk-grid-row">
-	<div class="govuk-grid-column-full">
-		<a asp-route="pmc:getaudithistory"
-		   asp-route-projectRecordId="@Model.ProjectOverviewModel.ProjectRecordId"
-		   asp-route-backRoute="@backRoute"
-		   class="govuk-button govuk-button--secondary">
-			View document audit
-		</a>
+
+@if (await featureManager.IsEnabledAsync(FeatureFlags.ProjectDocumentsAuditHistory))
+{
+	<div permission="@Permissions.SystemAdministration.Workspace_Access"
+	class="govuk-grid-row">
+		<div class="govuk-grid-column-full">
+			<a asp-route="pmc:getaudithistory"
+			   asp-route-projectRecordId="@(Model.ProjectOverviewModel?.ProjectRecordId ?? string.Empty)"
+			   asp-route-backRoute="@backRoute"
+			   class="govuk-button govuk-button--secondary">
+				View document audit
+			</a>
+		</div>
 	</div>
-</div>
+}

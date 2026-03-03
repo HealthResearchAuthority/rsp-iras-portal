@@ -986,6 +986,7 @@ public class DocumentsController
 
     [Authorize(Policy = Workspaces.SystemAdministration)]
     [HttpGet]
+    [FeatureGate(FeatureFlags.ProjectDocumentsAuditHistory)]
     public async Task<IActionResult> GetAuditHistory
     (
         string projectRecordId,
