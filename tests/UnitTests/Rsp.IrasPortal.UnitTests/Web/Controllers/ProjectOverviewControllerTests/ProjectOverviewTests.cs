@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -1456,22 +1456,32 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
             StatusCode = HttpStatusCode.OK,
             Content = new GetModificationsResponse
             {
-                TotalCount = 4,
+                TotalCount = 9,
                 Modifications = new List<ModificationsDto>
-                                {
-                                    new () { Id = "1", ModificationId = "M1", Status = "In draft" },
-                                    new () { Id = "2", ModificationId = "M2", Status = "With sponsor" },
-                                    new () { Id = "3", ModificationId = "M3", Status = "With review body" },
-                                    new () { Id = "4", ModificationId = "M4", Status = "Approved" },
-                                    new () { Id = "5", ModificationId = "M4", Status = "Not approved" },
-                                    new () { Id = "6", ModificationId = "M4", Status = "Not authorised" }
-                                }
+                {
+                    new () { Id = "1", ModificationId = "M1", Status = ModificationStatus.InDraft },
+                    new () { Id = "2", ModificationId = "M2", Status = ModificationStatus.RequestRevisions },
+                    new () { Id = "3", ModificationId = "M3", Status = ModificationStatus.WithSponsor },
+                    new () { Id = "4", ModificationId = "M4", Status = ModificationStatus.ReviseAndAuthorise },
+                    new () { Id = "5", ModificationId = "M5", Status = ModificationStatus.WithReviewBody },
+                    new () { Id = "6", ModificationId = "M6", Status = ModificationStatus.Approved },
+                    new () { Id = "7", ModificationId = "M7", Status = ModificationStatus.NotApproved },
+                    new () { Id = "8", ModificationId = "M8", Status = ModificationStatus.NotAuthorised },
+                    new () { Id = "9", ModificationId = "M9", Status = "Something unexpected" }
+                }
             }
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, sortField, sortDirection))
-            .ReturnsAsync(serviceResponse);
+        .Setup(s => s.GetModificationsForProject(
+            projectRecordId,
+            It.IsAny<ModificationSearchRequest>(),
+            It.IsAny<int>(),
+            It.IsAny<int>(),
+            sortField,
+            sortDirection))
+        .ReturnsAsync(serviceResponse);
+
         // Act
         var result = await Sut.PostApproval(projectRecordId, "", It.IsAny<int>(), It.IsAny<int>(), sortField, sortDirection);
 
@@ -1481,5 +1491,20 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         Assert.NotNull(model.Modifications);
         Assert.Equal(sortField, model.Pagination.SortField);
         Assert.Equal(sortDirection, model.Pagination.SortDirection);
+
+        var expectedOrder = new[]
+        {
+            ModificationStatus.InDraft,             // 0
+            ModificationStatus.RequestRevisions,    // 1
+            ModificationStatus.WithSponsor,         // 2
+            ModificationStatus.ReviseAndAuthorise,  // 3
+            ModificationStatus.NotAuthorised,       // 4
+            ModificationStatus.WithReviewBody,      // 5
+            ModificationStatus.Approved,            // 6
+            ModificationStatus.NotApproved,         // 7
+            "Something unexpected"                  // 1000
+        };
+
+        Assert.Equal(expectedOrder, model.Modifications.Select(m => m.Status));
     }
 }
