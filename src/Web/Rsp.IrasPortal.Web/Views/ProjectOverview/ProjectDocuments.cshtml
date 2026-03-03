@@ -6,7 +6,6 @@
 @using Rsp.Portal.Web.Models
 @using System.Text.Json
 @model ProjectOverviewDocumentViewModel
-@inject IFeatureManager featureManager
 
 @{
 	ViewBag.Title = "Project overview";
@@ -238,8 +237,7 @@ else
 	</div>
 </div>
 
-@if (await featureManager.IsEnabledAsync(FeatureFlags.ProjectDocumentsAuditHistory))
-{
+<feature name="@FeatureFlags.ProjectDocumentsAuditHistory">
 	<div permission="@Permissions.SystemAdministration.Workspace_Access"
 	class="govuk-grid-row">
 		<div class="govuk-grid-column-full">
@@ -251,4 +249,4 @@ else
 			</a>
 		</div>
 	</div>
-}
+</feature>
