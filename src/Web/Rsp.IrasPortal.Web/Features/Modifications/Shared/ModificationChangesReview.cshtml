@@ -172,16 +172,10 @@
                 @{
                     ViewBag.Style = "govuk-button govuk-button--secondary";
                 }
-                @if (modification.Status is ModificationStatus.RequestRevisions)
-                {
-                    <a asp-route="pov:postapproval" asp-route-projectRecordId="@modification.ProjectRecordId" class="govuk-button govuk-button--secondary">
-                        Save for later
-                    </a>
-                }
-                else
-                {
-                    <partial name="_SubmitButton" model="@("pmc:saveforlater", "Save for later", saveForLaterParams)" />
-                }
+                <a asp-route="pov:postapproval" status-for="@modification.Status" status-is="@ModificationStatus.RequestRevisions" asp-route-projectRecordId="@modification.ProjectRecordId" class="govuk-button govuk-button--secondary">
+                    Save for later
+                </a>
+                <partial name="_SubmitButton" model="@("pmc:saveforlater", "Save for later", saveForLaterParams)" />
             </div>
         </form>
     </div>

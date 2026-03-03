@@ -165,7 +165,7 @@
     </div>
 </div>
 
-<div status-for="Status" status-in="@(new []{ModificationStatus.InDraft, ModificationStatus.RequestRevisions})" class="govuk-button-group">
+<div status-for="Status" status-in="@([ModificationStatus.InDraft, ModificationStatus.RequestRevisions])" class="govuk-button-group">
     <form method="get">
         @{
             ViewBag.Style = "govuk-button govuk-button--secondary";

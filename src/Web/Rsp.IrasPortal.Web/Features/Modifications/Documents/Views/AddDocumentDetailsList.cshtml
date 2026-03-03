@@ -7,9 +7,9 @@
     (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
     navModel = ("pmc:modificationdocumentsadded", "Back", new());
 
-	// If we know the specific area of change, dynamically build the page title to make the UI clearer.
-	// Otherwise, leave the title empty (will fallback to default in the view if needed).
-	ViewBag.Title = "Add document details";
+    // If we know the specific area of change, dynamically build the page title to make the UI clearer.
+    // Otherwise, leave the title empty (will fallback to default in the view if needed).
+    ViewBag.Title = "Add document details";
 }
 
 <div class="govuk-width-container">
@@ -19,19 +19,19 @@
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-			<h1 class="govuk-heading-l">
-				@ViewBag.Title
-			</h1>
+            <h1 class="govuk-heading-l">
+                @ViewBag.Title
+            </h1>
             <partial name="_ProjectModificationSummary" />
-			<p class="govuk-body">
-				Some of the documents you've added need additional details.
-			</p>
-			@if (Model.UploadedDocuments.Any())
-			{
-				<ul class="govuk-task-list">
-					@foreach (var doc in Model.UploadedDocuments)
-					{
-						<li class="govuk-task-list__item">
+            <p class="govuk-body">
+                Some of the documents you've added need additional details.
+            </p>
+            @if (Model.UploadedDocuments.Any())
+            {
+                <ul class="govuk-task-list">
+                    @foreach (var doc in Model.UploadedDocuments)
+                    {
+                        <li class="govuk-task-list__item">
                             @if (doc.DocumentType == "Tracked" && doc.LinkedDocumentId != null)
                             {
                                 <span class="govuk-task-list__link">
@@ -47,20 +47,20 @@
                                     @doc.FileName
                                 </a>
                             }
-							<div class="govuk-task-list__status">
-								@if (doc.Status == DocumentDetailStatus.Complete.ToString())
-								{
-									@doc.Status
-								}
-								else
-								{
+                            <div class="govuk-task-list__status">
+                                @if (doc.Status == DocumentDetailStatus.Complete.ToString())
+                                {
+                                    @doc.Status
+                                }
+                                else
+                                {
                                     <strong class="govuk-tag">@ModificationStatusHelper.ToUiStatus(doc.Status)</strong>
-								}
-							</div>
-						</li>
-					}
-				</ul>
-			}
+                                }
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
             else
             {
                 <p class="govuk-body">No documents uploaded.</p>
@@ -76,24 +76,17 @@
                     @{
                         ViewBag.Style = "govuk-button govuk-button--secondary";
                     }
-                    @if (Model.Status is ModificationStatus.ReviseAndAuthorise)
-                    {
-                        <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId" asp-route-rtsId="@Model.RtsId" asp-route-routeName="sws:modifications" class="govuk-button govuk-button--secondary">
-                            Save for later
-                        </a>
-                    }
-                    else if(Model.Status is ModificationStatus.RequestRevisions)
-                    {
-                         <a asp-route="pov:postapproval" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button govuk-button--secondary">
-                            Save for later
-                        </a>
-                    }
-                    else
-                    {
-                        <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
-                            Save for later
-                        </a>
-                    }
+                    <a asp-route="pmc:saveforlater" status-for="@Model.Status" status-is="@ModificationStatus.ReviseAndAuthorise" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId" asp-route-rtsId="@Model.RtsId" asp-route-routeName="sws:modifications" class="govuk-button govuk-button--secondary">
+                        Save for later
+                    </a>
+                    <a asp-route="pov:postapproval" status-for="@Model.Status" status-is="@ModificationStatus.RequestRevisions" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button govuk-button--secondary">
+                        Save for later
+                    </a>
+                    <a asp-route="pmc:saveforlater" status-for="@Model.Status" status-mode="Hide"
+                   status-in="@([ModificationStatus.ReviseAndAuthorise,ModificationStatus.RequestRevisions] )"
+                       asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
+                        Save for later
+                    </a>
                 </form>
             </div>
         </div>

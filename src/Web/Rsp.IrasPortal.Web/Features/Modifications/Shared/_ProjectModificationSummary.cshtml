@@ -110,7 +110,7 @@
     </authorized>
 
     <feature name="@FeatureFlags.RequestRevisions">
-        <authorized role-in="@(new []{Roles.Applicant})"
+        <authorized role-is="@Roles.Applicant"
                     status-for="@modificationBaseModel.Status"
                     status-is="@ModificationStatus.RequestRevisions">
             <div class="govuk-summary-list__row">

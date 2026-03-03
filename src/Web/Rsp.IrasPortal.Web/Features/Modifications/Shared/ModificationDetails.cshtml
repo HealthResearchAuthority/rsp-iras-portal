@@ -140,17 +140,16 @@ else
         }
     </div>
 </div>
-@if (Model.Status is ModificationStatus.RequestRevisions)
-{
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <div class="govuk-heading-m">
-                @Html.Raw(headlineSponsor?.Value)
-                <p class="govuk-body">@Model.RevisionDescription</p>
-            </div>
+
+<div status-for="@Model.Status" status-is="@ModificationStatus.RequestRevisions" class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-heading-m">
+            @Html.Raw(headlineSponsor?.Value)
+            <p class="govuk-body">@Model.RevisionDescription</p>
         </div>
     </div>
-}
+</div>
+
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
         <h2 class="govuk-heading-m">Changes</h2>
@@ -204,9 +203,9 @@ else
     </div>
 </div>
 
-<authorized role-is="@Roles.Applicant">
+<authorized role-is="@Roles.Applicant" status-for="@Model.Status" status-is="@ModificationStatus.InDraft">
     @* Only show the Overall ranking if we have the changes *@
-    @if (Model.ModificationChanges.Any() && Model.Status is ModificationStatus.InDraft)
+    @if (Model.ModificationChanges.Any())
     {
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
@@ -374,7 +373,7 @@ else
 </authorized>
 
 <feature name="@FeatureFlags.RequestRevisions">
-    <authorized role-in="@(new []{Roles.Applicant})"
+    <authorized role-is="@Roles.Applicant"
                 status-for="@Model.Status"
                 status-is="@ModificationStatus.RequestRevisions">
 
