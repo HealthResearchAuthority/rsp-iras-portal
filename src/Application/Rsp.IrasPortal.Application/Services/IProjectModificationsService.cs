@@ -336,4 +336,13 @@ public interface IProjectModificationsService : IInterceptable
     /// containing a <see cref="ServiceResponse"/> indicating success or failure of the creation process.
     /// </returns>
     Task<ServiceResponse> DeleteDocumentAnswersModification(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest);
+
+    /// <summary>
+    /// Duplicates a project modification.
+    /// </summary>
+    /// <param name="projectModificationRequest">
+    /// The request object containing details for the duplicate modification.
+    /// </param>
+    /// <returns>An asynchronous operation that returns the newly created project modification.</returns>
+    Task<ServiceResponse<ProjectModificationResponse>> DuplicateModification(DuplicateModificationRequest duplicateModificationRequest);
 }

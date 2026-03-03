@@ -14,8 +14,7 @@ namespace Rsp.Portal.Services;
 /// project modifications and their changes by delegating to the IProjectModificationsServiceClient
 /// and mapping responses.
 /// </summary>
-public class ProjectModificationsService
-(
+public class ProjectModificationsService(
     IProjectModificationsServiceClient projectModificationsServiceClient
 ) : IProjectModificationsService
 {
@@ -24,9 +23,11 @@ public class ProjectModificationsService
     /// </summary>
     /// <param name="projectModificationId">Modification Id.</param>
     /// <returns>An asynchronous operation that returns a saved application.</returns>
-    public async Task<ServiceResponse<ProjectModificationResponse>> GetModification(string projectRecordId, Guid projectModificationId)
+    public async Task<ServiceResponse<ProjectModificationResponse>> GetModification(string projectRecordId,
+        Guid projectModificationId)
     {
-        var apiResponse = await projectModificationsServiceClient.GetModification(projectRecordId, projectModificationId);
+        var apiResponse =
+            await projectModificationsServiceClient.GetModification(projectRecordId, projectModificationId);
         return apiResponse.ToServiceResponse();
     }
 
@@ -35,7 +36,8 @@ public class ProjectModificationsService
     /// </summary>
     /// <param name="projectRecordId">Project Record Id.</param>
     /// <returns>An asynchronous operation that returns all the saved applications.</returns>
-    public async Task<ServiceResponse<IEnumerable<ProjectModificationResponse>>> GetModifications(string projectRecordId)
+    public async Task<ServiceResponse<IEnumerable<ProjectModificationResponse>>> GetModifications(
+        string projectRecordId)
     {
         var apiResponse = await projectModificationsServiceClient.GetModifications(projectRecordId);
         return apiResponse.ToServiceResponse();
@@ -58,7 +60,9 @@ public class ProjectModificationsService
         string sortDirection = SortDirections.Descending
     )
     {
-        var apiResponse = await projectModificationsServiceClient.GetModifications(searchQuery, pageNumber, pageSize, sortField, sortDirection);
+        var apiResponse =
+            await projectModificationsServiceClient.GetModifications(searchQuery, pageNumber, pageSize, sortField,
+                sortDirection);
 
         return apiResponse.ToServiceResponse();
     }
@@ -69,7 +73,8 @@ public class ProjectModificationsService
     /// <param name="projectRecordId">Project Record Id.</param>
     /// <param name="status">Project Record Status.</param>
     /// <returns>An asynchronous operation that returns saved applications filtered by status.</returns>
-    public async Task<ServiceResponse<IEnumerable<ProjectModificationResponse>>> GetModificationsByStatus(string projectRecordId, string status)
+    public async Task<ServiceResponse<IEnumerable<ProjectModificationResponse>>> GetModificationsByStatus(
+        string projectRecordId, string status)
     {
         var apiResponse = await projectModificationsServiceClient.GetModificationsByStatus(projectRecordId, status);
         return apiResponse.ToServiceResponse();
@@ -99,7 +104,8 @@ public class ProjectModificationsService
         string sortDirection = SortDirections.Descending
     )
     {
-        var apiResponse = await projectModificationsServiceClient.GetModificationsForProject(projectRecordId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
+        var apiResponse = await projectModificationsServiceClient.GetModificationsForProject(projectRecordId,
+            searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
         return apiResponse.ToServiceResponse();
     }
@@ -130,16 +136,17 @@ public class ProjectModificationsService
     /// </param>
     public async Task<ServiceResponse<GetModificationsResponse>> GetModificationsBySponsorOrganisationUserId
     (
-       Guid sponsorOrganisationUserId,
-       SponsorAuthorisationsModificationsSearchRequest searchQuery,
-       int pageNumber = 1,
-       int pageSize = 20,
-       string sortField = nameof(ModificationsDto.SentToSponsorDate),
-       string sortDirection = SortDirections.Descending,
-       string rtsId = ""
+        Guid sponsorOrganisationUserId,
+        SponsorAuthorisationsModificationsSearchRequest searchQuery,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(ModificationsDto.SentToSponsorDate),
+        string sortDirection = SortDirections.Descending,
+        string rtsId = ""
     )
     {
-        var apiResponse = await projectModificationsServiceClient.GetModificationsBySponsorOrganisationUserId(sponsorOrganisationUserId, searchQuery, pageNumber, pageSize, sortField, sortDirection, rtsId);
+        var apiResponse = await projectModificationsServiceClient.GetModificationsBySponsorOrganisationUserId(
+            sponsorOrganisationUserId, searchQuery, pageNumber, pageSize, sortField, sortDirection, rtsId);
 
         return apiResponse.ToServiceResponse();
     }
@@ -151,7 +158,8 @@ public class ProjectModificationsService
     /// The request object containing details for the new modification.
     /// </param>
     /// <returns>An asynchronous operation that returns the newly created project modification.</returns>
-    public async Task<ServiceResponse<ProjectModificationResponse>> CreateModification(ProjectModificationRequest projectModificationRequest)
+    public async Task<ServiceResponse<ProjectModificationResponse>> CreateModification(
+        ProjectModificationRequest projectModificationRequest)
     {
         var apiResponse = await projectModificationsServiceClient.CreateModification(projectModificationRequest);
         return apiResponse.ToServiceResponse();
@@ -168,9 +176,11 @@ public class ProjectModificationsService
     /// cref="ServiceResponse{ProjectModificationChangeResponse}"/> containing the result of the
     /// modification change creation.
     /// </returns>
-    public async Task<ServiceResponse<ProjectModificationChangeResponse>> CreateModificationChange(ProjectModificationChangeRequest projectModificationChangeRequest)
+    public async Task<ServiceResponse<ProjectModificationChangeResponse>> CreateModificationChange(
+        ProjectModificationChangeRequest projectModificationChangeRequest)
     {
-        var apiResponse = await projectModificationsServiceClient.CreateModificationChange(projectModificationChangeRequest);
+        var apiResponse =
+            await projectModificationsServiceClient.CreateModificationChange(projectModificationChangeRequest);
         return apiResponse.ToServiceResponse();
     }
 
@@ -186,16 +196,21 @@ public class ProjectModificationsService
     /// A <see cref="Task"/> representing the asynchronous operation, containing a <see
     /// cref="ServiceResponse"/> indicating success or failure of the creation process.
     /// </returns>
-    public async Task<ServiceResponse> CreateDocumentModification(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest)
+    public async Task<ServiceResponse> CreateDocumentModification(
+        List<ProjectModificationDocumentRequest> projectModificationDocumentRequest)
     {
-        var apiResponse = await projectModificationsServiceClient.CreateModificationDocument(projectModificationDocumentRequest);
+        var apiResponse =
+            await projectModificationsServiceClient.CreateModificationDocument(projectModificationDocumentRequest);
 
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId, string reviewerEmail, string reviewerName)
+    public async Task<ServiceResponse> AssignModificationsToReviewer(List<string> modificationIds, string reviewerId,
+        string reviewerEmail, string reviewerName)
     {
-        var apiResponse = await projectModificationsServiceClient.AssignModificationsToReviewer(modificationIds, reviewerId, reviewerEmail, reviewerName);
+        var apiResponse =
+            await projectModificationsServiceClient.AssignModificationsToReviewer(modificationIds, reviewerId,
+                reviewerEmail, reviewerName);
         return apiResponse.ToServiceResponse();
     }
 
@@ -213,23 +228,29 @@ public class ProjectModificationsService
     /// The direction of sorting: "asc" for ascending or "desc" for descending.
     /// </param>
     /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
-    public async Task<ServiceResponse<ProjectOverviewDocumentResponse>> GetDocumentsForProjectOverview(string projectRecordId, ProjectOverviewDocumentSearchRequest searchQuery, int pageNumber = 1, int pageSize = 20, string sortField = "DocumentType", string sortDirection = "desc")
+    public async Task<ServiceResponse<ProjectOverviewDocumentResponse>> GetDocumentsForProjectOverview(
+        string projectRecordId, ProjectOverviewDocumentSearchRequest searchQuery, int pageNumber = 1, int pageSize = 20,
+        string sortField = "DocumentType", string sortDirection = "desc")
     {
-        var apiResponse = await projectModificationsServiceClient.GetDocumentsForProjectOverview(projectRecordId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
+        var apiResponse = await projectModificationsServiceClient.GetDocumentsForProjectOverview(projectRecordId,
+            searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<ProjectModificationChangeResponse>> GetModificationChange(Guid modificationChangeId)
+    public async Task<ServiceResponse<ProjectModificationChangeResponse>> GetModificationChange(
+        Guid modificationChangeId)
     {
         var apiResponse = await projectModificationsServiceClient.GetModificationChange(modificationChangeId);
 
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationChanges(string projectRecordId, Guid projectModificationId)
+    public async Task<ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationChanges(
+        string projectRecordId, Guid projectModificationId)
     {
-        var apiResponse = await projectModificationsServiceClient.GetModificationChanges(projectRecordId, projectModificationId);
+        var apiResponse =
+            await projectModificationsServiceClient.GetModificationChanges(projectRecordId, projectModificationId);
 
         return apiResponse.ToServiceResponse();
     }
@@ -263,9 +284,11 @@ public class ProjectModificationsService
     /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
     /// that reflects the success or failure of the update operation.
     /// </returns>
-    public async Task<ServiceResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId, string status, string? revisionDescription = null, string? reasonNotApproved = null)
+    public async Task<ServiceResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId,
+        string status, string? revisionDescription = null, string? reasonNotApproved = null)
     {
-        var apiResponse = await projectModificationsServiceClient.UpdateModificationStatus(projectRecordId, modificationId, status, revisionDescription, reasonNotApproved);
+        var apiResponse = await projectModificationsServiceClient.UpdateModificationStatus(projectRecordId,
+            modificationId, status, revisionDescription, reasonNotApproved);
 
         return apiResponse.ToServiceResponse();
     }
@@ -282,7 +305,8 @@ public class ProjectModificationsService
     /// A <see cref="Task"/> representing the asynchronous operation, containing a <see
     /// cref="ServiceResponse"/> indicating success or failure of the creation process.
     /// </returns>
-    public async Task<ServiceResponse> DeleteDocumentModification(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest)
+    public async Task<ServiceResponse> DeleteDocumentModification(
+        List<ProjectModificationDocumentRequest> projectModificationDocumentRequest)
     {
         var apiResponse = await projectModificationsServiceClient.DeleteDocuments(projectModificationDocumentRequest);
 
@@ -305,16 +329,19 @@ public class ProjectModificationsService
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<ProjectModificationAuditTrailResponse>> GetModificationAuditTrail(Guid modificationId)
+    public async Task<ServiceResponse<ProjectModificationAuditTrailResponse>> GetModificationAuditTrail(
+        Guid modificationId)
     {
         var apiResponse = await projectModificationsServiceClient.GetModificationAuditTrail(modificationId);
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse> UpdateModificationChange(ProjectModificationChangeRequest projectModificationChangeRequest)
+    public async Task<ServiceResponse> UpdateModificationChange(
+        ProjectModificationChangeRequest projectModificationChangeRequest)
     {
         // Invoke microservice client to update the modification change.
-        var apiResponse = await projectModificationsServiceClient.UpdateModificationChange(projectModificationChangeRequest);
+        var apiResponse =
+            await projectModificationsServiceClient.UpdateModificationChange(projectModificationChangeRequest);
 
         return apiResponse.ToServiceResponse();
     }
@@ -331,9 +358,11 @@ public class ProjectModificationsService
     /// Saves review responses for a project modification.
     /// </summary>
     /// <param name="modificationReviewRequest">The request object containing the review values</param>
-    public async Task<ServiceResponse> SaveModificationReviewResponses(ProjectModificationReviewRequest modificationReviewRequest)
+    public async Task<ServiceResponse> SaveModificationReviewResponses(
+        ProjectModificationReviewRequest modificationReviewRequest)
     {
-        var apiResponse = await projectModificationsServiceClient.SaveModificationReviewResponses(modificationReviewRequest);
+        var apiResponse =
+            await projectModificationsServiceClient.SaveModificationReviewResponses(modificationReviewRequest);
 
         return apiResponse.ToServiceResponse();
     }
@@ -344,9 +373,11 @@ public class ProjectModificationsService
     /// <param name="projectRecordId">The ID of the project record</param>
     /// <param name="modificationId">The ID of the modification</param>
     /// <returns>Returns the modification review properties</returns>
-    public async Task<ServiceResponse<ProjectModificationReviewResponse>> GetModificationReviewResponses(string projectRecordId, Guid modificationId)
+    public async Task<ServiceResponse<ProjectModificationReviewResponse>> GetModificationReviewResponses(
+        string projectRecordId, Guid modificationId)
     {
-        var apiResponse = await projectModificationsServiceClient.GetModificationReviewResponses(projectRecordId, modificationId);
+        var apiResponse =
+            await projectModificationsServiceClient.GetModificationReviewResponses(projectRecordId, modificationId);
 
         return apiResponse.ToServiceResponse();
     }
@@ -365,9 +396,12 @@ public class ProjectModificationsService
     /// The direction of sorting: "asc" for ascending or "desc" for descending.
     /// </param>
     /// <returns>Returns a paginated list of modifications related to the specified project record.</returns>
-    public async Task<ServiceResponse<ProjectOverviewDocumentResponse>> GetDocumentsForModification(Guid modificationId, ProjectOverviewDocumentSearchRequest searchQuery, int pageNumber = 1, int pageSize = 20, string sortField = "DocumentType", string sortDirection = "desc")
+    public async Task<ServiceResponse<ProjectOverviewDocumentResponse>> GetDocumentsForModification(Guid modificationId,
+        ProjectOverviewDocumentSearchRequest searchQuery, int pageNumber = 1, int pageSize = 20,
+        string sortField = "DocumentType", string sortDirection = "desc")
     {
-        var apiResponse = await projectModificationsServiceClient.GetDocumentsForModification(modificationId, searchQuery, pageNumber, pageSize, sortField, sortDirection);
+        var apiResponse = await projectModificationsServiceClient.GetDocumentsForModification(modificationId,
+            searchQuery, pageNumber, pageSize, sortField, sortDirection);
 
         return apiResponse.ToServiceResponse();
     }
@@ -385,9 +419,11 @@ public class ProjectModificationsService
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse> CreateModificationDocumentsAuditTrail(List<ModificationDocumentsAuditTrailDto> documentsAuditTrailRequest)
+    public async Task<ServiceResponse> CreateModificationDocumentsAuditTrail(
+        List<ModificationDocumentsAuditTrailDto> documentsAuditTrailRequest)
     {
-        var apiResponse = await projectModificationsServiceClient.CreateModificationDocumentsAuditTrail(documentsAuditTrailRequest);
+        var apiResponse =
+            await projectModificationsServiceClient.CreateModificationDocumentsAuditTrail(documentsAuditTrailRequest);
 
         return apiResponse.ToServiceResponse();
     }
@@ -403,9 +439,19 @@ public class ProjectModificationsService
     /// A <see cref="Task"/> representing the asynchronous operation,
     /// containing a <see cref="ServiceResponse"/> indicating success or failure of the creation process.
     /// </returns>
-    public async Task<ServiceResponse> DeleteDocumentAnswersModification(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest)
+    public async Task<ServiceResponse> DeleteDocumentAnswersModification(
+        List<ProjectModificationDocumentRequest> projectModificationDocumentRequest)
     {
-        var apiResponse = await projectModificationsServiceClient.DeleteDocumentAnswers(projectModificationDocumentRequest);
+        var apiResponse =
+            await projectModificationsServiceClient.DeleteDocumentAnswers(projectModificationDocumentRequest);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<ProjectModificationResponse>> DuplicateModification(
+        DuplicateModificationRequest duplicateModificationRequest)
+    {
+        var apiResponse = await projectModificationsServiceClient.DuplicateModification(duplicateModificationRequest);
 
         return apiResponse.ToServiceResponse();
     }

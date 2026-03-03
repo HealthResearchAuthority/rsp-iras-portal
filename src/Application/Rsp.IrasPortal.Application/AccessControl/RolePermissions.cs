@@ -43,7 +43,7 @@ public static class RolePermissions
                 MyResearch.Modifications_Submit,
                 MyResearch.Modifications_Withdraw,
                 MyResearch.Modifications_Download,
-
+                MyResearch.Modifications_Resubmission,
                 MyResearch.ModificationsHistory_Read
             }
         },
