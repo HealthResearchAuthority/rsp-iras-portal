@@ -180,25 +180,25 @@ else
 </feature>
 
 <feature name="@FeatureFlags.ModificationResubmission">
-<authorized permission="@Permissions.MyResearch.Modifications_Resubmission"
-            status-for="Status"
-            status-is="@ModificationStatus.NotApproved">
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <div class="govuk-heading-m">
-                Duplicate this modification
+    <authorized permission="@Permissions.MyResearch.Modifications_Resubmission"
+                status-for="Status"
+                status-is="@ModificationStatus.NotApproved">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <div class="govuk-heading-m">
+                    Duplicate this modification
+                </div>
+                <div class="govuk-body">
+                    Duplicating will create a new modification using the same information and a new modification ID.
+                </div>
+                <div class="govuk-body">
+                    You should review the reason it was not approved and update the information on the next page before submitting it to the sponsor.
+                </div>
+                <a asp-route="pmc:duplicatemodification"
+                   class="govuk-button govuk-button--secondary">
+                    Duplicate modification
+                </a>
             </div>
-            <div class="govuk-body">
-                Duplicating will create a new modification using the same information and a new modification ID.
-            </div>
-            <div class="govuk-body">
-                You should review the reason it was not approved and update the information on the next page before submitting it to the sponsor.
-            </div>
-            <a asp-route="pmc:duplicatemodification"
-               class="govuk-button govuk-button--secondary">
-                Duplicate modification
-            </a>
         </div>
-    </div>
-</authorized>
+    </authorized>
 </feature>

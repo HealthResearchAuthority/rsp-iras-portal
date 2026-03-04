@@ -7,12 +7,16 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+
         @{
-            string heading = Model.Status switch
+            var title = Model.Status switch
             {
-                ModificationStatus.ReviseAndAuthorise => "Revise and authorise",
-                ModificationStatus.RequestRevisions => "Make revisions",
-                ModificationStatus.InDraft => "Review all changes",
+                ModificationStatus.InDraft when TempData[TempDataKeys.IsDuplicateModification] is not null
+                    => "Review modification",
+
+                ModificationStatus.InDraft
+                    => "Review all changes",
+
                 _ => "Modification"
             };
         }
@@ -83,18 +87,13 @@
 </div>
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-        @if (Model.Status != ModificationStatus.InDraft && Model.Status != ModificationStatus.RequestRevisions)
-        {
-            <partial name="_NavigationTabPartial" model="Model" view-data="ViewData" />
-        }
-        else
-        {
-            <h2 class="govuk-heading-m">Changes</h2>
-            <partial name="ModificationChanges" model="Model" view-data="ViewData" />
+        <partial name="_NavigationTabPartial" model="Model" view-data="ViewData" status-for="@Model.Status" status-mode="Hide"
+                 status-in="@([ModificationStatus.InDraft,ModificationStatus.RequestRevisions] )" />
+        <h2 class="govuk-heading-m">Changes</h2>
+        <partial name="ModificationChanges" model="Model" view-data="ViewData" />
 
-            <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
+        <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
 
-            <partial name="SponsorDetails" model="Model" view-data="ViewData" />
-        }
+        <partial name="SponsorDetails" model="Model" view-data="ViewData" />
     </div>
 </div>

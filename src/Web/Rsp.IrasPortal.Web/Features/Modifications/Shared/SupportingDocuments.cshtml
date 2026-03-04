@@ -139,7 +139,7 @@
                                                 }
                                             </td>
                                         }
-                                        @if (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestRevisions)
+                                        @if ((isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise) || Model.Status is ModificationStatus.RequestRevisions)
                                         {
                                             <td class="govuk-table__cell">
                                                 @if (!isFailed)

@@ -620,6 +620,60 @@ public class ReviewAllChangesController
         });
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
+    [FeatureGate(FeatureFlags.RequestRevisions)]
+    [HttpPost]
+    public async Task<IActionResult> SendRevisionResponseToSponsor(ModificationDetailsViewModel model, bool isSaveForLater)
+    {
+        bool validation = isSaveForLater && string.IsNullOrWhiteSpace(model.ApplicantRevisionResponse);
+        if (!validation)
+        {
+            var context = new ValidationContext<ModificationDetailsViewModel>(model);
+            var validationResult = await modificationValidator.ValidateAsync(context);
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+
+                TempData.Remove(TempDataKeys.ModelState);
+                TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+
+                return RedirectToRoute("pmc:ModificationDetails", new
+                {
+                    projectRecordId = model.ProjectRecordId,
+                    irasId = model.IrasId,
+                    shortTitle = model.ShortTitle,
+                    projectModificationId = Guid.Parse(model.ModificationId),
+                    sponsorOrganisationUserId = model.SponsorOrganisationUserId,
+                    rtsId = model.RtsId
+                });
+            }
+        }
+
+        if (isSaveForLater)
+        {
+            await projectModificationsService.UpdateModificationStatus
+                (
+                    model.ProjectRecordId,
+                    Guid.Parse(model.ModificationId),
+                    ModificationStatus.RequestRevisions,
+                    model.RevisionDescription,
+                    model.ReasonNotApproved,
+                    model.ApplicantRevisionResponse
+                );
+            return RedirectToRoute("pov:postapproval", new { projectRecordId = model.ProjectRecordId });
+        }
+
+        return RedirectToAction(nameof(SendModificationToSponsor), new
+        {
+            projectRecordId = model.ProjectRecordId,
+            projectModificationId = Guid.Parse(model.ModificationId),
+            applicantRevisionResponse = model.ApplicantRevisionResponse
+        });
+    }
+
     private async Task<IActionResult> HandleModificationStatusUpdate(
         string projectRecordId,
         Guid projectModificationId,
