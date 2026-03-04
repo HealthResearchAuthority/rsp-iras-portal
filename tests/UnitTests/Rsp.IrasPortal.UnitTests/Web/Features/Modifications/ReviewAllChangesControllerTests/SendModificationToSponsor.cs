@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.Portal.Application.Constants;
@@ -10,6 +12,7 @@ using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.Enums;
 using Rsp.Portal.Web.Features.Modifications;
+using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Models;
 
 namespace Rsp.Portal.UnitTests.Web.Features.Modifications.ReviewAllChangesControllerTests;
@@ -37,7 +40,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>()))
+            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()))
             .ReturnsAsync(response);
 
         Mocker.GetMock<IRespondentService>()
@@ -60,7 +63,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
             .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
         // Act
-        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId);
+        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId, string.Empty);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -68,7 +71,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
 
         // Verify
         Mocker.GetMock<IProjectModificationsService>()
-            .Verify(s => s.UpdateModificationStatus(projectRecordId, projectModificationId, ModificationStatus.WithSponsor, null, null), Times.Once);
+            .Verify(s => s.UpdateModificationStatus(projectRecordId, projectModificationId, ModificationStatus.WithSponsor, null, null, string.Empty), Times.Once);
     }
 
     [Theory, AutoData]
@@ -89,7 +92,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>()))
+            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()))
             .ReturnsAsync(response);
 
         Mocker.GetMock<IRespondentService>()
@@ -112,7 +115,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
             .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
         // Act
-        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId);
+        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId, string.Empty);
 
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();
@@ -179,7 +182,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
 
         // Act
-        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId);
+        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId, string.Empty);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -257,7 +260,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
 
         // Act
-        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId);
+        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId, string.Empty);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -318,7 +321,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
 
         // Act
-        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId);
+        var result = await Sut.SendModificationToSponsor(projectRecordId, projectModificationId, string.Empty);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -336,5 +339,132 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("ModificationSendToSponsor", viewResult.ViewName);
         Assert.Null(viewResult.Model);
+    }
+
+    [Fact]
+    public async Task Validation_Fails_Redirects_To_Route_And_Populates_ModelState()
+    {
+        // Arrange
+        var failures = new List<ValidationFailure>
+        {
+            new(nameof(ModificationDetailsViewModel.ApplicantRevisionResponse), "Response required"),
+            new(nameof(ModificationDetailsViewModel.ShortTitle), "Short title too short")
+        };
+        var validationResult = new FluentValidation.Results.ValidationResult(failures);
+
+        Mocker.GetMock<IValidator<ModificationDetailsViewModel>>()
+          .SetupSequence(v => v.ValidateAsync(It.IsAny<ValidationContext<ModificationDetailsViewModel>>(), default))
+          .ReturnsAsync(new FluentValidation.Results.ValidationResult()).ReturnsAsync(validationResult);
+
+        var mockValidator = Mocker.GetMock<IValidator<ModificationDetailsViewModel>>();
+        mockValidator
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<ModificationDetailsViewModel>>(), default))
+            .ReturnsAsync(validationResult);
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "Safety",
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.ShortProjectTitle] = "Short Title",
+            [TempDataKeys.IrasId] = 999,
+        };
+
+        var model = new ModificationDetailsViewModel
+        {
+            ProjectRecordId = "PRJ-123",
+            IrasId = "IRAS-456",
+            ShortTitle = "Short",
+            ModificationId = Guid.NewGuid().ToString(),
+            SponsorOrganisationUserId = "user-1",
+            RtsId = "rts-1",
+            ApplicantRevisionResponse = "" // cause error
+        };
+
+        // Act
+        var result = await Sut.SendRevisionResponseToSponsor(model, false);
+
+        // Assert
+        var redirect = Assert.IsType<RedirectToRouteResult>(result);
+        Assert.Equal("pmc:ModificationDetails", redirect.RouteName);
+        Assert.False(Sut.ModelState.IsValid);
+
+        // verify mock called
+        mockValidator.Verify(v => v.ValidateAsync(It.IsAny<IValidationContext>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Validation_Succeeds_Redirects_To_Action_SendModificationToSponsor()
+    {
+        // Arrange
+        Mocker.GetMock<IValidator<ModificationDetailsViewModel>>()
+          .SetupSequence(v => v.ValidateAsync(It.IsAny<ValidationContext<ModificationDetailsViewModel>>(), default))
+          .ReturnsAsync(new FluentValidation.Results.ValidationResult()).ReturnsAsync(new FluentValidation.Results.ValidationResult());
+
+        var mockValidator = Mocker.GetMock<IValidator<ModificationDetailsViewModel>>();
+        mockValidator
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<ModificationDetailsViewModel>>(), default))
+            .ReturnsAsync(new FluentValidation.Results.ValidationResult());
+
+        var model = new ModificationDetailsViewModel
+        {
+            ProjectRecordId = "PRJ-123",
+            IrasId = "IRAS-456",
+            ShortTitle = "Short",
+            ModificationId = Guid.NewGuid().ToString(),
+            SponsorOrganisationUserId = "user-1",
+            RtsId = "rts-1",
+            ApplicantRevisionResponse = "" // cause error
+        };
+
+        // Act
+        var result = await Sut.SendRevisionResponseToSponsor(model, false);
+
+        // Assert
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(Sut.SendModificationToSponsor), redirect.ActionName);
+    }
+
+    [Fact]
+    public async Task SendRevisionResponseToSponsor_IsSaveForLaterTrue_ShouldUpdateStatusAndRedirect()
+    {
+        // Arrange
+        var mockProjectModificationService = new Mock<IProjectModificationsService>();
+        var model = new ModificationDetailsViewModel
+        {
+            ProjectRecordId = "PRJ-123",
+            IrasId = "IRAS-456",
+            ShortTitle = "Short",
+            ModificationId = Guid.NewGuid().ToString(),
+            SponsorOrganisationUserId = "user-1",
+            RtsId = "rts-1",
+            ApplicantRevisionResponse = "" // cause error
+        };
+
+        Mocker.GetMock<IValidator<ModificationDetailsViewModel>>()
+          .SetupSequence(v => v.ValidateAsync(It.IsAny<ValidationContext<ModificationDetailsViewModel>>(), default))
+          .ReturnsAsync(new FluentValidation.Results.ValidationResult()).ReturnsAsync(new FluentValidation.Results.ValidationResult());
+
+        var mockValidator = Mocker.GetMock<IValidator<ModificationDetailsViewModel>>();
+        mockValidator
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<ModificationDetailsViewModel>>(), default))
+            .ReturnsAsync(new FluentValidation.Results.ValidationResult());
+
+        // Act
+        var result = await Sut.SendRevisionResponseToSponsor(model, isSaveForLater: true);
+
+        // Assert
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.UpdateModificationStatus(
+                model.ProjectRecordId,
+                Guid.Parse(model.ModificationId),
+                ModificationStatus.RequestRevisions,
+                string.Empty,
+                null, model.ApplicantRevisionResponse))
+            .ReturnsAsync(new ServiceResponse { StatusCode = System.Net.HttpStatusCode.OK });
+
+        var redirectResult = Assert.IsType<RedirectToRouteResult>(result);
+        Assert.Equal("pov:postapproval", redirectResult.RouteName);
+        Assert.Equal(model.ProjectRecordId, redirectResult.RouteValues["projectRecordId"]);
     }
 }

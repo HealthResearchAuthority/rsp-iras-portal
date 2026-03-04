@@ -8,22 +8,19 @@
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-        @if (Model.Status != ModificationStatus.InDraft)
-        {
-            <h1 class="govuk-heading-l">Modification</h1>
-        }
-        else
-        {
-            @if (TempData[TempDataKeys.IsDuplicateModification] is not null)
+        @{
+            var title = Model.Status switch
             {
-                <h1 class="govuk-heading-l">Review modification</h1>
-            }
-            else
-            {
-                <h1 class="govuk-heading-l">Review all changes</h1>
-            }
-        }
+                ModificationStatus.InDraft when TempData[TempDataKeys.IsDuplicateModification] is not null
+                => "Review modification",
 
+                ModificationStatus.InDraft
+                => "Review all changes",
+
+                _ => "Modification"
+            };
+        }
+        <h1 class="govuk-heading-l">@title</h1>
         @{
             <partial name="_ProjectModificationSummary" model="Model" viewData="ViewData" />
         }
@@ -31,39 +28,38 @@
         <feature name="@FeatureFlags.DownloadPack">
             @if (User.HasPermission(Permissions.MyResearch.Modifications_Download))
             {
-                <div
-                status-for="@Model.Status"  
-                status-in="@([ModificationStatus.WithSponsor,
-                        ModificationStatus.NotAuthorised,
-                        ModificationStatus.WithReviewBody, 
-                        ModificationStatus.Approved,
-                        ModificationStatus.NotApproved,
-                        ModificationStatus.ReviseAndAuthorise,
-                        ModificationStatus.ReviewInProgress,
-                        ModificationStatus.RequestForInformation])">
-                    <h2 class="govuk-heading-m">Download a PDF of the modification information</h2>
-                    <p class="govuk-body">
-                        You'll need to send this to participating organisations along with your cover letter and copies of any supporting documents.
-                    </p>
-                    <a asp-controller="ReviewAllChanges" asp-action="DownloadModificationPdfFromHtml" class="govuk-button govuk-button--secondary">
-                        Download modification information
-                    </a>
-                </div>
-            }
+                <div status-for="@Model.Status"
+                     status-in="@([ModificationStatus.WithSponsor,
+                                   ModificationStatus.NotAuthorised,
+                                   ModificationStatus.WithReviewBody,
+                                   ModificationStatus.Approved,
+                                   ModificationStatus.NotApproved,
+                                   ModificationStatus.ReviseAndAuthorise,
+                                   ModificationStatus.ReviewInProgress,
+                                   ModificationStatus.RequestForInformation])">
+                <h2 class="govuk-heading-m">Download a PDF of the modification information</h2>
+                <p class="govuk-body">
+                    You'll need to send this to participating organisations along with your cover letter and copies of any supporting documents.
+                </p>
+                <a asp-controller="ReviewAllChanges" asp-action="DownloadModificationPdfFromHtml" class="govuk-button govuk-button--secondary">
+                    Download modification information
+                </a>
+            </div>
+                        }
             else if (User.HasPermission(Permissions.MyResearch.Modifications_Download_Limited))
             {
                 <div status-for="@Model.Status"
                      status-in="@([ModificationStatus.Approved,
-                        ModificationStatus.NotApproved,])">
-                    <h2 class="govuk-heading-m">Download a PDF of the modification information</h2>
-                    <p class="govuk-body">
-                        You'll need to send this to participating organisations along with your cover letter and copies of any supporting documents.
-                    </p>
-                    <a asp-controller="ReviewAllChanges" asp-action="DownloadModificationPdfFromHtml" class="govuk-button govuk-button--secondary">
-                        Download modification information
-                    </a>
-                </div>
-            }
+                                                                                                                                                                                                                                                                                    ModificationStatus.NotApproved,])">
+                <h2 class="govuk-heading-m">Download a PDF of the modification information</h2>
+                <p class="govuk-body">
+                    You'll need to send this to participating organisations along with your cover letter and copies of any supporting documents.
+                </p>
+                <a asp-controller="ReviewAllChanges" asp-action="DownloadModificationPdfFromHtml" class="govuk-button govuk-button--secondary">
+                    Download modification information
+                </a>
+            </div>
+                        }
         </feature>
 
         <h2 class="govuk-heading-m">Summary details</h2>
@@ -90,20 +86,17 @@
     </div>
 </div>
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
-        @if (Model.Status != ModificationStatus.InDraft)
-        {
-            <partial name="_NavigationTabPartial" model="Model" view-data="ViewData" />
-        }
-        else
-        {
-            <h2 class="govuk-heading-m">Changes</h2>
-            <partial name="ModificationChanges" model="Model" view-data="ViewData" />
+    @if (Model.Status != ModificationStatus.InDraft && Model.Status != ModificationStatus.RequestRevisions)
+    {
+        <partial name="_NavigationTabPartial" model="Model" view-data="ViewData" />
+    }
+    else
+    {
+        <h2 class="govuk-heading-m">Changes</h2>
+        <partial name="ModificationChanges" model="Model" view-data="ViewData" />
 
-            <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
+        <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
 
-            <partial name="SponsorDetails" model="Model" view-data="ViewData" />
-        }  
-       
-    </div>
+        <partial name="SponsorDetails" model="Model" view-data="ViewData" />
+    }
 </div>

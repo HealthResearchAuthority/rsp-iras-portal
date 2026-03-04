@@ -339,13 +339,13 @@ else
                                         { "projectModificationId", modification.ModificationId  }
                                         };
 
-                                    var modificationReviewRoute = "pmc:modificationdetails";
-
-                                    if (modification.Status != ModificationStatus.InDraft)
+                                    var modificationReviewRoute = modification.Status switch
                                     {
-                                        modificationReviewRoute = "pmc:reviewallchanges";
-                                    }
-                                    if (modification.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions)
+                                        not ModificationStatus.InDraft and not ModificationStatus.RequestRevisions => "pmc:reviewallchanges",
+                                        ModificationStatus.RequestRevisions => "pmc:requestforrevision",
+                                        _ => "pmc:modificationdetails"
+                                    };
+                                    if (modification.Status is ModificationStatus.InDraft)
                                     {
                                         modification.SentToRegulatorDate = null;
                                         modification.SentToSponsorDate = null;

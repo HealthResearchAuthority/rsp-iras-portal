@@ -65,7 +65,7 @@ else
                 // no route for back navigation, as this page will
                 // only show back button when you are navigating from some other url
                 // given the LinkBackToReferrer is set
-                <partial name="_BackNavigation" model="@("", "Back", new Dictionary<string, string>())"/>
+                <partial name="_BackNavigation" model="@("", "Back", new Dictionary<string, string>())" />
             }
         }
     }
@@ -81,15 +81,15 @@ else
                                 Title = "Important",
                                 Heading = "This is a duplicated modification with a new modification ID. Update the information on this page before submitting it to the sponsor.",
                                 IsImportant = true
-                            })"/>
+                            })" />
         </div>
     </div>
 }
 
-<partial name="_ReviewModification" model="Model"/>
+<partial name="_ReviewModification" model="Model" />
 
 <authorized role-is="@Roles.Applicant">
-    @if (Model.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions)
+    @if (Model.Status is ModificationStatus.InDraft)
     {
         // TODO -  or ModificationStatus.RequestRevisions has been added temporarly, to make it possible to send back to sponsor, before Make revisions page is done
         <div class="govuk-grid-row">
@@ -101,7 +101,7 @@ else
                 <form method="post">
                     <div class="save-buttons">
                         @{
-                            <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId"/>
+                            <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
                             @if (Model.NoChangesToSubmit)
                             {
                                 <a asp-route="pmc:nochangestosubmit" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button">
@@ -114,7 +114,7 @@ else
                                                                      {
                                                                          ["projectModificationId"] = Model.ModificationId!,
                                                                          ["projectRecordId"] = Model.ProjectRecordId
-                                                                     })"/>
+                                                                     })" />
                             }
                             else
                             {
@@ -124,7 +124,7 @@ else
                             }
                             ViewBag.Style = "govuk-button govuk-button--secondary";
 
-                            <partial name="_SubmitButton" model="@("pmc:saveforlater", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId, ["routeName"] = "pov:postapproval" })"/>
+                            <partial name="_SubmitButton" model="@("pmc:saveforlater", "Save for later", new Dictionary<string, string> { ["projectRecordId"] = Model.ProjectRecordId, ["routeName"] = "pov:postapproval" })" />
                         }
                     </div>
                 </form>
@@ -180,25 +180,25 @@ else
 </feature>
 
 <feature name="@FeatureFlags.ModificationResubmission">
-<authorized permission="@Permissions.MyResearch.Modifications_Resubmission"
-            status-for="Status"
-            status-is="@ModificationStatus.NotApproved">
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <div class="govuk-heading-m">
-                Duplicate this modification
+    <authorized permission="@Permissions.MyResearch.Modifications_Resubmission"
+                status-for="Status"
+                status-is="@ModificationStatus.NotApproved">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <div class="govuk-heading-m">
+                    Duplicate this modification
+                </div>
+                <div class="govuk-body">
+                    Duplicating will create a new modification using the same information and a new modification ID.
+                </div>
+                <div class="govuk-body">
+                    You should review the reason it was not approved and update the information on the next page before submitting it to the sponsor.
+                </div>
+                <a asp-route="pmc:duplicatemodification"
+                   class="govuk-button govuk-button--secondary">
+                    Duplicate modification
+                </a>
             </div>
-            <div class="govuk-body">
-                Duplicating will create a new modification using the same information and a new modification ID.
-            </div>
-            <div class="govuk-body">
-                You should review the reason it was not approved and update the information on the next page before submitting it to the sponsor.
-            </div>
-            <a asp-route="pmc:duplicatemodification"
-               class="govuk-button govuk-button--secondary">
-                Duplicate modification
-            </a>
         </div>
-    </div>
-</authorized>
+    </authorized>
 </feature>

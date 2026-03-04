@@ -11,11 +11,11 @@
 
 @{
 
-	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
     var isAuthoriser = TempData[TempDataKeys.IsAuthoriser] as bool? ?? false;
     var isRevisionBySponsor = false;
-   
+
     <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
                 status-for="Status"
                 status-is="@ModificationStatus.ReviseAndAuthorise">
@@ -23,32 +23,53 @@
             isRevisionBySponsor = isAuthoriser;
             ViewBag.Title = "Revise and authorise";
             ViewBag.IsRevisionBySponsor = true;
-        }         
+        }
     </authorized>
+    <authorized permission="@Permissions.MyResearch.Modifications_Read"
+                status-for="Status"
+                status-is="@ModificationStatus.RequestRevisions">
+        @{
+            ViewBag.Title = "Make revisions";
+            ViewBag.IsRevisionBySponsor = false;
+        }
+    </authorized>
+
+    var modificationParams = new Dictionary<string, string> {
+        { "projectRecordId", Model.ProjectRecordId },
+        { "irasId", Model.IrasId  },
+        { "shortTitle", Model.ShortTitle ?? string.Empty },
+        { "projectModificationId", Model.ModificationId ?? string.Empty }
+    };
+
 }
+@if (Model.Status is ModificationStatus.RequestRevisions)
+{
+    <partial name="_BackNavigation" model="@("pmc:requestforrevision", "Back", modificationParams)" />
+}
+else
+{
+    @section BackNavigation {
 
-@section BackNavigation {
+        @* if we have a urlReferrer use that for back navigation *@
+        @{
+            // set this TempData key to true on the referrer page like PostApprovals
+            // or any other BackStage or FrontStage page so that we can link back to that page.
+            // If this Key is not set, the Back link won't be displayed
+            var linkBackToReferrer = TempData[TempDataKeys.ProjectModification.LinkBackToReferrer];
+            var urlReferrer = TempData[TempDataKeys.ProjectModification.UrlReferrer];
 
-    @* if we have a urlReferrer use that for back navigation *@
-    @{
-        // set this TempData key to true on the referrer page like PostApprovals
-        // or any other BackStage or FrontStage page so that we can link back to that page.
-        // If this Key is not set, the Back link won't be displayed
-        var linkBackToReferrer = TempData[TempDataKeys.ProjectModification.LinkBackToReferrer];
-        var urlReferrer = TempData[TempDataKeys.ProjectModification.UrlReferrer];
+            if (linkBackToReferrer is true && urlReferrer is not null && !isRevisionBySponsor)
+            {
+                ViewData[ViewDataKeys.UrlReferrer] = urlReferrer;
 
-        if (linkBackToReferrer is true && urlReferrer is not null && !isRevisionBySponsor)
-        {
-            ViewData[ViewDataKeys.UrlReferrer] = urlReferrer;
-
-            // no route for back navigation, as this page will
-            // only show back button when you are navigating from some other url
-            // given the LinkBackToReferrer is set
-            <partial name="_BackNavigation" model="@("", "Back", new Dictionary<string, string>())" />
+                // no route for back navigation, as this page will
+                // only show back button when you are navigating from some other url
+                // given the LinkBackToReferrer is set
+                <partial name="_BackNavigation" model="@("", "Back", new Dictionary<string, string>())" />
+            }
         }
     }
 }
-
 @{
     // display the notification banner if change is removed
     var changeRemoved = TempData[TempDataKeys.ProjectModificationChange.ChangeRemoved];
@@ -72,22 +93,22 @@
 
     var maxChangesWarning = pageContent.GetValueOrDefault("ModificationDetails.MaxChangesWarning", null);
     var headline = pageContent.GetValueOrDefault("ModificationDetails.RevisionDescriptionHeadline", null);
+    var headlineSponsor = pageContent.GetValueOrDefault("ModificationDetails.SponsorRevisionDescriptionHeadline", null);
     var description = pageContent.GetValueOrDefault("ModificationDetails.RevisionDescriptionBody", null);
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-
-        @if (isRevisionBySponsor)
-        {
-            <h1 class="govuk-heading-l">Revise and authorise</h1>
-            <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
-        }
-        else
-        {
-            <h1 class="govuk-heading-l">Modification details</h1>
+        @{
+            string heading = isRevisionBySponsor
+                ? "Revise and authorise"
+                : Model.Status == ModificationStatus.RequestRevisions
+                    ? "Make revisions"
+                    : "Modification details";
         }
 
+        <h1 class="govuk-heading-l">@heading</h1>
+        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
         @{
             ViewData[ViewDataKeys.ShowModificationStatus] = true;
             <partial name="_ProjectModificationSummary" model="Model" view-data="ViewData" />
@@ -119,6 +140,16 @@
         }
     </div>
 </div>
+
+<div status-for="@Model.Status" status-is="@ModificationStatus.RequestRevisions" class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-heading-m">
+            @Html.Raw(headlineSponsor?.Value)
+            <p class="govuk-body">@Model.RevisionDescription</p>
+        </div>
+    </div>
+</div>
+
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
         <h2 class="govuk-heading-m">Changes</h2>
@@ -136,7 +167,7 @@
         }
 
         <div class="save-buttons">
-            @if ((Model.Status is ModificationStatus.InDraft || isRevisionBySponsor) && Model.ModificationChanges.Count < 10)
+            @if ((Model.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions || isRevisionBySponsor) && Model.ModificationChanges.Count < 10)
             {
                 <a asp-route="pmc:areaofchange" asp-route-projectModificationId="@Model.ModificationId" class="govuk-button govuk-button--secondary">
                     Add another change to this modification
@@ -172,9 +203,9 @@
     </div>
 </div>
 
-<authorized role-is="@Roles.Applicant">
+<authorized role-is="@Roles.Applicant" status-for="@Model.Status" status-is="@ModificationStatus.InDraft">
     @* Only show the Overall ranking if we have the changes *@
-    @if (Model.ModificationChanges.Any() && Model.Status is ModificationStatus.InDraft)
+    @if (Model.ModificationChanges.Any())
     {
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
@@ -230,8 +261,8 @@
 </authorized>
 
 <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
-                status-for="Status"
-                status-is="@ModificationStatus.ReviseAndAuthorise">
+            status-for="Status"
+            status-is="@ModificationStatus.ReviseAndAuthorise">
     @if (isAuthoriser && Model.ModificationChanges.Any())
     {
         <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
@@ -265,7 +296,7 @@
             <div class="govuk-grid-column-two-thirds">
                 <h1 class="govuk-heading-m">
                     @Html.Raw(headline?.Value)
-                </h1>                
+                </h1>
             </div>
         </div>
 
@@ -273,7 +304,7 @@
             <div class="govuk-grid-row">
                 <div class="govuk-grid-column-two-thirds">
                     <div id="revision-description-label">
-                        @Html.Raw(description?.Value)
+                    @Html.Raw(description?.Value)
                     </div>                    
                     <div class="govuk-form-group govuk-character-count"
                          data-module="govuk-character-count"
@@ -299,24 +330,24 @@
                              aria-hidden="true"
                              class="govuk-hint govuk-character-count__message">
                         </div>
-                    </div>   
+                    </div>
 
-                    <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />                    
+                    <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
                     <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
-                    <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" /> 
+                    <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
                     <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
-                    <input type="hidden" name="IrasId" value="@Model.IrasId" />   
+                    <input type="hidden" name="IrasId" value="@Model.IrasId" />
                     <input type="hidden" name="RtsId" value="@Model.RtsId" />
                     <input type="hidden" name="ReviewType" value="@Model.ReviewType" /> 
-                    
-                    <div class="save-buttons">                        
+
+                    <div class="save-buttons">
                         @if (Model.ChangesReadyForSubmission)
                         {                            
                             <button type="submit"
                                     asp-route="sws:authoriserevision"
                                     class="govuk-button">
-                                Authorise
-                            </button>
+                            Authorise
+                    </button>
                         }
                         else
                         {
@@ -326,7 +357,7 @@
                                 Authorise
                             </a>
                         }                                 
-                    
+
                         <button type="submit"
                                 asp-route="sws:authoriserevision"
                                 name="isSaveForLater"
@@ -334,9 +365,18 @@
                                 class="govuk-button govuk-button--secondary">
                             Save for later
                         </button>
-                     </div>
+                    </div>
                 </div>
             </div>
         </form>
-    }       
+    }
 </authorized>
+
+<feature name="@FeatureFlags.RequestRevisions">
+    <authorized role-is="@Roles.Applicant"
+                status-for="@Model.Status"
+                status-is="@ModificationStatus.RequestRevisions">
+
+        <partial name="MakeRevision" model="Model" view-data="ViewData" />
+    </authorized>
+</feature>

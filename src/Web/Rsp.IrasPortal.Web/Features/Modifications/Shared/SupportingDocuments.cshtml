@@ -4,7 +4,6 @@
 @using Rsp.Portal.Web.Helpers
 @model ModificationDetailsViewModel
 
-
 @{
     bool isRevisionBySponsor = ViewBag.IsRevisionBySponsor as bool? ?? false;
 }
@@ -55,7 +54,7 @@
                                         </th>
                                     }
                                     <th scope="col" class="govuk-table__header">Status</th>
-                                    @if (Model.Status is ModificationStatus.InDraft || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise))
+                                    @if (Model.Status is ModificationStatus.InDraft || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise) || Model.Status is ModificationStatus.RequestRevisions)
                                     {
                                         <th scope="col" class="govuk-table__header">Action</th>
                                     }
@@ -140,7 +139,7 @@
                                                 }
                                             </td>
                                         }
-                                        @if (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise)
+                                        @if ((isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise) || Model.Status is ModificationStatus.RequestRevisions)
                                         {
                                             <td class="govuk-table__cell">
                                                 @if (!isFailed)
@@ -166,7 +165,7 @@
     </div>
 </div>
 
-<div status-for="Status" status-is="@ModificationStatus.InDraft" class="govuk-button-group">
+<div status-for="Status" status-in="@([ModificationStatus.InDraft, ModificationStatus.RequestRevisions])" class="govuk-button-group">
     <form method="get">
         @{
             ViewBag.Style = "govuk-button govuk-button--secondary";
@@ -184,7 +183,7 @@
             }
             <partial name="_SubmitButton" model="@("pmc:projectdocument", "Add documents", new Dictionary<string, string> { })" />
         </form>
-    }   
+    }
 </div>
 
 <p class="govuk-body">

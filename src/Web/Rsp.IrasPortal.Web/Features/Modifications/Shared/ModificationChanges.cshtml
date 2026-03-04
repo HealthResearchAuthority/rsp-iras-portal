@@ -23,7 +23,7 @@
             <h2 class="govuk-summary-card__title">
                 Change @(changeIndex + 1) - @change.AreaOfChangeName<br />
 
-                @if ((showStatus == null || showStatus.Equals(true)) && (Model.Status is ModificationStatus.InDraft || isRevisionBySponsor))
+                @if ((showStatus == null || showStatus.Equals(true)) && (Model.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions || isRevisionBySponsor))
                 {
                     <strong class="govuk-!-margin-top-2 text-nowrap govuk-tag @(change.ChangeStatus == ModificationStatus.Unfinished ? "govuk-tag--red" : "govuk-tag--green") non-max-width-govuk-tag">
                         @change.ChangeStatus
@@ -31,7 +31,7 @@
                 }
             </h2>
             <ul class="govuk-summary-card__actions">
-                @if ((showChangeLink == null || showChangeLink.Equals(true)) && (Model.Status is ModificationStatus.InDraft || isRevisionBySponsor))
+                @if ((showChangeLink == null || showChangeLink.Equals(true)) && (Model.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions || isRevisionBySponsor))
                 {
                     <li class="govuk-summary-card__action">
 
@@ -48,7 +48,7 @@
                     </li>
                 }
 
-                @if ((showRemoveLink == null || showRemoveLink.Equals(true)) && (Model.Status is ModificationStatus.InDraft || isRevisionBySponsor))
+                @if ((showRemoveLink == null || showRemoveLink.Equals(true)) && (Model.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions || isRevisionBySponsor))
                 {
                     <li class="govuk-summary-card__action">
                         <a class="govuk-link"
@@ -62,7 +62,7 @@
 
                 @if (isSponsorCheckAndAuthorise is true && sponsorOrganisationUserId is not null && rtsId is not null && (Model.Status is ModificationStatus.WithSponsor or ModificationStatus.ReviseAndAuthorise))
                 {
-                    <li class="govuk-summary-card__action">                        
+                    <li class="govuk-summary-card__action">
                         @{
                             var viewDetailsParams = new Dictionary<string, string> {
                                 { "projectRecordId", Model.ProjectRecordId ?? "" },
@@ -90,7 +90,8 @@
                         @change.SpecificChangeAnswer
                     </dd>
                 </div>
-                @if (Model.ModificationChanges.Any() && (showModificationDetails.GetValueOrDefault() || isRevisionBySponsor))
+                @if ((Model.ModificationChanges.Any() && showModificationDetails.GetValueOrDefault()) ||
+(Model.Status is ModificationStatus.RequestRevisions or ModificationStatus.ReviseAndAuthorise))
                 {
                     @foreach (var question in change.Questions)
                     {

@@ -87,7 +87,8 @@ public abstract class ModificationsControllerBase
             ReasonNotApproved = modification?.ReasonNotApproved ?? string.Empty,
             ReviewerComments = modification?.ReviewerComments,
             RevisionDescription = modification?.RevisionDescription,
-            RequestForInformationReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? []
+            RequestForInformationReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? [],
+            ApplicantRevisionResponse = modification?.ApplicantRevisionResponse
         });
     }
 
