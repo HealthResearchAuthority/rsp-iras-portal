@@ -9,6 +9,7 @@ public class OrganisationSearchModel
     public string? SearchNameTerm { get; set; }
     public List<string> Country { get; set; } = [];
     public List<string> OrganisationTypes { get; set; } = [];
+    public List<string> OrganisationStatuses { get; set; } = [];
 
     public Dictionary<string, List<string>> Filters
     {
@@ -24,6 +25,11 @@ public class OrganisationSearchModel
             if (OrganisationTypes.Count != 0)
             {
                 filters.Add(OrganisationSearch.OrganisationTypeKey, OrganisationTypes);
+            }
+
+            if (OrganisationStatuses.Count != 0)
+            {
+                filters.Add(OrganisationSearch.OrganisationStatusKey, OrganisationStatuses);
             }
 
             return filters;

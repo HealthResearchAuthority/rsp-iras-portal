@@ -41,9 +41,7 @@ public class ParticipatingOrganisationsController
             viewModel.Search = JsonSerializer.Deserialize<OrganisationSearchModel>(json)!;
         }
 
-        var response = string.IsNullOrEmpty(viewModel.Search.SearchNameTerm) ?
-            await rtsService.GetOrganisations(null, pageNumber, pageSize) :
-            await rtsService.GetOrganisationsByName(viewModel.Search.SearchNameTerm, OrganisationRoles.Sponsor, pageNumber, pageSize);
+        var response = await rtsService.GetOrganisationsByName(viewModel.Search.SearchNameTerm!, null, pageNumber, pageSize);
 
         viewModel.Organisations = response?.Content?.Organisations?.Select(dto => new SelectableOrganisationViewModel
         {
@@ -83,16 +81,19 @@ public class ParticipatingOrganisationsController
     public async Task<IActionResult> SearchOrganisation(SearchOrganisationViewModel model)
     {
         var validationResult = await searchOrganisationValidator.ValidateAsync(new ValidationContext<SearchOrganisationViewModel>(model));
+
         if (!validationResult.IsValid)
         {
             foreach (var error in validationResult.Errors)
             {
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }
+
             return View(nameof(SearchOrganisation), model);
         }
 
         TempData[TempDataKeys.OrganisationSearchModel] = JsonSerializer.Serialize(model.Search);
+
         return RedirectToAction(nameof(ParticipatingOrganisation));
     }
 
