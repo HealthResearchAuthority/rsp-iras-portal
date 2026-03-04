@@ -9,7 +9,8 @@ namespace Rsp.Portal.Web.Models;
 public class SearchOrganisationViewModel : BaseProjectModificationViewModel
 {
     public OrganisationSearchModel Search { get; set; } = new();
-    public IEnumerable<SelectableOrganisationViewModel> Organisations { get; set; } = [];
-    public List<string> SelectedOrganisationIds { get; set; } = [];
+    public List<SelectableOrganisationViewModel>? Organisations { get; set; }
+
+    //public List<string> SelectedOrganisationsIds { get; set; } = [];
     public PaginationViewModel? Pagination { get; set; }
 }

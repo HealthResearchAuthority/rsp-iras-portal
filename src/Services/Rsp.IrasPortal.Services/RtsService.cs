@@ -1,4 +1,5 @@
 ﻿using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.ServiceClients;
@@ -25,7 +26,6 @@ public class RtsService(IRtsServiceClient rtsServiceClient) : IRtsService
         return apiResponse.ToServiceResponse();
     }
 
-
     /// <summary>
     ///     Gets all organisations, with optional role/country filtering, sorting, and paging.
     /// </summary>
@@ -36,40 +36,71 @@ public class RtsService(IRtsServiceClient rtsServiceClient) : IRtsService
     /// <param name="sort">Sort direction: "asc" or "desc". Defaults to "asc".</param>
     /// <param name="sortField">Sort field: "name", "country", or "isactive". Defaults to "name".</param>
     /// <returns>An asynchronous operation that returns organisations.</returns>
-    public async Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations(
+    public async Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations
+    (
         string? role,
         int pageIndex = 1,
         int? pageSize = null,
         IEnumerable<string>? countries = null,
         string sort = "asc",
-        string sortField = "name")
+        string sortField = "name"
+    )
     {
-        var apiResponse = await rtsServiceClient.GetOrganisations(
+        var apiResponse = await rtsServiceClient.GetOrganisations
+        (
             role,
             pageIndex,
             pageSize,
             countries,
             sort,
-            sortField);
+            sortField
+        );
 
         return apiResponse.ToServiceResponse();
     }
 
-    public async Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisationsByName(string name, string? role,
+    public async Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisationsByName
+    (
+        string name,
+        string? role,
         int pageIndex = 1,
         int? pageSize = null,
         IEnumerable<string>? countries = null,
         string sort = "asc",
-        string sortField = "name")
+        string sortField = "name"
+    )
     {
-        var apiResponse = await rtsServiceClient.GetOrganisationsByName(
+        var apiResponse = await rtsServiceClient.GetOrganisationsByName
+        (
             name.ToLower(),
             role,
             pageIndex,
             pageSize,
             countries,
             sort,
-            sortField);
+            sortField
+        );
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<OrganisationSearchResponse>> SearchOrganisations
+    (
+        OrganisationsSearchRequest request,
+        int pageIndex,
+        int? pageSize,
+        string sort = "asc",
+        string sortField = "name"
+    )
+    {
+        var apiResponse = await rtsServiceClient.SearchOrganisations
+        (
+            request,
+            pageIndex,
+            pageSize,
+            sort,
+            sortField
+        );
 
         return apiResponse.ToServiceResponse();
     }

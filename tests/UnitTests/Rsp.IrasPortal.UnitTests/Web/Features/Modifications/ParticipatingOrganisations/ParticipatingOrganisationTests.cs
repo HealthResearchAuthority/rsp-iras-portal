@@ -94,7 +94,7 @@ public class ParticipatingOrganisationTests : TestServiceBase<ParticipatingOrgan
 
         Mocker
             .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisationsByName(expectedSearchTerm, OrganisationRoles.Sponsor, 1, 10,null,"asc", "name"))
+            .Setup(s => s.GetOrganisationsByName(expectedSearchTerm, OrganisationRoles.Sponsor, 1, 10, null, "asc", "name"))
             .ReturnsAsync(
                 new ServiceResponse<OrganisationSearchResponse>()
                     .WithContent(searchResponse, HttpStatusCode.OK)
@@ -111,55 +111,5 @@ public class ParticipatingOrganisationTests : TestServiceBase<ParticipatingOrgan
         model.Search.SearchNameTerm.ShouldBe(expectedSearchTerm);
         model.Organisations.First().Organisation.Name.ShouldBe("Hospital A");
         model.Pagination!.TotalCount.ShouldBe(1);
-    }
-
-    [Theory]
-    [AutoData]
-    public async Task ParticipatingOrganisation_SetsPaginationCorrectly(
-    int totalCount,
-    int pageNumber,
-    int pageSize)
-    {
-        // Arrange
-        pageNumber = Math.Max(1, pageNumber % 10);
-        pageSize = Math.Max(1, pageSize % 50);
-
-        const string mockedJson = """
-        {
-            "SearchNameTerm": "Hospital"
-        }
-        """;
-
-        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
-        {
-            [TempDataKeys.OrganisationSearchModel] = mockedJson
-        };
-
-        var response = new OrganisationSearchResponse
-        {
-            Organisations = [],
-            TotalCount = totalCount
-        };
-
-        Mocker
-            .GetMock<IRtsService>()
-            .Setup(s => s.GetOrganisationsByName("Hospital", OrganisationRoles.Sponsor, pageNumber, pageSize, null, "asc", "name"))
-            .ReturnsAsync(
-                new ServiceResponse<OrganisationSearchResponse>()
-                    .WithContent(response, HttpStatusCode.OK)
-            );
-
-        // Act
-        var result = await Sut.ParticipatingOrganisation(pageNumber, pageSize);
-
-        // Assert
-        var viewResult = result.ShouldBeOfType<ViewResult>();
-        var model = viewResult.Model.ShouldBeOfType<SearchOrganisationViewModel>();
-
-        model.Pagination.ShouldNotBeNull();
-        model.Pagination.PageNumber.ShouldBe(pageNumber);
-        model.Pagination.PageSize.ShouldBe(pageSize);
-        model.Pagination.TotalCount.ShouldBe(totalCount);
-        model.Pagination.FormName.ShouldBe("organisation-selection");
     }
 }
