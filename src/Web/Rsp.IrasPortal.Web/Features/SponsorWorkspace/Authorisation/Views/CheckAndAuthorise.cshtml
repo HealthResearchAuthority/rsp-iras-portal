@@ -115,32 +115,44 @@
     </div>
 </div>
 <div class="govuk-grid-row" status-for="@Model.Status" status-is="@ModificationStatus.WithSponsor">
-    <div class="govuk-grid-column-two-thirds">
-        <div class="govuk-heading-m">
-            <strong> @Html.Raw(revisionDescriptionBySponsorTitle?.Value)</strong>
+    @if (ViewBag.RevisionSent == true)
+    {
+        <div class="govuk-grid-column-two-thirds">
+            <div class="govuk-heading-m">
+                <strong> @Html.Raw(revisionDescriptionBySponsorTitle?.Value)</strong>
+            </div>
         </div>
-    </div>
+    }
 </div>
 <div class="govuk-grid-row" status-for="@Model.Status" status-is="@ModificationStatus.WithSponsor">
-    <div class="govuk-grid-column-two-thirds">
-        <div class="govuk-body">
-            @Model.RevisionDescription
+    @if (ViewBag.RevisionSent == true)
+    {
+        <div class="govuk-grid-column-two-thirds">
+            <div class="govuk-body">
+                @Model.RevisionDescription
+            </div>
         </div>
-    </div>
+    }
 </div>
 <div class="govuk-grid-row" status-for="@Model.Status" status-is="@ModificationStatus.WithSponsor">
-    <div class="govuk-grid-column-two-thirds">
-        <div class="govuk-heading-m">
-            @Html.Raw(revisionResponseByApplicantTitle?.Value)
+    @if (ViewBag.RevisionSent == true)
+    {
+        <div class="govuk-grid-column-two-thirds">
+            <div class="govuk-heading-m">
+                @Html.Raw(revisionResponseByApplicantTitle?.Value)
+            </div>
         </div>
-    </div>
+    }
 </div>
 <div class="govuk-grid-row" status-for="@Model.Status" status-is="@ModificationStatus.WithSponsor">
-    <div class="govuk-grid-column-two-thirds">
-        <div class="govuk-body">
-            @Model.ApplicantRevisionResponse
+    @if (ViewBag.RevisionSent == true)
+    {
+        <div class="govuk-grid-column-two-thirds">
+            <div class="govuk-body">
+                @Model.ApplicantRevisionResponse
+            </div>
         </div>
-    </div>
+    }
 </div>
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
