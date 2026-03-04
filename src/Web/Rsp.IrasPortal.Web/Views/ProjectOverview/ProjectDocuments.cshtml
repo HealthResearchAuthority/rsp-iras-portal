@@ -1,5 +1,7 @@
-﻿@using Rsp.Portal.Application.Constants;
+﻿@using Microsoft.FeatureManagement
+@using Rsp.Portal.Application.Constants;
 @using Rsp.Portal.Application.DTOs
+@using Rsp.Portal.Domain.AccessControl
 @using Rsp.Portal.Web.Helpers
 @using Rsp.Portal.Web.Models
 @using System.Text.Json
@@ -8,6 +10,7 @@
 @{
 	ViewBag.Title = "Project overview";
 	ViewBag.Active = ProjectOverview.ProjectDocuments;
+	var backRoute = ViewData["BackRoute"] as string;
 }
 
 @{
@@ -16,27 +19,27 @@
 							?? new Dictionary<string, string>();
 	var projectTitle = !string.IsNullOrEmpty(Model?.ProjectOverviewModel?.ProjectTitle) ? Model.ProjectOverviewModel.ProjectTitle : "Project overview";
 
-    var tdBackRouteValues = TempData.Peek(TempDataKeys.ProjectOverviewReferrer.BackRouteValues);
+	var tdBackRouteValues = TempData.Peek(TempDataKeys.ProjectOverviewReferrer.BackRouteValues);
 
-    var backRouteValues = JsonSerializer.Deserialize<Dictionary<string, string>>
-        (tdBackRouteValues != null ? tdBackRouteValues.ToString()! : "{}") ?? new Dictionary<string, string>();
+	var backRouteValues = JsonSerializer.Deserialize<Dictionary<string, string>>
+		(tdBackRouteValues != null ? tdBackRouteValues.ToString()! : "{}") ?? new Dictionary<string, string>();
 }
 
 @if (routeName is null || routeName.ToLower() == "app:welcome")
 {
-    @section Breadcrumb {
-	    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
-	    {
-		    ("My research",Url.RouteUrl("app:welcome")),
-		    (projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string>{{"projectRecordId", Model?.ProjectOverviewModel?.ProjectRecordId!}}))
-	    })
-    }
+	@section Breadcrumb {
+		@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+		{
+			("My research",Url.RouteUrl("app:welcome")),
+			(projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string>{{"projectRecordId", Model?.ProjectOverviewModel?.ProjectRecordId!}}))
+		})
+	}
 }
 else
 {
-    @section BackNavigation {
-        <partial name="_BackNavigation" model="@(routeName, "Back", backRouteValues)" />
-    }
+	@section BackNavigation {
+		<partial name="_BackNavigation" model="@(routeName, "Back", backRouteValues)" />
+	}
 }
 
 @functions {
@@ -54,12 +57,12 @@ else
 
 @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
 {
-    <partial name="_NotificationBanner"
-             model="@(new NotificationBannerModel
-                    {
-                        Title = "Success",
-                        Heading = "Modification progress saved"
-                    })" />
+	<partial name="_NotificationBanner"
+			 model="@(new NotificationBannerModel
+					{
+						Title = "Success",
+						Heading = "Modification progress saved"
+					})" />
 
 }
 
@@ -87,13 +90,13 @@ else
 		<input hidden readonly name="PageNumber" value="@Model.Pagination?.PageNumber" />
 
 		<!-- Filter Panel -->
-        <div class="search-filter-panel">
-            <div class="search-filter-panel__header search-filter-panel__header--static">
-                <span class="search-filter-panel__count">
-                    @(Model.Pagination?.TotalCount ?? 0) results
-                </span>
-            </div>
-        </div>
+		<div class="search-filter-panel">
+			<div class="search-filter-panel__header search-filter-panel__header--static">
+				<span class="search-filter-panel__count">
+					@(Model.Pagination?.TotalCount ?? 0) results
+				</span>
+			</div>
+		</div>
 	</div>
 </div>
 
@@ -161,20 +164,20 @@ else
 						@{
 							foreach (var modification in Model.Documents)
 							{
-                                    
-                                var modificationParams = new Dictionary<string, string> {
-                                        { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId },
-                                        { "irasId", Model.ProjectOverviewModel.IrasId?.ToString()  },
-                                        { "shortTitle", Model.ProjectOverviewModel.ProjectTitle?.ToString() },
-                                        { "projectModificationId", modification.ProjectModificationId.ToString()  }
-                                        };
+									
+								var modificationParams = new Dictionary<string, string> {
+										{ "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId },
+										{ "irasId", Model.ProjectOverviewModel.IrasId?.ToString()  },
+										{ "shortTitle", Model.ProjectOverviewModel.ProjectTitle?.ToString() },
+										{ "projectModificationId", modification.ProjectModificationId.ToString()  }
+										};
 
-                                var modificationReviewRoute = "pmc:modificationdetails";
+								var modificationReviewRoute = "pmc:modificationdetails";
 
-                                if (modification.Status != ModificationStatus.InDraft)
-                                {
-                                    modificationReviewRoute = "pmc:reviewallchanges";
-                                }
+								if (modification.Status != ModificationStatus.InDraft)
+								{
+									modificationReviewRoute = "pmc:reviewallchanges";
+								}
 
 							<tr class="govuk-table__row">
 								<td class="govuk-table__cell">@modification.DocumentType</td>
@@ -205,12 +208,12 @@ else
 												DocumentStatus.Incomplete => "govuk-tag--blue",
 												DocumentStatus.Complete => "govuk-tag--blue",
 												ModificationStatus.WithSponsor => "govuk-tag--yellow",
-                                                ModificationStatus.ReviseAndAuthorise => "govuk-tag--yellow",
+												ModificationStatus.ReviseAndAuthorise => "govuk-tag--yellow",
 												ModificationStatus.Approved => "govuk-tag--green",
 												ModificationStatus.WithReviewBody => "govuk-tag--green",
 												ModificationStatus.NotApproved => "govuk-tag--red",
 												ModificationStatus.NotAuthorised => "govuk-tag--red",
-                                                ModificationStatus.Withdrawn => "govuk-tag--red",
+												ModificationStatus.Withdrawn => "govuk-tag--red",
 												_ => "govuk-tag--blue"
 											};
 										}
@@ -219,10 +222,10 @@ else
 									</strong>
 								</td>
 								<td class="govuk-table__cell">
-                                        <a class="govuk-link" asp-route="@modificationReviewRoute" asp-all-route-data="modificationParams">
-                                            @modification.ModificationIdentifier
-                                        </a>
-                                    </td>
+										<a class="govuk-link" asp-route="@modificationReviewRoute" asp-all-route-data="modificationParams">
+											@modification.ModificationIdentifier
+										</a>
+									</td>
 								</tr>								
 							}
 						}
@@ -233,3 +236,17 @@ else
 		<partial name="_Pagination" model="@Model.Pagination" />
 	</div>
 </div>
+
+<feature name="@FeatureFlags.ProjectDocumentsAuditHistory">
+	<div permission="@Permissions.SystemAdministration.Workspace_Access"
+	class="govuk-grid-row">
+		<div class="govuk-grid-column-full">
+			<a asp-route="pmc:getaudithistory"
+			   asp-route-projectRecordId="@(Model.ProjectOverviewModel?.ProjectRecordId ?? string.Empty)"
+			   asp-route-backRoute="@backRoute"
+			   class="govuk-button govuk-button--secondary">
+				View document audit
+			</a>
+		</div>
+	</div>
+</feature>

@@ -1,4 +1,5 @@
-﻿using Rsp.Portal.Application.Constants;
+﻿using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
@@ -452,6 +453,27 @@ public class ProjectModificationsService(
         DuplicateModificationRequest duplicateModificationRequest)
     {
         var apiResponse = await projectModificationsServiceClient.DuplicateModification(duplicateModificationRequest);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<ProjectDocumentsAuditTrailResponse>> GetProjectDocumentsAuditTrail
+    (
+       string projectRecordId,
+       int pageNumber,
+       int pageSize,
+       string sortField,
+       string sortDirection
+    )
+    {
+        var apiResponse = await projectModificationsServiceClient.GetProjectDocumentsAuditTrail
+        (
+            projectRecordId,
+            pageNumber,
+            pageSize,
+            sortField,
+            sortDirection
+        );
 
         return apiResponse.ToServiceResponse();
     }
