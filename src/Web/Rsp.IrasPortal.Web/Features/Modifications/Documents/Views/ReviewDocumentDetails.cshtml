@@ -297,18 +297,16 @@
 				@{
 					ViewBag.Style = "govuk-button govuk-button--secondary";
 				}
-				@if (status is ModificationStatus.ReviseAndAuthorise)
-				{
-					<a asp-route="pmc:saveforlater" asp-route-projectRecordId="@projectRecordId" asp-route-sponsorOrganisationUserId="@sponsorOrganisationUserId" asp-route-rtsId="@rtsId" asp-route-routeName="sws:modifications" class="govuk-button govuk-button--secondary">
-						Save for later
-					</a>
-				}
-				else
-				{
-					<a asp-route="pmc:saveforlater" asp-route-projectRecordId="@projectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
-						Save for later
-					</a>
-				}
+				  <a asp-route="pmc:saveforlater" status-for="@status" status-is="@ModificationStatus.ReviseAndAuthorise" asp-route-projectRecordId="@projectRecordId" asp-route-sponsorOrganisationUserId="@sponsorOrganisationUserId" asp-route-rtsId="@rtsId" asp-route-routeName="sws:modifications" class="govuk-button govuk-button--secondary">
+     Save for later
+ </a>
+ <a asp-route="pov:postapproval" status-for="@status" status-is="@ModificationStatus.RequestRevisions" asp-route-projectRecordId="@projectRecordId" class="govuk-button govuk-button--secondary">
+     Save for later
+ </a>
+ <a asp-route="pmc:saveforlater" status-for="@status" status-mode="Hide"
+    status-in="@([ModificationStatus.ReviseAndAuthorise,ModificationStatus.RequestRevisions] )"
+    asp-route-projectRecordId="@projectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
+     Save for later</a>
 			</div>
 		</form>
 	</div>
