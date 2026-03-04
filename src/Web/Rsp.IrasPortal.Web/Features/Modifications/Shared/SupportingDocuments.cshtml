@@ -14,19 +14,35 @@
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
                 <div class="govuk-table-wrapper">
-                    <form method="get" id="projectdocuments-selection">
+                    <form method="post" asp-route="pmc:downloaddocumentsaszip" id="projectdocuments-selection">
                         <table class="govuk-table modifications-tasklist-table" id="projectDocumentsTable">
                             <thead class="govuk-table__head">
+                                <tr>
+                                    <th class="govuk-table__header" colspan="8">
+                                        <div class="govuk-checkboxes govuk-checkboxes--small checkbox-cell">
+                                            <div class="govuk-checkboxes__item">
+                                                <input class="govuk-checkboxes__input"
+                                                       type="checkbox"
+                                                       id="selectAllCheckbox" />
+                                                <label class="govuk-label govuk-checkboxes__label"
+                                                       for="selectAllCheckbox">
+                                                    Select all documents on this page
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </th>
+                                </tr>
                                 <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                                    <th class="govuk-table__header">Select</th>
                                     @{
-                                        var sortableHeaders = new[] {
-                                                                        new { Field = nameof(ProjectOverviewDocumentDto.DocumentType), Label = "Document type" },
-                                                                        new { Field = nameof(ProjectOverviewDocumentDto.DocumentName), Label = "Document name" },
-                                                                        new { Field = nameof(ProjectOverviewDocumentDto.FileName), Label = "File name" },
-                                                                        new { Field = nameof(ProjectOverviewDocumentDto.DocumentVersion), Label = "Version" },
-                                                                        new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" }
-                                                                        };
-
+                                        var sortableHeaders = new[]
+                                        {
+                                            new { Field = nameof(ProjectOverviewDocumentDto.DocumentType), Label = "Document type" },
+                                            new { Field = nameof(ProjectOverviewDocumentDto.DocumentName), Label = "Document name" },
+                                            new { Field = nameof(ProjectOverviewDocumentDto.FileName), Label = "File name" },
+                                            new { Field = nameof(ProjectOverviewDocumentDto.DocumentVersion), Label = "Version" },
+                                            new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" }
+                                        };
                                     }
 
                                     @foreach (var header in sortableHeaders)
@@ -39,20 +55,20 @@
                                             @await Html.PartialAsync("_SortableHeaderButton", new SortableHeaderModel
                                             {
                                                 FieldName = header.Field,
-                                                                                DisplayText = displayText,
-                                                                                CurrentSortField = Model.ProjectOverviewDocumentViewModel.Pagination?.SortField,
-                                                                                CurrentSortDirection = Model.ProjectOverviewDocumentViewModel.Pagination?.SortDirection,
-                                                                                AdditionalParameters = new Dictionary<string, string>
-                                                                                {
-                                                                                    { "projectRecordId", Model.ProjectRecordId },
-                                                                                    { "irasId", Model.IrasId },
-                                                                                    { "shortTitle", Model.ShortTitle! },
-                                                                                    { "projectModificationId", Model.ModificationId },
-                                                                                    { "documents", ModificationOverview.Documents }
-                                                                                }
-                                                                                })
-                                        </th>
-                                    }
+                                                DisplayText = displayText,
+                                                CurrentSortField = Model.ProjectOverviewDocumentViewModel.Pagination?.SortField,
+                                                CurrentSortDirection = Model.ProjectOverviewDocumentViewModel.Pagination?.SortDirection,
+                                                AdditionalParameters = new Dictionary<string, string>
+                                                {
+                                                { "projectRecordId", Model.ProjectRecordId },
+                                                { "irasId", Model.IrasId },
+                                                { "shortTitle", Model.ShortTitle! },
+                                                { "projectModificationId", Model.ModificationId },
+                                                { "documents", ModificationOverview.Documents }
+                                                }
+                                            })
+                                    </th>
+                                                                        }
                                     <th scope="col" class="govuk-table__header">Status</th>
                                     @if (Model.Status is ModificationStatus.InDraft || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise) || Model.Status is ModificationStatus.RequestRevisions)
                                     {
@@ -66,7 +82,27 @@
                                     var isFailed = string.Equals(modification.Status, DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase);
                                     var isTracked = string.Equals(modification.SupersedeDocumentType, SupersedeDocumentsType.Tracked.ToString(), StringComparison.OrdinalIgnoreCase);
 
-                                    <tr class="govuk-table__row">
+                                    <tr class="govuk-table__row document-row">
+                                        <td class="govuk-table__cell checkbox-cell">
+                                            <div class="govuk-checkboxes__item govuk-checkboxes--small">
+                                                <input type="checkbox"
+                                                       id="@modification.Id"
+                                                       aria-label="Select record @modification.Id"
+                                                       class="govuk-checkboxes__input document-checkbox"
+                                                       data-path="@modification.DocumentStoragePath"
+                                                       data-filename="@modification.FileName" />
+                                                <label for="@modification.Id"
+                                                       class="govuk-label govuk-checkboxes__label modification-checkbox-label"></label>
+                                            </div>
+                                            <!-- Hidden fields dynamically enabled only if selected -->
+                                            <input type="hidden" name="SelectedDocuments[].DocumentStoragePath"
+                                                   value="@modification.DocumentStoragePath"
+                                                   disabled />
+
+                                            <input type="hidden" name="SelectedDocuments[].FileName"
+                                                   value="@modification.FileName"
+                                                   disabled />
+                                        </td>
                                         <td class="govuk-table__cell">
                                             <span class="govuk-!-font-weight-bold">@modification.DocumentType</span>
                                             @if (isFailed)
@@ -200,3 +236,98 @@
         </div>
     </div>
 </p>
+
+
+<div id="selectionPanel"
+     class="govuk-!-margin-top-4 govuk-!-padding-4 govuk-!-display-none"
+     style="border:1px solid #b1b4b6;">
+
+    <p class="govuk-body govuk-!-margin-bottom-2">
+        <strong>
+            <span id="selectedCount">0</span>
+            documents selected for download on this page
+        </strong>
+    </p>
+
+    <div class="govuk-button-group">
+        <button type="submit"
+                class="govuk-button govuk-button--secondary">
+            Download selection
+        </button>
+
+        <button type="button"
+                id="clearSelection"
+                class="govuk-link">
+            Clear selection
+        </button>
+    </div>
+</div>
+
+<style>
+    .document-row.selected {
+        background-color: #f3f2f1;
+        border-left: 5px solid #1d70b8;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const selectAll = document.getElementById("selectAllCheckbox");
+        const checkboxes = document.querySelectorAll(".document-checkbox");
+        const selectionPanel = document.getElementById("selectionPanel");
+        const selectedCountText = document.getElementById("selectedCount");
+        const clearSelectionBtn = document.getElementById("clearSelection");
+
+        function updateSelectionUI() {
+
+            let selectedCount = 0;
+
+            checkboxes.forEach(cb => {
+
+                const row = cb.closest(".document-row");
+                const hiddenInputs = row.querySelectorAll("input[type='hidden']");
+
+                if (cb.checked) {
+                    selectedCount++;
+                    row.classList.add("selected");
+
+                    hiddenInputs.forEach(input => input.disabled = false);
+                }
+                else {
+                    row.classList.remove("selected");
+                    hiddenInputs.forEach(input => input.disabled = true);
+                }
+            });
+
+            selectedCountText.textContent = selectedCount;
+
+            if (selectedCount > 0) {
+                selectionPanel.classList.remove("govuk-!-display-none");
+            } else {
+                selectionPanel.classList.add("govuk-!-display-none");
+            }
+
+            selectAll.checked = selectedCount === checkboxes.length;
+        }
+
+        // Individual checkbox change
+        checkboxes.forEach(cb => {
+            cb.addEventListener("change", updateSelectionUI);
+        });
+
+        // Select all toggle
+        selectAll.addEventListener("change", function () {
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            updateSelectionUI();
+        });
+
+        // Clear selection
+        clearSelectionBtn.addEventListener("click", function () {
+            checkboxes.forEach(cb => cb.checked = false);
+            selectAll.checked = false;
+            updateSelectionUI();
+        });
+
+    });
+</script>

@@ -194,4 +194,82 @@ public class BlobStorageService : IBlobStorageService
 
         return (finalBytes, zipName);
     }
+
+    public async Task<ServiceResponse<IActionResult>> DownloadFilesAsZipAsync
+    (
+        BlobServiceClient blobServiceClient,
+        string containerName,
+        List<string> blobPaths,
+        string saveAsFileName
+    )
+    {
+        var response = new ServiceResponse<IActionResult>();
+
+        // Validate inputs
+        if (blobPaths == null || !blobPaths.Any())
+        {
+            return response.WithContent(
+                new BadRequestObjectResult("At least one file must be provided."),
+                HttpStatusCode.BadRequest
+            );
+        }
+
+        if (string.IsNullOrWhiteSpace(saveAsFileName))
+        {
+            return response.WithContent(
+                new BadRequestObjectResult("Zip file name cannot be null or empty."),
+                HttpStatusCode.BadRequest
+            );
+        }
+
+        if (!saveAsFileName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+        {
+            saveAsFileName += ".zip";
+        }
+
+        var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+
+        // Memory stream to build the ZIP archive
+        var zipStream = new MemoryStream();
+
+        // Create ZIP archive (leave stream open so it can be returned)
+        using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            foreach (var blobPath in blobPaths)
+            {
+                if (string.IsNullOrWhiteSpace(blobPath))
+                    continue;
+
+                var blobClient = containerClient.GetBlobClient(blobPath);
+
+                if (!await blobClient.ExistsAsync())
+                {
+                    // Skip missing files (or change to fail-fast if required)
+                    continue;
+                }
+
+                var blobDownload = await blobClient.DownloadStreamingAsync();
+
+                // Use filename from blob path
+                var entryName = Path.GetFileName(blobPath);
+
+                var zipEntry = archive.CreateEntry(entryName, CompressionLevel.Fastest);
+
+                using var entryStream = zipEntry.Open();
+                using var blobStream = blobDownload.Value.Content;
+
+                await blobStream.CopyToAsync(entryStream);
+            }
+        }
+
+        // Reset stream position before returning
+        zipStream.Position = 0;
+
+        var fileResult = new FileStreamResult(zipStream, "application/zip")
+        {
+            FileDownloadName = saveAsFileName
+        };
+
+        return response.WithContent(fileResult, HttpStatusCode.OK);
+    }
 }
