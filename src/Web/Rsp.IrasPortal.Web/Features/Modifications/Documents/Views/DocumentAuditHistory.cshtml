@@ -1,0 +1,138 @@
+﻿@using Rsp.Portal.Application.Constants;
+@using Rsp.Portal.Application.DTOs
+@using Rsp.Portal.Application.DTOs.Requests
+@using Rsp.Portal.Domain.AccessControl
+@using Rsp.Portal.Web.Helpers
+@using Rsp.Portal.Web.Models
+@using System.Text.Json
+@model ProjectDocumentsAuditTrailViewModel
+
+@{
+	ViewBag.Title = "Document audit";
+	ViewBag.Active = ProjectOverview.ProjectDocuments;
+	var backRoute = ViewData["BackRoute"] as string;
+}
+
+@{
+	var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
+	var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
+							?? new Dictionary<string, string>();
+	var projectTitle = !string.IsNullOrEmpty(Model?.ProjectOverviewModel?.ProjectTitle) ? Model.ProjectOverviewModel.ProjectTitle : "Document audit";
+
+	var tdBackRouteValues = TempData.Peek(TempDataKeys.ProjectOverviewReferrer.BackRouteValues);
+
+	var backRouteValues = JsonSerializer.Deserialize<Dictionary<string, string>>
+		(tdBackRouteValues != null ? tdBackRouteValues.ToString()! : "{}") ?? new Dictionary<string, string>();
+}
+
+@if (routeName is null || routeName.ToLower() == "app:welcome")
+{
+	@section Breadcrumb {
+		@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+		{
+			("My research",Url.RouteUrl("app:welcome")),
+			(projectTitle, Url.RouteUrl("pov:projectdocuments", new Dictionary<string, string>{{"projectRecordId", Model?.ProjectOverviewModel?.ProjectRecordId!}}))
+		})
+	}
+}
+else
+{
+	@section BackNavigation {
+		<partial name="_BackNavigation" model="@(routeName, "Back", backRouteValues)" />
+	}
+}
+
+@functions {
+
+	private bool CanOpenPanelForField(string fieldName) =>
+		ViewData.ModelState.TryGetValue(fieldName, out var state) && state.Errors.Any();
+
+	private bool CanOpenPanelForAnyField(params string[] fieldNames) =>
+		fieldNames.Any(CanOpenPanelForField);
+
+	private bool HasFilterErrors() =>
+		ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
+}
+
+<partial name="_ProjectOverviewPartial" model="@Model.ProjectOverviewModel" />
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-full">
+		<div class="govuk-table-wrapper">
+			<table class="govuk-table modifications-tasklist-table" id="projectDocumentsTable">
+				<thead class="govuk-table__head">
+					<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+						@{
+
+							// Sortable headers (Status removed)
+							var sortableHeaders = new[]
+							{
+								new { Field = nameof(ModificationDocumentsAuditTrailDto.DateTimeStamp), Label = "Date" },
+								new { Field = nameof(ProjectOverviewDocumentDto.ModificationIdentifier), Label = "Modification ID" },
+								new { Field = nameof(ModificationDocumentsAuditTrailDto.Description), Label = "Event description" },
+								new { Field = nameof(ModificationDocumentsAuditTrailDto.FileName), Label = "File name" },
+								new { Field = nameof(ModificationDocumentsAuditTrailDto.User), Label = "User" },
+							};
+
+							var tableId = "projectDocumentsAuditTable";
+						}
+
+						<!-- Sortable headers -->
+						@foreach (var header in sortableHeaders)
+						{
+							<th scope="col" class="govuk-table__header govuk-table__header-sortable">
+								@await Html.PartialAsync("_SortableHeaderButton", new SortableHeaderModel
+									{
+										FieldName = header.Field,
+										DisplayText = header.Label,
+										CurrentSortField = Model.Pagination?.SortField,
+										CurrentSortDirection = Model.Pagination?.SortDirection,
+										TableId = tableId,
+										AdditionalParameters = new Dictionary<string, string>
+										{
+										{ "projectRecordId", Model.ProjectOverviewModel?.ProjectRecordId ?? string.Empty }
+										}
+									})
+							</th>
+						}
+					</tr>
+				</thead>
+
+				<form method="get" id="projectdocumentsaudit-selection">
+					<input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
+					<input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
+
+				<tbody class="govuk-table__body govuk-body-s">
+						@{
+							foreach (var modification in Model.AuditTrails)
+							{
+									
+								var modificationParams = new Dictionary<string, string> {
+										{ "projectRecordId", Model.ProjectOverviewModel?.ProjectRecordId ?? string.Empty },
+										{ "irasId", Model.ProjectOverviewModel?.IrasId?.ToString() ?? string.Empty  },
+										{ "shortTitle", Model.ProjectOverviewModel?.ProjectTitle?.ToString() ?? string.Empty },
+										{ "projectModificationId", modification.ProjectModificationId.ToString()  }
+										};
+
+								var modificationReviewRoute = "pmc:modificationdetails";
+
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell">@modification.DateTimeStamp.ToString("dd MMMM yyyy")</td>
+								<td class="govuk-table__cell">
+										<a class="govuk-link" asp-route="@modificationReviewRoute" asp-all-route-data="modificationParams">
+											@modification.ModificationIdentifier
+										</a>
+									</td>
+								<td class="govuk-table__cell">@modification.Description</td>
+								<td class="govuk-table__cell">@modification.FileName</td>
+								<td class="govuk-table__cell">@modification.User</td>
+								</tr>								
+							}
+						}
+				</tbody>
+				</form>
+			</table>
+		</div>
+		<partial name="_Pagination" model="@Model.Pagination" />
+	</div>
+</div>

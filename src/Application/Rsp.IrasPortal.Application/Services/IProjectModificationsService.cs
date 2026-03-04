@@ -1,4 +1,5 @@
-﻿using Rsp.Logging.Interceptors;
+﻿using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.Logging.Interceptors;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -336,6 +337,15 @@ public interface IProjectModificationsService : IInterceptable
     /// containing a <see cref="ServiceResponse"/> indicating success or failure of the creation process.
     /// </returns>
     Task<ServiceResponse> DeleteDocumentAnswersModification(List<ProjectModificationDocumentRequest> projectModificationDocumentRequest);
+
+    Task<ServiceResponse<ProjectDocumentsAuditTrailResponse>> GetProjectDocumentsAuditTrail
+    (
+       string projectRecordId,
+       int pageNumber,
+       int pageSize,
+       string sortField,
+       string sortDirection
+    );
 
     /// <summary>
     /// Duplicates a project modification.

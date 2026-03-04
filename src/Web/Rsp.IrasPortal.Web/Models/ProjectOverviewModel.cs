@@ -56,4 +56,9 @@ public class ProjectOverviewModel
     /// Gets or sets actual project closure date of project.
     /// </summary>
     public string? ActualProjectClosureDate { get; set; }
+
+    /// <summary>
+    /// Gets or sets header text for the page.
+    /// </summary>
+    public string? PageHeaderText { get; set; }
 }

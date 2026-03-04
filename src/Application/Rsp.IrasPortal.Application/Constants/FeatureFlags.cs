@@ -50,6 +50,15 @@ public static class FeatureFlags
     //All to enter reason for not authorising the modification
     public const string NotAuthorisedReason = "Modifications.NotAuthorisedReason";
 
+    //Allows to display malware scanning results in modification documents table
+    public const string DocumentsMalware = "Modifications.DocumentsMalware";
+
+    //Allows to download documents selectively in modification journey instead of downloading the whole pack
+    public const string DocumentsSelectiveDownload = "Modifications.DocumentsSelectiveDownload";
+
+    //Allows to display documents audit history in project overview page for system administrators
+    public const string ProjectDocumentsAuditHistory = "ProjectOverview.DocumentsAuditHistory";
+
     // Allows duplicating modifications
     public const string ModificationResubmission = "Modifications.Resubmission";
 }
