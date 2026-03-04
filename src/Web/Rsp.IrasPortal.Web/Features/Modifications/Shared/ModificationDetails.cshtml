@@ -148,18 +148,25 @@
                 <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
                     Save for later
                 </a>
-            }
+            }            
 
-            @if (!Model.ModificationChanges.Any() && Model.Status is ModificationStatus.ReviseAndAuthorise)
+            @if(!Model.ModificationChanges.Any())
             {
+                var routeData = new Dictionary<string, string>
+                {
+                    { "projectRecordId", Model.ProjectRecordId },
+                    { "routeName", "sws:modifications" },
+                    { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId ?? string.Empty },
+                    { "rtsId", Model.RtsId ?? string.Empty }
+                };
+
                 <a asp-route="pmc:saveforlater"
-                   asp-route-projectRecordId="@Model.ProjectRecordId"
-                   asp-route-routeName="sws:modifications"
-                   asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
-                   asp-route-rtsId="@Model.RtsId"
-                   class="govuk-button govuk-button--secondary">
-                    Save for later
-                </a>
+                     asp-all-route-data="@routeData"
+                     status-for="Status"
+                     status-is="@ModificationStatus.ReviseAndAuthorise"
+                     class="govuk-button govuk-button--secondary">
+                     Save for later
+                 </a>
             }
         </div>
     </div>
