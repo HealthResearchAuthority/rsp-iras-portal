@@ -305,6 +305,8 @@ public class ModificationsController
 
         if (saveForLater)
         {
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
+
             if (model.Status is ModificationStatus.ReviseAndAuthorise)
             {
                 return RedirectToRoute("sws:modifications", new { model.SponsorOrganisationUserId, model.RtsId });

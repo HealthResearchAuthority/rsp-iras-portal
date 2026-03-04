@@ -12,7 +12,9 @@
 			{ "projectRecordId", Model.ProjectRecordId },
 			{ "irasId", Model.IrasId  },
 			{ "shortTitle", Model.ShortTitle ?? string.Empty },
-			{ "projectModificationId", Model.ModificationId ?? string.Empty }
+            { "projectModificationId", Model.ModificationId ?? string.Empty },
+            { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId ?? string.Empty },
+            { "rtsId", Model.RtsId ?? string.Empty }
         };
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];

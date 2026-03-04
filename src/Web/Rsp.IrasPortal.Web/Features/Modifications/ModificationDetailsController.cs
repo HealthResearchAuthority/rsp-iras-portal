@@ -2,8 +2,8 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Rsp.IrasPortal.Web.Attributes;
 using Microsoft.FeatureManagement;
+using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.Responses;
@@ -156,7 +156,7 @@ public class ModificationDetailsController
         return View(modification);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Read)]
     [HttpGet]
     public IActionResult UnfinishedChanges()
     {
@@ -165,7 +165,7 @@ public class ModificationDetailsController
         return View("UnfinishedChanges", viewModel);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Read)]
     [HttpGet]
     public IActionResult NoChangesToSubmit()
     {
@@ -174,7 +174,7 @@ public class ModificationDetailsController
         return View("NoChangesToSubmit", viewModel);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Read)]
     [HttpGet]
     public IActionResult DocumentsScanInProgress()
     {
@@ -183,7 +183,7 @@ public class ModificationDetailsController
         return View("DocumentsScanInProgress", viewModel);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Read)]
     [HttpGet]
     public IActionResult DocumentDetailsIncomplete()
     {

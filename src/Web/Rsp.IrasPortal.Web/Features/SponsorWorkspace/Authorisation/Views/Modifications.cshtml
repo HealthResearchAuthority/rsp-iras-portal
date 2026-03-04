@@ -43,6 +43,19 @@
     var searchHint = pageContent.GetValueOrDefault("SponsorWorkspace.Modifications.SearchHint", null);
 }
 
+<feature name="@FeatureFlags.RevisionAndAuthorisation">
+    @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
+    {
+        <partial name="_NotificationBanner"
+                 model="@(new NotificationBannerModel
+                 {
+                     Title = "Success",
+                     Heading = "Modification progress saved"
+                 })" />
+
+        }
+</feature>
+
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
 

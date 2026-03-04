@@ -63,7 +63,7 @@ public class AuthorisationsModificationsController
         }
 
         var sponsorOrganisationUser =
-            await sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserId,rtsId);
+            await sponsorOrganisationService.GetSponsorOrganisationUser(sponsorOrganisationUserId, rtsId);
 
         if (!sponsorOrganisationUser.IsSuccessStatusCode)
         {
@@ -578,6 +578,8 @@ public class AuthorisationsModificationsController
                     ModificationStatus.ReviseAndAuthorise,
                     model.RevisionDescription
                 );
+
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
             return RedirectToAction(nameof(Modifications), new { sponsorOrganisationUserId = model.SponsorOrganisationUserId, rtsId = model.RtsId });
         }
 

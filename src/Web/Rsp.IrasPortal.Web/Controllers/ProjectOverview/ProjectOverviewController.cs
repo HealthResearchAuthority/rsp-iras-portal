@@ -652,7 +652,9 @@ public class ProjectOverviewController
     private static string? GetEnumStatus(string status) => status switch
     {
         ModificationStatus.InDraft => nameof(ModificationStatusOrder.InDraft),
+        ModificationStatus.RequestRevisions => nameof(ModificationStatusOrder.RequestRevisions),
         ModificationStatus.WithSponsor => nameof(ModificationStatusOrder.WithSponsor),
+        ModificationStatus.ReviseAndAuthorise => nameof(ModificationStatusOrder.ReviseAndAuthorise),
         ModificationStatus.WithReviewBody => nameof(ModificationStatusOrder.WithRegulator),
         ModificationStatus.Approved => nameof(ModificationStatusOrder.Approved),
         ModificationStatus.NotApproved => nameof(ModificationStatusOrder.NotApproved),
