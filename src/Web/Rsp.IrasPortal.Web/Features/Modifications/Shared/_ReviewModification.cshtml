@@ -85,6 +85,26 @@
         </div>
     </div>
 </div>
+<feature name="@FeatureFlags.RevisionAndAuthorisation">
+    <div class="govuk-grid-row" 
+         status-for="@Model.Status"
+         status-in="@([ModificationStatus.Approved, ModificationStatus.WithReviewBody])"
+         role-in="@([Roles.SystemAdministrator, Roles.OrganisationAdministrator, Roles.Sponsor, Roles.Applicant])">
+        @if (!string.IsNullOrWhiteSpace(Model.RevisionDescription))
+        {
+            <div class="govuk-grid-column-two-thirds">
+                <div class="govuk-heading-m">
+                    @Html.Raw(ViewBag.RevisionDescriptionTitle)
+                </div>
+            </div>
+            <div class="govuk-grid-column-two-thirds">
+                <div class="govuk-body">
+                    @Model.RevisionDescription
+                </div>
+            </div>
+        }
+    </div>
+</feature>
 <div class="govuk-grid-row">
     @if (Model.Status != ModificationStatus.InDraft && Model.Status != ModificationStatus.RequestRevisions)
     {

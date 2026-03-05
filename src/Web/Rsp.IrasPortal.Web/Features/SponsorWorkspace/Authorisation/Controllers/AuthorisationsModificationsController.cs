@@ -8,9 +8,11 @@ using Microsoft.FeatureManagement.Mvc;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Extensions;
 using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Domain.Enums;
 using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.Modifications;
@@ -581,6 +583,40 @@ public class AuthorisationsModificationsController
 
             TempData[TempDataKeys.ShowNotificationBanner] = true;
             return RedirectToAction(nameof(Modifications), new { sponsorOrganisationUserId = model.SponsorOrganisationUserId, rtsId = model.RtsId });
+        }
+
+        // Fetch all modification documents (up to 200)
+        var searchQuery = new ProjectOverviewDocumentSearchRequest();
+        searchQuery.AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document);
+        var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(
+            Guid.Parse(model.ModificationId),
+            searchQuery, 1, 300,
+            nameof(ProjectOverviewDocumentDto.DocumentType),
+            SortDirections.Ascending);
+
+        var documents = modificationDocumentsResponseResult?.Content?.Documents ?? [];
+
+        // CHECK FOR INCOMPLETE DOCUMENT DETAILS
+        if (documents.Any())
+        {
+            var documentChangeRequest = BuildDocumentRequest();
+            var documentStatuses = await GetDocumentCompletionStatuses(documentChangeRequest);
+
+            bool hasIncompleteDocuments = documentStatuses
+                .Any(d => d.Status.Equals(DocumentDetailStatus.Incomplete.ToString(), StringComparison.OrdinalIgnoreCase));
+
+            if (hasIncompleteDocuments)
+            {
+                return RedirectToRoute("pmc:DocumentDetailsIncomplete");
+            }
+        }
+
+        // CHECK MALWARE SCAN STATUS
+        bool allMalwareScansCompleted = documents.All(d => d.IsMalwareScanSuccessful == true);
+
+        if (!allMalwareScansCompleted)
+        {
+            return RedirectToRoute("pmc:DocumentsScanInProgress");
         }
 
         var reviewType = string.IsNullOrWhiteSpace(model.ReviewType)

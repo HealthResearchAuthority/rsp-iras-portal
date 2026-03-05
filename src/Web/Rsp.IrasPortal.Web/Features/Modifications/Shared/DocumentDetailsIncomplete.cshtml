@@ -36,9 +36,22 @@
             @Html.Raw(body?.Value)
 		</p>
 		<div class="save-buttons">
-			<a class="govuk-button" asp-route="pmc:modificationdetails" asp-all-route-data="modificationParams">
+            <a class="govuk-button"
+               asp-route="pmc:modificationdetails"
+               asp-all-route-data="modificationParams"
+               status-for="Status"
+               status-is="@ModificationStatus.ReviseAndAuthorise">
+                Return to revise and authorise
+            </a>
+
+            <a class="govuk-button"
+               asp-route="pmc:modificationdetails"
+               asp-all-route-data="modificationParams"
+               status-for="Status"
+               status-mode="Hide"
+               status-is="@ModificationStatus.ReviseAndAuthorise">
                 Return to review modification
-			</a>
+            </a>
 		</div>
 	</div>
 </div>

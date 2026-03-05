@@ -7,6 +7,7 @@ using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.DTOs.Responses.CmsContent;
 using Rsp.Portal.Application.Extensions;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
@@ -366,7 +367,8 @@ public abstract class ModificationsControllerBase
 
         if (!string.IsNullOrEmpty(a.Status) &&
             !a.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
-            a.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase))
+            (a.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase) ||
+             a.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase)))
         {
             status = (await EvaluateDocumentCompletion(a.Id, questionnaire)
                 ? DocumentDetailStatus.Incomplete
@@ -391,7 +393,7 @@ public abstract class ModificationsControllerBase
     /// <summary>
     /// Evaluates whether a single document�s answers are complete.
     /// </summary>
-    protected virtual async Task<bool> EvaluateDocumentCompletion(Guid documentId, QuestionnaireViewModel questionnaire)
+    protected virtual async Task<bool> EvaluateDocumentCompletion(Guid documentId, QuestionnaireViewModel questionnaire, bool addModelErrors = true)
     {
         // Fetch document answers
         var answersResponse = await respondentService.GetModificationDocumentAnswers(documentId);
@@ -406,7 +408,7 @@ public abstract class ModificationsControllerBase
         clonedQuestionnaire = await PopulateAnswersFromDocuments(clonedQuestionnaire, answers);
 
         // Validate questionnaire
-        var isValid = await this.ValidateQuestionnaire(validator, clonedQuestionnaire, true);
+        var isValid = await this.ValidateQuestionnaire(validator, clonedQuestionnaire, addModelErrors);
 
         var supersedeDocumentsEnabled = await featureManager.IsEnabledAsync(FeatureFlags.SupersedingDocuments);
 
@@ -436,7 +438,8 @@ public abstract class ModificationsControllerBase
 
     protected async Task MapDocumentTypesAndStatusesAsync(
       QuestionnaireViewModel questionnaire,
-      IEnumerable<ProjectOverviewDocumentDto> documents)
+      IEnumerable<ProjectOverviewDocumentDto> documents,
+      bool addModelErrors = true)
     {
         if (questionnaire?.Questions == null || documents == null)
             return;
@@ -469,7 +472,7 @@ public abstract class ModificationsControllerBase
             if (!doc.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
                 doc.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase))
             {
-                bool isIncomplete = await EvaluateDocumentCompletion(doc.Id, questionnaire);
+                bool isIncomplete = await EvaluateDocumentCompletion(doc.Id, questionnaire, addModelErrors);
 
                 doc.Status = isIncomplete
                     ? DocumentDetailStatus.Incomplete.ToString()
@@ -662,5 +665,189 @@ public abstract class ModificationsControllerBase
 
         // All other combinations are valid
         return true;
+    }
+
+    [NonAction]
+    public async Task<(bool HasFailures, IList<ModificationAddDocumentDetailsViewModel> DocumentDetails)> ValidateDocumentCompleteness()
+    {
+        // Fetch all documents along with their existing responses.
+        var allDocumentDetails = await GetAllDocumentsWithResponses();
+        var supersedeEnabled = await featureManager.IsEnabledAsync(FeatureFlags.SupersedingDocuments);
+
+        bool hasFailures = false;
+        for (int docIndex = 0; docIndex < allDocumentDetails.Count; docIndex++)
+        {
+            ModificationAddDocumentDetailsViewModel? documentDetail = allDocumentDetails[docIndex];
+            var isValid = await this.ValidateQuestionnaire(validator, documentDetail, true);
+            if (supersedeEnabled && documentDetail.ShowSupersedeDocumentSection)
+            {
+                if (documentDetail.ReplacesDocumentId is null
+                    || string.IsNullOrEmpty(documentDetail.DocumentType)
+                    || string.IsNullOrEmpty(documentDetail.LinkedDocumentFileName))
+                {
+                    isValid = false;
+                    if (documentDetail.ReplacesDocumentId is null)
+                    {
+                        ModelState.AddModelError(
+                            $"Questions[{docIndex}].DocumentInService",
+                            "Enter document in service");
+                    }
+                    if (string.IsNullOrEmpty(documentDetail.DocumentType))
+                    {
+                        ModelState.AddModelError(
+                            $"Questions[{docIndex}].CleanOrTracked",
+                            "Enter clean or tracked");
+                    }
+                    if (!string.IsNullOrEmpty(documentDetail.DocumentType) && string.IsNullOrEmpty(documentDetail.LinkedDocumentFileName))
+                    {
+                        ModelState.AddModelError(
+                            $"Questions[{docIndex}].LinkedDocumentFileName",
+                            "Enter linked document");
+                    }
+                }
+            }
+
+            if (!isValid)
+            {
+                hasFailures = true;
+            }
+        }
+
+        return (hasFailures, allDocumentDetails);
+    }
+
+    /// <summary>
+    /// Retrieves all uploaded modification documents with their respective answers.
+    /// Constructs a view model for displaying the documents and questions.
+    /// </summary>
+    /// <returns>A list of <see cref="ModificationAddDocumentDetailsViewModel"/> with answers populated.</returns>
+    [NonAction]
+    public async Task<IList<ModificationAddDocumentDetailsViewModel>> GetAllDocumentsWithResponses()
+    {
+        var documentChangeRequest = BuildDocumentRequest();
+
+        // Fetch uploaded documents for the modification
+        var response = await respondentService.GetModificationChangesDocuments(
+            documentChangeRequest.ProjectModificationId,
+            documentChangeRequest.ProjectRecordId);
+
+        // Retrieve the CMS question set for the document details section
+        var additionalQuestionsResponse = await cmsQuestionsetService
+            .GetModificationQuestionSet(DocumentDetailsSection);
+
+        var cmsQuestions = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
+        var viewModels = new List<ModificationAddDocumentDetailsViewModel>();
+        var questionIndex = 0;
+
+        foreach (var doc in response!.Content
+            .Where(d => !(d.DocumentType == SupersedeDocumentsType.Tracked
+                  && d.LinkedDocumentId.HasValue
+                  && d.LinkedDocumentId.Value != Guid.Empty))
+            .OrderBy(d => d.FileName, StringComparer.OrdinalIgnoreCase))
+        {
+            // Fetch existing answers for this document
+            var answersResponse = await respondentService.GetModificationDocumentAnswers(doc.Id);
+            var answers = answersResponse?.StatusCode == HttpStatusCode.OK
+                ? answersResponse.Content ?? [] : [];
+
+            var previousVersionOfDocumentAnswer = answers
+                .FirstOrDefault(q =>
+                    string.Equals(
+                        q.QuestionId,
+                        QuestionIds.PreviousVersionOfDocument,
+                        StringComparison.OrdinalIgnoreCase))
+                ?.SelectedOption;
+
+            var documentTypeId = answers
+                    .FirstOrDefault(x => x.QuestionId.Equals(QuestionIds.SelectedDocumentType, StringComparison.OrdinalIgnoreCase))?.SelectedOption;
+
+            var documentToReplaceFileName = string.Empty;
+            var linkedDocumentFileName = string.Empty;
+            var linkedDocumentStoragePath = string.Empty;
+            var documentToReplaceStoragePath = string.Empty;
+            if (doc.ReplacesDocumentId != null)
+            {
+                var replacesDocumentAnswersResponse = await respondentService.GetModificationDocumentDetails(doc.ReplacesDocumentId.Value);
+                var replacesDocumentAnswers = replacesDocumentAnswersResponse?.StatusCode == HttpStatusCode.OK
+                    ? replacesDocumentAnswersResponse.Content ?? new ProjectModificationDocumentRequest()
+                    : new ProjectModificationDocumentRequest();
+                documentToReplaceFileName = replacesDocumentAnswers.FileName ?? string.Empty;
+                documentToReplaceStoragePath = replacesDocumentAnswers.DocumentStoragePath ?? string.Empty;
+            }
+
+            if (doc.LinkedDocumentId != null)
+            {
+                var linkedDocumentAnswersResponse = await respondentService.GetModificationDocumentDetails(doc.LinkedDocumentId.Value);
+                var linkedDocumentAnswers = linkedDocumentAnswersResponse?.StatusCode == HttpStatusCode.OK
+                    ? linkedDocumentAnswersResponse.Content ?? new ProjectModificationDocumentRequest()
+                    : new ProjectModificationDocumentRequest();
+                linkedDocumentFileName = linkedDocumentAnswers.FileName ?? string.Empty;
+                linkedDocumentStoragePath = linkedDocumentAnswers.DocumentStoragePath ?? string.Empty;
+            }
+
+            // Map document and questions into a view model
+            var vm = new ModificationAddDocumentDetailsViewModel
+            {
+                DocumentId = doc.Id,
+                FileName = doc.FileName,
+                DocumentStoragePath = doc.DocumentStoragePath,
+                ProjectRecordId = doc.ProjectRecordId,
+                Status = doc.Status,
+                IsMalwareScanSuccessful = doc.IsMalwareScanSuccessful,
+                ReviewAnswers = true,
+                ReplacesDocumentId = doc.ReplacesDocumentId,
+                ReplacedByDocumentId = doc.ReplacedByDocumentId,
+                LinkedDocumentId = doc.LinkedDocumentId,
+                DocumentType = doc.DocumentType,
+                DocumentToReplaceFileName = documentToReplaceFileName,
+                DocumentToReplaceStoragePath = documentToReplaceStoragePath,
+                LinkedDocumentFileName = linkedDocumentFileName,
+                LinkedDocumentStoragePath = linkedDocumentStoragePath,
+                ShowSupersedeDocumentSection = string.Equals(previousVersionOfDocumentAnswer, QuestionIds.PreviousVersionOfDocumentYesOption, StringComparison.OrdinalIgnoreCase),
+                MetaDataDocumentTypeId = documentTypeId,
+
+                Questions = cmsQuestions.Questions.Select(cmsQ =>
+                {
+                    var matchingAnswer = answers.FirstOrDefault(a => a.QuestionId == cmsQ.QuestionId);
+
+                    return new QuestionViewModel
+                    {
+                        Id = matchingAnswer?.Id,
+                        Index = questionIndex++,
+                        QuestionId = cmsQ.QuestionId,
+                        VersionId = cmsQ.VersionId,
+                        Category = cmsQ.Category,
+                        SectionId = cmsQ.SectionId,
+                        Section = cmsQ.Section,
+                        Sequence = cmsQ.Sequence,
+                        Heading = cmsQ.Heading,
+                        QuestionText = cmsQ.QuestionText,
+                        QuestionType = cmsQ.QuestionType,
+                        DataType = cmsQ.DataType,
+                        IsMandatory = cmsQ.IsMandatory,
+                        IsOptional = cmsQ.IsOptional,
+                        AnswerText = matchingAnswer?.AnswerText,
+                        SelectedOption = matchingAnswer?.SelectedOption,
+                        Answers = cmsQ?.Answers?
+                        .Select(ans => new AnswerViewModel
+                        {
+                            AnswerId = ans.AnswerId,
+                            AnswerText = ans.AnswerText,
+                            // Set true if CMS already marked it OR if it exists in answersResponse
+                            IsSelected = ans.IsSelected || answers.Any(a => a.SelectedOption == ans.AnswerId)
+                        })
+                        .ToList() ?? new List<AnswerViewModel>(),
+                        Rules = cmsQ?.Rules ?? new List<RuleDto>(),
+                        ShortQuestionText = cmsQ?.ShortQuestionText ?? string.Empty,
+                        IsModificationQuestion = true,
+                        GuidanceComponents = cmsQ?.GuidanceComponents ?? new List<ComponentContent>()
+                    };
+                }).ToList()
+            };
+
+            viewModels.Add(vm);
+        }
+
+        return viewModels;
     }
 }
