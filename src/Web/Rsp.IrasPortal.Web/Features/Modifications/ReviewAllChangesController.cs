@@ -5,6 +5,7 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.Portal.Application.Constants;
@@ -316,7 +317,7 @@ public class ReviewAllChangesController
             return View(storedModel);
         }
 
-        if (model.RequestForInformationReasons.Any(r => r.Length > 300))
+        if (!saveForLater && model.RequestForInformationReasons.Any(r => r.Length > 300))
         {
             return View(storedModel);
         }
@@ -522,15 +523,30 @@ public class ReviewAllChangesController
             });
         }
 
-        var html = await viewHelper.RenderViewAsString("_ReviewModificationPdf", modification, ControllerContext);
+        var newViewData = new ViewDataDictionary(ViewData)
+        {
+            [ViewDataKeys.ShowModificationDetails] = true
+        };
 
-        var pdf = await viewHelper.GeneratePdf(html, $"Modification ID: {modification.ModificationIdentifier}");
+        var html = await viewHelper.RenderViewAsString(
+           "_ReviewModificationPdf",
+           modification,
+           ControllerContext,
+           newViewData);
+
+        var pdf = await viewHelper.GeneratePdf(
+           html,
+           $"Modification ID: " +
+           $"{modification.ModificationIdentifier}");
+
+        var modId = modification.ModificationIdentifier.Split('/');
+        var fileName = $"{modId[0]}-{modId[1]}-{DateTime.UtcNow:ddMMMyy}.pdf";
 
         return File
         (
             pdf,
             "application/pdf",
-            $"{modification.ModificationIdentifier} {DateTime.UtcNow}.pdf"
+            fileName
         );
     }
 

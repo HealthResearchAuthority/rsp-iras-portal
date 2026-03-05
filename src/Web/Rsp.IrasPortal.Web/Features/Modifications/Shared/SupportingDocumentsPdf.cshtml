@@ -57,27 +57,7 @@
                                         <td class="govuk-table__cell">@modification.FileName</td>
                                         <td class="govuk-table__cell">@modification.DocumentVersion</td>
                                         <td class="govuk-table__cell">@modification.DocumentDate?.ToString("d MMM yyyy")</td>
-                                        <td class="govuk-table__cell">
-                                            @{
-                                                var tagClass = modification.Status switch
-                                                {
-                                                    DocumentStatus.Failed => "govuk-tag--red",
-                                                    DocumentStatus.Incomplete => "govuk-tag--blue",
-                                                    DocumentStatus.Complete => "govuk-tag--blue",
-                                                    ModificationStatus.WithSponsor => "govuk-tag--yellow",
-                                                    ModificationStatus.ReviseAndAuthorise => "govuk-tag--yellow",
-                                                    ModificationStatus.Approved => "govuk-tag--green",
-                                                    ModificationStatus.WithReviewBody => "govuk-tag--green",
-                                                    ModificationStatus.NotApproved => "govuk-tag--red",
-                                                    ModificationStatus.NotAuthorised => "govuk-tag--red",
-                                                    ModificationStatus.Withdrawn => "govuk-tag--red",
-                                                    _ => "govuk-tag--blue"
-                                                };
-                                            }
-                                            <strong class="govuk-tag @(tagClass)">
-                                                @ModificationStatusHelper.ToUiStatus(modification.Status)
-                                            </strong>
-                                        </td>
+                                        <td class="govuk-table__cell">@ModificationStatusHelper.ToUiStatus(modification.Status)</td>
                                         @if (Model.Status is ModificationStatus.InDraft)
                                         {
                                             <td class="govuk-table__cell">
