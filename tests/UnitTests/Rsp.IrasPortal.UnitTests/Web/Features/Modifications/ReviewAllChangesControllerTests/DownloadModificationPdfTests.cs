@@ -25,6 +25,8 @@ public class DownloadModificationPdfTests : TestServiceBase<ReviewAllChangesCont
         var tdProvider = Mocker.GetMock<ITempDataProvider>();
         var razorViewEngine = Mocker.GetMock<IRazorViewEngine>();
 
+        model.ModificationDetails.ModificationIdentifier = "123/1";
+
         Sut.TempData = new TempDataDictionary(ctx, tdProvider.Object)
         {
             [TempDataKeys.ProjectModification.ProjectModificationsDetails] = JsonSerializer.Serialize(model)
@@ -35,7 +37,8 @@ public class DownloadModificationPdfTests : TestServiceBase<ReviewAllChangesCont
             .Setup(vh => vh.RenderViewAsString(
                 It.IsAny<string>(),
                 It.IsAny<ModificationDetailsViewModel>(),
-                It.IsAny<ControllerContext>()))
+                It.IsAny<ControllerContext>(),
+                It.IsAny<ViewDataDictionary>()))
             .ReturnsAsync(html);
 
         Mocker.GetMock<IViewHelper>()

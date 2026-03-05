@@ -12,7 +12,7 @@ namespace Rsp.Portal.Web.Helpers;
 [ExcludeFromCodeCoverage]
 public class ViewHelper : IViewHelper
 {
-    public async Task<string> RenderViewAsString<TModel>(string viewName, TModel model, ControllerContext controllerContext)
+    public async Task<string> RenderViewAsString<TModel>(string viewName, TModel model, ControllerContext controllerContext, ViewDataDictionary? viewData = null)
     {
         var actionContext = controllerContext as ActionContext;
         var serviceProvider = controllerContext.HttpContext.RequestServices;
@@ -36,12 +36,11 @@ public class ViewHelper : IViewHelper
             throw new ArgumentNullException($"View '{viewName}' not found.");
         }
 
-        var viewDictionary = new ViewDataDictionary<TModel>(
+        var viewDictionary = viewData ?? new ViewDataDictionary(
             new EmptyModelMetadataProvider(),
-            new ModelStateDictionary())
-        {
-            Model = model
-        };
+            new ModelStateDictionary());
+
+        viewDictionary.Model = model;
 
         var tempDataDictionary = new TempDataDictionary(
             actionContext.HttpContext,
@@ -128,7 +127,7 @@ public class ViewHelper : IViewHelper
                 color:#505a5f;
                 font-family:Arial, sans-serif;
             '>
-                <span class='date'></span>
+                <span>{DateTime.UtcNow:dd/MM/yyyy HH:mm}</span>
                 <span>{footerText}</span>
                 <span>Page <span class='pageNumber'></span> of <span class='totalPages'></span></span>
             </div>
