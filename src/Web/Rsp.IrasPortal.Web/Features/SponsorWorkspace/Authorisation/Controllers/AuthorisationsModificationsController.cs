@@ -37,9 +37,10 @@ public class AuthorisationsModificationsController
     ISponsorUserAuthorisationService sponsorUserAuthorisationService,
     IValidator<AuthorisationsModificationsSearchModel> searchValidator,
     IValidator<AuthoriseModificationsOutcomeViewModel> outcomeValidator,
+    IValidator<QuestionnaireViewModel> questionnaireValidator,
     IFeatureManager featureManager,
     IRtsService rtsService
-) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!, featureManager)
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, questionnaireValidator, featureManager)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";

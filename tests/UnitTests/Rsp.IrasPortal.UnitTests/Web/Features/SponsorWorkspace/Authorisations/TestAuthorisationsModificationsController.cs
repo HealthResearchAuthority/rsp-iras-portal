@@ -19,6 +19,7 @@ public class TestAuthorisationsModificationsController : AuthorisationsModificat
         ISponsorUserAuthorisationService sponsorUserAuthorisationService,
         IValidator<AuthorisationsModificationsSearchModel> searchValidator,
         IValidator<AuthoriseModificationsOutcomeViewModel> outcomeValidator,
+        IValidator<QuestionnaireViewModel> questionnaireValidator,
         IFeatureManager featureManager,
         IRtsService rtsService
     )
@@ -30,6 +31,7 @@ public class TestAuthorisationsModificationsController : AuthorisationsModificat
             sponsorUserAuthorisationService,
             searchValidator,
             outcomeValidator,
+            questionnaireValidator,
             featureManager,
             rtsService
         )
