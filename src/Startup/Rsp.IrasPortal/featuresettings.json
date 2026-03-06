@@ -25,6 +25,24 @@
         }
       ]
     }, // If this flag is enabled, allows revision request or revise and authorise modifications
+    "Modifications.ChangeOfSponsorOrganisation": {
+      "EnabledFor": [
+        {
+          "Name": "Microsoft.Targeting",
+          "Parameters": {
+            "Audience": {
+              "Users": [],
+              "Groups": [],
+              "DefaultRolloutPercentage": 100,
+              "Exclusion": {
+                "Users": [],
+                "Groups": []
+              }
+            }
+          }
+        }
+      ]
+    },
     "Modifications.ParticipatingOrganisations": {
       "EnabledFor": [
         {
