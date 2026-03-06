@@ -32,7 +32,7 @@ public class TestDocumentsController : DocumentsController
         }
     }
 
-    protected override Task<bool> EvaluateDocumentCompletion(Guid documentId, QuestionnaireViewModel questionnaire)
+    protected override Task<bool> EvaluateDocumentCompletion(Guid documentId, QuestionnaireViewModel questionnaire, bool addModelErrors = true)
     {
         return Task.FromResult(_completionResults.Dequeue());
     }

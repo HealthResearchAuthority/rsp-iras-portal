@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.FeatureManagement;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.UnitTests.Web.Features.SponsorWorkspace.Authorisations;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
@@ -24,7 +25,7 @@ using Claim = System.Security.Claims.Claim;
 
 namespace Rsp.Portal.UnitTests.Web.Features.SponsorWorkspace.Authorisations;
 
-public class AuthorisationsModificationsControllerTests : TestServiceBase<AuthorisationsModificationsController>
+public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAuthorisationsModificationsController>
 {
     private readonly DefaultHttpContext _http;
     private readonly Guid _sponsorOrganisationUserId = Guid.NewGuid();
@@ -48,6 +49,8 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
         };
 
         Sut.TempData = new TempDataDictionary(_http, Mock.Of<ITempDataProvider>());
+
+        Sut.SetEvaluateDocumentCompletionResult(true);
     }
 
     [Theory]
@@ -1107,6 +1110,8 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
         var sponsorDetailsSectionId = "pm-sponsor-reference";
         var changeId = Guid.Parse("33333333-3333-3333-3333-333333333333");
 
+        Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationId] = projectModificationId.ToString();
+
         // 1. GetModification -> one modification entry
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModification(It.IsAny<string>(), It.IsAny<Guid>()))
@@ -1271,7 +1276,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         Mocker.GetMock<ICmsQuestionsetService>()
             .Setup(s => s.GetModificationQuestionSet(
-                "pm-sponsor-reference", null))
+                It.IsAny<string>(), null))
             .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse> { Content = cmsResponse });
 
         // sponsor details question set and answers
@@ -1351,6 +1356,27 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
                                     }
                                 }
                             ]
+                        }
+                    ]
+                }
+            });
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetDocumentsForModification(
+                It.IsAny<Guid>(),
+                It.IsAny<ProjectOverviewDocumentSearchRequest>(),
+                 It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()
+            ))
+            .ReturnsAsync(new ServiceResponse<ProjectOverviewDocumentResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectOverviewDocumentResponse
+                {
+                    Documents =
+                    [
+                        new ProjectOverviewDocumentDto
+                        {
+                            IsMalwareScanSuccessful = true
                         }
                     ]
                 }
@@ -1979,6 +2005,108 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<Author
 
         result.ShouldBeOfType<RedirectToActionResult>()
               .ActionName.ShouldBe(nameof(AuthorisationsModificationsController.Confirmation));
+    }
+
+    [Fact]
+    public async Task AuthoriseRevision_IncompleteDocumentDetails_Redirects_To_DocumentDetailsIncomplete()
+    {
+        var model = SetupAuthoriseOutcomeViewModel();
+
+        Sut.SetEvaluateDocumentCompletionResult(true);
+
+        Mocker.GetMock<IValidator<AuthoriseModificationsOutcomeViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AuthoriseModificationsOutcomeViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetDocumentsForModification(
+                It.IsAny<Guid>(),
+                It.IsAny<ProjectOverviewDocumentSearchRequest>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()
+            ))
+            .ReturnsAsync(new ServiceResponse<ProjectOverviewDocumentResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectOverviewDocumentResponse
+                {
+                    Documents =
+                    [
+                        new ProjectOverviewDocumentDto
+                        {
+                            IsMalwareScanSuccessful = true
+                        }
+                    ]
+                }
+            });
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(
+                It.IsAny<Guid>(),
+                It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new[]
+                {
+                    new ProjectModificationDocumentRequest { FileName = "doc1.pdf", Status = ModificationStatus.ReviseAndAuthorise }
+                }
+            });
+
+        var result = await Sut.AuthoriseRevision(model, isSaveForLater: false);
+
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe("pmc:DocumentDetailsIncomplete");
+    }
+
+    [Fact]
+    public async Task AuthoriseRevision_MalwareScanInProgress_Redirects_To_DocumentsScanInProgress()
+    {
+        var model = SetupAuthoriseOutcomeViewModel();
+
+        Sut.SetEvaluateDocumentCompletionResult(false);
+
+        Mocker.GetMock<IValidator<AuthoriseModificationsOutcomeViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AuthoriseModificationsOutcomeViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetDocumentsForModification(
+                It.IsAny<Guid>(),
+                It.IsAny<ProjectOverviewDocumentSearchRequest>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()
+            ))
+            .ReturnsAsync(new ServiceResponse<ProjectOverviewDocumentResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectOverviewDocumentResponse
+                {
+                    Documents =
+                    [
+                        new ProjectOverviewDocumentDto
+                        {
+                            IsMalwareScanSuccessful = false
+                        }
+                    ]
+                }
+            });
+
+        Mocker.GetMock<IRespondentService>()
+           .Setup(s => s.GetModificationChangesDocuments(
+               It.IsAny<Guid>(),
+               It.IsAny<string>()))
+           .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+           {
+               StatusCode = HttpStatusCode.OK,
+               Content = new[]
+               {
+                    new ProjectModificationDocumentRequest { FileName = "doc1.pdf", Status = ModificationStatus.ReviseAndAuthorise }
+               }
+           });
+
+        var result = await Sut.AuthoriseRevision(model, isSaveForLater: false);
+
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe("pmc:DocumentsScanInProgress");
     }
 
     [Fact]
