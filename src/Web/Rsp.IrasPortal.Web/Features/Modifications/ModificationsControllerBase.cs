@@ -366,7 +366,8 @@ public abstract class ModificationsControllerBase
 
         if (!string.IsNullOrEmpty(a.Status) &&
             !a.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
-            a.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase))
+            (a.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase) ||
+             a.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase)))
         {
             status = (await EvaluateDocumentCompletion(a.Id, questionnaire)
                 ? DocumentDetailStatus.Incomplete
@@ -391,7 +392,7 @@ public abstract class ModificationsControllerBase
     /// <summary>
     /// Evaluates whether a single document�s answers are complete.
     /// </summary>
-    protected virtual async Task<bool> EvaluateDocumentCompletion(Guid documentId, QuestionnaireViewModel questionnaire)
+    protected virtual async Task<bool> EvaluateDocumentCompletion(Guid documentId, QuestionnaireViewModel questionnaire, bool addModelErrors = true)
     {
         // Fetch document answers
         var answersResponse = await respondentService.GetModificationDocumentAnswers(documentId);
@@ -406,7 +407,7 @@ public abstract class ModificationsControllerBase
         clonedQuestionnaire = await PopulateAnswersFromDocuments(clonedQuestionnaire, answers);
 
         // Validate questionnaire
-        var isValid = await this.ValidateQuestionnaire(validator, clonedQuestionnaire, true);
+        var isValid = await this.ValidateQuestionnaire(validator, clonedQuestionnaire, addModelErrors);
 
         var supersedeDocumentsEnabled = await featureManager.IsEnabledAsync(FeatureFlags.SupersedingDocuments);
 
@@ -436,7 +437,8 @@ public abstract class ModificationsControllerBase
 
     protected async Task MapDocumentTypesAndStatusesAsync(
       QuestionnaireViewModel questionnaire,
-      IEnumerable<ProjectOverviewDocumentDto> documents)
+      IEnumerable<ProjectOverviewDocumentDto> documents,
+      bool addModelErrors = true)
     {
         if (questionnaire?.Questions == null || documents == null)
             return;
@@ -469,7 +471,7 @@ public abstract class ModificationsControllerBase
             if (!doc.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
                 doc.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase))
             {
-                bool isIncomplete = await EvaluateDocumentCompletion(doc.Id, questionnaire);
+                bool isIncomplete = await EvaluateDocumentCompletion(doc.Id, questionnaire, addModelErrors);
 
                 doc.Status = isIncomplete
                     ? DocumentDetailStatus.Incomplete.ToString()
