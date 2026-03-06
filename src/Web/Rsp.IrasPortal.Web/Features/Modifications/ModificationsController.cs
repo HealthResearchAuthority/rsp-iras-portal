@@ -18,7 +18,6 @@ using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Models;
-using static Rsp.Portal.Domain.AccessControl.Permissions;
 using ValidationResult = FluentValidation.Results.ValidationResult;
 
 namespace Rsp.Portal.Web.Features.Modifications;
