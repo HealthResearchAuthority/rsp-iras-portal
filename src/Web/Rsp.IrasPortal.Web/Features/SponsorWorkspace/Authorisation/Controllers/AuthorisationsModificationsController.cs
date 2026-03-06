@@ -590,31 +590,33 @@ public class AuthorisationsModificationsController
         searchQuery.AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document);
         var modificationDocumentsResponseResult = await projectModificationsService.GetDocumentsForModification(
             Guid.Parse(model.ModificationId),
-            searchQuery, 1, 300,
+            searchQuery,
+            1,
+            300,
             nameof(ProjectOverviewDocumentDto.DocumentType),
             SortDirections.Ascending);
 
-        var documents = modificationDocumentsResponseResult?.Content?.Documents ?? [];
+        var modificationDocuments = modificationDocumentsResponseResult?.Content?.Documents ?? [];
 
-        // CHECK FOR INCOMPLETE DOCUMENT DETAILS
-        if (documents.Any())
+        // CHECK FOR INCOMPLETE DOCUMENTS
+        if (modificationDocuments.Any())
         {
-            var documentChangeRequest = BuildDocumentRequest();
-            var documentStatuses = await GetDocumentCompletionStatuses(documentChangeRequest);
+            var documentRequest = BuildDocumentRequest();
+            var documentStatuses = await GetDocumentCompletionStatuses(documentRequest);
 
-            bool hasIncompleteDocuments = documentStatuses
+            bool areDocumentsIncomplete = documentStatuses
                 .Any(d => d.Status.Equals(DocumentDetailStatus.Incomplete.ToString(), StringComparison.OrdinalIgnoreCase));
 
-            if (hasIncompleteDocuments)
+            if (areDocumentsIncomplete)
             {
                 return RedirectToRoute("pmc:DocumentDetailsIncomplete");
             }
         }
 
-        // CHECK MALWARE SCAN STATUS
-        bool allMalwareScansCompleted = documents.All(d => d.IsMalwareScanSuccessful == true);
+        // CHECK FOR MALWARE SCAN STATUS
+        bool allMalwareScansSuccessful = modificationDocuments.All(d => d.IsMalwareScanSuccessful == true);
 
-        if (!allMalwareScansCompleted)
+        if (!allMalwareScansSuccessful)
         {
             return RedirectToRoute("pmc:DocumentsScanInProgress");
         }
