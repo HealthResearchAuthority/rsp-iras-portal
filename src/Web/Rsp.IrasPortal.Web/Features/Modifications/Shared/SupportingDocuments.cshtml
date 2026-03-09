@@ -55,12 +55,12 @@
                                     @{
                                         var sortableHeaders = new[]
                                         {
-                                                                        new { Field = nameof(ProjectOverviewDocumentDto.DocumentType), Label = "Document type" },
-                                                                        new { Field = nameof(ProjectOverviewDocumentDto.DocumentName), Label = "Document name" },
-                                                                        new { Field = nameof(ProjectOverviewDocumentDto.FileName), Label = "File name" },
-                                                                        new { Field = nameof(ProjectOverviewDocumentDto.DocumentVersion), Label = "Version" },
-                                                                        new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" }
-                                                                        };
+                                            new { Field = nameof(ProjectOverviewDocumentDto.DocumentType), Label = "Document type" },
+                                            new { Field = nameof(ProjectOverviewDocumentDto.DocumentName), Label = "Document name" },
+                                            new { Field = nameof(ProjectOverviewDocumentDto.FileName), Label = "File name" },
+                                            new { Field = nameof(ProjectOverviewDocumentDto.DocumentVersion), Label = "Version" },
+                                            new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" }
+                                        };
                                     }
 
                                     @foreach (var header in sortableHeaders)
@@ -73,18 +73,18 @@
                                             @await Html.PartialAsync("_SortableHeaderButton", new SortableHeaderModel
                                             {
                                                 FieldName = header.Field,
-                                                                                DisplayText = displayText,
-                                                                                CurrentSortField = Model.ProjectOverviewDocumentViewModel.Pagination?.SortField,
-                                                                                CurrentSortDirection = Model.ProjectOverviewDocumentViewModel.Pagination?.SortDirection,
-                                                                                AdditionalParameters = new Dictionary<string, string>
-                                                                                {
-                                                                                { "projectRecordId", Model.ProjectRecordId },
-                                                                                { "irasId", Model.IrasId },
-                                                                                { "shortTitle", Model.ShortTitle! },
-                                                                                { "projectModificationId", Model.ModificationId },
-                                                                                { "documents", ModificationOverview.Documents }
-                                                                                }
-                                                                                })
+                                                DisplayText = displayText,
+                                                CurrentSortField = Model.ProjectOverviewDocumentViewModel.Pagination?.SortField,
+                                                CurrentSortDirection = Model.ProjectOverviewDocumentViewModel.Pagination?.SortDirection,
+                                                AdditionalParameters = new Dictionary<string, string>
+                                                {
+                                                { "projectRecordId", Model.ProjectRecordId },
+                                                { "irasId", Model.IrasId },
+                                                { "shortTitle", Model.ShortTitle! },
+                                                { "projectModificationId", Model.ModificationId },
+                                                { "documents", ModificationOverview.Documents }
+                                                }
+                                            })
                                     </th>
                                                                         }
                                     <th scope="col" class="govuk-table__header">Status</th>
@@ -101,7 +101,7 @@
                                     var isTracked = string.Equals(modification.SupersedeDocumentType, SupersedeDocumentsType.Tracked.ToString(), StringComparison.OrdinalIgnoreCase);
 
                                     <tr class="govuk-table__row document-row">
-                                        <td class="govuk-table__cell checkbox-column">
+                                        <td class="govuk-table__cell checkbox-cell">
                                             <div class="govuk-checkboxes govuk-checkboxes--small table-checkbox">
                                                 <div class="govuk-checkboxes__item">
                                                     <input type="checkbox"
@@ -286,19 +286,6 @@
 <style>
     .js-enabled #selectionPanel {
         display: none;
-    }
-
-    .document-row.selected {
-        background-color: #f2f7fa;
-        border-left: 5px solid #1d70b8;
-    }
-
-    .checkbox-column {
-        padding-left: 5px !important;
-    }
-
-    .table-checkbox .govuk-checkboxes__item {
-        margin-left: 10px;
     }
 </style>
 <script>

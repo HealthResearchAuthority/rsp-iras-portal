@@ -1125,3 +1125,12 @@ button.govuk-pagination__item--current {
 .text-align-end {
   text-align: end;
 }
+
+.document-row.selected {
+  background-color: #f2f7fa;
+  border-left: 5px solid #1d70b8;
+}
+
+.table-checkbox .govuk-checkboxes__item {
+  margin-left: 10px;
+}
