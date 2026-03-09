@@ -7,6 +7,7 @@
 @model ModificationDetailsViewModel
 @inject IFeatureManager featureManager
 
+
 @{
     bool isRevisionBySponsor = ViewBag.IsRevisionBySponsor as bool? ?? false;
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
@@ -34,24 +35,32 @@
                             <thead class="govuk-table__head">
                                 <tr>
                                     <th class="govuk-table__header" colspan="8">
-                                        @if (Model.ProjectOverviewDocumentViewModel?.Documents.Count() > 0)
-                                        {
-                                            <div class="govuk-checkboxes govuk-checkboxes--small table-checkbox">
-                                                <div class="govuk-checkboxes__item">
-                                                    <input class="govuk-checkboxes__input"
-                                                           type="checkbox"
-                                                           id="selectAllCheckbox" />
-                                                    <label class="govuk-label govuk-checkboxes__label"
-                                                           for="selectAllCheckbox">
-                                                        Select all documents on this page
-                                                    </label>
+                                        <feature name="@FeatureFlags.DocumentsSelectiveDownload">
+                                            @if (Model.ProjectOverviewDocumentViewModel?.Documents.Count() > 0)
+                                            {
+                                                <div id="selectAllContainer"
+                                                     class="govuk-checkboxes govuk-checkboxes--small table-checkbox govuk-!-display-none">
+
+                                                    <div class="govuk-checkboxes__item">
+                                                        <input class="govuk-checkboxes__input"
+                                                               type="checkbox"
+                                                               id="selectAllCheckbox" />
+
+                                                        <label class="govuk-label govuk-checkboxes__label"
+                                                               for="selectAllCheckbox">
+                                                            Select all documents on this page
+                                                        </label>
+                                                    </div>
+
                                                 </div>
-                                            </div>
-                                        }
+                                            }
+                                        </feature>
                                     </th>
                                 </tr>
                                 <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-                                    <th class="govuk-table__header">Select</th>
+                                    <feature name="@FeatureFlags.DocumentsSelectiveDownload">
+                                        <th class="govuk-table__header">Select</th>
+                                    </feature>
                                     @{
                                         var sortableHeaders = new[]
                                         {
@@ -88,7 +97,7 @@
                                     </th>
                                                                         }
                                     <th scope="col" class="govuk-table__header">Status</th>
-                                    @if (Model.Status is ModificationStatus.InDraft || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise) || Model.Status is ModificationStatus.RequestRevisions)
+                                    @if (Model.Status is ModificationStatus.InDraft || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise))
                                     {
                                         <th scope="col" class="govuk-table__header">Action</th>
                                     }
@@ -101,21 +110,23 @@
                                     var isTracked = string.Equals(modification.SupersedeDocumentType, SupersedeDocumentsType.Tracked.ToString(), StringComparison.OrdinalIgnoreCase);
 
                                     <tr class="govuk-table__row document-row">
-                                        <td class="govuk-table__cell checkbox-cell">
-                                            <div class="govuk-checkboxes govuk-checkboxes--small table-checkbox">
-                                                <div class="govuk-checkboxes__item">
-                                                    <input type="checkbox"
-                                                           id="@modification.Id"
-                                                           name="SelectedDocuments"
-                                                           value="@modification.DocumentStoragePath"
-                                                           form="download-selection-form"
-                                                           aria-label="Select record @modification.Id"
-                                                           class="govuk-checkboxes__input document-checkbox" />
-                                                    <label for="@modification.Id"
-                                                           class="govuk-label govuk-checkboxes__label"></label>
+                                        <feature name="@FeatureFlags.DocumentsSelectiveDownload">
+                                            <td class="govuk-table__cell checkbox-cell">
+                                                <div class="govuk-checkboxes govuk-checkboxes--small table-checkbox">
+                                                    <div class="govuk-checkboxes__item">
+                                                        <input type="checkbox"
+                                                               id="@modification.Id"
+                                                               name="SelectedDocuments"
+                                                               value="@modification.DocumentStoragePath"
+                                                               form="download-selection-form"
+                                                               aria-label="Select record @modification.Id"
+                                                               class="govuk-checkboxes__input document-checkbox" />
+                                                        <label for="@modification.Id"
+                                                               class="govuk-label govuk-checkboxes__label"></label>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
+                                            </td>
+                                        </feature>
                                         <td class="govuk-table__cell">
                                             <span class="govuk-!-font-weight-bold">@modification.DocumentType</span>
                                             @if (isFailed)
@@ -188,7 +199,7 @@
                                                 }
                                             </td>
                                         }
-                                        @if ((isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise) || Model.Status is ModificationStatus.RequestRevisions)
+                                        @if (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise)
                                         {
                                             <td class="govuk-table__cell">
                                                 @if (!isFailed)
@@ -214,7 +225,7 @@
     </div>
 </div>
 
-<div status-for="Status" status-in="@([ModificationStatus.InDraft, ModificationStatus.RequestRevisions])" class="govuk-button-group">
+<div status-for="Status" status-is="@ModificationStatus.InDraft" class="govuk-button-group">
     <form method="get">
         @{
             ViewBag.Style = "govuk-button govuk-button--secondary";
@@ -249,39 +260,40 @@
         </div>
     </div>
 </p>
+<feature name="@FeatureFlags.DocumentsSelectiveDownload">
+    <div id="selectionPanel"
+         class="govuk-!-margin-top-4 govuk-!-padding-4"
+         style="border:1px solid #b1b4b6;">
 
-<div id="selectionPanel"
-     class="govuk-!-margin-top-4 govuk-!-padding-4"
-     style="border:1px solid #b1b4b6;">
+        <p class="govuk-body govuk-!-margin-bottom-2">
 
-    <p class="govuk-body govuk-!-margin-bottom-2">
+            <!-- Shown ONLY when JS is disabled -->
+            <noscript>
+                <strong>Apply action to selected items</strong>
+            </noscript>
 
-        <!-- Shown ONLY when JS is disabled -->
-        <noscript>
-            <strong>Apply action to selected items</strong>
-        </noscript>
+            <!-- Hidden by default -->
+            <span id="jsSelectionText" class="govuk-!-display-none">
+                <strong>
+                    <span id="selectedCount">0</span>
+                    documents selected for download on this page
+                </strong>
+            </span>
+        </p>
 
-        <!-- Hidden by default -->
-        <span id="jsSelectionText" class="govuk-!-display-none">
-            <strong>
-                <span id="selectedCount">0</span>
-                documents selected for download on this page
-            </strong>
-        </span>
-    </p>
+        <div class="govuk-button-group">
+            <form method="get" asp-route="pmc:downloaddocumentsselectionaszip" id="download-selection-form">
+                <button type="submit" id="DownloadSelectionButton" class="govuk-button govuk-button--secondary">
+                    Download selection
+                </button>
+            </form>
 
-    <div class="govuk-button-group">
-        <form method="get" asp-route="pmc:downloaddocumentsselectionaszip" id="download-selection-form">
-            <button type="submit" id="DownloadSelectionButton" class="govuk-button govuk-button--secondary">
-                Download selection
-            </button>
-        </form>
-
-        <a id="clearSelection" class="govuk-link" href="#">
-            Clear selection
-        </a>
+            <a id="clearSelection" class="govuk-link" href="#">
+                Clear selection
+            </a>
+        </div>
     </div>
-</div>
+</feature>
 <br />
 <style>
     .js-enabled #selectionPanel {
@@ -385,9 +397,13 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         const jsSelectionText = document.getElementById("jsSelectionText");
-
         if (jsSelectionText) {
             jsSelectionText.classList.remove("govuk-!-display-none");
+        }
+
+        const selectAllContainer = document.getElementById("selectAllContainer");
+        if (selectAllContainer) {
+            selectAllContainer.classList.remove("govuk-!-display-none");
         }
     });
 </script>

@@ -232,7 +232,6 @@ public class BlobStorageService : IBlobStorageService
         // Memory stream to build the ZIP archive
         var zipStream = new MemoryStream();
 
-        // Create ZIP archive (leave stream open so it can be returned)
         using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: true))
         {
             foreach (var blobPath in blobPaths)
@@ -244,11 +243,9 @@ public class BlobStorageService : IBlobStorageService
 
                 if (!await blobClient.ExistsAsync())
                 {
-                    // Skip missing files (or change to fail-fast if required)
+                    // Skip missing files
                     continue;
                 }
-
-                var blobDownload = await blobClient.DownloadStreamingAsync();
 
                 // Use filename from blob path
                 var entryName = Path.GetFileName(blobPath);
@@ -256,9 +253,9 @@ public class BlobStorageService : IBlobStorageService
                 var zipEntry = archive.CreateEntry(entryName, CompressionLevel.Fastest);
 
                 using var entryStream = zipEntry.Open();
-                using var blobStream = blobDownload.Value.Content;
 
-                await blobStream.CopyToAsync(entryStream);
+                // Download blob directly into zip entry stream
+                await blobClient.DownloadToAsync(entryStream);
             }
         }
 

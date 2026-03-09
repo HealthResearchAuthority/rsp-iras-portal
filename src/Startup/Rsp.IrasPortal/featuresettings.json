@@ -105,7 +105,7 @@
             "Audience": {
               "Users": [],
               "Groups": [],
-              "DefaultRolloutPercentage": 100,
+              "DefaultRolloutPercentage": 0,
               "Exclusion": {
                 "Users": [],
                 "Groups": []
@@ -206,24 +206,6 @@
       ]
     },
     "Modifications.Resubmission": {
-      "EnabledFor": [
-        {
-          "Name": "Microsoft.Targeting",
-          "Parameters": {
-            "Audience": {
-              "Users": [],
-              "Groups": [],
-              "DefaultRolloutPercentage": 100,
-              "Exclusion": {
-                "Users": [],
-                "Groups": []
-              }
-            }
-          }
-        }
-      ]
-    },
-    "Modifications.RequestRevisions": {
       "EnabledFor": [
         {
           "Name": "Microsoft.Targeting",
