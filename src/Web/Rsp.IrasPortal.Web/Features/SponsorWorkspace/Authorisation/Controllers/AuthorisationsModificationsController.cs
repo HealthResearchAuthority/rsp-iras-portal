@@ -39,8 +39,9 @@ public class AuthorisationsModificationsController
     IValidator<AuthoriseModificationsOutcomeViewModel> outcomeValidator,
     IValidator<QuestionnaireViewModel> questionnaireValidator,
     IFeatureManager featureManager,
-    IRtsService rtsService
-) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, questionnaireValidator, featureManager)
+    IRtsService rtsService,
+    IApplicationsService applicationsService
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!, featureManager)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
@@ -366,6 +367,18 @@ public class AuthorisationsModificationsController
                         .Any(m => m.Status == ModificationStatus.WithReviewBody) == true)
                 {
                     return RedirectToAction(nameof(CanSubmitToReviewBody), model);
+                }
+
+                // update the project record status with halt status
+                var projectHalt = TempData[TempDataKeys.ProjectModification.SpecificAreaOfChangeText] as string;
+                if (projectHalt == ProjectRecordStatus.ProjectHalt)
+                {
+                    var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus(model.ProjectRecordId, ProjectRecordStatus.ProjectHalt);
+
+                    if (!updateApplicationResponse.IsSuccessStatusCode)
+                    {
+                        return this.ServiceError(updateApplicationResponse);
+                    }
                 }
                 switch (reviewType)
                 {

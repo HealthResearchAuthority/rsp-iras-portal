@@ -16,4 +16,12 @@ public static class SessionExtension
         // Remove the ProjectRecord session value.
         session.Remove(SessionKeys.ProjectRecord);
     }
+
+    public static void SetList(this ISession session, string key, List<string> value)
+          => session.SetString(key, System.Text.Json.JsonSerializer.Serialize(value));
+
+    public static List<string> GetList(this ISession session, string key)
+        => session.GetString(key) is string json
+           ? System.Text.Json.JsonSerializer.Deserialize<List<string>>(json) ?? new List<string>()
+           : new List<string>();
 }

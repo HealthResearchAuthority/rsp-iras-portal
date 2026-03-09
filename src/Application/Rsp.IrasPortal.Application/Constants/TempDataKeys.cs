@@ -91,4 +91,6 @@ public struct TempDataKeys
     public const string RevisionDescription = "td:revision_description";
     public const string IsSendToSponsor = "td:is_send_to_sponsor";
     public const string IsDuplicateModification = "td:is_duplicate_modification";
+    public const string ProjectRecordStatus = "td:project_record_status";
+    public const string OptionNameListKey = "td:selected_option_name_list";
 }

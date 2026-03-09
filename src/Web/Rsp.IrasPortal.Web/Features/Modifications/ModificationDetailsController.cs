@@ -206,6 +206,8 @@ public class ModificationDetailsController
     [HttpGet]
     public IActionResult ConfirmRemoveChange(string modificationChangeId, string modificationChangeName)
     {
+        //this temp data is used for project halt validation
+        TempData.Remove(TempDataKeys.OptionNameListKey);
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
 
         viewModel.ModificationChangeId = modificationChangeId;
