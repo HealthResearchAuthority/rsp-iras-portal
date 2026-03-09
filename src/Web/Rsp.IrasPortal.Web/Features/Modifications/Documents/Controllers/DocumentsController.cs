@@ -598,27 +598,6 @@ public class DocumentsController
         }
     }
 
-    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Download)]
-    [HttpGet]
-    public async Task<IActionResult> DownloadDocument(string path, string fileName)
-    {
-        // get the modification id from the path
-        var modificationId = path.Split('/')[1];
-
-        var documentAccessResponse = await projectModificationsService.CheckDocumentAccess(Guid.Parse(modificationId));
-
-        if (!documentAccessResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(documentAccessResponse);
-        }
-
-        var blobClient = GetBlobClient(true);
-        var serviceResponse = await blobStorageService
-            .DownloadFileToHttpResponseAsync(blobClient, CleanContainerName, path, fileName);
-
-        return serviceResponse?.Content!;
-    }
-
     /// <summary>
     /// Handles the upload of project modification documents to blob storage.
     /// Persists metadata to the backend service and redirects to the review page.
@@ -657,6 +636,27 @@ public class DocumentsController
     }
 
     [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Download)]
+    [HttpGet]
+    public async Task<IActionResult> DownloadDocument(string path, string fileName)
+    {
+        // get the modification id from the path
+        var modificationId = path.Split('/')[1];
+
+        var documentAccessResponse = await projectModificationsService.CheckDocumentAccess(Guid.Parse(modificationId));
+
+        if (!documentAccessResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(documentAccessResponse);
+        }
+
+        var blobClient = GetBlobClient(true);
+        var serviceResponse = await blobStorageService
+            .DownloadFileToHttpResponseAsync(blobClient, CleanContainerName, path, fileName);
+
+        return serviceResponse?.Content!;
+    }
+
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Download)]
     public async Task<IActionResult> DownloadDocumentsAsZip(string folderName)
     {
         var irasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
@@ -684,6 +684,50 @@ public class DocumentsController
         return File(response.FileBytes, "application/zip", response.FileName);
     }
 
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Download)]
+    [HttpGet]
+    [FeatureGate(FeatureFlags.DocumentsSelectiveDownload)]
+    public async Task<IActionResult> DownloadDocumentsSelectionAsZip(List<string> selectedDocuments)
+    {
+        if (selectedDocuments?.Count == 0)
+        {
+            return RedirectToRoute("pmc:ReviewAllChanges", new
+            {
+                projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string,
+                irasId = TempData.Peek(TempDataKeys.IrasId) as string,
+                shortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string,
+                projectModificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is Guid id
+                ? id
+                : Guid.NewGuid(),
+                includeSelectiveDownloadError = true
+            });
+        }
+
+        var modificationIdentifier =
+            TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string;
+
+        var modificationId = selectedDocuments[0].Split('/')[1];
+        var documentAccessResponse = await projectModificationsService.CheckDocumentAccess(Guid.Parse(modificationId!));
+
+        if (!documentAccessResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(documentAccessResponse);
+        }
+
+        var blobClient = GetBlobClient(true);
+
+        // Build the file name
+        var saveAsFileName = BuildZipFileName(modificationIdentifier);
+
+        var response = await blobStorageService.DownloadFilesAsZipAsync(
+            blobClient,
+            CleanContainerName,
+            selectedDocuments,
+            saveAsFileName);
+
+        return response.Content;
+    }
+
     /// <summary>
     /// Saves the answers provided for a specific document’s questions.
     /// Updates the model with user responses and validates the questionnaire.
@@ -693,7 +737,7 @@ public class DocumentsController
     /// - If validation fails: redisplays the AddDocumentDetails view with validation errors.
     /// - If validation succeeds: saves answers and redirects to review or list page based on ReviewAnswers flag.
     /// </returns>
-    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Update)]
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpPost]
     public async Task<IActionResult> SaveDocumentDetails
     (
@@ -749,7 +793,7 @@ public class DocumentsController
             : RedirectAfterSubmit(viewModel);
     }
 
-    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Update)]
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpGet]
     [FeatureGate(FeatureFlags.SupersedingDocuments)]
     public async Task<IActionResult> SupersedeDocumentToReplace
@@ -777,7 +821,7 @@ public class DocumentsController
         return View(nameof(SupersedeDocumentToReplace), viewModel);
     }
 
-    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Update)]
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpGet]
     [FeatureGate(FeatureFlags.SupersedingDocuments)]
     public async Task<IActionResult> SupersedeDocumentType
@@ -798,7 +842,7 @@ public class DocumentsController
         return View(nameof(SupersedeDocumentType), viewModel);
     }
 
-    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Update)]
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpGet]
     [FeatureGate(FeatureFlags.SupersedingDocuments)]
     public async Task<IActionResult> SupersedeLinkDocument
@@ -835,7 +879,7 @@ public class DocumentsController
     /// - If validation fails: redisplays the AddDocumentDetails view with validation errors.
     /// - If validation succeeds: saves answers and redirects to review or list page based on ReviewAnswers flag.
     /// </returns>
-    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Update)]
+    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpPost]
     [FeatureGate(FeatureFlags.SupersedingDocuments)]
     public async Task<IActionResult> SaveSupersedeDocumentDetails
@@ -1737,7 +1781,7 @@ public class DocumentsController
     {
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
-        var status = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string;
+        var status = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) as string;
         var sponsorOrganisationUserId = TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId);
         var rtsId = TempData.Peek(TempDataKeys.RevisionRtsId) as string;
         if (status is ModificationStatus.ReviseAndAuthorise)
@@ -2526,4 +2570,9 @@ public class DocumentsController
                 d.Id != currentDocumentId &&
                 d.DocumentType != SupersedeDocumentsType.Tracked)];
     }
+}
+
+public class SelectedDocumentRequest
+{
+    public string DocumentStoragePath { get; set; }
 }
