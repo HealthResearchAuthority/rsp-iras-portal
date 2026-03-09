@@ -405,12 +405,12 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
     }
 
     [Fact]
-    public async Task ConfirmModificationJourney_Should_Redirect_To_ProjectHaltWarning_When_No_Halt()
+    public async Task ConfirmModificationJourney_Should_Redirect_To_ProjectHaltWarning_When_Other_AreaOfChange_Exist()
     {
         // Arrange
         var modificationId = Guid.NewGuid();
         var model = new AreaOfChangeViewModel { ProjectRecordId = "PR1", AreaOfChangeId = "A1", SpecificChangeId = "S1" };
-        var existing = new List<string> { "Participant procedures" };
+        var existing = new List<string> { "Temporary halt to a project" };
         var ctx = new DefaultHttpContext();
         var temp = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>())
         {
