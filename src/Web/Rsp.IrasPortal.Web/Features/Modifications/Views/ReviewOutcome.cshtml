@@ -1,8 +1,21 @@
 ﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @using Rsp.Portal.Web.Features.Modifications.Models
 @model ReviewOutcomeViewModel
 @{
     ViewBag.Title = "Review outcome";
+
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
+
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+	var commentHeading = pageContent.GetValueOrDefault("SponsorWorkspace.ReviewOutcome.CommentHeading", null);
+	var commentHint = pageContent.GetValueOrDefault("SponsorWorkspace.ReviewOutcome.CommentHint", null);
+	var outcomeHeading = pageContent.GetValueOrDefault("SponsorWorkspace.ReviewOutcome.OutcomeHeading", null);
+	var outcomeHint = pageContent.GetValueOrDefault("SponsorWorkspace.ReviewOutcome.OutcomeHint", null);
+
 }
 
 <partial 
@@ -17,6 +30,7 @@
             { "projectModificationId", Model.ModificationDetails.ModificationId! }
         })" />
 
+
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
@@ -28,7 +42,7 @@
 <form asp-route="pmc:reviewoutcome" method="post">
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-            <h2 class="govuk-heading-m">Leave a comment</h2>
+			<h2 class="govuk-heading-m">@Html.Raw(commentHeading?.Value)</h2>
             <span class="govuk-accordion__section-toggle govuk-!-margin-bottom-4" data-nosnippet="">
                 <span class="govuk-accordion__section-toggle-focus">
                     <span class="govuk-accordion-nav__chevron govuk-accordion-nav__chevron--down"></span>
@@ -42,7 +56,7 @@
                 </span>
             </span>
 
-            <p class="govuk-hint">If you have any comments on this document add them to the box below. Comments are only visible to other reviewers and are not shared with the applicant.</p>
+			<p class="govuk-hint">@Html.Raw(commentHint?.Value)</p>
             <div class="govuk-form-group govuk-character-count"
                  data-module="govuk-character-count"
                  data-maxlength="300">
@@ -63,7 +77,7 @@
 
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-            <h2 class="govuk-heading-m">Review outcome</h2>
+			<h2 class="govuk-heading-m">@Html.Raw(outcomeHeading?.Value)</h2>
             <div class="govuk-form-group">
                 <fieldset class="govuk-fieldset">
                     <div class="govuk-radios" data-module="govuk-radios">
@@ -91,7 +105,7 @@
                 </fieldset>
             </div>
             <div class="govuk-body">
-                You'll be able to check the outcome again before sending to the applicant in the next steps
+				@Html.Raw(outcomeHint?.Value)
             </div>
             <div class="save-buttons">
                 <button type="submit" class="govuk-button" data-module="govuk-button">
