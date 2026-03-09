@@ -6,6 +6,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.Portal.Application.Constants;
@@ -33,7 +34,8 @@ public class ReviewAllChangesController
     IRespondentService respondentService,
     IValidator<QuestionnaireViewModel> validator,
     IFeatureManager featureManager,
-    IViewHelper viewHelper
+    IViewHelper viewHelper,
+    IValidator<ModificationDetailsViewModel> modificationValidator
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
@@ -170,7 +172,6 @@ public class ReviewAllChangesController
         {
             ModelState.AddModelError("DownloadSelectionButton", "Select at least one document");
         }
-
         // Render the details view
         return View(modification);
     }
@@ -336,7 +337,7 @@ public class ReviewAllChangesController
             return View(storedModel);
         }
 
-        if (model.RequestForInformationReasons.Any(r => r.Length > 300))
+        if (!saveForLater && model.RequestForInformationReasons.Any(r => r.Length > 300))
         {
             return View(storedModel);
         }
@@ -430,7 +431,7 @@ public class ReviewAllChangesController
     }
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Submit)]
-    public async Task<IActionResult> SendModificationToSponsor(string projectRecordId, Guid projectModificationId)
+    public async Task<IActionResult> SendModificationToSponsor(string projectRecordId, Guid projectModificationId, string? applicantRevisionResponse)
     {
         // Fetch all modification documents (up to 200)
         var searchQuery = new ProjectOverviewDocumentSearchRequest();
@@ -479,6 +480,7 @@ public class ReviewAllChangesController
             projectRecordId,
             projectModificationId,
             ModificationStatus.WithSponsor,
+            applicantRevisionResponse,
             onSuccess: () => View("ModificationSentToSponsor"));
     }
 
@@ -524,6 +526,7 @@ public class ReviewAllChangesController
             projectRecordId,
             projectModificationId,
             ModificationStatus.Withdrawn,
+            string.Empty,
             onSuccess: () => View(model));
     }
 
@@ -540,15 +543,30 @@ public class ReviewAllChangesController
             });
         }
 
-        var html = await viewHelper.RenderViewAsString("_ReviewModificationPdf", modification, ControllerContext);
+        var newViewData = new ViewDataDictionary(ViewData)
+        {
+            [ViewDataKeys.ShowModificationDetails] = true
+        };
 
-        var pdf = await viewHelper.GeneratePdf(html, $"Modification ID: {modification.ModificationIdentifier}");
+        var html = await viewHelper.RenderViewAsString(
+           "_ReviewModificationPdf",
+           modification,
+           ControllerContext,
+           newViewData);
+
+        var pdf = await viewHelper.GeneratePdf(
+           html,
+           $"Modification ID: " +
+           $"{modification.ModificationIdentifier}");
+
+        var modId = modification.ModificationIdentifier.Split('/');
+        var fileName = $"{modId[0]}-{modId[1]}-{DateTime.UtcNow:ddMMMyy}.pdf";
 
         return File
         (
             pdf,
             "application/pdf",
-            $"{modification.ModificationIdentifier} {DateTime.UtcNow}.pdf"
+            fileName
         );
     }
 
@@ -601,10 +619,65 @@ public class ReviewAllChangesController
         return this.ServiceError(_duplicateModifictionError);
     }
 
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
+    [FeatureGate(FeatureFlags.RequestRevisions)]
+    [HttpPost]
+    public async Task<IActionResult> SendRevisionResponseToSponsor(ModificationDetailsViewModel model, bool isSaveForLater)
+    {
+        bool validation = isSaveForLater && string.IsNullOrWhiteSpace(model.ApplicantRevisionResponse);
+        if (!validation)
+        {
+            var context = new ValidationContext<ModificationDetailsViewModel>(model);
+            var validationResult = await modificationValidator.ValidateAsync(context);
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+
+                TempData.Remove(TempDataKeys.ModelState);
+                TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
+
+                return RedirectToRoute("pmc:ModificationDetails", new
+                {
+                    projectRecordId = model.ProjectRecordId,
+                    irasId = model.IrasId,
+                    shortTitle = model.ShortTitle,
+                    projectModificationId = Guid.Parse(model.ModificationId),
+                    sponsorOrganisationUserId = model.SponsorOrganisationUserId,
+                    rtsId = model.RtsId
+                });
+            }
+        }
+
+        if (isSaveForLater)
+        {
+            await projectModificationsService.UpdateModificationStatus
+                (
+                    model.ProjectRecordId,
+                    Guid.Parse(model.ModificationId),
+                    ModificationStatus.RequestRevisions,
+                    model.RevisionDescription,
+                    model.ReasonNotApproved,
+                    model.ApplicantRevisionResponse
+                );
+            return RedirectToRoute("pov:postapproval", new { projectRecordId = model.ProjectRecordId });
+        }
+
+        return RedirectToAction(nameof(SendModificationToSponsor), new
+        {
+            projectRecordId = model.ProjectRecordId,
+            projectModificationId = Guid.Parse(model.ModificationId),
+            applicantRevisionResponse = model.ApplicantRevisionResponse
+        });
+    }
+
     private async Task<IActionResult> HandleModificationStatusUpdate(
         string projectRecordId,
         Guid projectModificationId,
         string newStatus,
+        string applicantRevisionResponse,
         Func<IActionResult> onSuccess)
     {
         TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
@@ -614,7 +687,10 @@ public class ReviewAllChangesController
         (
             projectRecordId,
             projectModificationId,
-            newStatus
+            newStatus,
+            null,
+            null,
+            applicantRevisionResponse
         );
 
         if (!updateResponse.IsSuccessStatusCode)
