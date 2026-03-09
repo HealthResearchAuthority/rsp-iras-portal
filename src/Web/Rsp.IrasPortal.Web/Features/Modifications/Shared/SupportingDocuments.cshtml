@@ -73,12 +73,12 @@
                                     @{
                                         var sortableHeaders = new[]
                                         {
-                                            new { Field = nameof(ProjectOverviewDocumentDto.DocumentType), Label = "Document type" },
-                                            new { Field = nameof(ProjectOverviewDocumentDto.DocumentName), Label = "Document name" },
-                                            new { Field = nameof(ProjectOverviewDocumentDto.FileName), Label = "File name" },
-                                            new { Field = nameof(ProjectOverviewDocumentDto.DocumentVersion), Label = "Version" },
-                                            new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" }
-                                        };
+                                                                        new { Field = nameof(ProjectOverviewDocumentDto.DocumentType), Label = "Document type" },
+                                                                        new { Field = nameof(ProjectOverviewDocumentDto.DocumentName), Label = "Document name" },
+                                                                        new { Field = nameof(ProjectOverviewDocumentDto.FileName), Label = "File name" },
+                                                                        new { Field = nameof(ProjectOverviewDocumentDto.DocumentVersion), Label = "Version" },
+                                                                        new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" }
+                                                                        };
                                     }
 
                                     @foreach (var header in sortableHeaders)
@@ -91,18 +91,18 @@
                                             @await Html.PartialAsync("_SortableHeaderButton", new SortableHeaderModel
                                             {
                                                 FieldName = header.Field,
-                                                DisplayText = displayText,
-                                                CurrentSortField = Model.ProjectOverviewDocumentViewModel.Pagination?.SortField,
-                                                CurrentSortDirection = Model.ProjectOverviewDocumentViewModel.Pagination?.SortDirection,
-                                                AdditionalParameters = new Dictionary<string, string>
-                                                {
-                                                { "projectRecordId", Model.ProjectRecordId },
-                                                { "irasId", Model.IrasId },
-                                                { "shortTitle", Model.ShortTitle! },
-                                                { "projectModificationId", Model.ModificationId },
-                                                { "documents", ModificationOverview.Documents }
-                                                }
-                                            })
+                                                                                DisplayText = displayText,
+                                                                                CurrentSortField = Model.ProjectOverviewDocumentViewModel.Pagination?.SortField,
+                                                                                CurrentSortDirection = Model.ProjectOverviewDocumentViewModel.Pagination?.SortDirection,
+                                                                                AdditionalParameters = new Dictionary<string, string>
+                                                                                {
+                                                                                { "projectRecordId", Model.ProjectRecordId },
+                                                                                { "irasId", Model.IrasId },
+                                                                                { "shortTitle", Model.ShortTitle! },
+                                                                                { "projectModificationId", Model.ModificationId },
+                                                                                { "documents", ModificationOverview.Documents }
+                                                                                }
+                                                                                })
                                     </th>
                                                                         }
                                     <th scope="col" class="govuk-table__header">Status</th>
@@ -117,10 +117,14 @@
                                 {
                                     var isFailed = string.Equals(modification.Status, DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase);
                                     var isTracked = string.Equals(modification.SupersedeDocumentType, SupersedeDocumentsType.Tracked.ToString(), StringComparison.OrdinalIgnoreCase);
+                                    var isScanInProgress = modification.IsMalwareScanSuccessful == null;
 
-                                    <tr class="govuk-table__row document-row">
+                                    var rowClass = isFailed ? "scan-failed" : isScanInProgress ? "scan-pending" : "";
+
+                                    <tr class="govuk-table__row document-row @rowClass">
                                         <feature name="@FeatureFlags.DocumentsSelectiveDownload">
-                                            <td class="govuk-table__cell checkbox-cell">
+                                            <td class="govuk-table__cell checkbox-cell"
+                                                rowspan="@(isFailed || isScanInProgress ? "2" : "1")">
                                                 <div class="govuk-checkboxes govuk-checkboxes--small table-checkbox">
                                                     <div class="govuk-checkboxes__item">
                                                         <input type="checkbox"
@@ -138,22 +142,6 @@
                                         </feature>
                                         <td class="govuk-table__cell">
                                             <span class="govuk-!-font-weight-bold">@modification.DocumentType</span>
-                                            @if (isFailed)
-                                            {
-                                                <div class="govuk-error-message govuk-!-margin-top-1 govuk-!-margin-bottom-1">
-                                                    The selected file contains a virus
-                                                </div>
-                                                <form asp-route="pmc:confirmdeletedocument"
-                                                      asp-route-id="@modification.Id"
-                                                      asp-route-backRoute="toaddpage"
-                                                      method="get"
-                                                      class="govuk-!-margin-bottom-0">
-                                                    <input type="hidden" name="id" value="@modification.Id" />
-                                                    <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0">
-                                                        Delete
-                                                    </button>
-                                                </form>
-                                            }
                                         </td>
                                         <td class="govuk-table__cell">@modification.DocumentName</td>
                                         <td class="govuk-table__cell">
@@ -223,6 +211,39 @@
                                             </td>
                                         }
                                     </tr>
+                                    <feature name="@FeatureFlags.DocumentsMalware">
+                                        @if (isScanInProgress || isFailed)
+                                        {
+                                            <tr class="govuk-table__row document-row document-row-message @rowClass">
+
+                                                <td colspan="8" class="govuk-table__cell">
+
+                                                    @if (isScanInProgress)
+                                                    {
+                                                        <strong>This document is being scanned</strong>
+                                                    }
+
+                                                    @if (isFailed)
+                                                    {
+                                                        <p class="govuk-error-message govuk-!-margin-bottom-2">
+                                                            The selected file contains a virus
+                                                        </p>
+
+                                                        <form asp-route="pmc:confirmdeletedocument"
+                                                              asp-route-id="@modification.Id"
+                                                              asp-route-backRoute="toaddpage"
+                                                              method="get"
+                                                              class="govuk-!-margin-bottom-0">
+                                                            <input type="hidden" name="id" value="@modification.Id" />
+                                                            <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0">
+                                                                Delete
+                                                            </button>
+                                                        </form>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </feature>
                                 }
                             </tbody>
                         </table>
@@ -271,42 +292,42 @@
 </p>
 <feature name="@FeatureFlags.DocumentsSelectiveDownload">
     @if (Model.ProjectOverviewDocumentViewModel?.Documents.Count() > 0)
-        {
-            <div id="selectionPanel"
-            class="govuk-!-margin-top-4 govuk-!-padding-4"
-            style="border:1px solid #b1b4b6;">
+    {
+        <div id="selectionPanel"
+             class="govuk-!-margin-top-4 govuk-!-padding-4"
+             style="border:1px solid #b1b4b6;">
 
-                <p class="govuk-body govuk-!-margin-bottom-2">
+            <p class="govuk-body govuk-!-margin-bottom-2">
 
-                    <!-- Shown ONLY when JS is disabled -->
-                    <noscript>
-                        <strong>Apply action to selected items</strong>
-                    </noscript>
+                <!-- Shown ONLY when JS is disabled -->
+                <noscript>
+                    <strong>Apply action to selected items</strong>
+                </noscript>
 
-                    <!-- Hidden by default -->
-                    <span id="jsSelectionText" class="govuk-!-display-none">
-                        <strong>
-                            <span id="selectedCount">0</span>
-                            documents selected for download on this page
-                        </strong>
-                    </span>
-                </p>
+                <!-- Hidden by default -->
+                <span id="jsSelectionText" class="govuk-!-display-none">
+                    <strong>
+                        <span id="selectedCount">0</span>
+                        documents selected for download on this page
+                    </strong>
+                </span>
+            </p>
 
-                <div class="govuk-button-group">
-                    <form method="get" asp-route="pmc:downloaddocumentsselectionaszip" id="download-selection-form">
-                        <input type="hidden" id="downloadSource" name="downloadSource" value="@downloadSource" />
-                        <button type="submit" id="DownloadSelectionButton" class="govuk-button govuk-button--secondary">
-                            Download selection
-                        </button>
-                    </form>
+            <div class="govuk-button-group">
+                <form method="get" asp-route="pmc:downloaddocumentsselectionaszip" id="download-selection-form">
+                    <input type="hidden" id="downloadSource" name="downloadSource" value="@downloadSource" />
+                    <button type="submit" id="DownloadSelectionButton" class="govuk-button govuk-button--secondary">
+                        Download selection
+                    </button>
+                </form>
 
-                    <a id="clearSelection" class="govuk-link" href="#">
-                        Clear selection
-                    </a>
-                </div>
+                <a id="clearSelection" class="govuk-link" href="#">
+                    Clear selection
+                </a>
             </div>
-        }
-    </feature>
+        </div>
+    }
+</feature>
 <br />
 <style>
     .js-enabled #selectionPanel {
@@ -314,63 +335,62 @@
     }
 </style>
 <script>
-        document.addEventListener("change", function (e) {
+    document.addEventListener("change", function (e) {
 
-            // Individual document checkbox
-            if (e.target.classList.contains("document-checkbox")) {
-                updateSelectionUI();
+        // Individual document checkbox
+        if (e.target.classList.contains("document-checkbox")) {
+            updateSelectionUI();
+        }
+
+        // Select all checkbox
+        if (e.target.id === "selectAllCheckbox") {
+
+            const table = document.getElementById("projectDocumentsTable");
+            if (!table) return;
+
+            const checkboxes = table.querySelectorAll(".document-checkbox");
+
+            checkboxes.forEach(cb => {
+                cb.checked = e.target.checked;
+            });
+
+            updateSelectionUI();
+        }
+    });
+
+    document.addEventListener("click", function (e) {
+
+        // Clear selection
+        if (e.target.id === "clearSelection") {
+
+            e.preventDefault();
+
+            const table = document.getElementById("projectDocumentsTable");
+            if (!table) return;
+
+            const checkboxes = table.querySelectorAll(".document-checkbox");
+            const selectAll = document.getElementById("selectAllCheckbox");
+
+            checkboxes.forEach(cb => cb.checked = false);
+
+            if (selectAll) {
+                selectAll.checked = false;
             }
 
-            // Select all checkbox
-            if (e.target.id === "selectAllCheckbox") {
+            updateSelectionUI();
+        }
+    });
 
-                const table = document.getElementById("projectDocumentsTable");
-                if (!table) return;
-
-                const checkboxes = table.querySelectorAll(".document-checkbox");
-
-                checkboxes.forEach(cb => {
-                    cb.checked = e.target.checked;
-                });
-
-                updateSelectionUI();
-            }
-        });
-
-        document.addEventListener("click", function (e) {
-
-            // Clear selection
-            if (e.target.id === "clearSelection") {
-
-                e.preventDefault();
-
-                const table = document.getElementById("projectDocumentsTable");
-                if (!table) return;
-
-                const checkboxes = table.querySelectorAll(".document-checkbox");
-                const selectAll = document.getElementById("selectAllCheckbox");
-
-                checkboxes.forEach(cb => cb.checked = false);
-
-                if (selectAll) {
-                    selectAll.checked = false;
-                }
-
-                updateSelectionUI();
-            }
-        });
-
-        function updateSelectionUI() {
+    function updateSelectionUI() {
 
         const table = document.getElementById("projectDocumentsTable");
         if (!table) return;
 
         const jsSelectionText = document.getElementById("jsSelectionText");
-
         if (jsSelectionText) {
             jsSelectionText.classList.remove("govuk-!-display-none");
         }
-        
+
         const selectAllContainer = document.getElementById("selectAllContainer");
         if (selectAllContainer) {
             selectAllContainer.classList.remove("govuk-!-display-none");
@@ -387,12 +407,22 @@
         checkboxes.forEach(cb => {
 
             const row = cb.closest(".document-row");
+            const messageRow = row?.nextElementSibling?.classList.contains("document-row-message")
+                ? row.nextElementSibling
+                : null;
 
             if (cb.checked) {
+
                 selectedCount++;
+
                 row?.classList.add("selected");
+                messageRow?.classList.add("selected");
+
             } else {
+
                 row?.classList.remove("selected");
+                messageRow?.classList.remove("selected");
+
             }
 
         });
@@ -401,19 +431,19 @@
             selectedCountText.textContent = selectedCount;
         }
 
-        // show/hide selectionPanel
-        if (selectedCount > 0) {
-            selectionPanel.style.display = "block";
-        } else {
-            selectionPanel.style.display = "none";
+        // show/hide selection panel
+        if (selectionPanel) {
+            selectionPanel.style.display = selectedCount > 0 ? "block" : "none";
         }
 
+        // update select all state
         if (selectAll) {
             selectAll.checked = selectedCount === checkboxes.length && checkboxes.length > 0;
         }
     }
 
     document.addEventListener("DOMContentLoaded", function () {
+
         const jsSelectionText = document.getElementById("jsSelectionText");
         if (jsSelectionText) {
             jsSelectionText.classList.remove("govuk-!-display-none");
@@ -423,5 +453,7 @@
         if (selectAllContainer) {
             selectAllContainer.classList.remove("govuk-!-display-none");
         }
+
+        updateSelectionUI();
     });
 </script>

@@ -1126,6 +1126,35 @@ button.govuk-pagination__item--current {
   text-align: end;
 }
 
+.document-row {
+  border-left: 5px solid transparent;
+}
+
+/* When a row is followed by a message row, remove its bottom border */
+.document-row:has(+ .document-row-message) td {
+  border-bottom: none;
+}
+
+.document-row-message td {
+  border-top: none;
+}
+
+/* Restore bottom border for the checkbox column (rowspan cell) */
+.document-row:has(+ .document-row-message) .checkbox-cell {
+  border-bottom: 1px solid #b1b4b6;
+}
+
+/* Scan failed */
+.scan-failed {
+  border-left: 5px solid #d4351c;
+}
+
+/* Scan pending */
+.scan-pending {
+  border-left: 5px solid #b1b4b6;
+}
+
+/* Selected state overrides others */
 .document-row.selected {
   background-color: #f2f7fa;
   border-left: 5px solid #1d70b8;
