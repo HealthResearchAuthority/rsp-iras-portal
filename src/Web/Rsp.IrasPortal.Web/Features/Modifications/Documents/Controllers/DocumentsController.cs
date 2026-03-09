@@ -675,11 +675,44 @@ public class DocumentsController
     [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Download)]
     [HttpGet]
     [FeatureGate(FeatureFlags.DocumentsSelectiveDownload)]
-    public async Task<IActionResult> DownloadDocumentsSelectionAsZip(List<string> selectedDocuments)
+    public async Task<IActionResult> DownloadDocumentsSelectionAsZip([FromQuery] List<string>? selectedDocuments,
+    [FromQuery] string downloadSource)
     {
         if (selectedDocuments == null || selectedDocuments.Count == 0)
         {
-            return RedirectToReviewWithError();
+            if (downloadSource == "ReviewAllChanges")
+            {
+                return RedirectToRoute("pmc:ReviewAllChanges", new
+                {
+                    projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string,
+                    irasId = TempData.Peek(TempDataKeys.IrasId) as string,
+                    shortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string,
+                    projectModificationId =
+                    TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is Guid id
+                    ? id
+                    : Guid.NewGuid(),
+                    includeSelectiveDownloadError = true
+                });
+            }
+            else if (downloadSource == "ModificationDetails")
+            {
+                return RedirectToRoute("pmc:ModificationDetails", new
+                {
+                    projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string,
+                    irasId = TempData.Peek(TempDataKeys.IrasId) as string,
+                    shortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string,
+                    projectModificationId =
+                    TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is Guid id
+                    ? id
+                    : Guid.NewGuid(),
+                    sponsorOrganisationUserId =
+                    TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId) is Guid userId
+                    ? userId
+                    : Guid.NewGuid(),
+                    rtsId = TempData.Peek(TempDataKeys.RevisionRtsId) as string,
+                    includeSelectiveDownloadError = true
+                });
+            }
         }
 
         var context = GetModificationContext();
@@ -706,7 +739,7 @@ public class DocumentsController
     /// - If validation fails: redisplays the AddDocumentDetails view with validation errors.
     /// - If validation succeeds: saves answers and redirects to review or list page based on ReviewAnswers flag.
     /// </returns>
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpPost]
     public async Task<IActionResult> SaveDocumentDetails
     (
@@ -762,7 +795,7 @@ public class DocumentsController
             : RedirectAfterSubmit(viewModel);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpGet]
     [FeatureGate(FeatureFlags.SupersedingDocuments)]
     public async Task<IActionResult> SupersedeDocumentToReplace
@@ -790,7 +823,7 @@ public class DocumentsController
         return View(nameof(SupersedeDocumentToReplace), viewModel);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpGet]
     [FeatureGate(FeatureFlags.SupersedingDocuments)]
     public async Task<IActionResult> SupersedeDocumentType
@@ -811,7 +844,7 @@ public class DocumentsController
         return View(nameof(SupersedeDocumentType), viewModel);
     }
 
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpGet]
     [FeatureGate(FeatureFlags.SupersedingDocuments)]
     public async Task<IActionResult> SupersedeLinkDocument
@@ -848,7 +881,7 @@ public class DocumentsController
     /// - If validation fails: redisplays the AddDocumentDetails view with validation errors.
     /// - If validation succeeds: saves answers and redirects to review or list page based on ReviewAnswers flag.
     /// </returns>
-    [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_Update)]
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Update)]
     [HttpPost]
     [FeatureGate(FeatureFlags.SupersedingDocuments)]
     public async Task<IActionResult> SaveSupersedeDocumentDetails
@@ -1750,7 +1783,7 @@ public class DocumentsController
     {
         TempData[TempDataKeys.ShowNotificationBanner] = true;
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
-        var status = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) as string;
+        var status = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string;
         var sponsorOrganisationUserId = TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId);
         var rtsId = TempData.Peek(TempDataKeys.RevisionRtsId) as string;
         if (status is ModificationStatus.ReviseAndAuthorise)
@@ -2600,20 +2633,5 @@ public class DocumentsController
             saveAsFileName);
 
         return result;
-    }
-
-    private IActionResult RedirectToReviewWithError()
-    {
-        return RedirectToRoute("pmc:ReviewAllChanges", new
-        {
-            projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string,
-            irasId = TempData.Peek(TempDataKeys.IrasId) as string,
-            shortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string,
-            projectModificationId =
-                TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is Guid id
-                    ? id
-                    : Guid.NewGuid(),
-            includeSelectiveDownloadError = true
-        });
     }
 }

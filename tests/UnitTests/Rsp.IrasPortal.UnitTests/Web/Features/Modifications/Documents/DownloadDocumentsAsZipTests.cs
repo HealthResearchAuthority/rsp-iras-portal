@@ -218,7 +218,7 @@ public class DownloadDocumentsAsZipTests : TestServiceBase<DocumentsController>
         };
 
         // Act
-        var result = await Sut.DownloadDocumentsSelectionAsZip(selectedDocuments);
+        var result = await Sut.DownloadDocumentsSelectionAsZip(selectedDocuments, It.IsAny<string>());
 
         // Assert
         result.ShouldBeOfType<FileContentResult>();

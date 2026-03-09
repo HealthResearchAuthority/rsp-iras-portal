@@ -3,7 +3,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
-using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -59,7 +58,8 @@ public class ModificationDetailsController
         int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
-        string sortDirection = SortDirections.Ascending
+        string sortDirection = SortDirections.Ascending,
+        bool includeSelectiveDownloadError = false
     )
     {
         // all changes are being reviewing here so remove the change specific keys from tempdata
@@ -91,11 +91,10 @@ public class ModificationDetailsController
         }
 
         // If its sponsor revision - validate if sponsor is authoriser
-        if ((modification.Status is ModificationStatus.ReviseAndAuthorise && sponsorOrganisationUserId != null && rtsId != null) ||
-            (modification.Status is ModificationStatus.RequestRevisions))
+        if (modification.Status is ModificationStatus.ReviseAndAuthorise && sponsorOrganisationUserId != null && rtsId != null)
         {
             // Add sponsor details
-            modification.SponsorOrganisationUserId = sponsorOrganisationUserId?.ToString();
+            modification.SponsorOrganisationUserId = sponsorOrganisationUserId.Value.ToString();
             modification.RtsId = rtsId;
 
             var revisionDescription = TempData[TempDataKeys.RevisionDescription];
@@ -125,7 +124,7 @@ public class ModificationDetailsController
 
             modification.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
 
-            await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents, false);
+            await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents);
 
             modification.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult.Item1?.Content?.TotalCount ?? 0)
             {
@@ -139,8 +138,8 @@ public class ModificationDetailsController
                     { "irasId", irasId },
                     { "shortTitle", shortTitle },
                     { "projectModificationId", projectModificationId.ToString() },
-                    { "sponsorOrganisationUserId", sponsorOrganisationUserId.ToString()?? string.Empty },
-                    { "rtsId", rtsId ?? string.Empty }
+                    { "sponsorOrganisationUserId", sponsorOrganisationUserId.Value.ToString() },
+                    { "rtsId", rtsId }
                 }
             };
         }
@@ -152,6 +151,13 @@ public class ModificationDetailsController
         if (modification.ModificationChanges.All(c => c.ChangeStatus == ModificationStatus.ChangeReadyForSubmission))
         {
             modification.ChangesReadyForSubmission = true;
+        }
+
+        var documentsSelectiveDownloadEnabled = await featureManager.IsEnabledAsync(FeatureFlags.DocumentsSelectiveDownload);
+
+        if (documentsSelectiveDownloadEnabled && includeSelectiveDownloadError)
+        {
+            ModelState.AddModelError("DownloadSelectionButton", "Select at least one document");
         }
 
         // Render the details view
@@ -235,40 +241,5 @@ public class ModificationDetailsController
             sponsorOrganisationUserId = viewModel.SponsorOrganisationUserId,
             rtsId = viewModel.RtsId
         });
-    }
-
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
-    [FeatureGate(FeatureFlags.RequestRevisions)]
-    [HttpGet]
-    public async Task<IActionResult> RequestForRevision(string projectRecordId,
-    string irasId,
-    string shortTitle,
-    Guid projectModificationId)
-    {
-        var modification = await projectModificationsService.GetModification(projectRecordId, projectModificationId);
-
-        if (!modification.IsSuccessStatusCode)
-        {
-            return this.ServiceError(modification);
-        }
-        if (modification.Content is null)
-        {
-            return this.ServiceError(new ServiceResponse
-            {
-                StatusCode = HttpStatusCode.BadRequest,
-                Error = $"There is no modification for modification id {projectModificationId}",
-            });
-        }
-
-        var model = new ModificationDetailsViewModel
-        {
-            IrasId = irasId,
-            ShortTitle = shortTitle,
-            RevisionDescription = modification.Content.RevisionDescription,
-            ProjectRecordId = projectRecordId,
-            ModificationId = projectModificationId.ToString(),
-            ModificationIdentifier = modification.Content.ModificationIdentifier
-        };
-        return View("MakeRevisonByApplicant", model);
     }
 }
