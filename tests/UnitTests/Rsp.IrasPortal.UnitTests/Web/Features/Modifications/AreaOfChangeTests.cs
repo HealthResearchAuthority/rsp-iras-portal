@@ -443,4 +443,65 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
         // Assert
         result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
     }
+
+    [Theory, AutoData]
+    public async Task AreaOfChange_ShouldVerify_RemoveDropDownOptions(
+         string projectRecordId,
+        int irasId,
+        Guid projectModificationId,
+        IrasApplicationResponse irasApplicationResponse
+        )
+    {
+        // Arrange
+        var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectRecordId] = projectRecordId
+        };
+
+        // Set all required TempData keys with correct namespacing and types
+        tempData[TempDataKeys.IrasId] = irasId.ToString();
+        tempData[TempDataKeys.ShortProjectTitle] = "Test Project";
+        tempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier] = "MOD-123";
+        tempData[TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid();
+        irasApplicationResponse.Status = "Project halt";
+        // Mock GetRespondentFromContext extension
+        var respondent = new { GivenName = "John", FamilyName = "Doe" };
+
+        Sut.TempData = tempData;
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                Items = { ["Respondent"] = respondent }
+            }
+        };
+
+        var serviceResponse = new ServiceResponse<IEnumerable<GetAreaOfChangesResponse>>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = null
+        };
+
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(c => c.GetInitialModificationQuestions())
+            .ReturnsAsync(new ServiceResponse<StartingQuestionsDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StartingQuestionsDto()
+            });
+        // Get project record
+        Mocker.GetMock<IApplicationsService>()
+           .Setup(s => s.GetProjectRecord(It.IsAny<string>()))
+           .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK, Content = irasApplicationResponse });
+
+        // Act
+        var result = await Sut.AreaOfChange(projectModificationId, "Project halt");
+
+        // Assert
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.Model.ShouldBeOfType<AreaOfChangeViewModel>();
+    }
 }

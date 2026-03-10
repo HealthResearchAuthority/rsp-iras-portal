@@ -280,6 +280,27 @@ public class GetSpecificChangeByIdTests : TestServiceBase<ModificationsControlle
         });
     }
 
+    [Fact]
+    public void GetSpecificChangesByAreaId_NotProjectHalt_Returns_BadRequest()
+    {
+        // Arrange
+        var (areas, selectedAreaId) = SampleAreas();
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            { TempDataKeys.ProjectModification.AreaOfChanges, Serialize(areas) },
+            { TempDataKeys.ProjectRecordStatus, ProjectRecordStatus.ProjectHalt }
+        };
+        // Get project record
+        Mocker.GetMock<IApplicationsService>()
+           .Setup(s => s.GetProjectRecord(It.IsAny<string>()))
+           .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.BadRequest, Content = null });
+        // Act
+        var result = Sut.GetSpecificChangesByAreaId(selectedAreaId);
+
+        // Assert
+        result.Result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
+    }
+
     private (List<AreaOfChangeDto> Areas, string SelectedAreaId) SampleAreas()
     {
         var areaId = Guid.NewGuid().ToString();

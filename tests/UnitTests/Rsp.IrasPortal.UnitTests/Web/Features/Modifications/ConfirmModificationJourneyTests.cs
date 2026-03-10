@@ -405,7 +405,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
     }
 
     [Fact]
-    public async Task ConfirmModificationJourney_Should_Redirect_To_ProjectHaltWarning_When_Other_AreaOfChange_Exist()
+    public async Task ConfirmModificationJourney_Should_Redirect_To_AreaOfChange_When_Other_AreaOfChange_Exist()
     {
         // Arrange
         var modificationId = Guid.NewGuid();
@@ -419,15 +419,18 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             [TempDataKeys.IrasId] = 123456,
             [TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(BuildAreas()),
             [TempDataKeys.ProjectRecordId] = model.ProjectRecordId ?? "PR1",
-            [TempDataKeys.SpecificAreaOfChangeOptionNameKey] = JsonSerializer.Serialize(existing)
+            [TempDataKeys.SpecificAreaOfChangeOptionNameKey] = JsonSerializer.Serialize(existing),
+            [TempDataKeys.ProjectRecordStatus] = "Project halt"
         };
         temp[TempDataKeys.ProjectModification.ProjectModificationChangeId] = modificationId;
         Sut.TempData = temp;
         Sut.ControllerContext = new ControllerContext { HttpContext = ctx };
-
         _validator
-            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AreaOfChangeViewModel>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ValidationResult());
+                   .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AreaOfChangeViewModel>>(), default))
+                   .ReturnsAsync(new ValidationResult(new List<ValidationFailure>
+                   {
+                new(nameof(model.AreaOfChangeId), "Area is required")
+                   }));
 
         // Modification change creation
         _modsService
@@ -445,7 +448,53 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
 
         // Assert
         var redirect = result.ShouldBeOfType<ViewResult>();
-        redirect.ViewName.ShouldBe("ProjectHaltWarning");
+        redirect.ViewName.ShouldBe("AreaOfChange");
+    }
+
+    [Fact]
+    public async Task ConfirmModificationJourney_Should_Redirect_To_AreaOfChange_When_SaveForLater()
+    {
+        // Arrange
+        var modificationId = Guid.NewGuid();
+        var model = new AreaOfChangeViewModel { ProjectRecordId = "PR1", AreaOfChangeId = "A1", SpecificChangeId = "S1" };
+        var existing = new List<string> { "Temporary halt to a project" };
+        var ctx = new DefaultHttpContext();
+        var temp = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationId] = modificationId,
+            [TempDataKeys.ShortProjectTitle] = "Test project",
+            [TempDataKeys.IrasId] = 123456,
+            [TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(BuildAreas()),
+            [TempDataKeys.ProjectRecordId] = model.ProjectRecordId ?? "PR1",
+            [TempDataKeys.SpecificAreaOfChangeOptionNameKey] = JsonSerializer.Serialize(existing),
+            [TempDataKeys.ProjectRecordStatus] = "Project halt"
+        };
+        temp[TempDataKeys.ProjectModification.ProjectModificationChangeId] = modificationId;
+        Sut.TempData = temp;
+        Sut.ControllerContext = new ControllerContext { HttpContext = ctx };
+
+        _validator
+       .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AreaOfChangeViewModel>>(), It.IsAny<CancellationToken>()))
+       .ReturnsAsync(new ValidationResult());
+
+        // Modification change creation
+        _modsService
+            .Setup(s => s.CreateModificationChange(It.IsAny<ProjectModificationChangeRequest>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationChangeResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationChangeResponse { ProjectModificationId = modificationId }
+            });
+
+        SetupCmsJourney("section-static");
+
+        // Act
+        var result = await Sut.ConfirmModificationJourney(model, true);
+
+        // Assert
+        var redirectResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectResult.RouteName.ShouldBe("pov:postapproval");
+        redirectResult.RouteValues.ShouldNotBeNull();
     }
 
     private void SetupTempData(AreaOfChangeViewModel model, List<AreaOfChangeDto> areas, Guid modificationId, Guid? modificationChangeId = null)
