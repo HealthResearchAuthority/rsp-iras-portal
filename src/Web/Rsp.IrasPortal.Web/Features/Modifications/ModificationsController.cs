@@ -196,8 +196,6 @@ public class ModificationsController
         }
         TempData.PopulateBaseProjectModificationProperties(viewModel);
         viewModel.SpecificAreaOfChange = SelectAreaOfChange;
-        TempData.Keep(TempDataKeys.ProjectRecordStatus);
-
         // Populate the dropdown options based on any existing selections
         return View("AreaOfChange", viewModel);
     }

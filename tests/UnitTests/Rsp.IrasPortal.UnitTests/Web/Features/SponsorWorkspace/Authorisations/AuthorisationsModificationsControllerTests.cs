@@ -2145,6 +2145,116 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
               .ActionName.ShouldBe(nameof(AuthorisationsModificationsController.Confirmation));
     }
 
+    [Fact]
+    public async Task AuthoriseRevision_ProjectHalt_UpdateStatus_And_Redirects_To_Confirmation()
+    {
+        var model = SetupAuthoriseOutcomeViewModel();
+        model.ReviewType = "Review required";
+        var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "Temporary halt to a project"
+        };
+        Sut.TempData = tempData;
+        Mocker.GetMock<IValidator<AuthoriseModificationsOutcomeViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AuthoriseModificationsOutcomeViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsForProject(model.ProjectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, "ModificationId", "desc"))
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new GetModificationsResponse
+                {
+                    Modifications = []
+                }
+            });
+        var projectModificationsService = Mocker.GetMock<IProjectModificationsService>();
+        projectModificationsService
+            .Setup(s => s.GetDocumentsForModification(It.IsAny<Guid>(),
+                It.IsAny<ProjectOverviewDocumentSearchRequest>(), It.IsAny<int>(),
+                It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<ProjectOverviewDocumentResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = null
+            });
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.UpdateModificationStatus(
+                model.ProjectRecordId,
+                Guid.Parse(model.ModificationId),
+                ModificationStatus.WithReviewBody,
+                model.RevisionDescription,
+                null, null))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
+        Mocker.GetMock<IApplicationsService>()
+    .Setup(s => s.UpdateProjectRecordStatus(
+        model.ProjectRecordId,
+        ProjectRecordStatus.ProjectHalt
+        ))
+    .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+        var result = await Sut.AuthoriseRevision(model, false);
+
+        result.ShouldBeOfType<RedirectToActionResult>()
+              .ActionName.ShouldBe(nameof(AuthorisationsModificationsController.Confirmation));
+    }
+
+    [Fact]
+    public async Task AuthoriseRevision_ProjectHalt_UpdateStatus_Fails()
+    {
+        var model = SetupAuthoriseOutcomeViewModel();
+        model.ReviewType = "Review required";
+        var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "Temporary halt to a project"
+        };
+        Sut.TempData = tempData;
+        Mocker.GetMock<IValidator<AuthoriseModificationsOutcomeViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AuthoriseModificationsOutcomeViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsForProject(model.ProjectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, "ModificationId", "desc"))
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new GetModificationsResponse
+                {
+                    Modifications = []
+                }
+            });
+        var projectModificationsService = Mocker.GetMock<IProjectModificationsService>();
+        projectModificationsService
+            .Setup(s => s.GetDocumentsForModification(It.IsAny<Guid>(),
+                It.IsAny<ProjectOverviewDocumentSearchRequest>(), It.IsAny<int>(),
+                It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<ProjectOverviewDocumentResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = null
+            });
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.UpdateModificationStatus(
+                model.ProjectRecordId,
+                Guid.Parse(model.ModificationId),
+                ModificationStatus.WithReviewBody,
+                model.RevisionDescription,
+                null, null))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
+        Mocker.GetMock<IApplicationsService>()
+    .Setup(s => s.UpdateProjectRecordStatus(
+        model.ProjectRecordId,
+        ProjectRecordStatus.ProjectHalt
+        ))
+    .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.BadRequest });
+        var result = await Sut.AuthoriseRevision(model, false);
+
+        result.ShouldBeOfType<StatusCodeResult>()
+            .StatusCode.ShouldBe(400);
+    }
+
     public SponsorUserAuthorisationResult Authorised(Guid gid)
     {
         return SponsorUserAuthorisationResult.Ok(gid);
