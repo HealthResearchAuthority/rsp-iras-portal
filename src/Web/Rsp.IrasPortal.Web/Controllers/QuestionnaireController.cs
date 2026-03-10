@@ -598,7 +598,7 @@ public class QuestionnaireController
             {
                 response = await questionSetService.GetQuestionSet(sectionId: model.CurrentStage);
             } // Modification journey
-            else 
+            else
             {
                 response = await questionSetService.GetModificationQuestionSet(sectionId: model.CurrentStage);
             }
@@ -618,6 +618,8 @@ public class QuestionnaireController
                 questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}")!)!;
             }
         }
+
+        questions ??= new List<QuestionViewModel>();
 
         // update the model with the answeres
         // provided by the applicant
