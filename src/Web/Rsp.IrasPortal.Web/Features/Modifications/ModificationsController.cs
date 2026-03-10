@@ -46,6 +46,10 @@ public class ModificationsController
     private const string CleanContainerName = "clean";
     private const string SelectAreaOfChange = "Select area of change";
     private const string SelectSpecificAreaOfChange = "Select specific change";
+
+    private const string Halt = "Temporary halt to a project";
+    private const string AllowedAreaName = "Stop or restart";
+    private const string ProjectRestart = "Project restart following temporary halt";
     private readonly IAzureClientFactory<BlobServiceClient> _blobClientFactory = blobClientFactory;
 
     /// <summary>
@@ -55,7 +59,7 @@ public class ModificationsController
     /// <returns>Redirects to the resume route if successful, otherwise returns an error page.</returns>
     [Authorize(Policy = Permissions.MyResearch.Modifications_Create)]
     [HttpGet]
-    public async Task<IActionResult> CreateModification(string separator = "/")
+    public async Task<IActionResult> CreateModification(string status, string separator = "/")
     {
         //Restrict new modification creation if there is already in draft modification.
         var canCreateNewModification = TempData[TempDataKeys.ProjectModification.CanCreateNewModification];
@@ -372,6 +376,10 @@ public class ModificationsController
                 return value;
             }
             await SaveModificationChange(model, newGuid);
+
+            TempData[TempDataKeys.ProjectModification.AreaOfChangeId] = model.AreaOfChangeId;
+            TempData[TempDataKeys.ProjectModification.SpecificAreaOfChangeId] = model.SpecificChangeId;
+        }
 
             TempData[TempDataKeys.ProjectModification.AreaOfChangeId] = model.AreaOfChangeId;
             TempData[TempDataKeys.ProjectModification.SpecificAreaOfChangeId] = model.SpecificChangeId;
