@@ -1,0 +1,116 @@
+﻿@using Rsp.IrasPortal.Application.DTOs.Responses
+@using Rsp.IrasPortal.Web.Features.UserNotifications.Models
+@model UserNotificationsViewModel
+
+@{
+	ViewBag.Title = "Notifications";
+
+	var tableId = "userNotificationsTable";
+	var sortableHeaders = new[]
+	{
+		new { Field = nameof(UserNotificationResponse.DateTimeCreated), Label = "Date" },
+		new { Field = nameof(UserNotificationResponse.Text), Label = "Notification" },
+		new { Field = nameof(UserNotificationResponse.Type), Label = "Type of notification" },
+		new { Field = "Days", Label = "Recieved" }
+	};
+
+	var typeOptions = new List<SelectListItem>
+	{
+		new SelectListItem { Value = "", Text = "All notifications" },
+		new SelectListItem { Value = "Action", Text = "Action" },
+		new SelectListItem { Value = "Information", Text = "Information" }
+	};
+}
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+		<h1 class="govuk-heading-m">Notifications</h1>
+		<div class="govuk-body">
+			Notifications are marked as read after visiting this page. Read notifications are removed after 30 days.
+		</div>
+		<form method="get" class="govuk-form-group">
+			<div class="govuk-form-group">
+				<div class="govuk-label">
+					Filter by:
+				</div>
+				<div class="search-flex-container">
+					<select asp-for="NotificationType" class="govuk-select" id="sort" name="type" asp-items="typeOptions">
+					</select>
+					<button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+						Apply
+					</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-full">
+		<div class="govuk-table-wrapper">
+			<table class="govuk-table govuk-table-user-notifications" id="@tableId">
+				<thead>
+					<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+						@foreach (var header in sortableHeaders)
+						{
+							var sortableHeaderModel = new SortableHeaderModel
+				{
+					FieldName = header.Field,
+					DisplayText = header.Label,
+					CurrentSortField = Model.Pagination?.SortField,
+					CurrentSortDirection = Model.Pagination?.SortDirection,
+					TableId = tableId
+				};
+
+							@if (Model.NotificationType != null)
+							{
+								sortableHeaderModel.AdditionalParameters = new Dictionary<string, string>
+						{
+						{ "type", Model.NotificationType }
+						};
+							}
+
+							<th scope="col" class="govuk-table__header govuk-table__header-sortable">
+								<partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
+							</th>
+						}
+					</tr>
+				</thead>
+				<tbody class="govuk-table__body">
+					@foreach (var notification in Model.Notifications)
+					{
+						var daysRecieved = (DateTime.UtcNow.Date - notification.DateTimeCreated.Date).Days;
+						var daysRecievedText = daysRecieved == 0 ? "Today" : $"{daysRecieved} day{(daysRecieved > 1 ? "s" : "")} ago";
+
+						<tr class="govuk-table__row">
+							<td class="govuk-table__cell govuk-!-width-one-quarter">@notification.DateTimeCreated.ToString("dd MMM yyyy")</td>
+							<td class="govuk-table__cell govuk-!-width-three-quarters">
+								@if (!notification.DateTimeSeen.HasValue)
+								{
+									<mark class="hods-highlight">
+										<strong>Unread</strong>
+									</mark>
+								}
+								@if (notification.Type == "Action" && !string.IsNullOrEmpty(notification.TargetUrl))
+								{
+									<a href="@notification.TargetUrl" class="govuk-link">
+										@notification.Text
+									</a>
+								}
+								else
+								{
+									@notification.Text
+								}
+							</td>
+							<td class="govuk-table__cell">@notification.Type</td>
+							<td class="govuk-table__cell">@daysRecievedText</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+			<partial name="_Pagination" model="@Model.Pagination" />
+		</div>
+	</div>
+</div>
+
+
