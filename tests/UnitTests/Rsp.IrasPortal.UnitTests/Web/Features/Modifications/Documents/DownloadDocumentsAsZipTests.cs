@@ -145,4 +145,235 @@ public class DownloadDocumentsAsZipTests : TestServiceBase<DocumentsController>
         var status = result.ShouldBeOfType<StatusCodeResult>();
         status.StatusCode.ShouldBe((int)HttpStatusCode.Forbidden);
     }
+
+    [Fact]
+    public async Task DownloadDocumentsSelectionAsZip_Returns_FileResult_WithZip()
+    {
+        // Arrange
+        var modificationGuid = Guid.NewGuid();
+        var irasId = "358577";
+
+        var selectedDocuments = new List<string>
+        {
+            $"{irasId}/{modificationGuid}/file1.pdf",
+            $"{irasId}/{modificationGuid}/file2.pdf"
+        };
+
+        // MOCK BlobClient
+        var blobClientMock = new Mock<BlobClient>();
+
+        // MOCK BlobContainerClient
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        // MOCK BlobServiceClient
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(s => s.GetBlobContainerClient(It.IsAny<string>()))
+            .Returns(containerClientMock.Object);
+
+        // MOCK FACTORY so GetBlobClient(true) returns our blobServiceClientMock
+        var factoryMock = Mocker
+            .GetMock<IAzureClientFactory<BlobServiceClient>>();
+        factoryMock
+            .Setup(f => f.CreateClient("Clean"))
+            .Returns(blobServiceClientMock.Object);
+
+        var expectedBytes = new byte[] { 1, 2, 3, 4 };
+
+        var fileResult = new FileContentResult(expectedBytes, "application/zip")
+        {
+            FileDownloadName = "documents.zip"
+        };
+
+        var serviceResponse = new ServiceResponse<IActionResult>()
+            .WithContent(fileResult, HttpStatusCode.OK);
+
+        // Mock blob storage zip creation
+        Mocker.GetMock<IBlobStorageService>()
+            .Setup(s => s.DownloadFilesAsZipAsync(
+                blobServiceClientMock.Object,
+                It.IsAny<string>(),
+                selectedDocuments,
+                It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        // Mock access check
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.CheckDocumentAccess(modificationGuid))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modificationGuid.ToString(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = modificationGuid,
+            [TempDataKeys.IrasId] = irasId
+        };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+
+        // Act
+        var result = await Sut.DownloadDocumentsSelectionAsZip(selectedDocuments, It.IsAny<string>());
+
+        // Assert
+        result.ShouldBeOfType<FileContentResult>();
+
+        var file = result as FileContentResult;
+
+        file!.ContentType.ShouldBe("application/zip");
+        file.FileDownloadName.ShouldBe("documents.zip");
+    }
+
+    [Fact]
+    public async Task DownloadDocumentsSelectionAsZip_ReturnsReviewAllChangesModelError_FileResult_WithZip()
+    {
+        // Arrange
+        var modificationGuid = Guid.NewGuid();
+        var irasId = "358577";
+
+        var selectedDocuments = new List<string>();
+
+        // MOCK BlobClient
+        var blobClientMock = new Mock<BlobClient>();
+
+        // MOCK BlobContainerClient
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        // MOCK BlobServiceClient
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(s => s.GetBlobContainerClient(It.IsAny<string>()))
+            .Returns(containerClientMock.Object);
+
+        // MOCK FACTORY so GetBlobClient(true) returns our blobServiceClientMock
+        var factoryMock = Mocker
+            .GetMock<IAzureClientFactory<BlobServiceClient>>();
+        factoryMock
+            .Setup(f => f.CreateClient("Clean"))
+            .Returns(blobServiceClientMock.Object);
+
+        var expectedBytes = new byte[] { 1, 2, 3, 4 };
+
+        var fileResult = new FileContentResult(expectedBytes, "application/zip")
+        {
+            FileDownloadName = "documents.zip"
+        };
+
+        var serviceResponse = new ServiceResponse<IActionResult>()
+            .WithContent(fileResult, HttpStatusCode.OK);
+
+        // Mock blob storage zip creation
+        Mocker.GetMock<IBlobStorageService>()
+            .Setup(s => s.DownloadFilesAsZipAsync(
+                blobServiceClientMock.Object,
+                It.IsAny<string>(),
+                selectedDocuments,
+                It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        // Mock access check
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.CheckDocumentAccess(modificationGuid))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modificationGuid.ToString(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = modificationGuid,
+            [TempDataKeys.IrasId] = irasId
+        };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+
+        // Act
+        var result = await Sut.DownloadDocumentsSelectionAsZip(selectedDocuments, "ReviewAllChanges");
+
+        // Assert
+        result.ShouldBeOfType<RedirectToRouteResult>();
+    }
+
+    [Fact]
+    public async Task DownloadDocumentsSelectionAsZip_ReturnsModificationDetailsModelError_FileResult_WithZip()
+    {
+        // Arrange
+        var modificationGuid = Guid.NewGuid();
+        var irasId = "358577";
+
+        var selectedDocuments = new List<string>();
+
+        // MOCK BlobClient
+        var blobClientMock = new Mock<BlobClient>();
+
+        // MOCK BlobContainerClient
+        var containerClientMock = new Mock<BlobContainerClient>();
+        containerClientMock
+            .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+            .Returns(blobClientMock.Object);
+
+        // MOCK BlobServiceClient
+        var blobServiceClientMock = new Mock<BlobServiceClient>();
+        blobServiceClientMock
+            .Setup(s => s.GetBlobContainerClient(It.IsAny<string>()))
+            .Returns(containerClientMock.Object);
+
+        // MOCK FACTORY so GetBlobClient(true) returns our blobServiceClientMock
+        var factoryMock = Mocker
+            .GetMock<IAzureClientFactory<BlobServiceClient>>();
+        factoryMock
+            .Setup(f => f.CreateClient("Clean"))
+            .Returns(blobServiceClientMock.Object);
+
+        var expectedBytes = new byte[] { 1, 2, 3, 4 };
+
+        var fileResult = new FileContentResult(expectedBytes, "application/zip")
+        {
+            FileDownloadName = "documents.zip"
+        };
+
+        var serviceResponse = new ServiceResponse<IActionResult>()
+            .WithContent(fileResult, HttpStatusCode.OK);
+
+        // Mock blob storage zip creation
+        Mocker.GetMock<IBlobStorageService>()
+            .Setup(s => s.DownloadFilesAsZipAsync(
+                blobServiceClientMock.Object,
+                It.IsAny<string>(),
+                selectedDocuments,
+                It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        // Mock access check
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.CheckDocumentAccess(modificationGuid))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationIdentifier] = modificationGuid.ToString(),
+            [TempDataKeys.ProjectModification.ProjectModificationId] = modificationGuid,
+            [TempDataKeys.IrasId] = irasId
+        };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+
+        // Act
+        var result = await Sut.DownloadDocumentsSelectionAsZip(selectedDocuments, "ModificationDetails");
+
+        // Assert
+        result.ShouldBeOfType<RedirectToRouteResult>();
+    }
 }

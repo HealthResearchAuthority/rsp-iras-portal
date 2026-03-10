@@ -11,6 +11,7 @@
 @model ModificationDetailsViewModel
 
 @{
+    var errorSummaryTitle = "There is a problem";
     @if (Model.Status is ModificationStatus.InDraft)
     {
         ViewBag.Title = "Review all changes";
@@ -95,7 +96,8 @@ else
     </div>
 }
 
-<partial name="_ReviewModification" model="Model" />
+<partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
+<partial name="_ReviewModification" model="Model"/>
 
 <authorized role-is="@Roles.Applicant">
     @if (Model.Status is ModificationStatus.InDraft)

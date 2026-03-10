@@ -598,27 +598,6 @@ public class DocumentsController
         }
     }
 
-    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Download)]
-    [HttpGet]
-    public async Task<IActionResult> DownloadDocument(string path, string fileName)
-    {
-        // get the modification id from the path
-        var modificationId = path.Split('/')[1];
-
-        var documentAccessResponse = await projectModificationsService.CheckDocumentAccess(Guid.Parse(modificationId));
-
-        if (!documentAccessResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(documentAccessResponse);
-        }
-
-        var blobClient = GetBlobClient(true);
-        var serviceResponse = await blobStorageService
-            .DownloadFileToHttpResponseAsync(blobClient, CleanContainerName, path, fileName);
-
-        return serviceResponse?.Content!;
-    }
-
     /// <summary>
     /// Handles the upload of project modification documents to blob storage.
     /// Persists metadata to the backend service and redirects to the review page.
@@ -657,13 +636,13 @@ public class DocumentsController
     }
 
     [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Download)]
-    public async Task<IActionResult> DownloadDocumentsAsZip(string folderName)
+    [HttpGet]
+    public async Task<IActionResult> DownloadDocument(string path, string fileName)
     {
-        var irasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
-        var modificationIdentifier =
-            TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string;
+        // get the modification id from the path
+        var modificationId = path.Split('/')[1];
 
-        var documentAccessResponse = await projectModificationsService.CheckDocumentAccess(Guid.Parse(folderName));
+        var documentAccessResponse = await projectModificationsService.CheckDocumentAccess(Guid.Parse(modificationId));
 
         if (!documentAccessResponse.IsSuccessStatusCode)
         {
@@ -671,17 +650,84 @@ public class DocumentsController
         }
 
         var blobClient = GetBlobClient(true);
+        var serviceResponse = await blobStorageService
+            .DownloadFileToHttpResponseAsync(blobClient, CleanContainerName, path, fileName);
 
-        // Build the file name
-        var saveAsFileName = BuildZipFileName(modificationIdentifier);
+        return serviceResponse?.Content!;
+    }
 
-        var response = await blobStorageService.DownloadFolderAsZipAsync(
-            blobClient,
-            CleanContainerName,
-            $"{irasId}/{folderName}",
-            saveAsFileName);
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Download)]
+    public async Task<IActionResult> DownloadDocumentsAsZip(string folderName)
+    {
+        var context = GetModificationContext();
+
+        var accessCheck = await CheckDocumentAccess(folderName);
+        if (accessCheck is IActionResult error)
+        {
+            return error;
+        }
+
+        var response = await DownloadFolderZip(folderName, context.ModificationIdentifier);
 
         return File(response.FileBytes, "application/zip", response.FileName);
+    }
+
+    [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Download)]
+    [HttpGet]
+    [FeatureGate(FeatureFlags.DocumentsSelectiveDownload)]
+    public async Task<IActionResult> DownloadDocumentsSelectionAsZip([FromQuery] List<string>? selectedDocuments,
+    [FromQuery] string downloadSource)
+    {
+        if (selectedDocuments == null || selectedDocuments.Count == 0)
+        {
+            if (downloadSource == "ReviewAllChanges")
+            {
+                return RedirectToRoute("pmc:ReviewAllChanges", new
+                {
+                    projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string,
+                    irasId = TempData.Peek(TempDataKeys.IrasId) as string,
+                    shortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string,
+                    projectModificationId =
+                    TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is Guid id
+                    ? id
+                    : Guid.NewGuid(),
+                    includeSelectiveDownloadError = true
+                });
+            }
+            else if (downloadSource == "ModificationDetails")
+            {
+                return RedirectToRoute("pmc:ModificationDetails", new
+                {
+                    projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string,
+                    irasId = TempData.Peek(TempDataKeys.IrasId) as string,
+                    shortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string,
+                    projectModificationId =
+                    TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is Guid id
+                    ? id
+                    : Guid.NewGuid(),
+                    sponsorOrganisationUserId =
+                    TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId) is Guid userId
+                    ? userId
+                    : Guid.NewGuid(),
+                    rtsId = TempData.Peek(TempDataKeys.RevisionRtsId) as string,
+                    includeSelectiveDownloadError = true
+                });
+            }
+        }
+
+        var context = GetModificationContext();
+
+        var modificationId = ExtractModificationId(selectedDocuments.First());
+
+        var accessCheck = await CheckDocumentAccess(modificationId);
+        if (accessCheck is IActionResult error)
+        {
+            return error;
+        }
+
+        var response = await DownloadFilesZip(selectedDocuments, context.ModificationIdentifier);
+
+        return response.Content;
     }
 
     /// <summary>
@@ -2525,5 +2571,67 @@ public class DocumentsController
                 d.LinkedDocumentId == null &&
                 d.Id != currentDocumentId &&
                 d.DocumentType != SupersedeDocumentsType.Tracked)];
+    }
+
+    private (string IrasId, string? ModificationIdentifier) GetModificationContext()
+    {
+        var irasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
+
+        var modificationIdentifier =
+            TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string;
+
+        return (irasId, modificationIdentifier);
+    }
+
+    private async Task<IActionResult?> CheckDocumentAccess(string modificationId)
+    {
+        var response = await projectModificationsService.CheckDocumentAccess(Guid.Parse(modificationId));
+
+        if (!response.IsSuccessStatusCode)
+            return this.ServiceError(response);
+
+        return null;
+    }
+
+    private Task<IActionResult?> CheckDocumentAccess(Guid modificationId)
+    {
+        return CheckDocumentAccess(modificationId.ToString());
+    }
+
+    private Guid ExtractModificationId(string blobPath)
+    {
+        return Guid.Parse(blobPath.Split('/')[1]);
+    }
+
+    private async Task<(byte[] FileBytes, string FileName)> DownloadFolderZip(string folderName, string? modificationIdentifier)
+    {
+        var irasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
+
+        var blobClient = GetBlobClient(true);
+
+        var saveAsFileName = BuildZipFileName(modificationIdentifier);
+
+        return await blobStorageService.DownloadFolderAsZipAsync(
+            blobClient,
+            CleanContainerName,
+            $"{irasId}/{folderName}",
+            saveAsFileName);
+    }
+
+    private async Task<ServiceResponse<IActionResult>> DownloadFilesZip(
+    List<string> selectedDocuments,
+    string? modificationIdentifier)
+    {
+        var blobClient = GetBlobClient(true);
+
+        var saveAsFileName = BuildZipFileName(modificationIdentifier);
+
+        var result = await blobStorageService.DownloadFilesAsZipAsync(
+            blobClient,
+            CleanContainerName,
+            selectedDocuments,
+            saveAsFileName);
+
+        return result;
     }
 }

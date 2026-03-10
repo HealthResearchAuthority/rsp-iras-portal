@@ -5,6 +5,7 @@ using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
@@ -65,7 +66,8 @@ public class ReviewAllChangesController
         int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
-        string sortDirection = SortDirections.Ascending
+        string sortDirection = SortDirections.Ascending,
+        bool includeSelectiveDownloadError = false
     )
     {
         // Populate TempData with project details for actual modification journey
@@ -152,6 +154,24 @@ public class ReviewAllChangesController
         TempData[TempDataKeys.ProjectModification.ProjectModificationsDetails] =
             JsonSerializer.Serialize(reviewOutcomeModel);
 
+        // Find all keys where the validation state is Invalid
+        var invalidKeys = ModelState
+            .Where(ms => ms.Value.ValidationState == ModelValidationState.Invalid)
+            .Select(ms => ms.Key)
+            .ToList(); // Important: create a list before modifying ModelState
+
+        // Remove each invalid entry from ModelState
+        foreach (var key in invalidKeys)
+        {
+            ModelState.Remove(key);
+        }
+
+        var documentsSelectiveDownloadEnabled = await featureManager.IsEnabledAsync(FeatureFlags.DocumentsSelectiveDownload);
+
+        if (documentsSelectiveDownloadEnabled && includeSelectiveDownloadError)
+        {
+            ModelState.AddModelError("DownloadSelectionButton", "Select at least one document");
+        }
         // Render the details view
         return View(modification);
     }

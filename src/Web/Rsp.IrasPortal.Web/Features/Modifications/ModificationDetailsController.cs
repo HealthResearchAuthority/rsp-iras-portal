@@ -59,7 +59,8 @@ public class ModificationDetailsController
         int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
-        string sortDirection = SortDirections.Ascending
+        string sortDirection = SortDirections.Ascending,
+        bool includeSelectiveDownloadError = false
     )
     {
         // all changes are being reviewing here so remove the change specific keys from tempdata
@@ -152,6 +153,13 @@ public class ModificationDetailsController
         if (modification.ModificationChanges.All(c => c.ChangeStatus == ModificationStatus.ChangeReadyForSubmission))
         {
             modification.ChangesReadyForSubmission = true;
+        }
+
+        var documentsSelectiveDownloadEnabled = await featureManager.IsEnabledAsync(FeatureFlags.DocumentsSelectiveDownload);
+
+        if (documentsSelectiveDownloadEnabled && includeSelectiveDownloadError)
+        {
+            ModelState.AddModelError("DownloadSelectionButton", "Select at least one document");
         }
 
         // Render the details view

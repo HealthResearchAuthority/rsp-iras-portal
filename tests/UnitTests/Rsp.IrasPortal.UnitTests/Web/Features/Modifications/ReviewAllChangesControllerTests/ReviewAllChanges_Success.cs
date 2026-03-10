@@ -203,7 +203,7 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
             .ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = await Sut.ReviewAllChanges("PR1", "IRAS", "Short", modId);
+        var result = await Sut.ReviewAllChanges("PR1", "IRAS", "Short", modId, includeSelectiveDownloadError: true);
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
@@ -398,7 +398,7 @@ public class ReviewAllChanges_Success : TestServiceBase<ReviewAllChangesControll
             .ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = await Sut.ReviewAllChanges("PR1", "IRAS", "Short", modId);
+        var result = await Sut.ReviewAllChanges("PR1", "IRAS", "Short", modId, includeSelectiveDownloadError: true);
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
