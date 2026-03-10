@@ -1,0 +1,95 @@
+﻿@using Rsp.IrasPortal.Web.Features.UserNotifications.Models
+
+@model UserNotificationsViewModel
+
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Notifications</h1>
+    </div>
+</div>
+
+@if (Model.Notifications == null || !Model.Notifications.Any())
+{
+    <br />
+    <label class="govuk-label">
+        This user doesn't have any notifications.
+    </label>
+    <br />
+}
+else
+{
+    @if (Model.Notifications.Any())
+    {
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+                <input hidden="hidden" type="text" value="@Model.Pagination?.SortField" name="sortField" />
+                <input hidden="hidden" type="text" value="@Model.Pagination?.SortDirection" name="sortDirection" />
+                <div class="govuk-table-wrapper">
+                    <table class="govuk-table modifications-tasklist-table" id="notificationsTable">
+                        <thead class="govuk-table__head">
+                            <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                                @{
+                                    var sortableHeaders = new[]
+                                    {
+                                                new { Field = nameof(UserNotificationModel.DateTimeCreated), Label = "Date" },
+                                                new { Field = nameof(UserNotificationModel.Text), Label = "Notification" },
+                                                new { Field = nameof(UserNotificationModel.Type), Label = "Type of notification" },
+                                                new { Field = nameof(UserNotificationModel.RelatedEntityId), Label = "Modification ID" },
+                                                new { Field = "Recieved", Label = "Recieved" },
+                                                };
+                                    var tableId = "notificationsTable";
+                                }
+                                @foreach (var header in sortableHeaders)
+                                {
+                                    <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                                        @await Html.PartialAsync("_SortableHeaderButton", new SortableHeaderModel
+                                        {
+                                            FieldName = header.Field,
+                                                        DisplayText = header.Label,
+                                                        CurrentSortField = Model.Pagination?.SortField,
+                                                        CurrentSortDirection = Model.Pagination?.SortDirection,
+                                                        TableId = tableId}
+                                                        )
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+
+                        <tbody class="govuk-table__body govuk-body-s">
+                            @{
+                                foreach (var notification in Model.Notifications)
+                                {
+                                    
+                                    //here I'll be computing values, TEMP: empty
+                                    //example: link to certain modifications:
+                                    // <td class="govuk-table__cell">
+                                    //     <a class="govuk-link" asp-route="@modificationReviewRoute" asp-all-route-data="modificationParams">
+                                    //         <strong>@modification.ModificationIdentifier</strong>
+                                    //     </a>
+                                    // </td>
+
+                                    <tr class="govuk-table__row">
+                                        @{
+                                            <td class="govuk-table__cell">@notification?.DateTimeCreated.ToString("dd MMM yyyy")</td>
+                                        }
+                                        <td class="govuk-table__cell">@notification.Text</td>
+                                        <td class="govuk-table__cell">@notification.Type</td>
+                                        <td class="govuk-table__cell">@notification.RelatedEntityId</td>
+                                        <td class="govuk-table__cell">
+                                            @{
+                                                var days = (int)Math.Floor((DateTime.UtcNow - notification.DateTimeCreated.ToUniversalTime()).TotalDays);
+                                            }
+                                            @(days <= 0 ? "today" : $"{days} day{(days == 1 ? "" : "s")} ago")
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <partial name="_Pagination" model="@Model.Pagination" />
+            </div>
+        </div>
+    }
+}
