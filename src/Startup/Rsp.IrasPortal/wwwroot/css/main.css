@@ -284,7 +284,7 @@ button.govuk-link {
 }
 
 .govuk-back-link-button--inverse:active, .govuk-back-link-button--inverse:hover {
-  color: hsla(0, 0%, 100%, 0.99);
+  color: hsla(0deg, 0%, 100%, 0.99);
 }
 
 .govuk-back-link-button--inverse:focus {
@@ -1162,4 +1162,41 @@ button.govuk-pagination__item--current {
 
 .table-checkbox .govuk-checkboxes__item {
   margin-left: 10px;
+}
+
+.hods-highlight {
+  background-color: #ffe5cc;
+  border-bottom: 3px solid #ffb266;
+  padding: 0;
+  margin-right: 2px;
+}
+.hods-highlight ::before, .hods-highlight ::after {
+  clip-path: inset(100%);
+  clip: rect(1px, 1px, 1px, 1px);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+.hods-highlight ::before {
+  content: " [highlight start] ";
+}
+.hods-highlight ::after {
+  content: " [highlight end] ";
+}
+
+.moj-notification-badge {
+  background-color: #ca3535;
+  border-radius: 10em;
+  color: #fff;
+  display: inline-block;
+  margin-left: 0.5em;
+  height: 1.3em;
+  width: 1.3em;
+  outline: 4px solid #ca3535;
+  outline-offset: -0.1em;
+  padding: 0;
+  text-align: center;
+  font-weight: bold;
 }
