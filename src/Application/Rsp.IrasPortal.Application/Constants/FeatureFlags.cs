@@ -64,4 +64,7 @@ public static class FeatureFlags
 
     // Allows duplicating modifications
     public const string ModificationResubmission = "Modifications.Resubmission";
+
+    // Enable user notifications area
+    public const string UserNotifications = "System.UserNotifications";
 }
