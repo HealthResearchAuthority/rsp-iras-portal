@@ -141,7 +141,7 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
             });
 
         // Act
-        var result = await Sut.ModificationDetails("PR1", "IRAS", "Short", modId);
+        var result = await Sut.ModificationDetails("PR1", "IRAS", "Short", modId, includeSelectiveDownloadError: true);
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
@@ -281,7 +281,7 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
             .ReturnsAsync(new ValidationResult());
 
         // Act
-        var result = await Sut.ModificationDetails("PR1", "IRAS", "Short", modId);
+        var result = await Sut.ModificationDetails("PR1", "IRAS", "Short", modId, includeSelectiveDownloadError: true);
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();

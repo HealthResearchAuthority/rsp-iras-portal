@@ -37,10 +37,18 @@ public interface IBlobStorageService
     Task<ServiceResponse<IActionResult>> DownloadFileToHttpResponseAsync(BlobServiceClient blobServiceClient, string containerName, string blobPath, string fileName);
 
     Task<(byte[] FileBytes, string FileName)> DownloadFolderAsZipAsync
-        (
-            BlobServiceClient blobServiceClient,
-            string containerName,
-            string folderName,
-            string saveAsFileName
-        );
+    (
+        BlobServiceClient blobServiceClient,
+        string containerName,
+        string folderName,
+        string saveAsFileName
+    );
+
+    Task<ServiceResponse<IActionResult>> DownloadFilesAsZipAsync
+    (
+        BlobServiceClient blobServiceClient,
+        string containerName,
+        List<string> blobPaths,
+        string saveAsFileName
+    );
 }
