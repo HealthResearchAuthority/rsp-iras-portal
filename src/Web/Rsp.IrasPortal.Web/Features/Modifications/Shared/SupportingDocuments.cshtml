@@ -120,11 +120,18 @@
                                     var isScanInProgress = modification.IsMalwareScanSuccessful == null;
 
                                     var rowClass = isFailed ? "scan-failed" : isScanInProgress ? "scan-pending" : "";
+                                    var trClass = "govuk-table__row";
+                                    var rowSpan = 1;
+                                    if (await featureManager.IsEnabledAsync(FeatureFlags.DocumentsMalware))
+                                    {
+                                        trClass += $" document-row {rowClass}";
+                                        rowSpan = (isFailed || isScanInProgress) ? 2 : 1;
+                                    }
 
-                                    <tr class="govuk-table__row document-row @rowClass">
+                                    <tr class="@trClass">
                                         <feature name="@FeatureFlags.DocumentsSelectiveDownload">
                                             <td class="govuk-table__cell checkbox-cell"
-                                                rowspan="@(isFailed || isScanInProgress ? "2" : "1")">
+                                                rowspan="@rowSpan">
                                                 <div class="govuk-checkboxes govuk-checkboxes--small table-checkbox">
                                                     <div class="govuk-checkboxes__item">
                                                         <input type="checkbox"
