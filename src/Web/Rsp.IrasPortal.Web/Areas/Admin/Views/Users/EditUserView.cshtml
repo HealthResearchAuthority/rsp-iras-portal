@@ -36,7 +36,23 @@
             <input hidden readonly name="Status" asp-for="Status" value="@(Model.Status ?? string.Empty)" />
 			<input hidden readonly name="IdentityProviderId" asp-for="IdentityProviderId" value="@(Model.IdentityProviderId ?? string.Empty)" />
 
-            <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+            @{
+                var order = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["Title"] = 0,
+                    ["GivenName"] = 1,
+                    ["FamilyName"] = 2,
+                    ["Email"] = 3,
+                    ["Telephone"] = 4,
+                    ["Organisation"] = 5,
+                    ["JobTitle"] = 6,
+                    ["UserRoles"] = 7,
+                    ["Country"] = 8,
+                    ["ReviewBodies"] = 9
+                };
+            }
+
+            <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem", order)" />
 
             <rsp-gds-input asp-for="Title" label-text="Title" width-class="govuk-!-width-one-quarter" />
 
