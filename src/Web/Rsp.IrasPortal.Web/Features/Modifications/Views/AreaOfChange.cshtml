@@ -6,11 +6,12 @@
 
     // Title used in the validation error summary
     var errorSummaryTitle = "There is a problem";
+    Model.ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
 
     var navModelRoute = "pov:postapproval";
     var navModelParams = new Dictionary<string, string>
     {
-        ["projectRecordId"] = Model.ProjectRecordId        
+        ["projectRecordId"] = Model.ProjectRecordId
     };
 
     if (Model.Status is ModificationStatus.ReviseAndAuthorise)
@@ -72,6 +73,7 @@
                     </label>
                     <select asp-for="AreaOfChangeId" class="govuk-select govuk-!-width-two-thirds" id="AreaOfChangeId">
                         <option value="@Guid.Empty">Select area of change</option>
+
                         @foreach (var item in Model.AreaOfChangeOptions)
                         {
                             <option value="@item.Value" selected="@item.Selected" title="@item.Text">@item.Text</option>
@@ -118,13 +120,13 @@
 
                     <partial name="_SubmitButton" model="@("pmc:confirmmodificationjourney", "Save for later", actionParams)" />
                 </div>
-            </form>                   
+            </form>
         </div>
     </div>
 
     @* store the previously select areaId and specificAreaId in hidden fields *@
     <input id="areaOfChangeId" type="hidden" value="@areaId" />
-    <input id="specificAreaOfChangeId" type="hidden" value="@specificAreaId" />  
+    <input id="specificAreaOfChangeId" type="hidden" value="@specificAreaId" />
 </div>
 
 <script>

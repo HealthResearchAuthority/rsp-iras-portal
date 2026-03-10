@@ -21,7 +21,8 @@ public class TestAuthorisationsModificationsController : AuthorisationsModificat
         IValidator<AuthoriseModificationsOutcomeViewModel> outcomeValidator,
         IValidator<QuestionnaireViewModel> questionnaireValidator,
         IFeatureManager featureManager,
-        IRtsService rtsService
+        IRtsService rtsService,
+        IApplicationsService applicationsService
     )
         : base(
             projectModificationsService,
@@ -33,7 +34,8 @@ public class TestAuthorisationsModificationsController : AuthorisationsModificat
             outcomeValidator,
             questionnaireValidator,
             featureManager,
-            rtsService
+            rtsService,
+            applicationsService
         )
     {
     }
