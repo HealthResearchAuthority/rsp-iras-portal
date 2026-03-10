@@ -6,7 +6,9 @@
 @using Rsp.Portal.Application.DTOs
 @using Rsp.Portal.Application.Services
 @using Rsp.Portal.Web.Extensions
+@using Rsp.Portal.Web.Helpers
 @inject ICmsQuestionsetService cmsQuestionsetService
+@inject IRtsService rtsService
 
 @model QuestionnaireViewModel
 @{
@@ -148,7 +150,15 @@
                             else
                             {
                                 <input type="hidden" id="@question.QuestionId" name="hiddenResponse" value="@question.GetDisplayText()" />
-                                @Html.Raw(question.GetDisplayText())
+                                
+                                var answerText = question.GetDisplayText();
+                                
+                                @if (question.QuestionId == QuestionIds.PrimarySponsorOrganisation)
+                                {
+                                   answerText = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromOrganisationId(rtsService, answerText);
+                                }
+
+                                @Html.Raw(answerText)
                             }
                         </dd>
 

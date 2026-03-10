@@ -1,6 +1,9 @@
 ﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.Services
 @using Rsp.Portal.Web.Features.Modifications.Models
+@using Rsp.Portal.Web.Helpers
 @model ModificationDetailsViewModel
+@inject IRtsService rtsService
 
 @{
     var showStatus = ViewData[ViewDataKeys.ShowModificationChangeStatus];
@@ -87,7 +90,14 @@
                         @change.SpecificChangeName
                     </dt>
                     <dd class="govuk-summary-list__value">
-                        @change.SpecificChangeAnswer
+                        @{
+                            var answerText = change.SpecificChangeAnswer;
+                        }
+                        @if (change.SpecificAreaOfChangeId == AreasOfChange.ChangeOfPrimarySponsor)
+                        {
+                            answerText = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromOrganisationId(rtsService, answerText);
+                        }
+                        @answerText
                     </dd>
                 </div>
                 @if ((Model.ModificationChanges.Any() && showModificationDetails.GetValueOrDefault()) ||

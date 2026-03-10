@@ -8,7 +8,7 @@
 @inject IHttpContextAccessor httpContextAccessor
 @model QuestionnaireViewModel
 
-@{
+@{    
     var index = (int)ViewBag.Index;
     var question = Model.Questions[index];
     var errorKey = $"Questions[{index}].AnswerText";

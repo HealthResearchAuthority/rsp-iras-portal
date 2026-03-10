@@ -89,7 +89,7 @@
                 ("look-up list", "checkbox") => "CheckboxTemplate",
                 ("look-up list", "radio button") => "RadioButtonTemplate",
                 ("boolean", "boolean") => "RadioButtonTemplate",
-                ("rts:org_lookup", "text") => modificationId == null ?
+                ("rts:org_lookup", "text") => (modificationId == null || question.QuestionId == QuestionIds.PrimarySponsorOrganisation) ?
                     "AutoSuggestTemplate" :
                     "OrgSearchTemplate",
                 ("look-up list", "dropdown") => "DropdownTemplate",
@@ -98,8 +98,25 @@
 
             if (!string.IsNullOrWhiteSpace(templateName))
             {
-                // plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render
-                @Html.EditorFor(_ => questionnaire, templateName, ViewData)
+                // plese note the @ is necessary before Html so that Template is rendered, otherwise it won't render                
+                @Html.EditorFor(
+                    _ => questionnaire,
+                    templateName: templateName,
+                    htmlFieldName: string.Empty,
+                    additionalViewData: ViewData
+                )
+            }
+
+            // Render guidance if it exists
+            if (question.GuidanceComponents.Count > 0)
+            {
+                var conditional = !(question.IsMandatory || question.IsOptional) && question.Rules.Count > 0;
+                var parents = conditional ? string.Join(',', question.Rules.Select(rule => rule.ParentQuestionId)) : "";
+                var questionId = conditional ? question.QuestionId : "";
+
+                <div class="govuk-form-group @(conditional ? "conditional" : "")" data-parents="@parents" data-questionid="@questionId">
+                    <partial name="Guidance" model="question.GuidanceComponents" />
+                </div>
             }
 
         }
