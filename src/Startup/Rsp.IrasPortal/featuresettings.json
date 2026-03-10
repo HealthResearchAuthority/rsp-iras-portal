@@ -168,6 +168,96 @@
                     }
                 }
             ]
+        },
+        "Modifications.DocumentsMalware": {
+            "EnabledFor": [
+                {
+                    "Name": "Microsoft.Targeting",
+                    "Parameters": {
+                        "Audience": {
+                            "Users": [],
+                            "Groups": [],
+                            "DefaultRolloutPercentage": 100,
+                            "Exclusion": {
+                                "Users": [],
+                                "Groups": []
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "Modifications.DocumentsSelectiveDownload": {
+            "EnabledFor": [
+                {
+                    "Name": "Microsoft.Targeting",
+                    "Parameters": {
+                        "Audience": {
+                            "Users": [],
+                            "Groups": [],
+                            "DefaultRolloutPercentage": 100,
+                            "Exclusion": {
+                                "Users": [],
+                                "Groups": []
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "ProjectOverview.DocumentsAuditHistory": {
+            "EnabledFor": [
+                {
+                    "Name": "Microsoft.Targeting",
+                    "Parameters": {
+                        "Audience": {
+                            "Users": [],
+                            "Groups": [],
+                            "DefaultRolloutPercentage": 100,
+                            "Exclusion": {
+                                "Users": [],
+                                "Groups": []
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "Modifications.Resubmission": {
+            "EnabledFor": [
+                {
+                    "Name": "Microsoft.Targeting",
+                    "Parameters": {
+                        "Audience": {
+                            "Users": [],
+                            "Groups": [],
+                            "DefaultRolloutPercentage": 100,
+                            "Exclusion": {
+                                "Users": [],
+                                "Groups": []
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "Modifications.RequestRevisions": {
+            "EnabledFor": [
+                {
+                    "Name": "Microsoft.Targeting",
+                    "Parameters": {
+                        "Audience": {
+                            "Users": [],
+                            "Groups": [],
+                            "DefaultRolloutPercentage": 100,
+                            "Exclusion": {
+                                "Users": [],
+                                "Groups": []
+                            }
+                        }
+                    }
+                }
+            ]
         }
     }
 }
