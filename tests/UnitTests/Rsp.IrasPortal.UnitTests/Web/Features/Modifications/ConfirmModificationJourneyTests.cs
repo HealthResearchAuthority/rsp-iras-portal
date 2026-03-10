@@ -419,7 +419,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             [TempDataKeys.IrasId] = 123456,
             [TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(BuildAreas()),
             [TempDataKeys.ProjectRecordId] = model.ProjectRecordId ?? "PR1",
-            [TempDataKeys.OptionNameListKey] = JsonSerializer.Serialize(existing)
+            [TempDataKeys.SpecificAreaOfChangeOptionNameKey] = JsonSerializer.Serialize(existing)
         };
         temp[TempDataKeys.ProjectModification.ProjectModificationChangeId] = modificationId;
         Sut.TempData = temp;
@@ -459,7 +459,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             [TempDataKeys.IrasId] = 123456,
             [TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(areas),
             [TempDataKeys.ProjectRecordId] = model.ProjectRecordId ?? "PR1",
-            [TempDataKeys.OptionNameListKey] = JsonSerializer.Serialize(existing)
+            [TempDataKeys.SpecificAreaOfChangeOptionNameKey] = JsonSerializer.Serialize(existing)
         };
         if (modificationChangeId.HasValue)
         {

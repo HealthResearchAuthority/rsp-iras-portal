@@ -13,6 +13,7 @@ using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
 using Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
 using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
@@ -36,7 +37,8 @@ public class ModificationsController
     IBlobStorageService blobStorageService,
     IValidator<AreaOfChangeViewModel> areaofChangeValidator,
     IAzureClientFactory<BlobServiceClient> blobClientFactory,
-    IFeatureManager featureManager
+    IFeatureManager featureManager,
+    IApplicationsService applicationsService
 ) : Controller
 
 {
@@ -44,10 +46,6 @@ public class ModificationsController
     private const string CleanContainerName = "clean";
     private const string SelectAreaOfChange = "Select area of change";
     private const string SelectSpecificAreaOfChange = "Select specific change";
-
-    private const string Halt = "Temporary halt to a project";
-    private const string AllowedAreaName = "Stop or restart";
-    private const string ProjectRestart = "Project restart following temporary halt";
     private readonly IAzureClientFactory<BlobServiceClient> _blobClientFactory = blobClientFactory;
 
     /// <summary>
@@ -57,7 +55,7 @@ public class ModificationsController
     /// <returns>Redirects to the resume route if successful, otherwise returns an error page.</returns>
     [Authorize(Policy = Permissions.MyResearch.Modifications_Create)]
     [HttpGet]
-    public async Task<IActionResult> CreateModification(string status, string separator = "/")
+    public async Task<IActionResult> CreateModification(string separator = "/")
     {
         //Restrict new modification creation if there is already in draft modification.
         var canCreateNewModification = TempData[TempDataKeys.ProjectModification.CanCreateNewModification];
@@ -113,8 +111,8 @@ public class ModificationsController
         TempData[TempDataKeys.ProjectModification.ProjectModificationId] = projectModification.Id;
         TempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier] = projectModification.ModificationIdentifier;
         TempData[TempDataKeys.CategoryId] = QuestionCategories.ProjectModification;
-
-        return RedirectToAction(nameof(AreaOfChange), new { projectRecordStatus = status });
+        TempData[TempDataKeys.ProjectRecordId] = projectModification.ProjectRecordId;
+        return RedirectToAction(nameof(AreaOfChange), new { projectRecordId = projectModification.ProjectRecordId });
     }
 
     /// <summary>
@@ -134,9 +132,15 @@ public class ModificationsController
     /// </summary>
     [ModificationAuthorise(Permissions.MyResearch.Modifications_Create)]
     [HttpGet]
-    public async Task<IActionResult> AreaOfChange(Guid? projectModificationId, string projectRecordStatus)
+    public async Task<IActionResult> AreaOfChange(Guid? projectModificationId, string projectRecordId)
     {
-        TempData[TempDataKeys.ProjectRecordStatus] = projectRecordStatus;
+        //Get project record status
+        (bool okResult, IActionResult errorResult, ServiceResponse<IrasApplicationResponse>? projectRecord) = await GetProjectRecordStatusAsync();
+        if (!okResult)
+        {
+            return errorResult;
+        }
+        TempData[TempDataKeys.ProjectRecordStatus] = projectRecord?.Content?.Status;
         // if we are adding a new change to the existing modification
         if (projectModificationId.HasValue && projectModificationId != Guid.Empty)
         {
@@ -182,10 +186,7 @@ public class ModificationsController
         {
             TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] = Guid.Empty;
         }
-
-        viewModel = TempData.PopulateBaseProjectModificationProperties(viewModel);
-
-        if (projectRecordStatus == ProjectRecordStatus.ProjectHalt)
+        if (projectRecord?.Content?.Status == ProjectRecordStatus.ProjectHalt)
         {
             RemoveDropdownOptions(viewModel, startingQuestions.AreasOfChange);
         }
@@ -193,8 +194,9 @@ public class ModificationsController
         {
             PopulateDropdownOptions(viewModel, startingQuestions.AreasOfChange);
         }
-
+        TempData.PopulateBaseProjectModificationProperties(viewModel);
         viewModel.SpecificAreaOfChange = SelectAreaOfChange;
+        TempData.Keep(TempDataKeys.ProjectRecordStatus);
 
         // Populate the dropdown options based on any existing selections
         return View("AreaOfChange", viewModel);
@@ -245,10 +247,16 @@ public class ModificationsController
     /// </summary>
     [ModificationAuthorise(Permissions.MyResearch.Modifications_Create)]
     [HttpGet]
-    public IActionResult GetSpecificChangesByAreaId(string areaOfChangeId)
+    public async Task<IActionResult> GetSpecificChangesByAreaId(string areaOfChangeId)
     {
+        //Get project record status from temp data
+        (bool okResult, IActionResult errorResult, ServiceResponse<IrasApplicationResponse>? projectRecord) = await GetProjectRecordStatusAsync();
+        if (!okResult)
+        {
+            return errorResult;
+        }
+
         var tempDataString = TempData.Peek(TempDataKeys.ProjectModification.AreaOfChanges) as string;
-        var projectRecordStatus = TempData.Peek(TempDataKeys.ProjectRecordStatus) as string;
         if (string.IsNullOrWhiteSpace(tempDataString))
         {
             return this.ServiceError(new ServiceResponse
@@ -264,31 +272,33 @@ public class ModificationsController
         // Find the specific area of change based on the provided ID
         var selectedArea = areaOfChanges.FirstOrDefault(a => a.AutoGeneratedId == areaOfChangeId);
 
-        // If no area is found, return an empty list
-        var specificChanges = selectedArea?.SpecificAreasOfChange ?? [];
-
         // Create a SelectListItem list for the specific changes
         var selectList = new List<SelectListItem> { new() { Value = Guid.Empty.ToString(), Text = SelectSpecificAreaOfChange } };
 
+        //// return only default option
+        if (selectedArea == null)
+            return Json(selectList);
+
         // Add each specific change to the SelectListItem list
-        if (projectRecordStatus == ProjectRecordStatus.ProjectHalt)
+        if (projectRecord?.Content?.Status == ProjectRecordStatus.ProjectHalt)
         {
             // ONLY allow Project Restart specific item and case-insensitive, trimmed match
             var onlyProjectRestartRequired = selectedArea?.SpecificAreasOfChange
                 .Where(sc => !string.IsNullOrWhiteSpace(sc.OptionName) &&
-                             sc.OptionName.Trim().Equals(ProjectRestart, StringComparison.OrdinalIgnoreCase))
+                             sc.OptionName.Trim().Equals(AreasOfChange.ProjectRestart, StringComparison.OrdinalIgnoreCase))
                 .Select(sc => new SelectListItem
                 {
                     Value = sc.AutoGeneratedId,
                     Text = sc.OptionName
                 })
-                .ToList();
+                .ToList() ?? new List<SelectListItem>();
 
             // Append ONLY the allowed specific item (if present)
             selectList.AddRange(onlyProjectRestartRequired!);
         }
         else
         {
+            var specificChanges = selectedArea.SpecificAreasOfChange ?? [];
             selectList.AddRange(specificChanges.Select(sc => new SelectListItem
             {
                 Value = sc.AutoGeneratedId,
@@ -307,10 +317,15 @@ public class ModificationsController
     [HttpPost]
     public async Task<IActionResult> ConfirmModificationJourney(AreaOfChangeViewModel model, bool saveForLater = false)
     {
-        var areas = TempData.Peek(TempDataKeys.ProjectModification.AreaOfChanges) as string;
+        //Get project record status from temp data
+        var projectRecordStatus = TempData[TempDataKeys.ProjectRecordStatus] as string;
 
         // Deserialize the area of changes from TempData
-        var areaOfChanges = JsonSerializer.Deserialize<List<AreaOfChangeDto>>(areas!)!;
+        var areasJson = TempData.Peek(TempDataKeys.ProjectModification.AreaOfChanges) as string;
+        var areaOfChanges = string.IsNullOrWhiteSpace(areasJson)
+            ? new List<AreaOfChangeDto>()
+            : JsonSerializer.Deserialize<List<AreaOfChangeDto>>(areasJson)!;
+
         if (!saveForLater)
         {
             PopulateDropdownOptions(model, areaOfChanges);
@@ -331,6 +346,10 @@ public class ModificationsController
             {
                 return RedirectToRoute("sws:modifications", new { model.SponsorOrganisationUserId, model.RtsId });
             }
+            if (projectRecordStatus == ProjectRecordStatus.ProjectHalt)
+            {
+                RemoveDropdownOptions(model, areaOfChanges);
+            }
             return RedirectToRoute("pov:postapproval", new { model.ProjectRecordId });
         }
 
@@ -342,6 +361,7 @@ public class ModificationsController
         var selectedChange = areaOfChange.SpecificAreasOfChange
             .First(sc => sc.AutoGeneratedId == model.SpecificChangeId);
         var modificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId);
+
         TempData[TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = selectedChange.OptionName;
 
         if (modificationId is Guid newGuid && newGuid != Guid.Empty)
@@ -378,7 +398,7 @@ public class ModificationsController
         var section = sections[0];
 
         model.ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId)?.ToString() ?? string.Empty;
-
+        TempData.Keep(TempDataKeys.ProjectRecordStatus);
         return RedirectToRoute($"pmc:{section.StaticViewName}", new
         {
             projectRecordId = model.ProjectRecordId,
@@ -387,39 +407,51 @@ public class ModificationsController
         });
     }
 
+    private async Task<(bool flowControl, IActionResult? result, ServiceResponse<IrasApplicationResponse>? record)> GetProjectRecordStatusAsync()
+    {
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
+        var record = await applicationsService.GetProjectRecord(projectRecordId);
+        if (!record.IsSuccessStatusCode)
+        {
+            return (flowControl: false, result: this.ServiceError(record), record: record);
+        }
+        return (flowControl: true, result: null, record: record);
+    }
+
     private (bool flowControl, IActionResult value) CheckIsHaltProject(
      AreaOfChangeViewModel model, AnswerModel selectedChange)
     {
         model.ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty;
         model.IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
-        model.ModificationId = TempData.PeekGuid(TempDataKeys.ProjectModification.ProjectModificationId).ToString();
+        model.ModificationId = TempData.PeekGuid(TempDataKeys.ProjectModification.ProjectModificationId);
 
         // Load previous selections from TempData
-        var optionNameList = TempData.Peek(TempDataKeys.OptionNameListKey) is string json
+        var specificAreaOfChangeOptionNameKey = TempData.Peek(TempDataKeys.SpecificAreaOfChangeOptionNameKey) is string json
             ? JsonSerializer.Deserialize<List<string>>(json) ?? new List<string>()
             : new List<string>();
-
-        bool isHaltNow = selectedChange.OptionName == Halt;
-        bool haltAlreadySelected = optionNameList.Contains(Halt);
-        bool hasOtherChanges = optionNameList.Any(x => x != Halt);
+        bool isHaltNow = selectedChange.OptionName == AreasOfChange.SpecificAreaOfChange;
+        bool haltAlreadySelected = specificAreaOfChangeOptionNameKey.Contains(AreasOfChange.SpecificAreaOfChange);
+        bool hasOtherChanges = specificAreaOfChangeOptionNameKey.Any(x => x != AreasOfChange.SpecificAreaOfChange);
 
         // selecting HALT after other changes
         if (isHaltNow && hasOtherChanges && !haltAlreadySelected)
         {
+            TempData.Keep(TempDataKeys.SpecificAreaOfChangeOptionNameKey);
             return (false, View("ProjectHaltWarning", model));
         }
 
         // selecting other changes after HALT
         if (!isHaltNow && haltAlreadySelected)
         {
+            TempData.Keep(TempDataKeys.SpecificAreaOfChangeOptionNameKey);
             return (false, View("ProjectHaltWarning", model));
         }
 
         // Persist the selection
-        if (!optionNameList.Contains(selectedChange.OptionName))
-            optionNameList.Add(selectedChange.OptionName);
+        if (!specificAreaOfChangeOptionNameKey.Contains(selectedChange.OptionName))
+            specificAreaOfChangeOptionNameKey.Add(selectedChange.OptionName);
 
-        TempData[TempDataKeys.OptionNameListKey] = JsonSerializer.Serialize(optionNameList);
+        TempData[TempDataKeys.SpecificAreaOfChangeOptionNameKey] = JsonSerializer.Serialize(specificAreaOfChangeOptionNameKey);
 
         return (true, null);
     }
@@ -546,6 +578,7 @@ public class ModificationsController
     /// </summary>
     private void HandleValidationErrors(ValidationResult validationResult, AreaOfChangeViewModel model)
     {
+        var projectRecordStatus = TempData[TempDataKeys.ProjectRecordStatus] as string;
         foreach (var error in validationResult.Errors)
         {
             ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
@@ -556,7 +589,14 @@ public class ModificationsController
         if (!string.IsNullOrWhiteSpace(tempDataString))
         {
             var areaOfChanges = JsonSerializer.Deserialize<List<AreaOfChangeDto>>(tempDataString)!;
-            PopulateDropdownOptions(model, areaOfChanges);
+            if (projectRecordStatus == ProjectRecordStatus.ProjectHalt)
+            {
+                RemoveDropdownOptions(model, areaOfChanges);
+            }
+            else
+            {
+                PopulateDropdownOptions(model, areaOfChanges);
+            }
         }
     }
 
@@ -694,7 +734,7 @@ public class ModificationsController
 
         //Limit AreaOfChangeOptions to only "Stop or restart"
         var allowedAreas = areaOfChanges
-            .Where(a => string.Equals(a.OptionName?.Trim(), AllowedAreaName, StringComparison.OrdinalIgnoreCase))
+            .Where(a => string.Equals(a.OptionName?.Trim(), AreasOfChange.AllowedAreaName, StringComparison.OrdinalIgnoreCase))
             .OrderBy(a => a.OptionName)
             .ToList();
 

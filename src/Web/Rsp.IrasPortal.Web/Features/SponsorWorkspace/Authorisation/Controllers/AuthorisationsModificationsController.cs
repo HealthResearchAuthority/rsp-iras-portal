@@ -368,10 +368,9 @@ public class AuthorisationsModificationsController
                 {
                     return RedirectToAction(nameof(CanSubmitToReviewBody), model);
                 }
-
                 // update the project record status with halt status
-                var projectHalt = TempData[TempDataKeys.ProjectModification.SpecificAreaOfChangeText] as string;
-                if (projectHalt == ProjectRecordStatus.ProjectHalt)
+                var tempHalt = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
+                if (tempHalt == AreasOfChange.SpecificAreaOfChange)
                 {
                     var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus(model.ProjectRecordId, ProjectRecordStatus.ProjectHalt);
 
@@ -674,7 +673,17 @@ public class AuthorisationsModificationsController
                 );
                 break;
         }
+        // update the project record status with halt status
+        var tempHalt = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
+        if (tempHalt == AreasOfChange.SpecificAreaOfChange)
+        {
+            var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus(model.ProjectRecordId, ProjectRecordStatus.ProjectHalt);
 
+            if (!updateApplicationResponse.IsSuccessStatusCode)
+            {
+                return this.ServiceError(updateApplicationResponse);
+            }
+        }
         model.Outcome = "Authorised";
         return RedirectToAction(nameof(Confirmation), model);
     }

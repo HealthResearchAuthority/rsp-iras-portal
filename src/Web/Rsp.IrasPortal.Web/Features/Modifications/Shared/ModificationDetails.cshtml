@@ -15,7 +15,7 @@
 
     var isAuthoriser = TempData[TempDataKeys.IsAuthoriser] as bool? ?? false;
     var isRevisionBySponsor = false;
-
+    var tempHalt = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
     <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
                 status-for="Status"
                 status-is="@ModificationStatus.ReviseAndAuthorise">
@@ -167,9 +167,12 @@ else
         }
 
         <div class="save-buttons">
-            @if ((Model.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions || isRevisionBySponsor) && Model.ModificationChanges.Count < 10)
+            @if ((Model.Status is ModificationStatus.InDraft) ||
+              (Model.Status is ModificationStatus.RequestRevisions && tempHalt != AreasOfChange.SpecificAreaOfChange) ||
+              (isRevisionBySponsor && tempHalt != AreasOfChange.SpecificAreaOfChange)
+               && Model.ModificationChanges.Count < 10)
             {
-                <a asp-route="pmc:areaofchange" asp-route-projectModificationId="@Model.ModificationId" class="govuk-button govuk-button--secondary">
+                <a asp-route="pmc:areaofchange" asp-route-projectModificationId="@Model.ModificationId" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button govuk-button--secondary">
                     Add another change to this modification
                 </a>
             }
@@ -179,9 +182,9 @@ else
                 <a asp-route="pmc:saveforlater" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
                     Save for later
                 </a>
-            }            
+            }
 
-            @if(!Model.ModificationChanges.Any())
+            @if (!Model.ModificationChanges.Any())
             {
                 var routeData = new Dictionary<string, string>
                 {
@@ -192,12 +195,12 @@ else
                 };
 
                 <a asp-route="pmc:saveforlater"
-                     asp-all-route-data="@routeData"
-                     status-for="Status"
-                     status-is="@ModificationStatus.ReviseAndAuthorise"
-                     class="govuk-button govuk-button--secondary">
-                     Save for later
-                 </a>
+                   asp-all-route-data="@routeData"
+                   status-for="Status"
+                   status-is="@ModificationStatus.ReviseAndAuthorise"
+                   class="govuk-button govuk-button--secondary">
+                    Save for later
+                </a>
             }
         </div>
     </div>
@@ -304,8 +307,8 @@ else
             <div class="govuk-grid-row">
                 <div class="govuk-grid-column-two-thirds">
                     <div id="revision-description-label">
-                    @Html.Raw(description?.Value)
-                    </div>                    
+                        @Html.Raw(description?.Value)
+                    </div>
                     <div class="govuk-form-group govuk-character-count"
                          data-module="govuk-character-count"
                          data-maxlength="500"
@@ -338,16 +341,16 @@ else
                     <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
                     <input type="hidden" name="IrasId" value="@Model.IrasId" />
                     <input type="hidden" name="RtsId" value="@Model.RtsId" />
-                    <input type="hidden" name="ReviewType" value="@Model.ReviewType" /> 
+                    <input type="hidden" name="ReviewType" value="@Model.ReviewType" />
 
                     <div class="save-buttons">
                         @if (Model.ChangesReadyForSubmission)
-                        {                            
+                        {
                             <button type="submit"
                                     asp-route="sws:authoriserevision"
                                     class="govuk-button">
-                            Authorise
-                    </button>
+                                Authorise
+                            </button>
                         }
                         else
                         {
@@ -356,7 +359,7 @@ else
                                asp-route-projectRecordId="@Model.ProjectRecordId">
                                 Authorise
                             </a>
-                        }                                 
+                        }
 
                         <button type="submit"
                                 asp-route="sws:authoriserevision"

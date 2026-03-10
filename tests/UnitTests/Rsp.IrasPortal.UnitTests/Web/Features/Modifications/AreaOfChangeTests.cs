@@ -21,7 +21,8 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
     (
         string projectRecordId,
         int irasId,
-        Guid projectModificationId
+        Guid projectModificationId,
+        IrasApplicationResponse irasApplicationResponse
     )
     {
         // Arrange
@@ -90,9 +91,13 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
                 StatusCode = HttpStatusCode.OK,
                 Content = new StartingQuestionsDto()
             });
+        // Get project record
+        Mocker.GetMock<IApplicationsService>()
+           .Setup(s => s.GetProjectRecord(It.IsAny<string>()))
+           .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK, Content = irasApplicationResponse });
 
         // Act
-        var result = await Sut.AreaOfChange(projectModificationId, string.Empty);
+        var result = await Sut.AreaOfChange(projectModificationId, projectRecordId);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -146,6 +151,10 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
                 StatusCode = HttpStatusCode.OK,
                 Content = new StartingQuestionsDto()
             });
+        // Get project record
+        Mocker.GetMock<IApplicationsService>()
+           .Setup(s => s.GetProjectRecord(It.IsAny<string>()))
+           .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK, Content = null });
 
         // Act
         var result = await Sut.AreaOfChange(projectModificationId, string.Empty);
@@ -206,6 +215,10 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
             .GetMock<IFeatureManager>()
             .Setup(f => f.IsEnabledAsync(FeatureFlags.ParticipatingOrganisations))
             .ReturnsAsync(true);
+        // Get project record
+        Mocker.GetMock<IApplicationsService>()
+           .Setup(s => s.GetProjectRecord(It.IsAny<string>()))
+           .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK, Content = null });
 
         var result = await Sut.AreaOfChange(projectModificationId, string.Empty);
 
@@ -269,6 +282,10 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
             .GetMock<IFeatureManager>()
             .Setup(f => f.IsEnabledAsync(FeatureFlags.ParticipatingOrganisations))
             .ReturnsAsync(false);
+        // Get project record
+        Mocker.GetMock<IApplicationsService>()
+           .Setup(s => s.GetProjectRecord(It.IsAny<string>()))
+           .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK, Content = null });
 
         var result = await Sut.AreaOfChange(projectModificationId, string.Empty);
 
@@ -355,6 +372,10 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
                 StatusCode = HttpStatusCode.OK,
                 Content = new StartingQuestionsDto()
             });
+        // Get project record
+        Mocker.GetMock<IApplicationsService>()
+           .Setup(s => s.GetProjectRecord(It.IsAny<string>()))
+           .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.OK, Content = null });
 
         // Act
         var result = await Sut.AreaOfChange(projectModificationId, "Project halt");
