@@ -65,4 +65,37 @@ public class UserNotificationsControllerTests : TestServiceBase<UserNotification
         Mocker.GetMock<IUserNotificationsService>()
            .Verify(s => s.ReadUserNotifications(uId.ToString()), Times.Once);
     }
+
+    [Theory, AutoData]
+    public async Task Dashboard_Returns_Error_When_UserId_Not_Present(UserNotificationsResponse response, Guid uId)
+    {
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.UserNotifications))
+            .ReturnsAsync(true);
+
+        // Arrange
+
+        var notificationType = "Action";
+        var serviceResponse = new ServiceResponse<UserNotificationsResponse>
+        {
+            StatusCode = HttpStatusCode.BadGateway
+        };
+
+        Mocker.GetMock<IUserNotificationsService>()
+            .Setup(s => s.GetUserNotification(It.IsAny<string>(), 1, 20,
+                                             nameof(UserNotificationResponse.DateTimeCreated), SortDirections.Descending, notificationType))
+            .ReturnsAsync(serviceResponse);
+
+        var result = await Sut.UserNotificationsDashboard(notificationType, 1, 20, nameof(UserNotificationResponse.DateTimeCreated), SortDirections.Descending);
+
+        var codeResult = result.ShouldBeOfType<StatusCodeResult>();
+        codeResult.StatusCode.ShouldBe((int)HttpStatusCode.BadGateway);
+
+        Mocker.GetMock<IUserNotificationsService>()
+           .Verify(s => s.GetUserNotification(uId.ToString(), 1, 20,
+                                             nameof(UserNotificationResponse.DateTimeCreated), SortDirections.Descending, notificationType), Times.Never);
+
+        Mocker.GetMock<IUserNotificationsService>()
+           .Verify(s => s.ReadUserNotifications(uId.ToString()), Times.Never);
+    }
 }
