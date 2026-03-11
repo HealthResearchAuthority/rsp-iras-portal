@@ -637,10 +637,13 @@ public class DocumentsController
 
     [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Download)]
     [HttpGet]
-    public async Task<IActionResult> DownloadDocument(string path, string fileName)
+    public async Task<IActionResult> DownloadDocument(string path, string fileName, string? modificationId)
     {
-        // get the modification id from the path
-        var modificationId = path.Split('/')[1];
+        if (string.IsNullOrEmpty(modificationId))
+        {
+            // get the modification id from the path
+            modificationId = path.Split('/')[1];
+        }
 
         var documentAccessResponse = await projectModificationsService.CheckDocumentAccess(Guid.Parse(modificationId));
 
@@ -2552,7 +2555,6 @@ public class DocumentsController
                 d.Status == DocumentStatus.Approved &&
                 d.Id != currentDocumentId &&
                 d.DocumentType != SupersedeDocumentsType.Tracked &&
-                d.LinkedDocumentId == null &&
                 (d.ReplacedByDocumentId == null || d.ReplacedByDocumentId == currentDocumentId))];
     }
 

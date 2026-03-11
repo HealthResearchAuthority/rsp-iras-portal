@@ -1,6 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.Logging.Interceptors;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.Responses;
 
@@ -9,7 +10,7 @@ namespace Rsp.Portal.Application.Services;
 /// <summary>
 /// Defines operations for interacting with Azure Blob Storage for uploading and listing documents.
 /// </summary>
-public interface IBlobStorageService
+public interface IBlobStorageService : IInterceptable
 {
     /// <summary>
     /// Uploads one or more files to the specified Azure Blob Storage container and folder.
