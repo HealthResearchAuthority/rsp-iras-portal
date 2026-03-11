@@ -1,0 +1,22 @@
+﻿@model int;
+
+@{
+	var currentUrl = Context?.Request?.Path.Value?.ToLower();
+	var finalCount = Model > 99 ? "99+" : Model.ToString();
+}
+
+<li class="govuk-service-navigation__item @(currentUrl == "/usernotifications/usernotificationsdashboard" ? "govuk-service-navigation__item--active" : "")">
+	<a class="govuk-service-navigation__link"
+	   asp-route="notifications:UserNotificationsDashboard">
+		Notifications
+
+		@if (Model > 0)
+		{
+			<span class="moj-notification-badge">
+				<span aria-hidden="true">@finalCount</span>
+				<span class="govuk-visually-hidden">(@finalCount)</span>
+			</span>
+		}
+
+	</a>
+</li>

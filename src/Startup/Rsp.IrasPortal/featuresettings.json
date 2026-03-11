@@ -25,7 +25,7 @@
         }
       ]
     }, // If this flag is enabled, allows revision request or revise and authorise modifications
-    "Modifications.ChangeOfSponsorOrganisation": {
+    "Modifications.ParticipatingOrganisations": {
       "EnabledFor": [
         {
           "Name": "Microsoft.Targeting",
@@ -43,7 +43,7 @@
         }
       ]
     },
-    "Modifications.ParticipatingOrganisations": {
+    "Modifications.ChangeOfSponsorOrganisation": {
       "EnabledFor": [
         {
           "Name": "Microsoft.Targeting",
@@ -123,7 +123,7 @@
             "Audience": {
               "Users": [],
               "Groups": [],
-              "DefaultRolloutPercentage": 100,
+              "DefaultRolloutPercentage": 0,
               "Exclusion": {
                 "Users": [],
                 "Groups": []
@@ -152,6 +152,24 @@
       ]
     },
     "Modifications.NotAuthorisedReason": {
+      "EnabledFor": [
+        {
+          "Name": "Microsoft.Targeting",
+          "Parameters": {
+            "Audience": {
+              "Users": [],
+              "Groups": [],
+              "DefaultRolloutPercentage": 100,
+              "Exclusion": {
+                "Users": [],
+                "Groups": []
+              }
+            }
+          }
+        }
+      ]
+    },
+    "System.UserNotifications": {
       "EnabledFor": [
         {
           "Name": "Microsoft.Targeting",

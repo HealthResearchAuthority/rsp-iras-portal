@@ -1,16 +1,38 @@
-﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
-@model (ModelStateDictionary State, string Title)
+﻿@using System.Runtime.CompilerServices
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@model object
 
-@if (!Model.State.IsValid)
+@{
+	var tuple = Model as ITuple;
+	var modelState = tuple?[0] as ModelStateDictionary ?? new ModelStateDictionary();
+	var title = tuple?[1]?.ToString() ?? "There is a problem";
+	var order = tuple is { Length: > 2 } ? tuple[2] as Dictionary<string, int> : null;
+
+	static string GetRootKey(string key)
+	{
+		var separators = new[] { key.IndexOf('.'), key.IndexOf('[') }
+			.Where(i => i >= 0);
+
+		return separators.Any()
+			? key[..separators.Min()]
+			: key;
+	}
+
+	var orderedStates = order is null
+		? modelState.AsEnumerable()
+		: modelState
+			.OrderBy(x => order.GetValueOrDefault(GetRootKey(x.Key), int.MaxValue))
+			.ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase);
+}
+
+@if (!modelState.IsValid)
 {
 	<div class="govuk-error-summary" data-module="govuk-error-summary">
 		<div role="alert">
-			<h2 class="govuk-error-summary__title">
-				@Model.Title
-			</h2>
+			<h2 class="govuk-error-summary__title">@title</h2>
 			<div class="govuk-error-summary__body">
 				<ul class="govuk-list govuk-error-summary__list">
-					@foreach (var state in Model.State)
+					@foreach (var state in orderedStates)
 					{
 						foreach (var stateEntry in state.Value.Errors)
 						{

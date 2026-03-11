@@ -67,4 +67,6 @@ public static class FeatureFlags
 
     // Allows changing sponsor organisation via modification journey
     public const string ChangeOfSponsorOrganisation = "Modifications.ChangeOfSponsorOrganisation";
+    // Enable user notifications area
+    public const string UserNotifications = "System.UserNotifications";
 }
