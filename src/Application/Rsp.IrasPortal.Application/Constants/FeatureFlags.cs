@@ -65,6 +65,8 @@ public static class FeatureFlags
     // Allows duplicating modifications
     public const string ModificationResubmission = "Modifications.Resubmission";
 
+    // Allows changing sponsor organisation via modification journey
+    public const string ChangeOfSponsorOrganisation = "Modifications.ChangeOfSponsorOrganisation";
     // Enable user notifications area
     public const string UserNotifications = "System.UserNotifications";
 }

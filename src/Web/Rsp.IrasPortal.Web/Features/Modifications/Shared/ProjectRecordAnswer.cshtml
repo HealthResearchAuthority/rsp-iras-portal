@@ -1,7 +1,10 @@
 ﻿@using Rsp.Portal.Application.DTOs.Requests
+@using Rsp.Portal.Application.Services
 @using Rsp.Portal.Web.Features.Modifications.Models
 @using Rsp.Portal.Web.Extensions
+@using Rsp.Portal.Web.Helpers
 @model (QuestionnaireViewModel Questionnaire, QuestionViewModel CurrentQuestion)
+@inject IRtsService rtsService
 
 @{
     var question = Model.CurrentQuestion;
@@ -11,7 +14,7 @@
     var questionId = conditional ? question.QuestionId : "";
 
     var questionnaire = Model.Questionnaire;
-    var currentQuestion = Model.CurrentQuestion;
+    var currentQuestion = Model.CurrentQuestion;    
 
     // find project record 's original question
     var projectRecordQuestion = currentQuestion.ShowOriginalAnswer ? questionnaire.Questions.Find(q => q.QuestionId == currentQuestion.QuestionId) : null;
@@ -41,7 +44,17 @@
         var answer = questionnaire.ProjectRecordAnswers[projectRecordQuestionId];
 
         // format the answer based on the question data type
-        projectRecordAnswer = answer.GetDisplayText(projectRecordQuestion.DataType);
+        var answerText = answer.GetDisplayText(projectRecordQuestion.DataType);
+
+        if (question.QuestionType.ToLower() == "rts:org_lookup")
+        {
+            projectRecordAnswer = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromOrganisationId(rtsService, answerText);
+            ViewBag.DisplayName = projectRecordAnswer;
+        }
+        else
+        {
+            projectRecordAnswer = answerText;
+        }
 
         <div class="govuk-!-margin-bottom-3 flex-gap-2 @(conditional ? "conditional" : "")" data-parents="@parents" data-questionid="@questionId">
             <span class="govuk-label">

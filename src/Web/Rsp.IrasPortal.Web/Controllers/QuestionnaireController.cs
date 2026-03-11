@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.CmsQuestionset;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Web.Extensions;
@@ -521,7 +523,7 @@ public class QuestionnaireController
 
         // override the submitted model
         // with the updated model with answers
-        model.Questions = GetQuestionsFromSession(model);
+        model.Questions = await GetQuestionsFromSession(model);
 
         // get the application from the session
         // to get the applicationId
@@ -575,11 +577,49 @@ public class QuestionnaireController
         return Redirect(returnUrl);
     }
 
-    private List<QuestionViewModel> GetQuestionsFromSession(QuestionnaireViewModel model)
+    private async Task<List<QuestionViewModel>> GetQuestionsFromSession(QuestionnaireViewModel model)
     {
-        // get the questionnaire from the session
-        // and deserialize it
-        var questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}")!)!;
+        var questions = default(List<QuestionViewModel>);
+
+        if (HttpContext.Session.Keys.Contains($"{SessionKeys.Questionnaire}:{model.CurrentStage}"))
+        {
+            var questionsJson = HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}")!;
+
+            questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(questionsJson)!;
+        }
+
+        // questionnaire doesn't exist in session so
+        // get questions from the database for the category
+        if (questions == null || questions.Count == 0)
+        {
+            var modificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string;
+            ServiceResponse<CmsQuestionSetResponse> response;
+            if (modificationId is null) // Project journey
+            {
+                response = await questionSetService.GetQuestionSet(sectionId: model.CurrentStage);
+            } // Modification journey
+            else
+            {
+                response = await questionSetService.GetModificationQuestionSet(sectionId: model.CurrentStage);
+            }
+
+            // return the view if successfull
+            if (response.IsSuccessStatusCode)
+            {
+                // set the active stage for the category
+                await SetStage(model.CurrentStage);
+
+                // convert the questions response to QuestionnaireViewModel
+                var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(response.Content!);
+
+                // store the questions to load again if there are validation errors on the page
+                HttpContext.Session.SetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}", JsonSerializer.Serialize(questionnaire.Questions));
+
+                questions = JsonSerializer.Deserialize<List<QuestionViewModel>>(HttpContext.Session.GetString($"{SessionKeys.Questionnaire}:{model.CurrentStage}")!)!;
+            }
+        }
+
+        questions ??= new List<QuestionViewModel>();
 
         // update the model with the answeres
         // provided by the applicant
