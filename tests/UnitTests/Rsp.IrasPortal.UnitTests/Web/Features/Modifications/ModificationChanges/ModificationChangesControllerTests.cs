@@ -415,6 +415,79 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
     }
 
     [Fact]
+    public async Task SaveResponses_Clears_RtsOrg_When_No_Search_Performed_And_SearchText_Cleared()
+    {
+        // Arrange
+        var (ctx, modChangeId) = SetupHttpContext();
+
+        SetupStage("SEC1", "CAT1", currentStaticView: "SponsorOrgPage", nextSectionId: "SEC2", nextStatic: "AffectingOrganisations");
+
+        _cmsService
+            .Setup(s => s.GetModificationQuestionSet("SEC1", null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = BuildQuestionSet(
+                    "SEC1", "CAT1", "SponsorOrgPage",
+                    new QuestionModel
+                    {
+                        Id = "QCMS99",
+                        QuestionId = "QRTS",
+                        AnswerDataType = "rts:org_lookup",
+                        QuestionFormat = "rts:org_lookup",
+                        CategoryId = "CAT1",
+                        Sequence = 1,
+                        SectionSequence = 1
+                    }
+                )
+            });
+
+        _validator
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
+
+        _respondentService
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<RespondentAnswerDto>()
+            });
+
+        var model = new QuestionnaireViewModel
+        {
+            CurrentStage = "SEC1",
+            Questions =
+            [
+                new QuestionViewModel
+            {
+                QuestionId = "QCMS99",
+                QuestionType = "rts:org_lookup",
+                Index = 0,
+                AnswerText = ""
+            }
+            ],
+            SponsorOrgSearch = new OrganisationSearchViewModel
+            {
+                SelectedOrganisation = "ORG123",   // previously selected org
+                SearchText = ""                    // cleared search text
+            }
+        };
+
+        // Act
+        // searchedPerformed != "searched:true" => NO SEARCH PERFORMED path
+        var result = await Sut.SaveResponses(model, "", false);
+
+        // Assert
+        var updated = model.Questions.First(q => q.QuestionId == "QCMS99");
+
+        updated.AnswerText.ShouldBe("");                              // should be cleared
+        model.SponsorOrgSearch.SelectedOrganisation.ShouldBe("");     // also cleared
+
+        result.ShouldBeOfType<RedirectToRouteResult>();
+    }
+
+    [Fact]
     public async Task SaveResponses_Redirects_To_Review_When_In_Review_Mode()
     {
         // Arrange
