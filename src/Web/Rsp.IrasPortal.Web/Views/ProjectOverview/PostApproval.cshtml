@@ -410,9 +410,10 @@ else
 }
 <div permission="@Permissions.MyResearch.Modifications_Create"
      status-for="ProjectOverviewModel.Status"
-     status-is="@ProjectRecordStatus.Active" class="govuk-grid-row">
+     status-in="@([ProjectRecordStatus.Active,ProjectRecordStatus.ProjectHalt])" class="govuk-grid-row">
     <div class="govuk-grid-column-full">
         <a asp-route="pmc:createmodification"
+           asp-route-status="@Model?.ProjectOverviewModel?.Status"
            class="govuk-button govuk-button--secondary">
             Create new modification
         </a>
@@ -420,7 +421,7 @@ else
 </div>
 <div permission="@Permissions.MyResearch.ProjectRecord_Close"
      status-for="ProjectOverviewModel.Status"
-     status-in="@([ProjectRecordStatus.Active,ProjectRecordStatus.PendingClosure, ProjectRecordStatus.Closed])"
+     status-in="@([ProjectRecordStatus.Active,ProjectRecordStatus.PendingClosure, ProjectRecordStatus.Closed, ProjectRecordStatus.ProjectHalt])"
      class="govuk-grid-row">
     <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
     <div class="govuk-grid-column-one-half">
@@ -503,7 +504,7 @@ else
 </div>
 <div permission="@Permissions.MyResearch.ProjectRecord_Close"
      status-for="ProjectOverviewModel.Status"
-     status-in="@([ProjectRecordStatus.Active])"
+     status-in="@([ProjectRecordStatus.Active,ProjectRecordStatus.ProjectHalt])"
      class="govuk-grid-row">
     <div class="govuk-grid-column-full">
         <a asp-route="app:closeproject"

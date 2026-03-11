@@ -171,13 +171,13 @@ public abstract class ModificationsControllerBase
                 Questions = questions ?? []
             };
 
+            TempData[TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = specificAreaOfChange?.OptionName ?? string.Empty;
             // show surfacing questions
             ModificationHelpers.ShowSurfacingQuestion(questions, changeModel, "ReviewAllChanges");
 
             // remove all the conditional questions without answers, these must have been
             // validated on the previous screen
             questions.RemoveAll(q => !(q.IsMandatory || q.IsOptional) && q.IsMissingAnswer());
-
             modification.ModificationChanges.Add(changeModel);
         }
     }

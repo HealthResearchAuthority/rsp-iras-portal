@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Rsp.IrasPortal.Application.Services;
+using Rsp.IrasPortal.Services;
 using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Infrastructure.Claims;
@@ -37,6 +39,7 @@ public static class ServicesConfiguration
         services.AddScoped<IProjectClosuresService, ProjectClosuresService>();
         services.AddScoped<ISponsorUserAuthorisationService, SponsorUserAuthorisationService>();
         services.AddScoped<IViewHelper, ViewHelper>();
+        services.AddScoped<IUserNotificationsService, UserNotificationsService>();
 
         // add message handlers
         services.AddTransient<AuthHeadersHandler>();

@@ -39,8 +39,9 @@ public class AuthorisationsModificationsController
     IValidator<AuthoriseModificationsOutcomeViewModel> outcomeValidator,
     IValidator<QuestionnaireViewModel> questionnaireValidator,
     IFeatureManager featureManager,
-    IRtsService rtsService
-) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, questionnaireValidator, featureManager)
+    IRtsService rtsService,
+    IApplicationsService applicationsService
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!, featureManager)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
@@ -367,6 +368,17 @@ public class AuthorisationsModificationsController
                 {
                     return RedirectToAction(nameof(CanSubmitToReviewBody), model);
                 }
+                // update the project record status with halt status
+                var tempHalt = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
+                if (tempHalt == AreasOfChange.SpecificAreaOfChange)
+                {
+                    var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus(model.ProjectRecordId, ProjectRecordStatus.ProjectHalt);
+
+                    if (!updateApplicationResponse.IsSuccessStatusCode)
+                    {
+                        return this.ServiceError(updateApplicationResponse);
+                    }
+                }
                 switch (reviewType)
                 {
                     case "Review required":
@@ -661,7 +673,17 @@ public class AuthorisationsModificationsController
                 );
                 break;
         }
+        // update the project record status with halt status
+        var tempHalt = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
+        if (tempHalt == AreasOfChange.SpecificAreaOfChange)
+        {
+            var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus(model.ProjectRecordId, ProjectRecordStatus.ProjectHalt);
 
+            if (!updateApplicationResponse.IsSuccessStatusCode)
+            {
+                return this.ServiceError(updateApplicationResponse);
+            }
+        }
         model.Outcome = "Authorised";
         return RedirectToAction(nameof(Confirmation), model);
     }
