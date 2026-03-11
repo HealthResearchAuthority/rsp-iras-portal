@@ -11,7 +11,7 @@
 		new { Field = nameof(UserNotificationResponse.DateTimeCreated), Label = "Date" },
 		new { Field = nameof(UserNotificationResponse.Text), Label = "Notification" },
 		new { Field = nameof(UserNotificationResponse.Type), Label = "Type of notification" },
-		new { Field = "Days", Label = "Recieved" }
+		new { Field = "Days", Label = "Received" }
 	};
 
 	var typeOptions = new List<SelectListItem>
@@ -79,8 +79,8 @@
 				<tbody class="govuk-table__body">
 					@foreach (var notification in Model.Notifications)
 					{
-						var daysRecieved = (DateTime.UtcNow.Date - notification.DateTimeCreated.Date).Days;
-						var daysRecievedText = daysRecieved == 0 ? "Today" : $"{daysRecieved} day{(daysRecieved > 1 ? "s" : "")} ago";
+						var daysReceived = (DateTime.UtcNow.Date - notification.DateTimeCreated.Date).Days;
+						var daysReceivedText = daysReceived == 0 ? "Today" : $"{daysReceived} day{(daysReceived > 1 ? "s" : "")} ago";
 
 						<tr class="govuk-table__row">
 							<td class="govuk-table__cell govuk-!-width-one-quarter">@notification.DateTimeCreated.ToString("dd MMM yyyy")</td>
@@ -103,7 +103,7 @@
 								}
 							</td>
 							<td class="govuk-table__cell">@notification.Type</td>
-							<td class="govuk-table__cell">@daysRecievedText</td>
+							<td class="govuk-table__cell">@daysReceivedText</td>
 						</tr>
 					}
 				</tbody>
