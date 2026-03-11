@@ -9,6 +9,7 @@ using Rsp.IrasPortal.Application.DTOs.Requests;
 using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
@@ -40,7 +41,7 @@ public class ModificationChangesController
     [ModificationAuthorise(Permissions.MyResearch.Modifications_Update)]
     [RequestFormLimits(ValueCountLimit = int.MaxValue)]
     [HttpPost]
-    public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, bool saveForLater = false)
+    public async Task<IActionResult> SaveResponses(QuestionnaireViewModel model, string searchedPerformed, bool autoSearchEnabled, bool saveForLater = false)
     {
         var (_, projectModificationChangeId) = CheckModification();
 
@@ -63,6 +64,66 @@ public class ModificationChangesController
         // override the submitted model
         // with the updated model with answers and rules
         model.Questions = questionnaire.Questions;
+
+        if (!autoSearchEnabled)
+        {
+            var rtsOrgInput = model.Questions.FirstOrDefault(q => string.Equals(q.QuestionType, "rts:org_lookup", StringComparison.OrdinalIgnoreCase));
+
+            // Check if the sponsor organisation input is null or empty.
+            if (rtsOrgInput is not null)
+            {
+                var rtsSearchPerformed = searchedPerformed == "searched:true";
+                var selectedRtsOrg = model.SponsorOrgSearch.SelectedOrganisation;
+                var searchedText = model.SponsorOrgSearch.SearchText;
+
+                if (rtsSearchPerformed)
+                {
+                    // If a search was performed, only assign if a selection was made
+                    rtsOrgInput.AnswerText = string.IsNullOrWhiteSpace(selectedRtsOrg) ? string.Empty : selectedRtsOrg;
+
+                    if (!string.IsNullOrWhiteSpace(selectedRtsOrg))
+                    {
+                        // pass name of organisation, to be displayed when there are validation errors on page
+                        TempData.TryGetValue<OrganisationSearchResponse>(TempDataKeys.SponsorOrganisations, out var response, true);
+
+                        if (response?.Organisations != null)
+                        {
+                            var selectedOrganisation = response.Organisations.FirstOrDefault(o => o.Id == selectedRtsOrg);
+                            if (selectedOrganisation != null)
+                            {
+                                model.SponsorOrgSearch.DisplayName = selectedOrganisation.Name;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // No search was performed, check if we have a selected org previously
+                    if (!string.IsNullOrWhiteSpace(selectedRtsOrg))
+                    {
+                        // searched text was cleared or changed
+                        if
+                        (
+                            string.IsNullOrWhiteSpace(searchedText) ||
+                            !selectedRtsOrg.Equals(searchedText, StringComparison.OrdinalIgnoreCase)
+                        )
+                        {
+                            // Cleared search or mismatch
+                            rtsOrgInput.AnswerText = string.Empty;
+                            model.SponsorOrgSearch.SelectedOrganisation = string.Empty;
+                        }
+                        else
+                        {
+                            rtsOrgInput.AnswerText = selectedRtsOrg;
+                        }
+                    }
+                    else
+                    {
+                        rtsOrgInput.AnswerText = string.Empty;
+                    }
+                }
+            }
+        }
 
         // At this point only validating the data format like date, email, length etc if provided
         // so that users can continue without entering the information. From the review screen

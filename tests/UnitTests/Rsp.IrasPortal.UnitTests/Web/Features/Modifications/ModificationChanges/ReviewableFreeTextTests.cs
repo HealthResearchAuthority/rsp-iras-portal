@@ -128,7 +128,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
         var model = new QuestionnaireViewModel { CurrentStage = "SEC1", Questions = [] };
 
         // Act
-        var result = await Sut.SaveResponses(model);
+        var result = await Sut.SaveResponses(model, "", false);
 
         // Assert
         // Assert
@@ -166,7 +166,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
         };
 
         // Act
-        var result = await Sut.SaveResponses(model);
+        var result = await Sut.SaveResponses(model, "", false);
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
@@ -206,7 +206,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
         };
 
         // Act
-        var result = await Sut.SaveResponses(model, saveForLater: true);
+        var result = await Sut.SaveResponses(model, "", false, saveForLater: true);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -245,7 +245,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
         };
 
         // Act
-        var result = await Sut.SaveResponses(model);
+        var result = await Sut.SaveResponses(model, "", false);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -284,7 +284,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
         };
 
         // Act
-        var result = await Sut.SaveResponses(model);
+        var result = await Sut.SaveResponses(model, "", false);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -327,7 +327,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
         };
 
         // Act
-        var result = await Sut.SaveResponses(model);
+        var result = await Sut.SaveResponses(model, "", false);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
@@ -366,7 +366,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
         };
 
         // Act
-        var result = await Sut.SaveResponses(model);
+        var result = await Sut.SaveResponses(model, "", false);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
@@ -406,7 +406,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
         };
 
         // Act
-        var result = await Sut.SaveResponses(model);
+        var result = await Sut.SaveResponses(model, "", false);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -473,7 +473,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
         };
 
         // Act
-        var result = await Sut.SaveResponses(model, saveForLater: true);
+        var result = await Sut.SaveResponses(model, "", false, saveForLater: true);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -540,7 +540,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
         };
 
         // Act
-        var result = await Sut.SaveResponses(model);
+        var result = await Sut.SaveResponses(model, "", false);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();

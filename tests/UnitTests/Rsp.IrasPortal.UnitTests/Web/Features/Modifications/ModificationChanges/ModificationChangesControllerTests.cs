@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
@@ -8,6 +9,7 @@ using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
 using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Web.Features.Modifications.ModificationChanges.Controllers;
@@ -129,7 +131,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
         var model = new QuestionnaireViewModel { CurrentStage = "SEC1", Questions = [] };
 
         // Act
-        var result = await Sut.SaveResponses(model);
+        var result = await Sut.SaveResponses(model, "", false);
 
         // Assert
         // Assert
@@ -167,7 +169,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
         };
 
         // Act
-        var result = await Sut.SaveResponses(model);
+        var result = await Sut.SaveResponses(model, "", false);
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
@@ -207,7 +209,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
         };
 
         // Act
-        var result = await Sut.SaveResponses(model, saveForLater: true);
+        var result = await Sut.SaveResponses(model, "", false, saveForLater: true);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -246,7 +248,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
         };
 
         // Act
-        var result = await Sut.SaveResponses(model);
+        var result = await Sut.SaveResponses(model, "", false);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -312,7 +314,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
         };
 
         // Act
-        var result = await Sut.SaveResponses(model);
+        var result = await Sut.SaveResponses(model, "", false);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -320,6 +322,96 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
         redirect.RouteValues!["projectRecordId"].ShouldBe("PR1");
         redirect.RouteValues!["categoryId"].ShouldBe("CAT2");
         redirect.RouteValues!["sectionId"].ShouldBe("SEC2");
+    }
+
+    [Fact]
+    public async Task SaveResponses_Sets_RtsOrg_Answer_When_Search_Performed_And_AutoSearch_Disabled()
+    {
+        // Arrange
+        var (ctx, modChangeId) = SetupHttpContext();
+
+        // Setup stage & question set containing rts:org_lookup
+        SetupStage("SEC1", "CAT1", currentStaticView: "SponsorOrgPage", nextSectionId: "SEC2", nextStatic: "AffectingOrganisations");
+
+        _cmsService
+            .Setup(s => s.GetModificationQuestionSet("SEC1", null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = BuildQuestionSet(
+                    "SEC1", "CAT1", "SponsorOrgPage",
+                    new QuestionModel
+                    {
+                        Id = "QCMS99",
+                        QuestionId = "QRTS",
+                        AnswerDataType = "rts:org_lookup",
+                        QuestionFormat = "rts:org_lookup",
+                        CategoryId = "CAT1",
+                        Sequence = 1,
+                        SectionSequence = 1
+                    }
+                )
+            });
+
+        // Validator OK
+        _validator
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
+
+        // RespondentService mocks (not relevant for this test's logic)
+        _respondentService
+            .Setup(s => s.GetModificationChangeAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<RespondentAnswerDto>()
+            });
+
+        var model = new QuestionnaireViewModel
+        {
+            CurrentStage = "SEC1",
+            Questions =
+            [
+                new QuestionViewModel
+            {
+                QuestionId = "QCMS99",
+                QuestionType = "rts:org_lookup",
+                Index = 0,
+                AnswerText = ""
+            }
+            ],
+            SponsorOrgSearch = new OrganisationSearchViewModel
+            {
+                SelectedOrganisation = "ORG123",
+                SearchText = "Test Org Search"
+            }
+        };
+
+        // TempData holds organisation search results (simulating previous search)
+        var organisations = new OrganisationSearchResponse
+        {
+            Organisations = new List<OrganisationDto>
+            {
+                new OrganisationDto
+                {
+                    Id = "ORG123",
+                    Name = "The Test Organisation"
+                }
+            }
+        };
+
+        Sut.TempData[TempDataKeys.SponsorOrganisations] = JsonSerializer.Serialize(organisations);
+
+        // Act
+        var result = await Sut.SaveResponses(model, "searched:true", false);
+
+        // Assert
+        var updated = model.Questions.First(q => q.QuestionId == "QCMS99");
+
+        updated.AnswerText.ShouldBe("ORG123");
+        model.SponsorOrgSearch.DisplayName.ShouldBe("The Test Organisation");
+
+        result.ShouldBeOfType<RedirectToRouteResult>();
     }
 
     [Fact]
@@ -392,7 +484,7 @@ public class ModificationChangesControllerTests : TestServiceBase<ModificationCh
         };
 
         // Act
-        var result = await Sut.SaveResponses(model);
+        var result = await Sut.SaveResponses(model, "", false);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
