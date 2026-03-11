@@ -1,9 +1,10 @@
-﻿using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+﻿using Rsp.Logging.Interceptors;
+using Rsp.Portal.Application.DTOs.Responses.CmsContent;
 using Rsp.Portal.Application.Responses;
 
 namespace Rsp.Portal.Application.Services;
 
-public interface ICmsContentService
+public interface ICmsContentService : IInterceptable
 {
     public Task<ServiceResponse<SiteSettingsModel>> GetSiteSettings(bool preview = false);
 

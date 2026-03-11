@@ -1,4 +1,5 @@
 ﻿using Rsp.IrasPortal.Application.DTOs.Requests;
+using Rsp.Logging.Interceptors;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
 using Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
@@ -8,7 +9,7 @@ using Rsp.Portal.Application.Responses;
 
 namespace Rsp.Portal.Application.Services;
 
-public interface ICmsQuestionsetService
+public interface ICmsQuestionsetService : IInterceptable
 {
     Task<ServiceResponse<CmsQuestionSetResponse>> GetQuestionSet(string? sectionId = null, string? questionSetId = null);
 
