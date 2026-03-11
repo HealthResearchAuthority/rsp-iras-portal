@@ -1,8 +1,9 @@
+using Rsp.Logging.Interceptors;
 using Rsp.Portal.Application.DTOs.Responses;
 
 namespace Rsp.Portal.Application.Services;
 
-public interface IModificationRankingService
+public interface IModificationRankingService : IInterceptable
 {
     // Computes and persists a single change's ranking
     Task UpdateChangeRanking(Guid modificationChangeId, string projectRecordId);

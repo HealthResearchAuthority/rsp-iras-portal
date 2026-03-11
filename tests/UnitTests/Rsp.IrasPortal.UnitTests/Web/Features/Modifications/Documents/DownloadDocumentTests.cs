@@ -224,7 +224,7 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         // Act
-        var result = await Sut.DownloadDocument(path, "missing.txt", modificationId.ToString());
+        var result = await Sut.DownloadDocument(path, "missing.txt", string.Empty);
 
         // Assert
         result.ShouldBeNull();
