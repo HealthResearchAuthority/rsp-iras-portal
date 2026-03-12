@@ -195,9 +195,6 @@ public class DocumentsController
             ShortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string ?? string.Empty,
             IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty,
             ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string ?? string.Empty,
-            Status = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string ?? string.Empty,
-            SponsorOrganisationUserId = TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId) is Guid uid ? uid.ToString() : string.Empty,
-            RtsId = TempData.Peek(TempDataKeys.RevisionRtsId) as string ?? string.Empty,
             DocumentId = documentDetailsResponse.Content.Id,
             ModificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is Guid modificationId
                ? modificationId
@@ -1804,15 +1801,6 @@ public class DocumentsController
         var projectModificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is Guid modId
                ? modId
                : Guid.NewGuid();
-        var status = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string;
-        var sponsorOrganisationUserId = TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId);
-        var rtsId = TempData.Peek(TempDataKeys.RevisionRtsId) as string;
-
-        if (status is ModificationStatus.ReviseAndAuthorise)
-        {
-            return RedirectToRoute("pmc:ModificationDetails", new { projectRecordId, irasId, shortTitle, projectModificationId, sponsorOrganisationUserId, rtsId });
-        }
-
         return RedirectToRoute(ReviewAllChangesRoute, new { projectRecordId, irasId, shortTitle, projectModificationId });
     }
 
@@ -2123,15 +2111,10 @@ public class DocumentsController
             QuestionIds.PreviousVersionOfDocumentYesOption,
             StringComparison.OrdinalIgnoreCase);
 
-        if (!supersede)
-        {
-            return null;
-        }
-
         var documentTypeId = questionnaire.Questions
-            .FirstOrDefault(q => q.QuestionId.Equals(
-                QuestionIds.SelectedDocumentType,
-                StringComparison.OrdinalIgnoreCase))?.SelectedOption;
+        .FirstOrDefault(q => q.QuestionId.Equals(
+        QuestionIds.SelectedDocumentType,
+        StringComparison.OrdinalIgnoreCase))?.SelectedOption;
 
         if (supersede)
         {
