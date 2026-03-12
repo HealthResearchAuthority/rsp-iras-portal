@@ -271,6 +271,8 @@ public class AuthorisationsModificationsController
     public async Task<IActionResult> CheckAndAuthorise(string projectRecordId, string irasId, string shortTitle,
         Guid projectModificationId, Guid sponsorOrganisationUserId, string rtsId)
     {
+        TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
+
         var response =
             await BuildCheckAndAuthorisePageAsync(projectModificationId, irasId, shortTitle, projectRecordId,
                 sponsorOrganisationUserId, rtsId);

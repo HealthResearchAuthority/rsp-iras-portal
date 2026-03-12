@@ -104,6 +104,8 @@ else
 	<div class="govuk-grid-column-full">
 		<div class="govuk-table-wrapper">
 			<table class="govuk-table modifications-tasklist-table" id="projectDocumentsTable">
+			@if(Model.Documents.Count() > 0)
+			{
 				<thead class="govuk-table__head">
 					<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
 						@{
@@ -155,7 +157,7 @@ else
 						}
 					</tr>
 				</thead>
-
+				}
 				<form method="get" id="projectdocuments-selection">
 					<input hidden="hidden" type="text" value="@Model.Pagination.SortField" name="sortField" />
 					<input hidden="hidden" type="text" value="@Model.Pagination.SortDirection" name="sortDirection" />
@@ -187,7 +189,8 @@ else
 										{
 										<a asp-route="pmc:downloaddocument"
 											asp-route-fileName="@modification.FileName"
-											asp-route-path="@modification.DocumentStoragePath" class="govuk-link">
+											asp-route-path="@modification.DocumentStoragePath"
+											asp-route-modificationId="@modification.ProjectModificationId" class="govuk-link">
 												@modification.FileName
 										</a>
 										}
@@ -238,6 +241,8 @@ else
 </div>
 
 <feature name="@FeatureFlags.ProjectDocumentsAuditHistory">
+@if(Model.Documents.Count() > 0)
+{
 	<div permission="@Permissions.SystemAdministration.Workspace_Access"
 	class="govuk-grid-row">
 		<div class="govuk-grid-column-full">
@@ -249,4 +254,5 @@ else
 			</a>
 		</div>
 	</div>
+}
 </feature>

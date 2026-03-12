@@ -83,6 +83,7 @@ public class ModificationAuthoriseFilter : IAsyncAuthorizationFilter, IAsyncActi
 
             string projectRecordId = string.Empty;
             Guid projectModificationIdGuid;
+            Guid actionArgGuid;
             Guid sponsorOrganisationUserIdGuid;
             string rtsId = string.Empty;
 
@@ -110,6 +111,17 @@ public class ModificationAuthoriseFilter : IAsyncAuthorizationFilter, IAsyncActi
                 projectRecordId = tempData.Peek(TempDataKeys.ProjectRecordId)?.ToString() ?? string.Empty;
                 rtsId = tempData.Peek(TempDataKeys.RevisionRtsId)?.ToString() ?? string.Empty;
 
+                // Try to populate projectModificationIdGuid from ActionArguments if missing,
+                // for downloading documents from project overview page
+                if (projectModificationIdGuid == Guid.Empty &&
+                    context.ActionArguments.TryGetValue("modificationId", out var arg) &&
+                    Guid.TryParse(arg?.ToString(), out actionArgGuid) &&
+                    actionArgGuid != Guid.Empty)
+                {
+                    projectModificationIdGuid = actionArgGuid;
+                }
+
+                // Validate identifiers
                 if (projectModificationIdGuid == Guid.Empty || projectRecordId == string.Empty)
                 {
                     context.Result = new BadRequestObjectResult("Missing TempData identifiers.");

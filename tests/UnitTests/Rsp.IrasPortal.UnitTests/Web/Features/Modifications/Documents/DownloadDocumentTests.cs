@@ -68,7 +68,7 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
             .ReturnsAsync(serviceResponse);
 
         // Act
-        var result = await Sut.DownloadDocument(path, fileName);
+        var result = await Sut.DownloadDocument(path, fileName, modificationId.ToString());
 
         // Assert
         result.ShouldBeOfType<FileContentResult>();
@@ -129,7 +129,7 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         // Act
-        var result = await Sut.DownloadDocument($"invalid/{modificationId}", "missing.txt");
+        var result = await Sut.DownloadDocument($"invalid/{modificationId}", "missing.txt", modificationId.ToString());
 
         // Assert
         result.ShouldBeNull();
@@ -175,7 +175,7 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         // Act
-        var result = await Sut.DownloadDocument(path, "missing.txt");
+        var result = await Sut.DownloadDocument(path, "missing.txt", modificationId.ToString());
 
         // Assert
         result.ShouldBeNull();
@@ -224,7 +224,7 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         // Act
-        var result = await Sut.DownloadDocument(path, "missing.txt");
+        var result = await Sut.DownloadDocument(path, "missing.txt", string.Empty);
 
         // Assert
         result.ShouldBeNull();
@@ -250,7 +250,7 @@ public class DownloadDocumentTests : TestServiceBase<DocumentsController>
             .ReturnsAsync(new ServiceResponse().WithStatus(HttpStatusCode.Forbidden));
 
         // Act
-        var result = await Sut.DownloadDocument(path, fileName);
+        var result = await Sut.DownloadDocument(path, fileName, modificationIdStr);
 
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();
