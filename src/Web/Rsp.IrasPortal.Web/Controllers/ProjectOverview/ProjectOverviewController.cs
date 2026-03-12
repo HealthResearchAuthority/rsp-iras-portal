@@ -40,7 +40,7 @@ public class ProjectOverviewController
     private readonly IRespondentService _respondentService = respondentService;
     private const string DocumentDetailsSection = "pdm-document-metadata";
 
-    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Update)]
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Read)]
     [Route("/projectoverview", Name = "pov:index")]
     public async Task<IActionResult> Index(string projectRecordId, string? backRoute, string? modificationId)
     {
