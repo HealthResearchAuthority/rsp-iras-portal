@@ -61,4 +61,9 @@ public class ProjectOverviewModel
     /// Gets or sets header text for the page.
     /// </summary>
     public string? PageHeaderText { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Id of the user who created the project.
+    /// </summary>
+    public string? CreatedBy { get; set; }
 }
