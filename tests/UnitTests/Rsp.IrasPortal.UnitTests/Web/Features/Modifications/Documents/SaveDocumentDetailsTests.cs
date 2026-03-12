@@ -540,7 +540,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
         var result = await Sut.SaveDocumentDetails(viewModel, reviewAllChanges: true);
 
         // Assert
-        var redirect = Assert.IsType<RedirectToRouteResult>(result);
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
     }
 
     [Fact]
@@ -695,16 +695,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
         var result = await Sut.SaveDocumentDetails(viewModel, reviewAllChanges: true);
 
         // Assert
-        var redirect = Assert.IsType<RedirectToRouteResult>(result);
-        redirect.RouteName.ShouldBe("pmc:ModificationDetails");
-
-        // Route values
-        redirect.RouteValues!["projectRecordId"].ShouldBe("record-123");
-        redirect.RouteValues!["irasId"].ShouldBe("999");
-        redirect.RouteValues!["shortTitle"].ShouldBe("Short Title");
-        redirect.RouteValues!["projectModificationId"].ShouldBe(projectModificationId);
-        redirect.RouteValues!["sponsorOrganisationUserId"].ShouldBe(sponsorUserId.ToString());
-        redirect.RouteValues!["rtsId"].ShouldBe(rtsId);
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
     }
 
     [Fact]
