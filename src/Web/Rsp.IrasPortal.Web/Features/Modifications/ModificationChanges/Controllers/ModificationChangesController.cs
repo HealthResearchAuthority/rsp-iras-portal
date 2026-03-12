@@ -253,19 +253,6 @@ public class ModificationChangesController
 
                 TempData[ProjectModificationChange.Navigation] = JsonSerializer.Serialize(navigation);
 
-                if (modificationModel.Status is ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestRevisions)
-                {
-                    return RedirectToRoute("pmc:ModificationDetails", new
-                    {
-                        projectRecordId,
-                        modificationModel.IrasId,
-                        modificationModel.ShortTitle,
-                        projectModificationId = modificationModel.ModificationId,
-                        modificationModel.SponsorOrganisationUserId,
-                        modificationModel.RtsId
-                    });
-                }
-
                 return RedirectToAction(nameof(ReviewChanges), new
                 {
                     projectRecordId,
@@ -290,19 +277,6 @@ public class ModificationChangesController
             navigation.NextSection.IsLastSectionBeforeReview ||
             navigation.NextSection.StaticViewName.Equals(nameof(ReviewChanges), StringComparison.OrdinalIgnoreCase))
         {
-            if (modificationModel.Status is ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestRevisions)
-            {
-                return RedirectToRoute("pmc:ModificationDetails", new
-                {
-                    projectRecordId,
-                    modificationModel.IrasId,
-                    modificationModel.ShortTitle,
-                    projectModificationId = modificationModel.ModificationId,
-                    modificationModel.SponsorOrganisationUserId,
-                    modificationModel.RtsId
-                });
-            }
-
             return RedirectToAction(nameof(ReviewChanges), new
             {
                 projectRecordId,
