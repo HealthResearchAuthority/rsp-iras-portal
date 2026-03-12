@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.FeatureManagement;
+using Rsp.IrasPortal.Web.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -241,15 +242,38 @@ public class ProjectOverviewController
     }
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Read)]
-    public async Task<IActionResult> ProjectTeam(string projectRecordId, string? backRoute)
+    public async Task<IActionResult> ProjectTeam
+    (
+        string projectRecordId,
+        string? backRoute,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(Collaborator.Email),
+        string sortDirection = SortDirections.Ascending
+    )
     {
         var result = await GetProjectOverviewResult(projectRecordId!, backRoute, nameof(ProjectTeam));
         if (result is not OkObjectResult okResult)
         {
             return result;
         }
+        var projectOverviewModel = okResult.Value as ProjectOverviewModel;
 
-        return View(okResult.Value);
+        var projectTeamResult = await GetProjectTeamResult(projectOverviewModel!);
+        if (projectTeamResult is not OkObjectResult projectTeamOkResult)
+        {
+            return projectTeamResult;
+        }
+        var projectTeamModel = projectTeamOkResult.Value as ProjectTeamViewModel;
+
+        projectTeamModel!.Pagination = new PaginationViewModel(pageNumber, pageSize, projectTeamModel.Collaborators.Count)
+        {
+            SortDirection = sortDirection,
+            SortField = sortField,
+            AdditionalParameters = new Dictionary<string, string>() { { "projectRecordId", projectRecordId } }
+        };
+
+        return View(projectTeamModel);
     }
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Read)]
@@ -380,7 +404,8 @@ public class ProjectOverviewController
             IrasId = projectRecord.IrasId,
             OrganisationName = organisationName,
             SectionGroupQuestions = sectionGroupQuestions,
-            AuditTrails = auditTrails.Content?.Items ?? []
+            AuditTrails = auditTrails.Content?.Items ?? [],
+            CreatedBy = projectRecord.CreatedBy,
         };
 
         return Ok(model);
@@ -388,14 +413,14 @@ public class ProjectOverviewController
 
     [Authorize(Policy = Permissions.MyResearch.ProjectDocuments_List)]
     public async Task<IActionResult> ProjectDocuments
-        (
+    (
         string projectRecordId,
         string? backRoute,
         int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
         string sortDirection = SortDirections.Ascending
-        )
+    )
     {
         UpdateModificationRelatedTempData();
 
@@ -572,6 +597,65 @@ public class ProjectOverviewController
         return RedirectToRoute("pov:postapproval", new { projectRecordId, backRoute = "filter" });
     }
 
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Update)]
+    public async Task<IActionResult> AddCollaborator(string projectRecordId)
+    {
+        var result = await GetProjectOverviewResult(projectRecordId!, null);
+        if (result is not OkObjectResult okResult)
+        {
+            return result;
+        }
+        var projectOverviewModel = okResult.Value as ProjectOverviewModel;
+
+        var projectTeamModel = new ProjectTeamViewModel
+        {
+            ProjectOverviewModel = projectOverviewModel!,
+        };
+
+        return View(projectTeamModel);
+    }
+
+    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Update)]
+    public async Task<IActionResult> SearchCollaborator(ProjectTeamViewModel model)
+    {
+        var result = await GetProjectOverviewResult(model.ProjectOverviewModel.ProjectRecordId!, null);
+        if (result is not OkObjectResult okResult)
+        {
+            return result;
+        }
+
+        var projectOverviewModel = okResult.Value as ProjectOverviewModel;
+
+        var projectTeamResult = await GetProjectTeamResult(projectOverviewModel!);
+        if (projectTeamResult is not OkObjectResult projectTeamOkResult)
+        {
+            return projectTeamResult;
+        }
+
+        var projectTeamModel = projectTeamOkResult.Value as ProjectTeamViewModel;
+
+        var getUserResponse = await userManagementService.GetUser(null, model.Search);
+
+        if (!getUserResponse.IsSuccessStatusCode || getUserResponse.Content == null)
+        {
+            TempData[TempDataKeys.CollaboratorExists] = false;
+        }
+
+        if (getUserResponse.Content?.User != null)
+        {
+            TempData[TempDataKeys.CollaboratorExists] = true;
+        }
+
+        if (projectTeamModel!.Collaborators.Any(c => c.Email.Equals(model.Search, StringComparison.OrdinalIgnoreCase)))
+        {
+            TempData[TempDataKeys.CollaboratorAlreadyAdded] = true;
+        }
+
+        projectTeamModel.Search = model.Search;
+
+        return View(nameof(AddCollaborator), projectTeamModel);
+    }
+
     private void UpdateModificationRelatedTempData()
     {
         // If there is a project modification change, show the notification banner
@@ -650,6 +734,35 @@ public class ProjectOverviewController
         }
 
         return response;
+    }
+
+    private async Task<IActionResult> GetProjectTeamResult(ProjectOverviewModel projectOverviewModel)
+    {
+        var projectRecordCreatorUserResponse = await userManagementService.GetUser(projectOverviewModel.CreatedBy, null);
+
+        if (!projectRecordCreatorUserResponse.IsSuccessStatusCode || projectRecordCreatorUserResponse.Content == null)
+        {
+            return this.ServiceError(projectRecordCreatorUserResponse);
+        }
+
+        // TODO: Once the 'Add collaborator' feature is implemented, replace the
+        // list with a call to the service to retrieve the list of collaborators
+        List<Collaborator> collaborators =
+        [
+            new Collaborator
+            {
+                Email = projectRecordCreatorUserResponse.Content.User.Email,
+                Access = "Edit"
+            }
+        ];
+
+        var projectTeamModel = new ProjectTeamViewModel
+        {
+            ProjectOverviewModel = projectOverviewModel!,
+            Collaborators = collaborators,
+        };
+
+        return Ok(projectTeamModel);
     }
 
     private static string? GetEnumStatus(string status) => status switch

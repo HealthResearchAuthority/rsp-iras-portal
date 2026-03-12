@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.IrasPortal.Web.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
@@ -177,6 +178,18 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
                         }
                     }
                 }
+            });
+    }
+
+    private void SetupProjectTeam(UserResponse userResponse)
+    {
+        var usersService = Mocker.GetMock<IUserManagementService>();
+
+        usersService.Setup(s => s.GetUser(It.IsAny<string>(), null, null))
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = userResponse
             });
     }
 
@@ -553,8 +566,8 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
     }
 
-    [Fact]
-    public async Task ProjectTeam_ReturnsViewResult_WithKeyProjectRoleData()
+    [Theory, AutoData]
+    public async Task ProjectTeam_ReturnsViewResult_WithKeyProjectRoleData(UserResponse userResponse)
     {
         // Arrange
         var projectRecordId = "123";
@@ -570,6 +583,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         };
 
         SetupProjectRecord(projectRecordId);
+        SetupProjectTeam(userResponse);
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
         SetupCMSService("ProjectTeam", "Project team");
@@ -579,11 +593,174 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        var model = viewResult.Model.ShouldBeOfType<ProjectOverviewModel>();
+        var model = viewResult.Model.ShouldBeOfType<ProjectTeamViewModel>();
 
-        model.SectionGroupQuestions.ShouldNotBeNull();
-        model.SectionGroupQuestions.ShouldBeOfType<List<SectionGroupWithQuestionsViewModel>>();
-        model.SectionGroupQuestions.ShouldNotBeEmpty();
+        model.ProjectOverviewModel.SectionGroupQuestions.ShouldNotBeNull();
+        model.ProjectOverviewModel.SectionGroupQuestions.ShouldBeOfType<List<SectionGroupWithQuestionsViewModel>>();
+        model.ProjectOverviewModel.SectionGroupQuestions.ShouldNotBeEmpty();
+    }
+
+    [Theory, AutoData]
+    public async Task AddCollaborator_ReturnsViewResult(UserResponse userResponse)
+    {
+        var projectRecordId = "123";
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.FirstName, AnswerText = "Dr. Jane Doe" },
+            new() { QuestionId = QuestionIds.PrimarySponsorOrganisation, AnswerText = "University of Example" },
+            new() { QuestionId = QuestionIds.Email, AnswerText = "jane.doe@example.com" }
+        };
+
+        SetupProjectRecord(projectRecordId);
+        SetupProjectTeam(userResponse);
+        SetupRespondentAnswers(projectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ProjectTeam", "Project team");
+
+        var result = await Sut.AddCollaborator(projectRecordId);
+
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.Model.ShouldBeOfType<ProjectTeamViewModel>();
+    }
+
+    [Theory, AutoData]
+    public async Task SearchCollaborator_WhenUserDoesNotExist_ShouldReturnViewResult_WithTempDataPopulated
+    (
+        UserResponse userResponse,
+        ProjectTeamViewModel projectTeamViewModel
+    )
+    {
+        var projectRecordId = projectTeamViewModel.ProjectOverviewModel.ProjectRecordId!;
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.FirstName, AnswerText = "Dr. Jane Doe" },
+            new() { QuestionId = QuestionIds.PrimarySponsorOrganisation, AnswerText = "University of Example" },
+            new() { QuestionId = QuestionIds.Email, AnswerText = "jane.doe@example.com" }
+        };
+
+        SetupProjectRecord(projectRecordId);
+        SetupRespondentAnswers(projectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ProjectTeam", "Project team");
+
+        var usersService = Mocker.GetMock<IUserManagementService>();
+        usersService.Setup(s => s.GetUser(null, It.IsAny<string>(), null))
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                StatusCode = HttpStatusCode.NotFound,
+                Content = null
+            });
+
+        usersService.Setup(s => s.GetUser(It.IsAny<string>(), null, null))
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = userResponse
+            });
+
+        var result = await Sut.SearchCollaborator(projectTeamViewModel);
+
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        tempData[TempDataKeys.CollaboratorExists].ShouldBe(false);
+    }
+
+    [Theory, AutoData]
+    public async Task SearchCollaborator_WhenUserExists_ShouldReturnViewResult_WithTempDataPopulated
+    (
+        UserResponse userResponse,
+        UserResponse anotherUserResponse,
+        ProjectTeamViewModel projectTeamViewModel
+    )
+    {
+        var projectRecordId = projectTeamViewModel.ProjectOverviewModel.ProjectRecordId!;
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.FirstName, AnswerText = "Dr. Jane Doe" },
+            new() { QuestionId = QuestionIds.PrimarySponsorOrganisation, AnswerText = "University of Example" },
+            new() { QuestionId = QuestionIds.Email, AnswerText = "jane.doe@example.com" }
+        };
+
+        SetupProjectRecord(projectRecordId);
+        SetupRespondentAnswers(projectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ProjectTeam", "Project team");
+
+        var usersService = Mocker.GetMock<IUserManagementService>();
+        usersService.Setup(s => s.GetUser(null, It.IsAny<string>(), null))
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = anotherUserResponse
+            });
+
+        usersService.Setup(s => s.GetUser(It.IsAny<string>(), null, null))
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = userResponse
+            });
+
+        var result = await Sut.SearchCollaborator(projectTeamViewModel);
+
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        tempData[TempDataKeys.CollaboratorExists].ShouldBe(true);
+        tempData[TempDataKeys.CollaboratorAlreadyAdded].ShouldNotBe(true);
+    }
+
+    [Theory, AutoData]
+    public async Task SearchCollaborator_WhenUserExistsAndIsAlreadyAdded_ShouldReturnViewResult_WithTempDataPopulated
+    (
+        UserResponse userResponse,
+        ProjectTeamViewModel projectTeamViewModel
+    )
+    {
+        var projectRecordId = projectTeamViewModel.ProjectOverviewModel.ProjectRecordId!;
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.FirstName, AnswerText = "Dr. Jane Doe" },
+            new() { QuestionId = QuestionIds.PrimarySponsorOrganisation, AnswerText = "University of Example" },
+            new() { QuestionId = QuestionIds.Email, AnswerText = "jane.doe@example.com" }
+        };
+
+        SetupProjectRecord(projectRecordId);
+        SetupRespondentAnswers(projectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ProjectTeam", "Project team");
+
+        var usersService = Mocker.GetMock<IUserManagementService>();
+        usersService.Setup(s => s.GetUser(null, It.IsAny<string>(), null))
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = userResponse
+            });
+
+        usersService.Setup(s => s.GetUser(It.IsAny<string>(), null, null))
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = userResponse
+            });
+
+        projectTeamViewModel.Search = userResponse.User.Email;
+
+        var result = await Sut.SearchCollaborator(projectTeamViewModel);
+
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        tempData[TempDataKeys.CollaboratorExists].ShouldBe(true);
+        tempData[TempDataKeys.CollaboratorAlreadyAdded].ShouldBe(true);
     }
 
     [Fact]

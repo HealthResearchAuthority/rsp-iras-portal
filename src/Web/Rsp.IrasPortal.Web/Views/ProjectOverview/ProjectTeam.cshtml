@@ -1,7 +1,8 @@
-﻿@using Rsp.Portal.Application.Constants;
+﻿@using Rsp.IrasPortal.Web.Models
+@using Rsp.Portal.Application.Constants;
 @using Rsp.Portal.Web.Models
 @using System.Text.Json
-@model ProjectOverviewModel
+@model ProjectTeamViewModel
 
 @{
     ViewBag.Title = "Project overview";
@@ -12,7 +13,7 @@
     var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
     var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
                       ?? new Dictionary<string, string>();
-	var projectTitle = !string.IsNullOrEmpty(Model.ProjectTitle) ? Model.ProjectTitle : "Project overview";
+    var projectTitle = !string.IsNullOrEmpty(Model.ProjectOverviewModel.ProjectTitle) ? Model.ProjectOverviewModel.ProjectTitle : "Project overview";
 
     var tdBackRouteValues = TempData.Peek(TempDataKeys.ProjectOverviewReferrer.BackRouteValues);
 
@@ -23,25 +24,25 @@
 @if (routeName is null || routeName.ToLower() == "app:welcome")
 {
     @section Breadcrumb {
-	    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
-	    {
-		    ("My research",Url.RouteUrl("app:welcome")),
-		    (projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string>{{"projectRecordId", Model.ProjectRecordId!}}))
-	    })
+    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+        {
+            ("My research",Url.RouteUrl("app:welcome")),
+            (projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string>{{"projectRecordId", Model.ProjectOverviewModel.ProjectRecordId!}}))
+        })
     }
 }
 else
 {
     @section BackNavigation {
-        <partial name="_BackNavigation" model="@(routeName, "Back", backRouteValues)" />
+    <partial name="_BackNavigation" model="@(routeName, "Back", backRouteValues)" />
     }
 }
 
-<partial name="_NavigationHeaderPartial" model="@Model" />
+<partial name="_NavigationHeaderPartial" model="@Model.ProjectOverviewModel" />
 
 <div class="govuk-grid-row">
     <div class="govuk-width-container govuk-!-margin-top-4">
-        @foreach (var group in Model.SectionGroupQuestions)
+        @foreach (var group in Model.ProjectOverviewModel.SectionGroupQuestions)
         {
             <h2 class="govuk-heading-m">@group.SectionGroup</h2>
             <dl class="govuk-summary-list">
@@ -60,3 +61,63 @@ else
         }
     </div>
 </div>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h2 class="govuk-heading-m">Collaborators</h2>
+        <p class="govuk-body">If other members of the project team will need to view and manage the project's records in this service, you can add them as a collaborator.</p>
+        <p class="govuk-body">A project must always have at least one collaborator with edit access. If you need to remove the only collaborator with edit access, add another collaborator with edit access to replace them first.</p>
+    </div>
+</div>
+<div class="govuk-grid-row">
+    <div class="govuk-width-container">
+        @{
+            var tableId = "collaboratorTable";
+            var sortableHeaders = new[]
+            {
+                new { Field = nameof(Collaborator.Email), Label = "Collaborator email" },
+                new { Field = nameof(Collaborator.Access), Label = "Project access" }
+            };
+        }
+        <table class="govuk-table govuk-table-users" id="@tableId">
+            <thead>
+                <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                    @foreach (var header in sortableHeaders)
+                    {
+                        var sortableHeaderModel = new SortableHeaderModel
+                        {
+                            FieldName = header.Field,
+                            DisplayText = header.Label,
+                            CurrentSortField = Model.Pagination?.SortField,
+                            CurrentSortDirection = Model.Pagination?.SortDirection,
+                            AdditionalParameters = Model.Pagination?.AdditionalParameters ?? new Dictionary<string, string>() { },
+                            TableId = tableId,
+                        };
+
+                        <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                            <partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
+                        </th>
+                    }
+                    <th scope="col" class="govuk-table__header">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model.Collaborators)
+                {
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell">@user.Email</td>
+                        <td class="govuk-table__cell">@user.Access</td>
+                        <td class="govuk-table__cell">Not available</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<a asp-action="AddCollaborator" 
+    asp-route-projectRecordId="@Model.ProjectOverviewModel.ProjectRecordId" 
+    class="govuk-button govuk-button--secondary" 
+    role-is="@Roles.Applicant">
+    Add collaborator
+</a>
