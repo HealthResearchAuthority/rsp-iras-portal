@@ -4,6 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.CmsQuestionset;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
 using Rsp.Portal.Web.Features.Modifications;
 using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Helpers;
@@ -15,6 +20,7 @@ public class DownloadModificationPdfTests : TestServiceBase<ReviewAllChangesCont
     [Theory, AutoData]
     public async Task DownloadModificationPdfFromtHtml_Should_Return_Pdf_When_Successful
     (
+        ProjectOverviewDocumentResponse projectOverviewDocumentResponse,
         ReviewOutcomeViewModel model,
         byte[] pdf
     )
@@ -26,6 +32,29 @@ public class DownloadModificationPdfTests : TestServiceBase<ReviewAllChangesCont
         var razorViewEngine = Mocker.GetMock<IRazorViewEngine>();
 
         model.ModificationDetails.ModificationIdentifier = "123/1";
+        model.ModificationDetails.ModificationId = Guid.NewGuid().ToString();
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet(It.IsAny<string>(), null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                Content = new CmsQuestionSetResponse(),
+                StatusCode = HttpStatusCode.OK
+            });
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetDocumentsForModification(
+                It.IsAny<Guid>(),
+                It.IsAny<ProjectOverviewDocumentSearchRequest>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<ProjectOverviewDocumentResponse>
+            {
+                Content = projectOverviewDocumentResponse,
+                StatusCode = HttpStatusCode.OK
+            });
 
         Sut.TempData = new TempDataDictionary(ctx, tdProvider.Object)
         {
