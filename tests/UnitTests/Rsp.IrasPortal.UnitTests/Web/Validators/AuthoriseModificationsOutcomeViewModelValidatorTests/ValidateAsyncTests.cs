@@ -74,7 +74,7 @@ public class AuthoriseModificationsOutcomeViewModelValidatorTests : TestServiceB
         var result = _sut.TestValidate(model);
 
         result.ShouldHaveValidationErrorFor(x => x.RevisionDescription)
-            .WithErrorMessage("Enter a description of revisions you want to request");
+            .WithErrorMessage("Enter a brief summary of the revisions you have made");
     }
 
     [Fact]

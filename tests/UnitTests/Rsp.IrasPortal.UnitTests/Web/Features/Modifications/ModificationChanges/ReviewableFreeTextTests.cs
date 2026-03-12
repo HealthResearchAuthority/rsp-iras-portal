@@ -484,7 +484,7 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
     }
 
     [Fact]
-    public async Task SaveResponses_Redirects_To_ModificationDetails_When_ReviseAndAuthorise_In_ReviewPath()
+    public async Task SaveResponses_Redirects_To_ReviewChanges_When_ReviseAndAuthorise_In_ReviewPath()
     {
         // Arrange
         var (ctx, modChangeId) = SetupHttpContext();
@@ -536,22 +536,15 @@ public class ReviewableFreeTextTests : TestServiceBase<ModificationChangesContro
         var model = new QuestionnaireViewModel
         {
             CurrentStage = "SEC1",
-            Questions = new() // brak odpowiedzi => RedirectToRoute ModificationDetails
+            Questions = new()
         };
 
         // Act
         var result = await Sut.SaveResponses(model, "", false);
 
         // Assert
-        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
-        redirect.RouteName.ShouldBe("pmc:ModificationDetails");
-
-        redirect.RouteValues!["projectRecordId"].ShouldBe("PR1");
-        redirect.RouteValues!["irasId"].ShouldBe("IRAS-123");
-        redirect.RouteValues!["shortTitle"].ShouldBe("Short title");
-        redirect.RouteValues!["projectModificationId"].ShouldBe(modId.ToString());
-        redirect.RouteValues!["sponsorOrganisationUserId"].ShouldBe(sponsorId.ToString());
-        redirect.RouteValues!["rtsId"].ShouldBe(rtsId);
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe("ReviewChanges");
     }
 
     [Fact]

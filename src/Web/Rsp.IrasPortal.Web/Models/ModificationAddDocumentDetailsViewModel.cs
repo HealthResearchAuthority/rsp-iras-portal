@@ -124,6 +124,10 @@ public class ModificationAddDocumentDetailsViewModel : QuestionnaireViewModel
 
     public bool ShowSupersedeDocumentSection { get; set; }
 
+    public string? SponsorOrganisationUserId { get; set; }
+
+    public string? RtsId { get; set; }
+
     /// <summary>
     /// Gets the display size in KB, MB or GB, rounded to 2 decimal places.
     /// </summary>

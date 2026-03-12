@@ -189,7 +189,11 @@
                                                 @ModificationStatusHelper.ToUiStatus(modification.Status)
                                             </strong>
                                         </td>
-                                        @if (Model.Status is ModificationStatus.InDraft)
+                                        @if (
+                                            Model.Status is ModificationStatus.InDraft
+                                            || Model.Status is ModificationStatus.RequestRevisions
+                                            || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise)
+                                        )
                                         {
                                             <td class="govuk-table__cell">
                                                 @if (!isFailed && !isTracked)
@@ -202,21 +206,7 @@
                                                     </a>
                                                 }
                                             </td>
-                                        }
-                                        @if (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise)
-                                        {
-                                            <td class="govuk-table__cell">
-                                                @if (!isFailed && !isTracked)
-                                                {
-                                                    <a asp-route="pmc:continuetodetails"
-                                                       asp-route-documentId="@modification.Id"
-                                                       asp-route-reviewAllChanges="false"
-                                                       class="govuk-link">
-                                                        Change details
-                                                    </a>
-                                                }
-                                            </td>
-                                        }
+                                        }                                        
                                     </tr>
                                     <feature name="@FeatureFlags.DocumentsMalware">
                                         @if (isScanInProgress || isFailed)

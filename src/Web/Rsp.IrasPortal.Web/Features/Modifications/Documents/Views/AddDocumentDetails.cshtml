@@ -38,22 +38,32 @@
 }
 
 @{
-	if (Model.ReviewAnswers)
-	{
-		navModel = ("pmc:reviewdocumentdetails", "Back", new());
-	}
-	else if (Model.ReviewAllChanges)
-	{
+    if (Model.ReviewAnswers)
+    {
+        navModel = ("pmc:reviewdocumentdetails", "Back", new());
+    }
+    else if (Model.ReviewAllChanges)
+    {
 
-		var modificationParams = new Dictionary<string, string>
+        var modificationParams = new Dictionary<string, string>
 		{
 			{ "projectRecordId", Model.ProjectRecordId },
 			{ "irasId", Model.IrasId },
 			{ "shortTitle", Model.ShortTitle ?? string.Empty },
-			{ "projectModificationId", Model.ModificationId.ToString() },
-			{ "projectModificationIdentifier", Model.ModificationIdentifier ?? string.Empty }
+			{ "projectModificationId", Model.ModificationId.ToString() }			
 		};
-		navModel = ("pmc:reviewallchanges", "Back", modificationParams);
+
+        if (Model.Status is ModificationStatus.ReviseAndAuthorise)
+        {
+            modificationParams.Add("sponsorOrganisationUserId", Model.SponsorOrganisationUserId ?? string.Empty);
+            modificationParams.Add("rtsId", Model.RtsId ?? string.Empty);
+            navModel = ("pmc:modificationdetails", "Back", modificationParams);
+        }
+        else
+        {
+            modificationParams.Add("projectModificationIdentifier", Model.ModificationIdentifier ?? string.Empty);
+            navModel = ("pmc:reviewallchanges", "Back", modificationParams);
+        }		
 	}
 	else
 	{

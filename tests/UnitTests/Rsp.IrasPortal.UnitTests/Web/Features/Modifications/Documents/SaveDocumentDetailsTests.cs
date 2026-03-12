@@ -544,6 +544,170 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
     }
 
     [Fact]
+    public async Task SaveDocumentDetails_WhenReviewAllChanges_AndStatusIsReviseAndAuthorise_RedirectsToModificationDetails_WithSponsorAndRts()
+    {
+        // Arrange
+        var viewModel = new ModificationAddDocumentDetailsViewModel
+        {
+            DocumentId = Guid.NewGuid(),
+            Questions = new List<QuestionViewModel>
+        {
+            new QuestionViewModel
+            {
+                Index = 0,
+                QuestionId = QuestionIds.PreviousVersionOfDocument,
+                SelectedOption = QuestionIds.PreviousVersionOfDocumentYesOption,
+                AnswerText = "some text"
+            },
+            new QuestionViewModel
+            {
+                Index = 1,
+                QuestionId = QuestionIds.PreviousVersionOfDocument,
+                SelectedOption = QuestionIds.PreviousVersionOfDocumentNoOption,
+                AnswerText = "some text"
+            }
+        },
+            LinkedDocumentId = Guid.NewGuid(),
+            ReplacedByDocumentId = Guid.NewGuid(),
+            ReplacesDocumentId = Guid.NewGuid()
+        };
+
+        // Feature flag
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.SupersedingDocuments))
+            .ReturnsAsync(true);
+
+        // Validator OK
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        // CMS question set
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    Sections =
+                    [
+                        new SectionModel
+                    {
+                        SectionId = "DocumentDetails",
+                        Questions =
+                        [
+                            new QuestionModel
+                            {
+                                QuestionId = QuestionIds.PreviousVersionOfDocument,
+                                Id = QuestionIds.SelectedDocumentType,
+                                AnswerDataType = "Dropdown",
+                                Answers = [ new AnswerModel { Id = "1", OptionName = QuestionIds.PreviousVersionOfDocumentYesOption } ]
+                            },
+                            new QuestionModel
+                            {
+                                QuestionId = "test",
+                                Id = QuestionIds.PreviousVersionOfDocument,
+                                AnswerDataType = "Dropdown",
+                                Answers = [ new AnswerModel { Id = "1", OptionName = QuestionIds.PreviousVersionOfDocumentNoOption } ]
+                            },
+                            new QuestionModel
+                            {
+                                QuestionId = "QDate",
+                                Id = "QDate",
+                                AnswerDataType = "date",
+                                ValidationRules =
+                                [
+                                    new RuleModel
+                                    {
+                                        Conditions =
+                                        [
+                                            new ConditionModel
+                                            {
+                                                Operator = "IN",
+                                                ParentOptions = [ new AnswerModel { Id = "1", OptionName = "TypeA" } ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                    ]
+                }
+            });
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentRequest>()
+            });
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentAnswers(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentAnswerDto>()
+            });
+
+        var document = new ProjectModificationDocumentRequest
+        {
+            Id = Guid.NewGuid(),
+            FileName = "doc.pdf",
+            FileSize = 123,
+            DocumentStoragePath = "path",
+            LinkedDocumentId = Guid.NewGuid(),
+            ReplacedByDocumentId = Guid.NewGuid(),
+            ReplacesDocumentId = Guid.NewGuid()
+        };
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentDetails(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationDocumentRequest>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = document
+            });
+
+        // --- TempData (kluczowa część dla ścieżki ReviseAndAuthorise) ---
+        var projectModificationId = Guid.NewGuid();
+        var sponsorUserId = Guid.NewGuid();
+        var rtsId = "RTS-123";
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationId] = projectModificationId,
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.IrasId] = 999,
+            [TempDataKeys.ShortProjectTitle] = "Short Title",
+            [TempDataKeys.ProjectModification.ProjectModificationStatus] = ModificationStatus.ReviseAndAuthorise,
+            [TempDataKeys.RevisionSponsorOrganisationUserId] = sponsorUserId.ToString(),
+            [TempDataKeys.RevisionRtsId] = rtsId
+        };
+
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
+
+        // Act
+        var result = await Sut.SaveDocumentDetails(viewModel, reviewAllChanges: true);
+
+        // Assert
+        var redirect = Assert.IsType<RedirectToRouteResult>(result);
+        redirect.RouteName.ShouldBe("pmc:ModificationDetails");
+
+        // Route values
+        redirect.RouteValues!["projectRecordId"].ShouldBe("record-123");
+        redirect.RouteValues!["irasId"].ShouldBe("999");
+        redirect.RouteValues!["shortTitle"].ShouldBe("Short Title");
+        redirect.RouteValues!["projectModificationId"].ShouldBe(projectModificationId);
+        redirect.RouteValues!["sponsorOrganisationUserId"].ShouldBe(sponsorUserId.ToString());
+        redirect.RouteValues!["rtsId"].ShouldBe(rtsId);
+    }
+
+    [Fact]
     public async Task SaveDocumentDetails_WhenDateIsRequiredForDocumentTypeAndMissing_AddsModelError()
     {
         // Arrange
