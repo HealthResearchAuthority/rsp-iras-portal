@@ -268,14 +268,37 @@ public class AuthorisationsModificationsController
     // 2) GET stays tiny and calls the builder
     [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
     [HttpGet]
-    public async Task<IActionResult> CheckAndAuthorise(string projectRecordId, string irasId, string shortTitle,
-        Guid projectModificationId, Guid sponsorOrganisationUserId, string rtsId)
+    public async Task<IActionResult> CheckAndAuthorise
+    (
+        string projectRecordId,
+        string irasId,
+        string shortTitle,
+        Guid projectModificationId,
+        Guid sponsorOrganisationUserId,
+        string rtsId,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
+        string sortDirection = SortDirections.Ascending
+    )
     {
         TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
 
         var response =
-            await BuildCheckAndAuthorisePageAsync(projectModificationId, irasId, shortTitle, projectRecordId,
-                sponsorOrganisationUserId, rtsId);
+            await BuildCheckAndAuthorisePageAsync
+            (
+                projectModificationId,
+                irasId,
+                shortTitle,
+                projectRecordId,
+                sponsorOrganisationUserId,
+                rtsId,
+                null,
+                pageNumber,
+                pageSize,
+                sortField,
+                sortDirection
+            );
 
         var auth = await sponsorUserAuthorisationService.AuthoriseWithOrganisationContextAsync(this, sponsorOrganisationUserId, User, rtsId);
         if (!auth.IsAuthorised)
