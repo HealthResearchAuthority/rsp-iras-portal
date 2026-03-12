@@ -189,8 +189,11 @@
                                                 @ModificationStatusHelper.ToUiStatus(modification.Status)
                                             </strong>
                                         </td>
-                                        @if (Model.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions ||
-                                             isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise)
+                                        @if (
+                                            Model.Status is ModificationStatus.InDraft
+                                            || Model.Status is ModificationStatus.RequestRevisions
+                                            || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise)
+                                        )
                                         {
                                             <td class="govuk-table__cell">
                                                 @if (!isFailed && !isTracked)
