@@ -159,7 +159,7 @@ else
                 }
                 else
                 {
-                    <partial name="_SubmitButton" model="@("pmc:savesupersededocumentdetails", "Save changes", new Dictionary<string, string>())" />
+                    <partial name="_SubmitButton" model="@("pmc:savesupersededocumentdetails", "Save changes", new Dictionary<string, string> { { "continueToDocumentType", bool.TrueString } })" />
                 }
             </div>
         </form>

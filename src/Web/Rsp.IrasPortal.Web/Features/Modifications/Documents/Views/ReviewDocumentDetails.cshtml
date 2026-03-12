@@ -232,6 +232,17 @@
 										</a>
 									}
 								</dd>
+                                @if ((docu.DocumentType == "Clean" || docu.DocumentType == "Tracked")
+                                      && string.IsNullOrEmpty(docu.LinkedDocumentFileName))
+                                {
+                                    <dd class="govuk-summary-list__actions">
+                                        <a class="govuk-link"
+                                           href="@Url.RouteUrl("pmc:supersededocumenttype", new { documentTypeId = docu.MetaDataDocumentTypeId, projectRecordId = docu.ProjectRecordId, currentDocumentId = docu.DocumentId, reviewAnswers = true })">
+                                            Change
+                                            <span class="govuk-visually-hidden"> clean or tracked</span>
+                                        </a>
+                                    </dd>
+                                }
 							</div>
 							@{
 								var displayDocumentType = docu?.DocumentType switch
@@ -252,28 +263,28 @@
 									<dt class="govuk-summary-list__key">
 										@displayDocumentType document
 									</dt>
-									<dd class="govuk-summary-list__value @(isLinkedDocumentFileNameInvalid ? "govuk-error-summary__list" : "")">
-										@if (docu.IsMalwareScanSuccessful == true)
-										{
-											<a asp-route="pmc:downloaddocument"
-											   asp-route-fileName="@docu.LinkedDocumentFileName"
-											   asp-route-path="@docu.LinkedDocumentStoragePath" class="govuk-link">
-												@docu.LinkedDocumentFileName
-											</a>
-										}
-										else
-										{
-											@if (string.IsNullOrEmpty(docu.LinkedDocumentFileName))
-											{
-												<a class="govuk-link" href="@Url.RouteUrl("pmc:supersedelinkdocument", new { documentTypeId = docu.MetaDataDocumentTypeId, projectRecordId = docu.ProjectRecordId, currentDocumentId = docu.DocumentId, linkDocument = true, reviewAnswers = true })">
-													Enter linked document<span class="govuk-visually-hidden"> Enter linked document</span>
-												</a>
-											}
-											else
-											{
-												@docu.LinkedDocumentFileName
-											}
-										}
+									<dd class="govuk-summary-list__value @(isLinkedDocumentFileNameInvalid ? "govuk-error-summary__list" : "")">										
+									    @if (string.IsNullOrEmpty(docu.LinkedDocumentFileName))
+									    {
+										    <a class="govuk-link" href="@Url.RouteUrl("pmc:supersedelinkdocument", new { documentTypeId = docu.MetaDataDocumentTypeId, projectRecordId = docu.ProjectRecordId, currentDocumentId = docu.DocumentId, linkDocument = true, reviewAnswers = true })">
+											    Enter linked document<span class="govuk-visually-hidden"> Enter linked document</span>
+										    </a>
+									    }
+									    else
+									    {
+                                            @if (docu.IsMalwareScanSuccessful == true)
+										    {
+											    <a asp-route="pmc:downloaddocument"
+											        asp-route-fileName="@docu.LinkedDocumentFileName"
+											        asp-route-path="@docu.LinkedDocumentStoragePath" class="govuk-link">
+												    @docu.LinkedDocumentFileName
+											    </a>
+										    }
+                                            else
+                                            {
+                                                @docu.LinkedDocumentFileName                                                        
+                                            }
+									    }
 									</dd>
 								</div>
 							}
