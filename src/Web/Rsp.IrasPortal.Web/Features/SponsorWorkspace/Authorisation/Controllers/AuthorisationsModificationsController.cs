@@ -393,12 +393,12 @@ public class AuthorisationsModificationsController
                 {
                     return RedirectToAction(nameof(CanSubmitToReviewBody), model);
                 }
-
+                var specificAreaOfChangeId = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
                 //Temporary project halt and restart of project
-                (bool flowControl, IActionResult value) = await UpdateProjectHaltAndRestartStatus(model);
-                if (!flowControl)
+                (bool result, IActionResult error) = await UpdateProjectHaltAndRestartStatus(model.ProjectRecordId, specificAreaOfChangeId);
+                if (!result)
                 {
-                    return value;
+                    return error!;
                 }
 
                 switch (reviewType)
@@ -468,21 +468,19 @@ public class AuthorisationsModificationsController
         return RedirectToAction(nameof(Confirmation), model);
     }
 
-    private async Task<(bool flowControl, IActionResult value)> UpdateProjectHaltAndRestartStatus(AuthoriseModificationsOutcomeViewModel model)
+    private async Task<(bool flowControl, IActionResult value)> UpdateProjectHaltAndRestartStatus(string projectRecordId, string? specificAreaOfChangeId)
     {
         // update the project record status with halt status
-        var areaOfChange = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
-
-        if (areaOfChange == AreasOfChange.ProjectHalt || areaOfChange == AreasOfChange.ProjectRestart)
+        if (specificAreaOfChangeId == AreasOfChange.ProjectHalt || specificAreaOfChangeId == AreasOfChange.ProjectRestart)
         {
             // Resolve new project status
-            var newStatus = areaOfChange switch
+            var newStatus = specificAreaOfChangeId switch
             {
                 AreasOfChange.ProjectHalt => ProjectRecordStatus.ProjectHalt,
                 AreasOfChange.ProjectRestart => ProjectRecordStatus.Active,
             };
 
-            var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus(model.ProjectRecordId, newStatus);
+            var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus(projectRecordId, newStatus);
 
             if (!updateApplicationResponse.IsSuccessStatusCode)
             {
@@ -604,8 +602,6 @@ public class AuthorisationsModificationsController
         model.Outcome = "ReviseAndAuthorise";
         ModelState.Remove(nameof(model.Outcome));
 
-        TempData[TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = model?.ModificationChanges?.FirstOrDefault()?.SpecificAreaOfChangeId;
-
         if (!skipValidation)
         {
             var context = new ValidationContext<AuthoriseModificationsOutcomeViewModel>(model);
@@ -724,7 +720,7 @@ public class AuthorisationsModificationsController
         }
 
         //Temporary project halt and restart of project
-        (bool flowControl, IActionResult value) = await UpdateProjectHaltAndRestartStatus(model);
+        (bool flowControl, IActionResult value) = await UpdateProjectHaltAndRestartStatus(model.ProjectRecordId!, model.ModificationChanges?.FirstOrDefault()?.SpecificAreaOfChangeId);
         if (!flowControl)
         {
             return value;
