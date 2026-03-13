@@ -41,7 +41,7 @@ public class AuthorisationsModificationsController
     IFeatureManager featureManager,
     IRtsService rtsService,
     IApplicationsService applicationsService
-) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!, featureManager)
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, questionnaireValidator, featureManager)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
