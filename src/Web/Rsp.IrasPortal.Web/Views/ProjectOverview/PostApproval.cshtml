@@ -352,7 +352,10 @@ else
                                     }
                                     <tr class="govuk-table__row">
                                         <td class="govuk-table__cell">
-                                            <a class="govuk-link" asp-route="@modificationReviewRoute" asp-all-route-data="modificationParams">
+                                            <a class="govuk-link"
+                                               asp-route="@modificationReviewRoute"
+                                               asp-all-route-data="modificationParams"
+                                               asp-route-status="@Model.ProjectOverviewModel.Status">
                                                 <strong>@modification.ModificationIdentifier</strong>
                                             </a>
                                         </td>

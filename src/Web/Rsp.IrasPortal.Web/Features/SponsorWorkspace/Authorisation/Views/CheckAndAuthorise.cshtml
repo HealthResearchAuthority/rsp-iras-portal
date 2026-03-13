@@ -23,7 +23,7 @@
 
     var isAuthoriser = TempData[TempDataKeys.IsAuthoriser] as bool? ?? false;
     var tempHalt = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
-    if (tempHalt == AreasOfChange.SpecificAreaOfChange)
+    if (tempHalt == AreasOfChange.ProjectHalt)
     {
         ViewData[ViewDataKeys.ShowChangeLink] = false;
         ViewData[ViewDataKeys.ShowRemoveLink] = false;

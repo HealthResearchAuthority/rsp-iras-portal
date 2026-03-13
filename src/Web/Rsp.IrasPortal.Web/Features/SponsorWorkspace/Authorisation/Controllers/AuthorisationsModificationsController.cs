@@ -393,17 +393,14 @@ public class AuthorisationsModificationsController
                 {
                     return RedirectToAction(nameof(CanSubmitToReviewBody), model);
                 }
-                // update the project record status with halt status
-                var tempHalt = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
-                if (tempHalt == AreasOfChange.SpecificAreaOfChange)
+                var specificAreaOfChangeId = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
+                //Temporary project halt and restart of project
+                (bool result, IActionResult error) = await UpdateProjectHaltAndRestartStatus(model.ProjectRecordId, specificAreaOfChangeId);
+                if (!result)
                 {
-                    var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus(model.ProjectRecordId, ProjectRecordStatus.ProjectHalt);
-
-                    if (!updateApplicationResponse.IsSuccessStatusCode)
-                    {
-                        return this.ServiceError(updateApplicationResponse);
-                    }
+                    return error!;
                 }
+
                 switch (reviewType)
                 {
                     case "Review required":
@@ -469,6 +466,29 @@ public class AuthorisationsModificationsController
         }
 
         return RedirectToAction(nameof(Confirmation), model);
+    }
+
+    private async Task<(bool flowControl, IActionResult value)> UpdateProjectHaltAndRestartStatus(string projectRecordId, string? specificAreaOfChangeId)
+    {
+        // update the project record status with halt status
+        if (specificAreaOfChangeId == AreasOfChange.ProjectHalt || specificAreaOfChangeId == AreasOfChange.ProjectRestart)
+        {
+            // Resolve new project status
+            var newStatus = specificAreaOfChangeId switch
+            {
+                AreasOfChange.ProjectHalt => ProjectRecordStatus.ProjectHalt,
+                AreasOfChange.ProjectRestart => ProjectRecordStatus.Active,
+            };
+
+            var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus(projectRecordId, newStatus);
+
+            if (!updateApplicationResponse.IsSuccessStatusCode)
+            {
+                return (false, this.ServiceError(updateApplicationResponse));
+            }
+            TempData[TempDataKeys.ProjectRecordStatus] = newStatus;
+        }
+        return (true, null);
     }
 
     /// <summary>
@@ -698,16 +718,12 @@ public class AuthorisationsModificationsController
                 );
                 break;
         }
-        // update the project record status with halt status
-        var tempHalt = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
-        if (tempHalt == AreasOfChange.SpecificAreaOfChange)
-        {
-            var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus(model.ProjectRecordId, ProjectRecordStatus.ProjectHalt);
 
-            if (!updateApplicationResponse.IsSuccessStatusCode)
-            {
-                return this.ServiceError(updateApplicationResponse);
-            }
+        //Temporary project halt and restart of project
+        (bool flowControl, IActionResult value) = await UpdateProjectHaltAndRestartStatus(model.ProjectRecordId!, model.ModificationChanges?.FirstOrDefault()?.SpecificAreaOfChangeId);
+        if (!flowControl)
+        {
+            return value;
         }
         model.Outcome = "Authorised";
         return RedirectToAction(nameof(Confirmation), model);

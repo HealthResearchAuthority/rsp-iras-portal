@@ -91,6 +91,11 @@ public class DeleteModificationTests : TestServiceBase<ModificationsController>
     {
         // Arrange
         var http = new DefaultHttpContext();
+        var temp = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.SpecificAreaOfChangeOptionNameKey] = string.Empty
+        };
+        Sut.TempData = temp;
         Sut.ControllerContext = new ControllerContext { HttpContext = http };
 
         var projectModificationId = Guid.NewGuid();
@@ -109,7 +114,6 @@ public class DeleteModificationTests : TestServiceBase<ModificationsController>
         // Assert status
         AssertStatusCode(result, StatusCodes.Status502BadGateway);
 
-
         _modsService.Verify(s =>
                 s.GetModificationsByIds(It.Is<List<string>>(ids => ids.Single() == projectModificationId.ToString())),
             Times.Once);
@@ -124,8 +128,12 @@ public class DeleteModificationTests : TestServiceBase<ModificationsController>
         // Arrange
         var projectRecordId = "PR-123";
         var projectModificationId = Guid.NewGuid();
-
         var http = new DefaultHttpContext();
+        var temp = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.SpecificAreaOfChangeOptionNameKey] = string.Empty
+        };
+        Sut.TempData = temp;
         Sut.ControllerContext = new ControllerContext { HttpContext = http };
 
         _modsService

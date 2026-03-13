@@ -90,7 +90,6 @@ public class ModificationDetailsController
                 Error = $"There is no modification for modification id {projectModificationId}",
             });
         }
-
         // If its sponsor revision - validate if sponsor is authoriser
         if ((modification.Status is ModificationStatus.ReviseAndAuthorise && sponsorOrganisationUserId != null && rtsId != null) ||
             (modification.Status is ModificationStatus.RequestRevisions))
@@ -148,7 +147,6 @@ public class ModificationDetailsController
 
         // validate and update the status and answers for the change
         modification.ModificationChanges = await UpdateModificationChanges(projectRecordId, modification.ModificationChanges);
-
         // Set the 'ready for submission' flag if all changes are ready
         if (modification.ModificationChanges.All(c => c.ChangeStatus == ModificationStatus.ChangeReadyForSubmission))
         {
