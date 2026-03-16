@@ -1,0 +1,102 @@
+﻿@using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models
+@using Rsp.Portal.Application.Constants
+@using System.Text.Json
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model RfiDetailsViewModel
+
+@{
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+	var pageContent = pageContentData != null ?
+		pageContentData :
+		new Dictionary<string, MixedContentPageItem?>();
+
+	var pageTitle = pageContent.GetValueOrDefault("Modifications.Rfi.PageTitle", null);
+	var reasonsTitle = pageContent.GetValueOrDefault("Modifications.Rfi.ReasonsTitle", null);
+	var rfiRespondTitle = pageContent.GetValueOrDefault("Modifications.Rfi.RespondTitle", null);
+	var rfiRespondText = pageContent.GetValueOrDefault("Modifications.Rfi.RespondText", null);
+
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+
+	var routeName = (ViewData["BackRoute"] as string);
+	var backRouteValues = new Dictionary<string, string?>
+		{
+			{ "projectRecordId", Model.ProjectId },
+			{ "projectModificationId", Model.ModificationGuid },
+			{ "shortTitle", Model.ShortProjectTitle },
+			{ "irasId", Model.IrasId }
+		};
+}
+
+@section BackNavigation {
+	<partial name="_BackNavigation" model="@("pmc:reviewallchanges", "Back", backRouteValues)" />
+}
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+
+		<h2 class="govuk-heading-l">@Html.Raw(pageTitle?.Value)</h2>
+
+		<dl class="govuk-summary-list">
+			<div class="govuk-summary-list__row">
+				<dt class="govuk-summary-list__key">IRAS ID</dt>
+				<dd class="govuk-summary-list__value">@Model.IrasId</dd>
+			</div>
+			<div class="govuk-summary-list__row">
+				<dt class="govuk-summary-list__key">Short project title</dt>
+				<dd class="govuk-summary-list__value">@Model.ShortProjectTitle</dd>
+			</div>
+			<div class="govuk-summary-list__row">
+				<dt class="govuk-summary-list__key">Modification ID</dt>
+				<dd class="govuk-summary-list__value">@Model.ModificationId</dd>
+			</div>
+			<div class="govuk-summary-list__row">
+				<dt class="govuk-summary-list__key">Date reviewer submitted</dt>
+				<dd class="govuk-summary-list__value">@Model.DateSubmitted</dd>
+			</div>
+		</dl>
+	</div>
+</div>
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-full">
+
+		<h2 class="govuk-heading-m">@Html.Raw(reasonsTitle?.Value)</h2>
+
+		<table class="govuk-table">
+			<thead>
+				<tr>
+					<th></th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var (reason, index) in Model.RfiReasons.Select((value, i) => (value, i)))
+				{
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell govuk-!-width-one-quarter">
+							<b>Reason @(index + 1)</b>
+						</td>
+						<td class="govuk-table__cell">
+							@reason
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>		
+
+	</div>
+</div>
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+		<h2 class="govuk-heading-m">@Html.Raw(rfiRespondTitle?.Value)</h2>
+		<p class="govuk-body">
+			@Html.Raw(rfiRespondText?.Value)
+		</p>
+
+		<partial name="_SubmitButton" model="@("", "Respond", new Dictionary<string, string>())" />
+		@{
+			ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
+		}
+	</div>
+</div>

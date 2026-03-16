@@ -172,6 +172,16 @@ public class ReviewAllChangesController
         {
             ModelState.AddModelError("DownloadSelectionButton", "Select at least one document");
         }
+
+        ViewData["BackRoute"] = "pmc:reviewallchanges";
+        ViewData[TempDataKeys.ProjectOverviewReferrer.BackRouteValues] = new Dictionary<string, string?>
+        {
+            { "projectRecordId", projectRecordId },
+            { "projectModificationId", projectModificationId.ToString() },
+            { "shortTitle", shortTitle },
+            { "irasId", irasId }
+        };
+
         // Render the details view
         return View(modification);
     }
