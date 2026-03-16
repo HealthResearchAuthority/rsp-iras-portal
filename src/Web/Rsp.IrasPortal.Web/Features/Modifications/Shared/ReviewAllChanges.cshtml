@@ -43,7 +43,11 @@
         new Dictionary<string, MixedContentPageItem?>();
 
     var revisionDescriptionTitle = pageContent.GetValueOrDefault("Modifications.ReviewAllChanges.RevisionDesciptionAfterReviseAndAuthoriseHeadline", null);
+	var rfiHintText = pageContent.GetValueOrDefault("Modifications.ReviewAllChanges.RfiHintText", null);
+	var rfiHintTitle = pageContent.GetValueOrDefault("Modifications.ReviewAllChanges.RfiHintTitle", null);
     ViewBag.RevisionDescriptionTitle = revisionDescriptionTitle?.Value;
+
+	ViewData["BackRoute"] = "pmc:reviewallchanges";
 }
 
 @if (Model.Status != ModificationStatus.InDraft && !(previousController is ApprovalsSearch.ControllerName or ModificationsTasklist.ControllerName))
@@ -211,4 +215,24 @@ else
             </div>
         </div>
     </authorized>
+	<authorized role-is="@Roles.Applicant"
+				status-for="Status"
+				status-is="@ModificationStatus.RequestForInformation">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<div class="govuk-heading-m">
+					@Html.Raw(rfiHintTitle?.Value)
+				</div>
+				<div class="govuk-body">
+					@Html.Raw(rfiHintText?.Value)
+				</div>
+				<a asp-route="rfi:rfidetails"
+				   asp-route-projectId="@Model.ProjectRecordId"
+				   asp-route-modificationId="@Model.ModificationId"
+				   class="govuk-button govuk-button--primary">
+					Respond
+				</a>
+			</div>
+		</div>
+	</authorized>
 </feature>
