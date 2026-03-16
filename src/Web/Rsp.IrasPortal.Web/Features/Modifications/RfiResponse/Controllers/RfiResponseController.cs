@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.Services;
@@ -8,6 +9,7 @@ using Rsp.Portal.Web.Extensions;
 
 namespace Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Controllers;
 
+[FeatureGate(FeatureFlags.RequestForInformation)]
 [Authorize(Policy = Workspaces.MyResearch)]
 [Route("/modifications/rfi/[action]", Name = "rfi:[action]")]
 public class RfiResponseController(
