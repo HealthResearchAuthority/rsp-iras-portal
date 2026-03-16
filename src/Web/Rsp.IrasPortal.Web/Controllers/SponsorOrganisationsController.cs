@@ -527,13 +527,20 @@ public class SponsorOrganisationsController(
     public async Task<IActionResult> ViewSponsorOrganisationUser(string rtsId, Guid userId, bool addUser = false)
     {
         var model = await BuildSponsorOrganisationUserModel(rtsId, userId);
-
-        TempData[TempDataKeys.ShowEditLink] = false;
         TempData[TempDataKeys.SponsorOrganisationUser] = JsonSerializer.Serialize(model.SponsorOrganisationUser);
 
         // Auto-set type based on whether the user is being added or edited
-        ViewBag.Type = addUser ? "add" : "edit";
-
+        if (addUser)
+        {
+            TempData[TempDataKeys.ShowSponsorUserEditLink] = false;
+            ViewBag.Type = "add";
+        }
+        else
+        {
+            TempData[TempDataKeys.ShowSponsorUserEditLink] = true;
+            ViewBag.Type = "edit";
+        }
+        
         return View(model);
     }
 
@@ -546,6 +553,7 @@ public class SponsorOrganisationsController(
             return View(model);
         }
 
+        
         var builtModel = await BuildSponsorOrganisationUserModel(rtsId, (Guid)userId);
 
         return View(builtModel);

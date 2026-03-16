@@ -93,4 +93,5 @@ public struct TempDataKeys
     public const string IsDuplicateModification = "td:is_duplicate_modification";
     public const string ProjectRecordStatus = "td:project_record_status";
     public const string SpecificAreaOfChangeOptionNameKey = "td:selected_option_name_list";
+    public const string ShowSponsorUserEditLink = "td:show_sponsor_user_edit_link";
 }

@@ -5,7 +5,8 @@
 @{
     var edit = !string.IsNullOrEmpty(Model.Id);
     var editNewUserUrl = "/admin/users/editnewuser";
-    var showChangeLink = TempData[TempDataKeys.ShowEditLink] == null;
+    var showChangeLink = TempData[TempDataKeys.ShowEditLink] as bool? ?? false;
+	var showSponsorUserEditLink = TempData[TempDataKeys.ShowSponsorUserEditLink] as bool? ?? false;
 
     var sponsorOrgUser =
         TempData.Peek(TempDataKeys.SponsorOrganisationUser) is string json
@@ -313,14 +314,15 @@
                 </button>
             }
         }
-        else if (fieldName is "user role" or "authoriser")
+
+        if (showSponsorUserEditLink && fieldName is "user role" or "authoriser")
         {
             <authorized role-is="@Roles.SystemAdministrator">
                 <a class="govuk-link" asp-route="soc:editsponsororganisationuser" asp-route-userId="@sponsorOrgUser.UserId"
-                   asp-route-rtsId="@sponsorOrgUser.RtsId">
-                    Change<span class="govuk-visually-hidden">@fieldName</span>
+            asp-route-rtsId="@sponsorOrgUser.RtsId">
+                Change<span class="govuk-visually-hidden">@fieldName</span>
                 </a>
-            </authorized>
+                </authorized>
             
         }
     }
