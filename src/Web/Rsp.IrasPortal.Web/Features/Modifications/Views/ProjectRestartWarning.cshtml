@@ -10,8 +10,8 @@
 
     Model.ModificationIdentifier = TempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier] as string;
     TempData.Keep(TempDataKeys.ProjectModification.ProjectModificationIdentifier);
-    var title = pageContent.GetValueOrDefault("Modifications.ConfirmModificationJourney.Title", null);
-    var body = pageContent.GetValueOrDefault("Modifications.ConfirmModificationJourney.Content", null);
+    var title = pageContent.GetValueOrDefault("Modifications.ConfirmModificationJourney.ProjectRestartWarningTitle", null);
+    var body = pageContent.GetValueOrDefault("Modifications.ConfirmModificationJourney.ProjectRestartWarningContent", null);
 }
 
 <div class="govuk-grid-row">

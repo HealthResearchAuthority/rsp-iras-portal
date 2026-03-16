@@ -543,6 +543,19 @@ public class ReviewAllChangesController
             });
         }
 
+        // Fetch all modification documents (up to 100) for the sole purpose of displaying in the PDF
+        var modificationDocumentsResponseResult = await this.GetModificationDocuments(
+            Guid.Parse(modification.ModificationId!),
+            DocumentDetailsSection,
+            1,
+            100,
+            nameof(ProjectOverviewDocumentDto.DocumentType),
+            SortDirections.Ascending);
+
+        modification.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
+
+        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents);
+
         var newViewData = new ViewDataDictionary(ViewData)
         {
             [ViewDataKeys.ShowModificationDetails] = true

@@ -8,6 +8,7 @@
 @using Rsp.Portal.Web.Features.Modifications.Models
 @using Rsp.Portal.Web.Models
 @model ModificationDetailsViewModel
+@inject IHttpContextAccessor httpContextAccessor
 
 @{
 
@@ -16,6 +17,7 @@
     var isAuthoriser = TempData[TempDataKeys.IsAuthoriser] as bool? ?? false;
     var isRevisionBySponsor = false;
     var tempHalt = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
+
     <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
                 status-for="Status"
                 status-is="@ModificationStatus.ReviseAndAuthorise">
@@ -168,11 +170,14 @@ else
 
         <div class="save-buttons">
             @if ((Model.Status is ModificationStatus.InDraft) ||
-              (Model.Status is ModificationStatus.RequestRevisions && tempHalt != AreasOfChange.SpecificAreaOfChange) ||
-              (isRevisionBySponsor && tempHalt != AreasOfChange.SpecificAreaOfChange)
-               && Model.ModificationChanges.Count < 10)
+(Model.Status is ModificationStatus.RequestRevisions && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart) ||
+(isRevisionBySponsor && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart)
+&& Model.ModificationChanges.Count < 10)
             {
-                <a asp-route="pmc:areaofchange" asp-route-projectModificationId="@Model.ModificationId" asp-route-projectRecordId="@Model.ProjectRecordId" class="govuk-button govuk-button--secondary">
+                <a asp-route="pmc:areaofchange"
+                   asp-route-projectModificationId="@Model.ModificationId"
+                   asp-route-projectRecordId="@Model.ProjectRecordId"
+                   class="govuk-button govuk-button--secondary">
                     Add another change to this modification
                 </a>
             }
@@ -187,7 +192,7 @@ else
             @if (!Model.ModificationChanges.Any())
             {
                 var routeData = new Dictionary<string, string>
-                {
+            {
                     { "projectRecordId", Model.ProjectRecordId },
                     { "routeName", "sws:modifications" },
                     { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId ?? string.Empty },
@@ -342,6 +347,14 @@ else
                     <input type="hidden" name="IrasId" value="@Model.IrasId" />
                     <input type="hidden" name="RtsId" value="@Model.RtsId" />
                     <input type="hidden" name="ReviewType" value="@Model.ReviewType" />
+                    <input type="hidden" name="SpecificAreaOfChangeId" value="@Model.SpecificAreaOfChangeId" />
+
+                    @for (int i = 0; i < Model.ModificationChanges.Count; i++)
+                    {
+                        <input type="hidden" name="ModificationChanges[@i].SpecificAreaOfChangeId" value="@Model.ModificationChanges[i].SpecificAreaOfChangeId" />
+                        <input type="hidden" name="ModificationChanges[@i].SpecificChangeName" value="@Model.ModificationChanges[i].SpecificChangeName" />
+                        <input type="hidden" name="ModificationChanges[@i].ModificationChangeId" value="@Model.ModificationChanges[i].ModificationChangeId" />
+                    }
 
                     <div class="save-buttons">
                         @if (Model.ChangesReadyForSubmission)

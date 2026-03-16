@@ -1006,29 +1006,25 @@ public class DocumentsController
 
         await HandleCompletionAudit(existingStatus, viewModel, questionnaire);
 
-        // Navigation logic (UNCHANGED)
+        // Navigation logic
         if (continueToDocumentType && replacedByDocumentDto.LinkedDocumentId == null)
         {
-            return reviewAnswers
-                ? RedirectAfterSubmit(viewModel)
-                : RedirectToAction(nameof(SupersedeDocumentType), new
-                {
-                    documentTypeId = viewModel.MetaDataDocumentTypeId,
-                    projectRecordId = viewModel.ProjectRecordId,
-                    currentDocumentId = viewModel.DocumentId
-                });
+            return RedirectToAction(nameof(SupersedeDocumentType), new
+            {
+                documentTypeId = viewModel.MetaDataDocumentTypeId,
+                projectRecordId = viewModel.ProjectRecordId,
+                currentDocumentId = viewModel.DocumentId
+            });
         }
 
         if (continueToLinkDocument && replacedByDocumentDto.LinkedDocumentId == null)
         {
-            return reviewAnswers
-                ? RedirectAfterSubmit(viewModel)
-                : RedirectToAction(nameof(SupersedeLinkDocument), new
-                {
-                    documentTypeId = viewModel.MetaDataDocumentTypeId,
-                    projectRecordId = viewModel.ProjectRecordId,
-                    currentDocumentId = viewModel.DocumentId
-                });
+            return RedirectToAction(nameof(SupersedeLinkDocument), new
+            {
+                documentTypeId = viewModel.MetaDataDocumentTypeId,
+                projectRecordId = viewModel.ProjectRecordId,
+                currentDocumentId = viewModel.DocumentId
+            });
         }
 
         return saveForLater
@@ -2115,7 +2111,7 @@ public class DocumentsController
         await projectModificationsService.CreateModificationDocumentsAuditTrail(auditTrailRequest);
     }
 
-    private IActionResult HandleSupersedeRedirect(ModificationAddDocumentDetailsViewModel viewModel, QuestionnaireViewModel questionnaire)
+    private IActionResult? HandleSupersedeRedirect(ModificationAddDocumentDetailsViewModel viewModel, QuestionnaireViewModel questionnaire)
     {
         var previousVersionQuestion = questionnaire.Questions
             .FirstOrDefault(q => q.QuestionId.Equals(
@@ -2127,24 +2123,26 @@ public class DocumentsController
             QuestionIds.PreviousVersionOfDocumentYesOption,
             StringComparison.OrdinalIgnoreCase);
 
-        if (!supersede)
-        {
-            return null;
-        }
-
         var documentTypeId = questionnaire.Questions
             .FirstOrDefault(q => q.QuestionId.Equals(
                 QuestionIds.SelectedDocumentType,
                 StringComparison.OrdinalIgnoreCase))?.SelectedOption;
 
-        return viewModel.ReviewAnswers
-            ? RedirectAfterSubmit(viewModel)
-            : RedirectToAction(nameof(SupersedeDocumentToReplace), new
+        if (supersede)
+        {
+            return RedirectToAction(nameof(SupersedeDocumentToReplace), new
             {
                 documentTypeId,
                 projectRecordId = viewModel.ProjectRecordId,
                 currentDocumentId = viewModel.DocumentId
             });
+        }
+        else if (viewModel.ReviewAnswers)
+        {
+            RedirectAfterSubmit(viewModel);
+        }
+
+        return null;
     }
 
     private async Task HandleDocumentTypeChange(ModificationAddDocumentDetailsViewModel viewModel, SupersedeContext context)

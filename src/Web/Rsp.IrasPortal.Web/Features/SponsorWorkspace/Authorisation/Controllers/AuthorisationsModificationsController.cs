@@ -41,7 +41,7 @@ public class AuthorisationsModificationsController
     IFeatureManager featureManager,
     IRtsService rtsService,
     IApplicationsService applicationsService
-) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, null!, featureManager)
+) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, questionnaireValidator, featureManager)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
@@ -268,14 +268,37 @@ public class AuthorisationsModificationsController
     // 2) GET stays tiny and calls the builder
     [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
     [HttpGet]
-    public async Task<IActionResult> CheckAndAuthorise(string projectRecordId, string irasId, string shortTitle,
-        Guid projectModificationId, Guid sponsorOrganisationUserId, string rtsId)
+    public async Task<IActionResult> CheckAndAuthorise
+    (
+        string projectRecordId,
+        string irasId,
+        string shortTitle,
+        Guid projectModificationId,
+        Guid sponsorOrganisationUserId,
+        string rtsId,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
+        string sortDirection = SortDirections.Ascending
+    )
     {
         TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
 
         var response =
-            await BuildCheckAndAuthorisePageAsync(projectModificationId, irasId, shortTitle, projectRecordId,
-                sponsorOrganisationUserId, rtsId);
+            await BuildCheckAndAuthorisePageAsync
+            (
+                projectModificationId,
+                irasId,
+                shortTitle,
+                projectRecordId,
+                sponsorOrganisationUserId,
+                rtsId,
+                null,
+                pageNumber,
+                pageSize,
+                sortField,
+                sortDirection
+            );
 
         var auth = await sponsorUserAuthorisationService.AuthoriseWithOrganisationContextAsync(this, sponsorOrganisationUserId, User, rtsId);
         if (!auth.IsAuthorised)
@@ -370,17 +393,14 @@ public class AuthorisationsModificationsController
                 {
                     return RedirectToAction(nameof(CanSubmitToReviewBody), model);
                 }
-                // update the project record status with halt status
-                var tempHalt = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
-                if (tempHalt == AreasOfChange.SpecificAreaOfChange)
+                var specificAreaOfChangeId = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
+                //Temporary project halt and restart of project
+                (bool result, IActionResult error) = await UpdateProjectHaltAndRestartStatus(model.ProjectRecordId, specificAreaOfChangeId);
+                if (!result)
                 {
-                    var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus(model.ProjectRecordId, ProjectRecordStatus.ProjectHalt);
-
-                    if (!updateApplicationResponse.IsSuccessStatusCode)
-                    {
-                        return this.ServiceError(updateApplicationResponse);
-                    }
+                    return error!;
                 }
+
                 switch (reviewType)
                 {
                     case "Review required":
@@ -446,6 +466,29 @@ public class AuthorisationsModificationsController
         }
 
         return RedirectToAction(nameof(Confirmation), model);
+    }
+
+    private async Task<(bool flowControl, IActionResult value)> UpdateProjectHaltAndRestartStatus(string projectRecordId, string? specificAreaOfChangeId)
+    {
+        // update the project record status with halt status
+        if (specificAreaOfChangeId == AreasOfChange.ProjectHalt || specificAreaOfChangeId == AreasOfChange.ProjectRestart)
+        {
+            // Resolve new project status
+            var newStatus = specificAreaOfChangeId switch
+            {
+                AreasOfChange.ProjectHalt => ProjectRecordStatus.ProjectHalt,
+                AreasOfChange.ProjectRestart => ProjectRecordStatus.Active,
+            };
+
+            var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus(projectRecordId, newStatus);
+
+            if (!updateApplicationResponse.IsSuccessStatusCode)
+            {
+                return (false, this.ServiceError(updateApplicationResponse));
+            }
+            TempData[TempDataKeys.ProjectRecordStatus] = newStatus;
+        }
+        return (true, null);
     }
 
     /// <summary>
@@ -675,16 +718,12 @@ public class AuthorisationsModificationsController
                 );
                 break;
         }
-        // update the project record status with halt status
-        var tempHalt = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
-        if (tempHalt == AreasOfChange.SpecificAreaOfChange)
-        {
-            var updateApplicationResponse = await applicationsService.UpdateProjectRecordStatus(model.ProjectRecordId, ProjectRecordStatus.ProjectHalt);
 
-            if (!updateApplicationResponse.IsSuccessStatusCode)
-            {
-                return this.ServiceError(updateApplicationResponse);
-            }
+        //Temporary project halt and restart of project
+        (bool flowControl, IActionResult value) = await UpdateProjectHaltAndRestartStatus(model.ProjectRecordId!, model.ModificationChanges?.FirstOrDefault()?.SpecificAreaOfChangeId);
+        if (!flowControl)
+        {
+            return value;
         }
         model.Outcome = "Authorised";
         return RedirectToAction(nameof(Confirmation), model);

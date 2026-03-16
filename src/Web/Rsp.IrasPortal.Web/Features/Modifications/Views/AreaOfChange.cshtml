@@ -1,5 +1,6 @@
 ﻿@using Rsp.Gds.Component.Models
 @using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Web.Extensions
 @model Rsp.Portal.Web.Models.AreaOfChangeViewModel
 @{
     ViewBag.Title = "Create modification - Area of change";
@@ -7,7 +8,7 @@
     // Title used in the validation error summary
     var errorSummaryTitle = "There is a problem";
     Model.ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
-
+    Model.ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string ?? string.Empty;
     var navModelRoute = "pov:postapproval";
     var navModelParams = new Dictionary<string, string>
     {
