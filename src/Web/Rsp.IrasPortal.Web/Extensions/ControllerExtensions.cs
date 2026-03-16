@@ -336,7 +336,10 @@ public static class ControllerExtensions
 
                     if (rbResp?.Content?.Countries != null)
                     {
-                        leadNation.AddRange(rbResp.Content.Countries);
+                        var countriesToAdd = rbResp.Content.Countries
+                            .Where(c => !leadNation.Contains(c));
+
+                        leadNation.AddRange(countriesToAdd);
                     }
                 }
             }

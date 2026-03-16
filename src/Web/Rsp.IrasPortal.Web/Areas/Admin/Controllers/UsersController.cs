@@ -310,6 +310,8 @@ public class UsersController(
                 .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
+            TempData[TempDataKeys.ShowEditLink] = true;
+
             return View(ViewUserView, model);
         }
 
