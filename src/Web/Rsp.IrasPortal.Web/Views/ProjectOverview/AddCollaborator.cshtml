@@ -37,7 +37,8 @@
             <input type="hidden" asp-for="ProjectOverviewModel.ProjectRecordId" />
             <div class="govuk-form-group">
                 <div class="govuk-input__wrapper">
-                    <input asp-for="Search" class="govuk-input" type="text"/>
+                    <span id="search-collaborator-label" class="govuk-visually-hidden">Search for a collaborator by email</span>
+                    <input asp-for="Search" class="govuk-input" type="text" aria-labelledby="search-collaborator-label" />
                     <button class="govuk-button govuk-button--secondary mb-0" style="margin-left:10px" type="submit">
                         Search
                     </button>
