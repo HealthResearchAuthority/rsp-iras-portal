@@ -126,14 +126,14 @@
 		{
 			<a class="govuk-link" asp-route="rbc:updatereviewbody" asp-route-id="@Model.ReviewBodyModel.Id">
 				Change
-				<span class="govuk-visually-hidden">@fieldName</span>
+				<span class="govuk-visually-hidden"> @fieldName</span>
 			</a>
 		}
 		else
 		{
 			<button type="submit" formaction="@createReviewBody" class="govuk-link-button">
 				Change
-				<span class="govuk-visually-hidden">@fieldName</span>
+				<span class="govuk-visually-hidden"> @fieldName</span>
 			</button>
 		}
 	}
