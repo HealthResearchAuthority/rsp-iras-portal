@@ -304,13 +304,13 @@
 			{
 				<a class="govuk-link" asp-route="admin:edituser" asp-route-userId="@Model.Id"
 				   asp-route-email="@Model.Email">
-					Change<span class="govuk-visually-hidden">@fieldName</span>
+					Change<span class="govuk-visually-hidden"> @fieldName</span>
 				</a>
 			}
 			else
 			{
 				<button class="govuk-link-button" type="submit" formaction="@editNewUserUrl">
-					Change<span class="govuk-visually-hidden">@fieldName</span>
+					Change<span class="govuk-visually-hidden"> @fieldName</span>
                 </button>
             }
         }
@@ -320,7 +320,7 @@
             <authorized role-is="@Roles.SystemAdministrator">
                 <a class="govuk-link" asp-route="soc:editsponsororganisationuser" asp-route-userId="@sponsorOrgUser.UserId"
             asp-route-rtsId="@sponsorOrgUser.RtsId">
-                Change<span class="govuk-visually-hidden">@fieldName</span>
+                Change<span class="govuk-visually-hidden"> @fieldName</span>
                 </a>
                 </authorized>
             

@@ -213,13 +213,13 @@
 
             if (edit)
             {
-                <a class="govuk-link" asp-route="profilesettings:editprofile">Change<span class="govuk-visually-hidden">@fieldName</span></a>
+                <a class="govuk-link" asp-route="profilesettings:editprofile">Change<span class="govuk-visually-hidden"> @fieldName</span></a>
             }
             else
             {
                 var routeName = "profilesettings:editNewUserProfile";
 
-                <button class="govuk-link-button" type="submit" asp-route="@routeName" asp-all-route-data="@parameters">Change<span class="govuk-visually-hidden">@fieldName</span></button>
+                <button class="govuk-link-button" type="submit" asp-route="@routeName" asp-all-route-data="@parameters">Change<span class="govuk-visually-hidden"> @fieldName</span></button>
             }
         }
     }
