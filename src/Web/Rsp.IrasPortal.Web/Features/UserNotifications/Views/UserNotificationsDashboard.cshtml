@@ -17,8 +17,8 @@
 	var typeOptions = new List<SelectListItem>
 	{
 		new SelectListItem { Value = "", Text = "All notifications" },
-		new SelectListItem { Value = "Action", Text = "Action" },
-		new SelectListItem { Value = "Information", Text = "Information" }
+		new SelectListItem { Value = "Action", Text = "For action" },
+		new SelectListItem { Value = "Information", Text = "For information" }
 	};
 }
 
@@ -30,9 +30,9 @@
 		</div>
 		<form method="get" class="govuk-form-group">
 			<div class="govuk-form-group">
-				<div class="govuk-label">
+				<label class="govuk-label" for="sort">
 					Filter by:
-				</div>
+				</label>
 				<div class="search-flex-container">
 					<select asp-for="NotificationType" class="govuk-select" id="sort" name="type" asp-items="typeOptions">
 					</select>

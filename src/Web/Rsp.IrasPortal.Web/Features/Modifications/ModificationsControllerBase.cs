@@ -368,7 +368,8 @@ public abstract class ModificationsControllerBase
         if (!string.IsNullOrEmpty(a.Status) &&
             !a.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
             (a.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase) ||
-             a.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase)))
+             a.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase) ||
+             a.Status.Equals(DocumentStatus.RequestRevisions, StringComparison.OrdinalIgnoreCase)))
         {
             status = (await EvaluateDocumentCompletion(a.Id, questionnaire)
                 ? DocumentDetailStatus.Incomplete
