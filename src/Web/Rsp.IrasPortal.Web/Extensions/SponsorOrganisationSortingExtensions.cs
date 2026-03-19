@@ -1,7 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Services;
 using Rsp.Portal.Web.Areas.Admin.Models;
+using Rsp.Portal.Web.Helpers;
 
 namespace Rsp.Portal.Web.Extensions;
 
@@ -187,8 +189,9 @@ public static class SponsorOrganisationSortingExtensions
         }
     }
 
-    public static IEnumerable<SponsorOrganisationAuditTrailDto> SortSponsorOrganisationAuditTrails(
-        IEnumerable<SponsorOrganisationAuditTrailDto> items,
+    public static async Task<IEnumerable<SponsorOrganisationAuditTrailDto>> SortSponsorOrganisationAuditTrails(
+       IEnumerable<SponsorOrganisationAuditTrailDto> items,
+       IRtsService rtsService,
         string? sortField,
         string? sortDirection,
         string? sponsorOrganisationName,
@@ -196,6 +199,8 @@ public static class SponsorOrganisationSortingExtensions
         int pageSize = 20)
     {
         // 1) Transform descriptions: replace RtsId with sponsorOrganisationName (case-insensitive)
+        await SponsorOrganisationNameHelper.GetSponsorOrganisationsNameForAuditRecords(rtsService, items);
+
         var list = items
             .Select(x =>
             {

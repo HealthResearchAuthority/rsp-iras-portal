@@ -1,6 +1,7 @@
 using FluentValidation;
 using FluentValidation.TestHelper;
 using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Web.Models;
 using Rsp.Portal.Web.Validators;
 
@@ -736,6 +737,174 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelValidator>
         result
             .ShouldHaveValidationErrorFor(q => q.AnswerText)
             .WithErrorMessage("Date must be in the past");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_PreviousAnswerRule_ShouldAddFailure_WhenAnswerSameAsOriginal()
+    {
+        // Arrange
+        var question = new QuestionViewModel
+        {
+            QuestionId = "Q1",
+            Index = 0,
+            DataType = "Text",
+            IsMandatory = true,
+            AnswerText = "original",
+            Rules =
+            [
+                new RuleDto
+            {
+                Conditions =
+                [
+                    new ConditionDto
+                    {
+                        Operator = "IN",
+                        Value = "DIFFERENT_FROM_ORIGINAL_ANSWER",
+                        Description = "Answer must differ from original"
+                    }
+                ]
+            }
+            ]
+        };
+
+        var originalAnswers = new Dictionary<string, RespondentAnswerDto>
+        {
+            ["Q1"] = new RespondentAnswerDto { AnswerText = "original" }
+        };
+
+        var context = CreateValidationContext(question);
+        context.RootContextData["ProjectRecordAnswers"] = originalAnswers;
+
+        // Act
+        var result = await Sut.TestValidateAsync(context);
+
+        // Assert
+        result
+            .ShouldHaveValidationErrorFor(q => q.AnswerText)
+            .WithErrorMessage("Answer must differ from original");
+    }
+
+    [Fact]
+    public async Task ValidateAsync_PreviousAnswerRule_ShouldNotAddFailure_WhenAnswerDifferent()
+    {
+        // Arrange
+        var question = new QuestionViewModel
+        {
+            QuestionId = "Q1",
+            Index = 0,
+            DataType = "Text",
+            IsMandatory = true,
+            AnswerText = "new answer",
+            Rules =
+            [
+                new RuleDto
+            {
+                Conditions =
+                [
+                    new ConditionDto
+                    {
+                        Operator = "IN",
+                        Value = "DIFFERENT_FROM_ORIGINAL_ANSWER",
+                        Description = "Answer must differ from original"
+                    }
+                ]
+            }
+            ]
+        };
+
+        var originalAnswers = new Dictionary<string, RespondentAnswerDto>
+        {
+            ["Q1"] = new RespondentAnswerDto { AnswerText = "old answer" }
+        };
+
+        var context = CreateValidationContext(question);
+        context.RootContextData["ProjectRecordAnswers"] = originalAnswers;
+
+        // Act
+        var result = await Sut.TestValidateAsync(context);
+
+        // Assert
+        result.ShouldNotHaveValidationErrorFor(q => q.AnswerText);
+    }
+
+    [Fact]
+    public async Task ValidateAsync_PreviousAnswerRule_ShouldNotAddFailure_WhenNoPreviousAnswerExists()
+    {
+        // Arrange
+        var question = new QuestionViewModel
+        {
+            QuestionId = "Q1",
+            Index = 0,
+            DataType = "Text",
+            IsMandatory = true,
+            AnswerText = "anything",
+            Rules =
+            [
+                new RuleDto
+            {
+                Conditions =
+                [
+                    new ConditionDto
+                    {
+                        Operator = "IN",
+                        Value = "DIFFERENT_FROM_ORIGINAL_ANSWER",
+                        Description = "Answer must differ from original"
+                    }
+                ]
+            }
+            ]
+        };
+
+        var context = CreateValidationContext(question);
+
+        // Act
+        var result = await Sut.TestValidateAsync(context);
+
+        // Assert
+        result.ShouldNotHaveValidationErrorFor(q => q.AnswerText);
+    }
+
+    [Fact]
+    public async Task ValidateAsync_PreviousAnswerRule_ShouldNotAddFailure_WhenConditionDoesNotContainPreviousAnswerCheck()
+    {
+        // Arrange
+        var question = new QuestionViewModel
+        {
+            QuestionId = "Q1",
+            Index = 0,
+            DataType = "Text",
+            IsMandatory = true,
+            AnswerText = "same",
+            Rules =
+            [
+                new RuleDto
+            {
+                Conditions =
+                [
+                    new ConditionDto
+                    {
+                        Operator = "IN",
+                        Value = "SOME_OTHER_CONDITION",
+                        Description = "Other rule"
+                    }
+                ]
+            }
+            ]
+        };
+
+        var originalAnswers = new Dictionary<string, RespondentAnswerDto>
+        {
+            ["Q1"] = new RespondentAnswerDto { AnswerText = "same" }
+        };
+
+        var context = CreateValidationContext(question);
+        context.RootContextData["ProjectRecordAnswers"] = originalAnswers;
+
+        // Act
+        var result = await Sut.TestValidateAsync(context);
+
+        // Assert
+        result.ShouldNotHaveValidationErrorFor(q => q.AnswerText);
     }
 
     [Fact]

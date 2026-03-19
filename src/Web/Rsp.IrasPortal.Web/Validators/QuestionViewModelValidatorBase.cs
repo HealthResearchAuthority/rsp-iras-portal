@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using FluentValidation;
+using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Models;
 
@@ -202,6 +203,48 @@ public class QuestionViewModelValidatorBase : AbstractValidator<QuestionViewMode
                                 // by setting IsApplicable property
                                 // it will display the Description of the condition
                                 // for the property
+                                condition.IsApplicable = true;
+                                context.AddFailure(nameof(question.AnswerText), $"{condition.Description}");
+                            }
+                        }
+                    }
+                }
+            });
+    }
+
+    protected void ConfigurePreviousAnswerRule()
+    {
+        RuleFor(x => x.AnswerText)
+            .Custom((answer, context) =>
+            {
+                var question = context.InstanceToValidate;
+
+                var conditions = question.Rules.SelectMany(r => r.Conditions.Where(c => c.Operator is "IN"));
+
+                context.RootContextData.TryGetValue("ProjectRecordAnswers", out var obj);
+                var projectRecordAnswers =
+                    obj as Dictionary<string, RespondentAnswerDto>
+                    ?? new Dictionary<string, RespondentAnswerDto>();
+
+                foreach (var condition in conditions)
+                {
+                    var previousAnswerChecks = condition.Value?.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    if (previousAnswerChecks is null || previousAnswerChecks.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    foreach (var check in previousAnswerChecks)
+                    {
+                        if (check.Contains("DIFFERENT_FROM_ORIGINAL_ANSWER"))
+                        {
+                            if (!projectRecordAnswers.TryGetValue(question.QuestionId, out RespondentAnswerDto projectRecordAnswer))
+                            {
+                                continue;
+                            }
+
+                            if (answer.Equals(projectRecordAnswer.AnswerText))
+                            {
                                 condition.IsApplicable = true;
                                 context.AddFailure(nameof(question.AnswerText), $"{condition.Description}");
                             }

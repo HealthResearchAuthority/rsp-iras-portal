@@ -19,6 +19,7 @@ using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.Modifications.Models;
+using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
 using ValidationResult = FluentValidation.Results.ValidationResult;
 
@@ -33,6 +34,7 @@ public class ModificationsController
 (
     IProjectModificationsService projectModificationsService,
     IRespondentService respondentService,
+    IRtsService rtsService,
     ICmsQuestionsetService cmsQuestionsetService,
     IBlobStorageService blobStorageService,
     IValidator<AreaOfChangeViewModel> areaofChangeValidator,
@@ -743,6 +745,9 @@ public class ModificationsController
         {
             return this.ServiceError(auditResponse);
         }
+
+        var auditTrailsRecords = auditResponse.Content?.Items ?? [];
+        await SponsorOrganisationNameHelper.GetSponsorOrganisationsNameForAuditRecords(rtsService, auditTrailsRecords);
 
         var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
 

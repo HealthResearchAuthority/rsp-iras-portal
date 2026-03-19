@@ -31,6 +31,7 @@ public class ReviewAllChangesController
 (
     IProjectModificationsService projectModificationsService,
     ICmsQuestionsetService cmsQuestionsetService,
+    IRtsService rtsService,
     IRespondentService respondentService,
     IValidator<QuestionnaireViewModel> validator,
     IFeatureManager featureManager,
@@ -112,6 +113,8 @@ public class ReviewAllChangesController
         modification.SponsorDetails = sponsorDetailsQuestionnaire.Questions;
 
         var modificationAuditResponse = await projectModificationsService.GetModificationAuditTrail(projectModificationId);
+        var auditTrailsRecords = modificationAuditResponse.Content?.Items ?? [];
+        await SponsorOrganisationNameHelper.GetSponsorOrganisationsNameForAuditRecords(rtsService, auditTrailsRecords);
 
         if (modificationAuditResponse.IsSuccessStatusCode && modificationAuditResponse.Content is not null)
         {
