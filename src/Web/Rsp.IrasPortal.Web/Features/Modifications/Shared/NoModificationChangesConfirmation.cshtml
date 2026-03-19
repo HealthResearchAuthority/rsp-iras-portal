@@ -5,9 +5,11 @@
 @using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @using Rsp.Portal.Web.Features.Modifications.Models
-@model BaseProjectModificationViewModel
+@model ModificationDetailsViewModel
 
 @{
+    //string projectRecordId, string irasId, string shortTitle, Guid projectModificationId
+
     var modificationParams = new Dictionary<string, string> {
             { "projectRecordId", Model.ProjectRecordId },
             { "irasId", Model.IrasId  },
@@ -16,21 +18,16 @@
             { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId ?? string.Empty },
             { "rtsId", Model.RtsId ?? string.Empty }
         };
-
+    Model.ModificationIdentifier = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationIdentifier) as string;
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
 
-    var title = pageContent.GetValueOrDefault("Modifications.Documentsscaninprogress.Title", null);
-    var body = pageContent.GetValueOrDefault("Modifications.Documentsscaninprogress.Body", null);
-    var saveButtonTitle = Model.Status switch
-    {
-        ModificationStatus.ReviseAndAuthorise => "Return to revise and authorise",
-        ModificationStatus.RequestRevisions => "Return to make revision",
-        _ => string.Empty
-    };
+    var title = pageContent.GetValueOrDefault("Modifications.SendRevisionResponseToSponsor.Title", null);
+    var body = pageContent.GetValueOrDefault("Modifications.SendRevisionResponseToSponsor.Body", null);
 
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 }
 
 <div class="govuk-grid-row">
@@ -41,21 +38,8 @@
             @Html.Raw(body?.Value)
         </p>
         <div class="save-buttons">
-            <a class="govuk-button"
-               asp-route="pmc:modificationdetails"
-               asp-all-route-data="modificationParams"
-               status-for="Status"
-               status-in="@([ModificationStatus.ReviseAndAuthorise,ModificationStatus.RequestRevisions] )">
-                @saveButtonTitle
-            </a>
-
-            <a class="govuk-button"
-               asp-route="pmc:reviewallchanges"
-               asp-all-route-data="modificationParams"
-               status-for="Status"
-               status-mode="Hide"
-               status-in="@([ModificationStatus.ReviseAndAuthorise,ModificationStatus.RequestRevisions] )">
-                Return to review modification
+            <a class="govuk-button" asp-route="pmc:modificationdetails" asp-all-route-data="modificationParams">
+                Return to make revision
             </a>
         </div>
     </div>

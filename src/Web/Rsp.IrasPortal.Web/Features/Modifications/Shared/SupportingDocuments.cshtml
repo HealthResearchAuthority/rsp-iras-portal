@@ -103,8 +103,8 @@
                                                                                 { "documents", ModificationOverview.Documents }
                                                                                 }
                                                                                 })
-                                    </th>
-                                                                        }
+                                        </th>
+                                    }
                                     <th scope="col" class="govuk-table__header">Status</th>
                                     @if (Model.Status is ModificationStatus.InDraft || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise))
                                     {
@@ -190,10 +190,10 @@
                                             </strong>
                                         </td>
                                         @if (
-                                            Model.Status is ModificationStatus.InDraft
-                                            || Model.Status is ModificationStatus.RequestRevisions
-                                            || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise)
-                                        )
+                                           Model.Status is ModificationStatus.InDraft
+                                           || Model.Status is ModificationStatus.RequestRevisions
+                                           || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise)
+                                       )
                                         {
                                             <td class="govuk-table__cell">
                                                 @if (!isFailed && !isTracked)
@@ -206,7 +206,7 @@
                                                     </a>
                                                 }
                                             </td>
-                                        }                                        
+                                        }
                                     </tr>
                                     <feature name="@FeatureFlags.DocumentsMalware">
                                         @if (isScanInProgress || isFailed)
@@ -252,7 +252,7 @@
     </div>
 </div>
 
-<div status-for="Status" status-is="@ModificationStatus.InDraft" class="govuk-button-group">
+<div status-for="Status" status-in="@([ModificationStatus.InDraft,ModificationStatus.RequestRevisions] )" class="govuk-button-group">
     <form method="get">
         @{
             ViewBag.Style = "govuk-button govuk-button--secondary";
