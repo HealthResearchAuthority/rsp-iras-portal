@@ -20,7 +20,7 @@
 	<input type="hidden" name="fromPagination" value="true" />
 	<button type="submit" class="table-header-sort-button js-sort-link">
         <span>
-            @Html.Raw(Model.DisplayText)
+			<span class="govuk-visually-hidden">Sort </span>@Html.Raw(Model.DisplayText)
         </span>		
 		@Html.Raw(GetSortIcon(Model.FieldName, Model.CurrentSortField, Model.CurrentSortDirection))
 	</button>
