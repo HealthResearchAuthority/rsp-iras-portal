@@ -277,6 +277,7 @@ public class ModificationDetailsController
             ModificationId = projectModificationId.ToString(),
             ModificationIdentifier = modification.Content.ModificationIdentifier
         };
+        TempData[TempDataKeys.RevisionDescription] = modification.Content.RevisionDescription;
         return View("MakeRevisonByApplicant", model);
     }
 }

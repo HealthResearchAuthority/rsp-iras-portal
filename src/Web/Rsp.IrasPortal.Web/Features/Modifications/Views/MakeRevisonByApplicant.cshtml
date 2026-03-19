@@ -11,7 +11,8 @@
     var requestRevisionHeadline = pageContent.GetValueOrDefault("Modifications.RequestForRevision.RequestRevisionHeadline", null);
     var nextStepsTitle = pageContent.GetValueOrDefault("Modifications.RequestForRevision.NextStepsTitle", null);
     var nextStepsDescription = pageContent.GetValueOrDefault("Modifications.RequestForRevision.NextStepsDescription", null);
-
+    var resvisionDescription = TempData[TempDataKeys.RevisionDescription] as string;
+    TempData.Keep(TempDataKeys.RevisionDescription);
     var backNavigation = ("pov:postapproval", "Back", new Dictionary<string, string>{
             { "projectRecordId", projectRecordId }});
 
@@ -41,7 +42,7 @@
     <div class="govuk-grid-column-two-thirds">
         <div class="govuk-heading-m">
             @Html.Raw(requestRevisionHeadline?.Value)
-            <p class="govuk-body">@Model.RevisionDescription</p>
+            <p class="govuk-body">@resvisionDescription</p>
         </div>
     </div>
 </div>

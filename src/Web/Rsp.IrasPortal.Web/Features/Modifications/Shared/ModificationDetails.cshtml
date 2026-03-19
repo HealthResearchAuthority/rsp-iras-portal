@@ -76,7 +76,8 @@ else
     // display the notification banner if change is removed
     var changeRemoved = TempData[TempDataKeys.ProjectModificationChange.ChangeRemoved];
     var changeName = TempData[TempDataKeys.ProjectModificationChange.ChangeName];
-
+    var resvisionDescription = TempData[TempDataKeys.RevisionDescription] as string;
+    TempData.Keep(TempDataKeys.RevisionDescription);
     if (changeRemoved is true)
     {
         <partial name="_NotificationBanner"
@@ -147,7 +148,7 @@ else
     <div class="govuk-grid-column-two-thirds">
         <div class="govuk-heading-m">
             @Html.Raw(headlineSponsor?.Value)
-            <p class="govuk-body">@Model.RevisionDescription</p>
+            <p class="govuk-body">@resvisionDescription</p>
         </div>
     </div>
 </div>
@@ -192,7 +193,7 @@ else
             @if (!Model.ModificationChanges.Any())
             {
                 var routeData = new Dictionary<string, string>
-            {
+        {
                     { "projectRecordId", Model.ProjectRecordId },
                     { "routeName", "sws:modifications" },
                     { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId ?? string.Empty },
@@ -203,6 +204,13 @@ else
                    asp-all-route-data="@routeData"
                    status-for="Status"
                    status-is="@ModificationStatus.ReviseAndAuthorise"
+                   class="govuk-button govuk-button--secondary">
+                    Save for later
+                </a>
+                <a asp-route="pov:postapproval"
+                   asp-route-projectRecordId="@Model.ProjectRecordId"
+                   status-for="Status"
+                   status-is="@ModificationStatus.RequestRevisions"
                    class="govuk-button govuk-button--secondary">
                     Save for later
                 </a>

@@ -8,10 +8,10 @@
 @model BaseProjectModificationViewModel
 
 @{
-	var modificationParams = new Dictionary<string, string> {
-			{ "projectRecordId", Model.ProjectRecordId },
-			{ "irasId", Model.IrasId  },
-			{ "shortTitle", Model.ShortTitle ?? string.Empty },
+    var modificationParams = new Dictionary<string, string> {
+            { "projectRecordId", Model.ProjectRecordId },
+            { "irasId", Model.IrasId  },
+            { "shortTitle", Model.ShortTitle ?? string.Empty },
             { "projectModificationId", Model.ModificationId ?? string.Empty },
             { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId ?? string.Empty },
             { "rtsId", Model.RtsId ?? string.Empty }
@@ -24,22 +24,29 @@
 
     var title = pageContent.GetValueOrDefault("Modifications.Documentsscaninprogress.Title", null);
     var body = pageContent.GetValueOrDefault("Modifications.Documentsscaninprogress.Body", null);
+    var saveButtonTitle = Model.Status switch
+    {
+        ModificationStatus.ReviseAndAuthorise => "Return to revise and authorise",
+        ModificationStatus.RequestRevisions => "Return to make revision",
+        _ => string.Empty
+    };
+
 }
 
 <div class="govuk-grid-row">
-	<div class="govuk-grid-column-two-thirds">
+    <div class="govuk-grid-column-two-thirds">
         <h1 class="govuk-heading-l">@Html.Raw(title?.Value)</h1>
         <partial name="_ProjectModificationSummary" model="Model" view-data="ViewData" />
-		<p class="govuk-body">
+        <p class="govuk-body">
             @Html.Raw(body?.Value)
-		</p>
-		<div class="save-buttons">
+        </p>
+        <div class="save-buttons">
             <a class="govuk-button"
                asp-route="pmc:modificationdetails"
                asp-all-route-data="modificationParams"
                status-for="Status"
-               status-is="@ModificationStatus.ReviseAndAuthorise">
-                Return to revise and authorise
+               status-in="@([ModificationStatus.ReviseAndAuthorise,ModificationStatus.RequestRevisions] )">
+                @saveButtonTitle
             </a>
 
             <a class="govuk-button"
@@ -47,9 +54,9 @@
                asp-all-route-data="modificationParams"
                status-for="Status"
                status-mode="Hide"
-               status-is="@ModificationStatus.ReviseAndAuthorise">
+               status-in="@([ModificationStatus.ReviseAndAuthorise,ModificationStatus.RequestRevisions] )">
                 Return to review modification
             </a>
-		</div>
-	</div>
+        </div>
+    </div>
 </div>
