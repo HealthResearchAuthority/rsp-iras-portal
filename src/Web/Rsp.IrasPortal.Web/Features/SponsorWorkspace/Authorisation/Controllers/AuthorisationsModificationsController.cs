@@ -213,6 +213,8 @@ public class AuthorisationsModificationsController
         modification.SponsorDetails = sponsorDetailsQuestionnaire.Questions;
 
         var modificationAuditResponse = await projectModificationsService.GetModificationAuditTrail(projectModificationId);
+        var auditTrailsRecords = modificationAuditResponse.Content?.Items ?? [];
+        await SponsorOrganisationNameHelper.GetSponsorOrganisationsNameForAuditRecords(rtsService, auditTrailsRecords);
 
         if (modificationAuditResponse.IsSuccessStatusCode && modificationAuditResponse.Content is not null)
         {

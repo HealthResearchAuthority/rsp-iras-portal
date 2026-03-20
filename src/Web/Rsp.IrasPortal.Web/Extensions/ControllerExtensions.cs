@@ -2,6 +2,7 @@
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
@@ -126,6 +127,10 @@ public static class ControllerExtensions
         // before the validation cicks in
         context.RootContextData["questions"] = model.Questions;
 
+        // this is required for checking against setting up answer
+        // to the same value as original project record answer
+        context.RootContextData["ProjectRecordAnswers"] = model.ProjectRecordAnswers;
+
         // call the ValidateAsync to execute the validation
         // this will trigger the fluentvalidation using the injected validator if configured
         var result = await validator.ValidateAsync(context);
@@ -139,18 +144,28 @@ public static class ControllerExtensions
                 // error messages in the View.
                 foreach (var error in result.Errors)
                 {
+                    string propertyName;
+
                     if (error.CustomState is QuestionViewModel qvm)
                     {
-                        var adjustedPropertyName = PropertyNameHelper.AdjustPropertyName(error.PropertyName, qvm.Index);
+                        propertyName = PropertyNameHelper.AdjustPropertyName(error.PropertyName, qvm.Index);
+                    }
+                    else
+                    {
+                        propertyName = error.PropertyName;
+                    }
 
-                        if (!controller.ModelState.ContainsKey(adjustedPropertyName))
+                    if (controller.ModelState.TryGetValue(propertyName, out var entry))
+                    {
+                        if (entry.ValidationState is ModelValidationState.Valid)
                         {
-                            controller.ModelState.AddModelError(adjustedPropertyName, error.ErrorMessage);
+                            controller.ModelState.Remove(propertyName);
+                            controller.ModelState.AddModelError(propertyName, error.ErrorMessage);
                         }
                     }
-                    else if (!controller.ModelState.ContainsKey(error.PropertyName))
+                    else
                     {
-                        controller.ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                        controller.ModelState.AddModelError(propertyName, error.ErrorMessage);
                     }
                 }
             }

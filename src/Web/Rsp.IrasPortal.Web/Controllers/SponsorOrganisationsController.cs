@@ -540,7 +540,7 @@ public class SponsorOrganisationsController(
             TempData[TempDataKeys.ShowSponsorUserEditLink] = true;
             ViewBag.Type = "edit";
         }
-        
+
         return View(model);
     }
 
@@ -553,7 +553,6 @@ public class SponsorOrganisationsController(
             return View(model);
         }
 
-        
         var builtModel = await BuildSponsorOrganisationUserModel(rtsId, (Guid)userId);
 
         return View(builtModel);
@@ -719,7 +718,7 @@ public class SponsorOrganisationsController(
         var auditTrailResponse = response?.Content;
         var items = auditTrailResponse?.Items;
 
-        var sorted = SponsorOrganisationSortingExtensions.SortSponsorOrganisationAuditTrails(items, sortField,
+        var sorted = await SponsorOrganisationSortingExtensions.SortSponsorOrganisationAuditTrails(items, rtsService, sortField,
             sortDirection,
             load.Model.SponsorOrganisationName, pageNumber, pageSize);
 

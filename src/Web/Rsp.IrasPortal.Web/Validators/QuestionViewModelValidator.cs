@@ -28,6 +28,7 @@ public class QuestionViewModelValidator : QuestionViewModelValidatorBase
                 .DependentRules(() =>
                 {
                     ConfigureLengthRule();
+                    ConfigurePreviousAnswerRule();
                     ConfigureRegExRule();
                     ConfigureDateRule();
                 });

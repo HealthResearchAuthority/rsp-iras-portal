@@ -519,9 +519,10 @@ public class MyOrganisationsController(
             return this.ServiceError(auditResponse);
         }
 
-        var auditTrails = SponsorOrganisationSortingExtensions.SortSponsorOrganisationAuditTrails
+        var auditTrails = await SponsorOrganisationSortingExtensions.SortSponsorOrganisationAuditTrails
         (
             auditResponse.Content.Items,
+            rtsService,
             sortField,
             sortDirection,
             ctx.RtsOrganisation.Name,

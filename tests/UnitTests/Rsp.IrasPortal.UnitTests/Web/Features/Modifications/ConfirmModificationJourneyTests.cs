@@ -401,7 +401,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
 
         // Assert
         var redirect = result.ShouldBeOfType<ViewResult>();
-        redirect.ViewName.ShouldBe("ProjectHaltWarning");
+        redirect.ViewName.ShouldBe("SelectedModificationChangeErrorPage");
     }
 
     [Fact]
@@ -584,7 +584,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
 
         // Assert
         var redirectResult = result.ShouldBeOfType<ViewResult>();
-        redirectResult.ViewName.ShouldBe("ProjectHaltWarning");
+        redirectResult.ViewName.ShouldBe("SelectedModificationChangeErrorPage");
     }
 
     [Fact]
@@ -640,7 +640,7 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
 
         // Assert
         var redirectResult = result.ShouldBeOfType<ViewResult>();
-        redirectResult.ViewName.ShouldBe("ProjectHaltWarning");
+        redirectResult.ViewName.ShouldBe("SelectedModificationChangeErrorPage");
     }
 
     private void SetupTempData(AreaOfChangeViewModel model, List<AreaOfChangeDto> areas, Guid modificationId, Guid? modificationChangeId = null)

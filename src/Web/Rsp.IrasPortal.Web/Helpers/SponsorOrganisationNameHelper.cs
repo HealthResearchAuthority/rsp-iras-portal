@@ -1,4 +1,5 @@
-﻿using Rsp.Portal.Application.Services;
+﻿using System.Text.RegularExpressions;
+using Rsp.Portal.Application.Services;
 using Rsp.Portal.Web.Models;
 
 namespace Rsp.Portal.Web.Helpers;
@@ -36,5 +37,56 @@ public static class SponsorOrganisationNameHelper
             }
         }
         return sponsorOrganisationName;
+    }
+
+    public static async Task GetSponsorOrganisationsNameForAuditRecords(
+        IRtsService rtsService,
+        IEnumerable<object> auditRecords)
+    {
+        // Regex:
+        // Primary sponsor organisation changed from {int} to {int}
+        var regex = new Regex(
+            @"^Primary sponsor organisation changed from '(\d+)' to '(\d+)'",
+            RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500));
+
+        foreach (var record in auditRecords)
+        {
+            var descProp = record.GetType().GetProperty("Description");
+            if (descProp == null)
+            {
+                continue;
+            }
+
+            var desc = descProp.GetValue(record) as string;
+            if (string.IsNullOrWhiteSpace(desc))
+            {
+                continue;
+            }
+
+            var match = regex.Match(desc);
+            if (!match.Success)
+            {
+                continue;
+            }
+
+            string firstIdString = match.Groups[1].Value;
+            string secondIdString = match.Groups[2].Value;
+
+            var firstOrgName = await GetSponsorOrganisationNameFromOrganisationId(rtsService, firstIdString);
+            var secondOrgName = await GetSponsorOrganisationNameFromOrganisationId(rtsService, secondIdString);
+
+            var newDesc = desc;
+            if (firstOrgName != null)
+            {
+                newDesc = newDesc.Replace(firstIdString, firstOrgName);
+            }
+
+            if (secondOrgName != null)
+            {
+                newDesc = newDesc.Replace(secondIdString, secondOrgName);
+            }
+
+            descProp.SetValue(record, newDesc);
+        }
     }
 }

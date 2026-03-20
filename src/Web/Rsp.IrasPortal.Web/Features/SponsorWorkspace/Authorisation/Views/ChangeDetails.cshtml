@@ -1,8 +1,11 @@
 ﻿@using Rsp.Gds.Component.Models
 @using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Application.Services
 @using Rsp.Portal.Web.Features.Modifications.Models
+@using Rsp.Portal.Web.Helpers
 @model Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseModificationsOutcomeViewModel
+@inject IRtsService rtsService
 
 @{
 	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
@@ -73,7 +76,14 @@
                         @selectedChange.SpecificChangeName
                     </dt>
                     <dd class="govuk-summary-list__value">
-                        @selectedChange.SpecificChangeAnswer
+                        @{
+                            var answerText = selectedChange.SpecificChangeAnswer;
+                        }
+                        @if (selectedChange.SpecificAreaOfChangeId == AreasOfChange.ChangeOfPrimarySponsor)
+                        {
+                            answerText = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromOrganisationId(rtsService, answerText);
+                        }
+                        @answerText
                     </dd>
                 </div>
                 @foreach (var question in selectedChange.Questions)

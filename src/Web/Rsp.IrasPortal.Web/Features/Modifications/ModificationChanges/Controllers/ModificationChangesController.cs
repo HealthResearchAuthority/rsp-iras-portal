@@ -125,6 +125,12 @@ public class ModificationChangesController
             }
         }
 
+        // get the application from the session
+        // to get the projectApplicationId
+        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
+
+        await PopulateOriginalAnswers(projectRecordId, questionnaire.Questions, model);
+
         // At this point only validating the data format like date, email, length etc if provided
         // so that users can continue without entering the information. From the review screen
         // all mandatory questions will be validated
@@ -138,15 +144,8 @@ public class ModificationChangesController
         // this is where the questionnaire will resume
         var navigation = await SetStage(model.CurrentStage!, question?.QuestionId, question?.GetDisplayText());
 
-        // get the application from the session
-        // to get the projectApplicationId
-        var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string;
-
         if (!isValid)
         {
-            // see if the orginal answers are required to be shown
-            await PopulateOriginalAnswers(projectRecordId, questionnaire.Questions, model);
-
             model.ReviewAnswers = false;
             return View("Questionnaire", model);
         }

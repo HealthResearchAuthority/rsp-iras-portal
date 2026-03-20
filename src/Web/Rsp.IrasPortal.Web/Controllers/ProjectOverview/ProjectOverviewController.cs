@@ -387,6 +387,8 @@ public class ProjectOverviewController
         var organisationName = await SponsorOrganisationNameHelper.GetSponsorOrganisationNameFromQuestions(rtsService, questionnaire.Questions);
 
         var auditTrails = await applicationService.GetProjectRecordAuditTrail(projectRecordId);
+        var auditTrailsRecords = auditTrails.Content?.Items ?? [];
+        await SponsorOrganisationNameHelper.GetSponsorOrganisationsNameForAuditRecords(rtsService, auditTrailsRecords);
 
         // Populate TempData with project details for actual modification journey
         TempData[TempDataKeys.IrasId] = projectRecord.IrasId;
@@ -404,7 +406,7 @@ public class ProjectOverviewController
             IrasId = projectRecord.IrasId,
             OrganisationName = organisationName,
             SectionGroupQuestions = sectionGroupQuestions,
-            AuditTrails = auditTrails.Content?.Items ?? [],
+            AuditTrails = auditTrailsRecords,
             CreatedBy = projectRecord.CreatedBy,
         };
 
