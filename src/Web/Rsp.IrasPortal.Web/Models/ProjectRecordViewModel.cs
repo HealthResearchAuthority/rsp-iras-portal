@@ -24,4 +24,24 @@ public class ProjectRecordViewModel : QuestionnaireViewModel
     /// Identifier for the section in the questionnaire.
     /// </summary>
     public string SectionId { get; set; } = null!;
+
+    /// <summary>
+    /// Lead nation
+    /// </summary>
+    public string LeadNation { get; set; } = null!;
+
+    /// <summary>
+    /// Is NHS / HSC Organisation
+    /// </summary>
+    public bool IsNHSHSCOrganisation { get; set; }
+
+    /// <summary>
+    /// Lead nation selected option
+    /// </summary>
+    public string LeadNationSelectedOption { get; set; } = null!;
+
+    /// <summary>
+    /// Is NHS / HSC Organisation selected option
+    /// </summary>
+    public string IsNHSHSCOrganisationSelectedOption { get; set; }
 }

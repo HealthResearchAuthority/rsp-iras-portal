@@ -29,4 +29,5 @@ public record ProjectRecordDto
     /// Optional long or descriptive project title.
     /// </summary>
     public string? LongProjectTitle { get; set; }
+    public string? LeadNation { get; set; }
 }

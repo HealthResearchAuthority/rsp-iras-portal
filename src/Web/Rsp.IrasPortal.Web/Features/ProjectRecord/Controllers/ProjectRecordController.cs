@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text.Json;
 using Mapster;
@@ -88,6 +88,23 @@ public class ProjectRecordController
         projectRecordViewModel.IrasId = projectRecord.IrasId!.Value;
         projectRecordViewModel.ShortProjectTitle = projectRecord.ShortProjectTitle!;
         projectRecordViewModel.FullProjectTitle = projectRecord.LongProjectTitle!;
+        projectRecordViewModel.LeadNation = projectRecord.LeadNation!;
+        // Map LeadNation text → optionId
+        projectRecordViewModel.LeadNationSelectedOption = projectRecord.LeadNation switch
+        {
+            "England" => QuestionAnswersOptionsIds.England,
+            "Northern Ireland" => QuestionAnswersOptionsIds.NorthernIreland,
+            "Scotland" => QuestionAnswersOptionsIds.Scotland,
+            "Wales" => QuestionAnswersOptionsIds.Wales,
+            _ => string.Empty
+        };
+
+        projectRecordViewModel.IsNHSHSCOrganisationSelectedOption = QuestionAnswersOptionsIds.No;
+        if (projectRecord.LeadNation != "The study does not involve the NHS")
+        {
+            projectRecordViewModel.IsNHSHSCOrganisation = true;
+            projectRecordViewModel.IsNHSHSCOrganisationSelectedOption = QuestionAnswersOptionsIds.Yes;
+        }
 
         projectRecordViewModel.SectionId = section.Id;
 
@@ -129,6 +146,8 @@ public class ProjectRecordController
             StartDate = DateTime.Now,
             UserId = userId,
             IrasId = model.IrasId,
+            LeadNation = model.LeadNation,
+            IsNHSHSCOrganisation = model.IsNHSHSCOrganisation
         };
 
         // Call the service to create the new application

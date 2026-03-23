@@ -3,7 +3,7 @@
 @model ProjectRecordViewModel
 
 @{
-	ViewBag.Title = "Confirm project details";
+    ViewBag.Title = "Confirm project details";
 }
 
 @* @section is added for the back button, so that we can render something below the back button
@@ -34,6 +34,8 @@
                 <input type="hidden" asp-for="IrasId" />
                 <input type="hidden" asp-for="ShortProjectTitle" />
                 <input type="hidden" asp-for="FullProjectTitle" />
+                <input type="hidden" asp-for="LeadNation" />
+                <input type="hidden" asp-for="IsNHSHSCOrganisation" />
                 <input type="hidden" asp-for="SectionId" />
 
                 @foreach (var question in Model.Questions)
@@ -53,23 +55,39 @@
                     <input type="hidden" asp-for="Questions[index].IsMandatory" checked="@question.IsMandatory" />
                     <input type="hidden" asp-for="Questions[index].IsOptional" checked="@question.IsOptional" />
 
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key">@question.QuestionText</dt>
-                        <dd class="govuk-summary-list__value">
-                            @{
-                                var value = question.QuestionId switch
+                    var value = question.QuestionId switch
+                    {
+                        QuestionIds.ShortProjectTitle => Model.ShortProjectTitle,
+                        QuestionIds.FullProjectTitle => Model.FullProjectTitle,
+                        QuestionIds.NhsOrHscOrganisations => Model.IsNHSHSCOrganisation ? "Yes" : "No",
+                        QuestionIds.LeadNation => Model.LeadNation,
+                        _ => string.Empty
+                    };
+
+                    @if (value != "The study does not involve the NHS")
+                    {
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">@question.QuestionText</dt>
+                            <dd class="govuk-summary-list__value">
+                                @value
+
+                                @if (question.QuestionId != QuestionIds.NhsOrHscOrganisations && question.QuestionId != QuestionIds.LeadNation)
                                 {
-                                    QuestionIds.ShortProjectTitle => Model.ShortProjectTitle,
-                                    QuestionIds.FullProjectTitle => Model.FullProjectTitle,
-                                    _ => string.Empty
-                                };
-                            }
+                                    <input type="hidden" asp-for="Questions[index].AnswerText" value="@value" />
+                                }
 
-                            @value
+                                @if (question.QuestionId == QuestionIds.NhsOrHscOrganisations)
+                                {
+                                    <input type="hidden" asp-for="Questions[index].SelectedOption" value="@Model.IsNHSHSCOrganisationSelectedOption" />
+                                }
 
-                            <input type="hidden" asp-for="Questions[index].AnswerText" value="@value" />
-                        </dd>
-                    </div>
+                                @if (question.QuestionId == QuestionIds.LeadNation)
+                                {
+                                    <input type="hidden" asp-for="Questions[index].SelectedOption" value="@Model.LeadNationSelectedOption" />
+                                }
+                            </dd>
+                        </div>
+                    }
                 }
             </dl>
 

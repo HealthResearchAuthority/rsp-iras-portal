@@ -29,7 +29,7 @@
     // Prepare the navigation model depending on whether we have a lastQuestion
 
     var navModel = lastQuestion != null
-        ? ("qnc:displayquestionnaire", "Back", new Dictionary<string, string> {{ "sectionId", lastQuestion.SectionId }, { "categoryId", lastQuestion.Category }})
+        ? ("qnc:displayquestionnaire", "Back", new Dictionary<string, string> { { "sectionId", lastQuestion.SectionId }, { "categoryId", lastQuestion.Category } })
         : ("app:createapplication", "Back", new Dictionary<string, string>());
 
     var backRoute = TempData.Peek(TempDataKeys.BackRoute) as string;
@@ -54,34 +54,34 @@
     <script src="~/lib/jquery/dist/jquery.js"></script>
 
     <script>
-		$(document).ready(function () {
-			// Serialize conditional rules and store them in sessionStorage
-			const conditionalRules = @Html.Raw(JsonSerializer.Serialize(
-				Model.Questions
-					.Where(q => !q.IsMandatory && q.Rules.Any())
-					.Select(q => new { q.QuestionId, q.Rules })
-				));
+        $(document).ready(function () {
+            // Serialize conditional rules and store them in sessionStorage
+            const conditionalRules = @Html.Raw(JsonSerializer.Serialize(
+                            Model.Questions
+                                    .Where(q => !q.IsMandatory && q.Rules.Any())
+                                    .Select(q => new { q.QuestionId, q.Rules })
+                            ));
 
-			// Save each conditional rule by QuestionId
-			conditionalRules.forEach(rule => {
-				sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
-			});
+        // Save each conditional rule by QuestionId
+        conditionalRules.forEach(rule => {
+            sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
+        });
 
-			// Initially hide all elements with 'conditional' class
-			$(".conditional").hide();
+            // Initially hide all elements with 'conditional' class
+            $(".conditional").hide();
 
-			// For each conditional div, check its parent hidden input value
-			document.querySelectorAll('div.conditional').forEach(div => {
-				const parentId = div.getAttribute('data-parents');
-				const hiddenInput = document.getElementById(parentId);
+            // For each conditional div, check its parent hidden input value
+            document.querySelectorAll('div.conditional').forEach(div => {
+                const parentId = div.getAttribute('data-parents');
+                const hiddenInput = document.getElementById(parentId);
 
-				// If the hidden input value is "yes", unhide the conditional div
-				if (hiddenInput?.value.trim().toLowerCase() === 'yes') {
-					div.classList.remove('conditional');
-					div.style.display = '';
-				}
-			});
-		});
+                // If the hidden input value is "yes", unhide the conditional div
+                if (hiddenInput?.value.trim().toLowerCase() === 'yes') {
+                    div.classList.remove('conditional');
+                    div.style.display = '';
+                }
+            });
+        });
     </script>
 }
 
@@ -127,39 +127,42 @@
                     string parentAttributes = conditionalClass != "" ? $"data-parents=\"{string.Join(',', question.Rules.Select(r => r.ParentQuestionId))}\" data-questionid=\"{question.QuestionId}\"" : "";
                     string questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText;
 
-                    <div class="@conditionalClass govuk-summary-list__row" id="@questionKey" @Html.Raw(parentAttributes)>
-                        <dt class="govuk-summary-list__key">@questionText</dt>
+                    @if (!(question.QuestionId == QuestionIds.LeadNation && question.GetDisplayText() == "The study does not involve the NHS"))
+                    {
+                        <div class="@conditionalClass govuk-summary-list__row" id="@questionKey" @Html.Raw(parentAttributes)>
+                            <dt class="govuk-summary-list__key">@questionText</dt>
 
-                        <dd class="govuk-summary-list__value @(fieldHasErrors ? "govuk-error-summary__list" : "")">
-                            @if (question.IsEditable && question.IsMissingAnswer())
-                            {
-                                <a class="govuk-link" href="@Url.RouteUrl("qnc:displayquestionnaire", new { sectionId = question.SectionId, categoryId = question.Category, reviewAnswers = true })">
-                                    @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
-                                </a>
-                            }
-                            else
-                            {
-                                <input type="hidden" id="@question.QuestionId" name="hiddenResponse" value="@question.GetDisplayText()" />
-                                @if (string.Equals(question.QuestionId, QuestionIds.PrimarySponsorOrganisation, StringComparison.Ordinal))
+                            <dd class="govuk-summary-list__value @(fieldHasErrors ? "govuk-error-summary__list" : "")">
+                                @if (question.IsEditable && question.IsMissingAnswer())
                                 {
-                                    @organisationDisplayName                                    
+                                    <a class="govuk-link" href="@Url.RouteUrl("qnc:displayquestionnaire", new { sectionId = question.SectionId, categoryId = question.Category, reviewAnswers = true })">
+                                        @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
+                                    </a>
                                 }
                                 else
                                 {
-                                    @Html.Raw(question.GetDisplayText())
-                                }                                
-                            }
-                        </dd>
+                                    <input type="hidden" id="@question.QuestionId" name="hiddenResponse" value="@question.GetDisplayText()" />
+                                    @if (string.Equals(question.QuestionId, QuestionIds.PrimarySponsorOrganisation, StringComparison.Ordinal))
+                                    {
+                                        @organisationDisplayName
+                                    }
+                                    else
+                                    {
+                                        @Html.Raw(question.GetDisplayText())
+                                    }
+                                }
+                            </dd>
 
-                        <dd class="govuk-summary-list__actions">
-                            @if (question.IsEditable && !question.IsMissingAnswer())
-                            {
-                                <a class="govuk-link" href="@Url.RouteUrl("qnc:displayquestionnaire", new { sectionId = question.SectionId, categoryId = question.Category, reviewAnswers = true })">
-                                    @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
-                                </a>
-                            }
-                        </dd>
-                    </div>
+                            <dd class="govuk-summary-list__actions">
+                                @if (question.IsEditable && !question.IsMissingAnswer())
+                                {
+                                    <a class="govuk-link" href="@Url.RouteUrl("qnc:displayquestionnaire", new { sectionId = question.SectionId, categoryId = question.Category, reviewAnswers = true })">
+                                        @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
+                                    </a>
+                                }
+                            </dd>
+                        </div>
+                    }
                 }
             </dl>
         }
