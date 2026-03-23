@@ -95,10 +95,18 @@ public class ProjectRecordControllerTests : TestServiceBase<ProjectRecordControl
 
         Sut.TempData[TempDataKeys.ProjectRecord] = JsonSerializer.Serialize(record);
 
+        var section = new SectionModel { Id = "sec-1", SectionId = "s1" };
+        var cmsResponse = new CmsQuestionSetResponse
+        {
+            Id = "qset-1",
+            Version = "1.0",
+            Sections = [section]
+        };
+
         Mocker
             .GetMock<ICmsQuestionSetServiceClient>()
             .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(ApiResponseFactory.Success(new CmsQuestionSetResponse { Sections = [] }));
+            .ReturnsAsync(ApiResponseFactory.Success(cmsResponse));
 
         // Act
         await Sut.ProjectRecord("section-1");
