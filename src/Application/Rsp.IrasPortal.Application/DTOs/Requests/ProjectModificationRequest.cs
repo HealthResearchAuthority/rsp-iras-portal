@@ -91,6 +91,26 @@ public record ProjectModificationRequest
     public DateTime? SentToRegulatorDate { get; set; }
 
     /// <summary>
+    /// The reason for rejecting approval.
+    /// </summary>
+    public string? ReasonNotApproved { get; set; } = null!;
+
+    /// <summary>
+    /// The reviewer comments.
+    /// </summary>
+    public string? ReviewerComments { get; set; } = null!;
+
+    /// <summary>
+    /// The revision description.
+    /// </summary>
+    public string? RevisionDescription { get; set; } = null;
+
+    /// <summary>
+    /// Get or Set the request revision response by applicant
+    /// </summary>
+    public string? ApplicantRevisionResponse { get; set; } = null;
+
+    /// <summary>
     /// Gets or sets the list of changes associated with this project modification.
     /// </summary>
     public List<ProjectModificationChangeRequest> ProjectModificationChanges { get; set; } = [];
