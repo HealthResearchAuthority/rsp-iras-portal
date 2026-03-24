@@ -92,10 +92,10 @@ public class ProjectRecordController
         // Map LeadNation text → optionId
         projectRecordViewModel.LeadNationSelectedOption = projectRecord.LeadNation switch
         {
-            "England" => QuestionAnswersOptionsIds.England,
-            "Northern Ireland" => QuestionAnswersOptionsIds.NorthernIreland,
-            "Scotland" => QuestionAnswersOptionsIds.Scotland,
-            "Wales" => QuestionAnswersOptionsIds.Wales,
+            var x when x == UkCountryNames.England => QuestionAnswersOptionsIds.England,
+            var x when x == UkCountryNames.NorthernIreland => QuestionAnswersOptionsIds.NorthernIreland,
+            var x when x == UkCountryNames.Scotland => QuestionAnswersOptionsIds.Scotland,
+            var x when x == UkCountryNames.Wales => QuestionAnswersOptionsIds.Wales,
             _ => string.Empty
         };
 
