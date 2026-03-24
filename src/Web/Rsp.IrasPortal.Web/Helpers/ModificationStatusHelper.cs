@@ -13,4 +13,14 @@ public static class ModificationStatusHelper
             _ => status
         };
     }
+
+    public static string? ToDocumentUploadUiStatus(string? status)
+    {
+        return status switch
+        {
+            DocumentStatus.RequestRevisions => DocumentStatus.Uploaded,
+            DocumentStatus.ReviseAndAuthorise => DocumentStatus.WithSponsor,
+            _ => status
+        };
+    }
 }

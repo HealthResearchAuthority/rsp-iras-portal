@@ -371,9 +371,18 @@ public abstract class ModificationsControllerBase
              a.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase) ||
              a.Status.Equals(DocumentStatus.RequestRevisions, StringComparison.OrdinalIgnoreCase)))
         {
-            status = (await EvaluateDocumentCompletion(a.Id, questionnaire)
-                ? DocumentDetailStatus.Incomplete
-                : DocumentDetailStatus.Complete).ToString();
+            var isIncomplete = await EvaluateDocumentCompletion(a.Id, questionnaire);
+            if (a.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase)
+                    && !isIncomplete)
+            {
+                status = DocumentStatus.ReviseAndAuthorise;
+            }
+            else
+            {
+                status = (isIncomplete
+                    ? DocumentDetailStatus.Incomplete
+                    : DocumentDetailStatus.Complete).ToString();
+            }
         }
 
         return new DocumentSummaryItemDto
@@ -409,7 +418,12 @@ public abstract class ModificationsControllerBase
         clonedQuestionnaire = await PopulateAnswersFromDocuments(clonedQuestionnaire, answers);
 
         // Validate questionnaire
-        var isValid = await this.ValidateQuestionnaire(validator, clonedQuestionnaire, addModelErrors);
+        var isValid = await this.ValidateQuestionnaire(
+            validator,
+            clonedQuestionnaire,
+            true,
+            addModelErrors
+        );
 
         var supersedeDocumentsEnabled = await featureManager.IsEnabledAsync(FeatureFlags.SupersedingDocuments);
 
@@ -440,7 +454,8 @@ public abstract class ModificationsControllerBase
     protected async Task MapDocumentTypesAndStatusesAsync(
       QuestionnaireViewModel questionnaire,
       IEnumerable<ProjectOverviewDocumentDto> documents,
-      bool addModelErrors = true)
+      bool addModelErrors = true,
+      bool showIncompleteForReviseAndAuthoriseStatus = false)
     {
         if (questionnaire?.Questions == null || documents == null)
             return;
@@ -470,14 +485,33 @@ public abstract class ModificationsControllerBase
             }
 
             // ---- B. Update completion status ----
+
+            // skip validation for incomplete - if document status is ReviseAndAuthorise and its not Review and authorise view
+            if (!showIncompleteForReviseAndAuthoriseStatus &&
+                doc.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase))
+            {
+                doc.Status = DocumentStatus.ReviseAndAuthorise;
+                continue;
+            }
+
             if (!doc.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
-                doc.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase))
+                (doc.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase) ||
+                doc.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase) ||
+                doc.Status.Equals(DocumentStatus.RequestRevisions, StringComparison.OrdinalIgnoreCase)))
             {
                 bool isIncomplete = await EvaluateDocumentCompletion(doc.Id, questionnaire, addModelErrors);
 
-                doc.Status = isIncomplete
-                    ? DocumentDetailStatus.Incomplete.ToString()
-                    : DocumentDetailStatus.Complete.ToString();
+                if (doc.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase)
+                    && !isIncomplete)
+                {
+                    doc.Status = DocumentStatus.ReviseAndAuthorise;
+                }
+                else
+                {
+                    doc.Status = (isIncomplete
+                        ? DocumentDetailStatus.Incomplete
+                        : DocumentDetailStatus.Complete).ToString();
+                }
             }
         }
     }

@@ -52,9 +52,13 @@
                                 {
                                     @doc.Status
                                 }
+                                else if (doc.Status == DocumentStatus.ReviseAndAuthorise)
+                                {
+                                    @ModificationStatusHelper.ToDocumentUploadUiStatus(doc.Status)
+                                }
                                 else
                                 {
-                                    <strong class="govuk-tag">@ModificationStatusHelper.ToUiStatus(doc.Status)</strong>
+                                    <strong class="govuk-tag">@ModificationStatusHelper.ToDocumentUploadUiStatus(doc.Status)</strong>
                                 }
                             </div>
                         </li>

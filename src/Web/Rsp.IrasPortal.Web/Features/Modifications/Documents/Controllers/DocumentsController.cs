@@ -1381,7 +1381,8 @@ public class DocumentsController
         string irasId,
         object? projectModificationId,
         string projectRecordId,
-        string respondentId
+        string respondentId,
+        string uploadedDocumentStatus = DocumentStatus.Uploaded
     )
     {
         var blobClient = GetBlobClient(false);
@@ -1398,7 +1399,7 @@ public class DocumentsController
             FileName = blob.FileName,
             DocumentStoragePath = blob.BlobUri,
             FileSize = blob.FileSize,
-            Status = DocumentStatus.Uploaded
+            Status = uploadedDocumentStatus
         });
 
         await projectModificationsService.CreateDocumentModification(uploadedDocuments);
@@ -1929,6 +1930,16 @@ public class DocumentsController
             return model;
         }
 
+        // Handle Request revisions and Revise and authorise modification statuses - as initial document statuses
+        var modificationStatus = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string;
+
+        var documentStatus = modificationStatus switch
+        {
+            ModificationStatus.ReviseAndAuthorise => DocumentStatus.ReviseAndAuthorise,
+            ModificationStatus.RequestRevisions => DocumentStatus.RequestRevisions,
+            _ => DocumentStatus.Uploaded
+        };
+
         // Upload valid files
         if (validationResult.ValidFiles.Count > 0)
         {
@@ -1937,7 +1948,8 @@ public class DocumentsController
                 model.IrasId,
                 model.ModificationId == null ? Guid.Empty : Guid.Parse(model.ModificationId),
                 model.ProjectRecordId,
-                respondentId);
+                respondentId,
+                documentStatus);
 
             // Persist SUCCESS audit events AFTER successful upload
             if (validationResult.SuccessAuditEvents.Count > 0)
