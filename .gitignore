@@ -369,3 +369,7 @@ FodyWeavers.xsd
 .config/
 .vshistory
 ServiceDependencies
+
+#AI
+.claude/
+claude.md
