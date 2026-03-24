@@ -29,6 +29,8 @@
             showBackStageUserLinks = true;
         }
     </authorized>
+
+    var isHaltRestartWarning = TempData[TempDataKeys.IsHaltRestartWarning] as bool? ?? false;
 }
 
 <dl class="govuk-summary-list">
@@ -74,26 +76,27 @@
             }
         </dd>
     </div>
-
-    <authorized permission="@Permissions.MyResearch.Modifications_Review"
-                status-for="@modificationBaseModel.Status"
-                status-in="@(new []{ ModificationStatus.WithSponsor,
+    @if (!isHaltRestartWarning)
+    {
+        <authorized permission="@Permissions.MyResearch.Modifications_Review"
+                    status-for="@modificationBaseModel.Status"
+                    status-in="@(new[]{ ModificationStatus.WithSponsor,
                                ModificationStatus.ReviseAndAuthorise,
                                ModificationStatus.WithReviewBody,
                                ModificationStatus.Approved,
                                ModificationStatus.NotApproved,
                                ModificationStatus.NotAuthorised,
                                ModificationStatus.Withdrawn })"
-                status-mode="Show">
-        @if (modificationBaseModel.Status is not null)
-        {
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">Date created</dt>
-                <dd class="govuk-summary-list__value">@modificationBaseModel.DateCreated</dd>
-            </div>
-        }
-    </authorized>
-
+                    status-mode="Show">
+            @if (modificationBaseModel.Status is not null)
+            {
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Date created</dt>
+                    <dd class="govuk-summary-list__value">@modificationBaseModel.DateCreated</dd>
+                </div>
+            }
+        </authorized>
+    }
     <authorized permission="@Permissions.MyResearch.ModificationsHistory_BackStage_Read">
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">Audit</dt>
