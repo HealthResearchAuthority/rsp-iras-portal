@@ -121,6 +121,13 @@ public class SponsorReferenceController
         // if save for later, redirect to postapprovals
         if (saveForLater)
         {
+            var isValid = await this.ValidateQuestionnaire(validator, model) && await this.ValidateQuestionnaire(validator, model, true);
+
+            if (!isValid)
+            {
+                return View(nameof(SponsorReference), model);
+            }
+
             TempData[ShowNotificationBanner] = true;
             TempData[ProjectModification.ProjectModificationChangeMarker] = Guid.NewGuid();
 
