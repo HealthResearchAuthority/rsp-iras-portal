@@ -5,12 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset; // added for SectionModel
-using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services; // removed ServiceClients usage
 using Rsp.Portal.Web.Controllers;
-using Rsp.Portal.Web.Features.ProjectRecord.Controllers;
 using Rsp.Portal.Web.Models;
 
 namespace Rsp.Portal.UnitTests.Web.Controllers.ApplicationControllerTests;
@@ -165,7 +163,7 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
             .ReturnsAsync(new ServiceResponse<ProjectRecordValidationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new ProjectRecordValidationResponse()
+                Content = new ProjectRecordValidationResponse() // Data can be null, serialization handles it
             });
 
         // Question set service returns empty sections provoking service error (400)
@@ -213,7 +211,7 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
             .ReturnsAsync(new ServiceResponse<ProjectRecordValidationResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new ProjectRecordValidationResponse() // Data can be null, serialization handles it
+                Content = new ProjectRecordValidationResponse { Data = new ProjectRecordDto { LeadNation = "England" } }
             });
 
         // Question set with one section to redirect to
@@ -242,6 +240,63 @@ public class StartProjectTests : TestServiceBase<ApplicationController>
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe($"prc:{section.StaticViewName}");
         redirect.RouteValues!["sectionId"].ShouldBe(section.Id);
+    }
+
+    [Fact]
+    public async Task StartProject_RedirectsToMissingLeadNationRoute_IfLeadNationIsMissing()
+    {
+        // Arrange
+        var model = new IrasIdViewModel { IrasId = "5678" };
+
+        Mocker
+            .GetMock<IValidator<IrasIdViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<IrasIdViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        Mocker
+            .GetMock<IApplicationsService>()
+            .Setup(s => s.GetApplications())
+            .ReturnsAsync(new ServiceResponse<IEnumerable<IrasApplicationResponse>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = []
+            });
+
+        // Ensure HARP validation passes
+        Mocker
+            .GetMock<IProjectRecordValidationService>()
+            .Setup(s => s.ValidateProjectRecord(It.IsAny<int>()))
+            .ReturnsAsync(new ServiceResponse<ProjectRecordValidationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectRecordValidationResponse() // LeadNation is null, simulating missing lead nation
+            });
+
+        // Question set with one section to redirect to
+        var section = new SectionModel
+        {
+            Id = "section-1",
+            StaticViewName = "confirmprojectdetails"
+        };
+
+        Mocker
+            .GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    Sections = new List<SectionModel> { section }
+                }
+            });
+
+        // Act
+        var result = await Sut.StartProject(model);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe($"prc:missingleadnation");
     }
 
     [Fact]

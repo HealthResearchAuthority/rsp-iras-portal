@@ -1,0 +1,36 @@
+﻿@using System.Globalization
+@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.FeatureManagement
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Web.Features.Modifications.Models
+@model ProjectRecordViewModel
+
+@{
+    ViewBag.Title = "Project details cannot be imported";
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Project details cannot be imported</h1>
+        <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">IRAS ID</dt>
+                <dd class="govuk-summary-list__value">@Model.IrasId</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Short project title</dt>
+                <dd class="govuk-summary-list__value">@Model.ShortProjectTitle</dd>
+            </div>
+        </dl>
+        <p class="govuk-body">
+            You cannot currently create this project in Plan and manage health and care research because the project details could not be imported. Please get in touch with our support team.
+        </p>
+        <div class="save-buttons">            
+            <a class="govuk-button">
+                Visit our support page
+            </a>
+        </div>
+    </div>
+</div>

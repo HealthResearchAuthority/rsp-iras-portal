@@ -39,6 +39,36 @@ public class ProjectRecordController
         return View();
     }
 
+    [ExcludeFromCodeCoverage]
+    public IActionResult MissingLeadNation()
+    {
+        // get the validated harp project record request from TempData
+        var harpProjectRecord = TempData.Peek(TempDataKeys.ProjectRecord) as string;
+
+        if (string.IsNullOrWhiteSpace(harpProjectRecord))
+        {
+            var serviceResponse = new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Error = "Project record request data is missing."
+            };
+
+            return this.ServiceError(serviceResponse);
+        }
+
+        var projectRecord = JsonSerializer.Deserialize<ProjectRecordDto>(harpProjectRecord)!;
+
+        // project details view model inherits from questionnaire view model it can adapt to it
+        var projectRecordViewModel = new ProjectRecordViewModel
+        {
+            // map the project details properties
+            IrasId = projectRecord.IrasId!.Value,
+            ShortProjectTitle = projectRecord.ShortProjectTitle!
+        };
+
+        return View(projectRecordViewModel);
+    }
+
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Create)]
     [Route("/[controller]", Name = "prc:projectrecord")]
     public async Task<IActionResult> ProjectRecord(string sectionId)
