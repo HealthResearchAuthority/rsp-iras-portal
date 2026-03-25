@@ -91,6 +91,12 @@ public record ProjectModificationRequest
     public DateTime? SentToRegulatorDate { get; set; }
 
     /// <summary>
+    /// Gets or sets the submission date.
+    /// This date is populated when a sponsor submits review outcome - if modification is Authorised, Not authorised, Requested revisions or Revised and authorised
+    /// </summary>
+    public DateTime? DateSponsorSubmittedOutcomeDate { get; set; }
+
+    /// <summary>
     /// The reason for rejecting approval.
     /// </summary>
     public string? ReasonNotApproved { get; set; } = null!;

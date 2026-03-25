@@ -102,6 +102,9 @@ public record ProjectModificationResponse
     public DateTime? SentToSponsorDate { get; set; }
 
     public DateTime? SentToRegulatorDate { get; set; }
+
+    public DateTime? DateSponsorSubmittedOutcome { get; set; }
+
     /// <summary>
     /// Get or Set the request revision response by applicant
     /// </summary>
