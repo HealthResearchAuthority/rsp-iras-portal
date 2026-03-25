@@ -436,6 +436,9 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
                 Content = [new() { QuestionId = "SPQ1", AnswerText = "SponsorAnswer" }]
             });
 
+        var docId1 = Guid.NewGuid();
+        var docId2 = Guid.NewGuid();
+
         // DocumentDetails question set
         Mocker.GetMock<ICmsQuestionsetService>()
             .Setup(s => s.GetModificationQuestionSet(
@@ -460,7 +463,7 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
                                 QuestionId = ModificationQuestionIds.DocumentType,
                                 AnswerDataType = "Text",
                                 CategoryId = "D1"
-                            }
+                            },
                         ]
                     }
                     ]
@@ -481,8 +484,21 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
                 StatusCode = HttpStatusCode.OK,
                 Content = new()
                 {
-                    TotalCount = 1,
-                    Documents = [new() { DocumentType = "TypeA" }]
+                    TotalCount = 2,
+                    Documents = [
+                    new()
+                    {
+                        Id = docId1,
+                        DocumentType = "TypeA",
+                        Status = DocumentStatus.ReviseAndAuthorise
+                    },
+                    new()
+                    {
+                        Id = docId2,
+                        DocumentType = "TypeA",
+                        Status = DocumentStatus.ReviseAndAuthorise
+                    }
+                ]
                 }
             });
 
@@ -528,8 +544,11 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
         model.SponsorDetails.Count.ShouldBe(1);
         model.SponsorDetails[0].AnswerText.ShouldBe("SponsorAnswer");
 
-        model.ProjectOverviewDocumentViewModel.Documents.Count().ShouldBe(1);
+        model.ProjectOverviewDocumentViewModel.Documents.Count().ShouldBe(2);
         model.ProjectOverviewDocumentViewModel.Pagination.AdditionalParameters["sponsorOrganisationUserId"]
             .ShouldBe(sponsorUserId.ToString());
+
+        var doc1 = model.ProjectOverviewDocumentViewModel.Documents.Single(d => d.Id == docId1);
+        doc1.Status.ShouldBe(DocumentStatus.ReviseAndAuthorise); // Complete (stays ReviseAndAuthorise)
     }
 }

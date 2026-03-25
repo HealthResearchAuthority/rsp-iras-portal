@@ -184,6 +184,102 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
     }
 
     [Fact]
+    public async Task UploadDocuments_WhenModificationStatusIsReviseAndAuthorise_UsesReviseAndAuthoriseDocumentStatus()
+    {
+        // Arrange
+        var model = new ModificationUploadDocumentsViewModel
+        {
+            Files = new List<IFormFile>
+        {
+            new FormFile(new MemoryStream(), 0, 1024, "file", "good.pdf")
+        }
+        };
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentRequest>()
+            });
+
+        Mocker.GetMock<IBlobStorageService>()
+            .Setup(b => b.UploadFilesAsync(It.IsAny<BlobServiceClient>(), It.IsAny<IEnumerable<IFormFile>>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new List<DocumentSummaryItemDto>
+            {
+            new() { FileName = "good.pdf", BlobUri = "uri", FileSize = 1024 }
+            });
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.IrasId] = 999,
+            [TempDataKeys.ProjectModification.ProjectModificationStatus] = ModificationStatus.ReviseAndAuthorise
+        };
+
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
+
+        // Act
+        var result = await Sut.UploadDocuments(model);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        var vm = view.Model.ShouldBeOfType<ModificationUploadDocumentsViewModel>();
+
+        vm.UploadedDocuments.First().Status.ShouldBe(DocumentStatus.ReviseAndAuthorise);
+    }
+
+    [Fact]
+    public async Task UploadDocuments_WhenModificationStatusIsRequestRevisions_UsesRequestRevisionsDocumentStatus()
+    {
+        // Arrange
+        var model = new ModificationUploadDocumentsViewModel
+        {
+            Files = new List<IFormFile>
+        {
+            new FormFile(new MemoryStream(), 0, 1024, "file", "good.pdf")
+        }
+        };
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentRequest>()
+            });
+
+        Mocker.GetMock<IBlobStorageService>()
+            .Setup(b => b.UploadFilesAsync(It.IsAny<BlobServiceClient>(), It.IsAny<IEnumerable<IFormFile>>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new List<DocumentSummaryItemDto>
+            {
+            new() { FileName = "good.pdf", BlobUri = "uri", FileSize = 1024 }
+            });
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.IrasId] = 999,
+            [TempDataKeys.ProjectModification.ProjectModificationStatus] = ModificationStatus.RequestRevisions
+        };
+
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
+
+        // Act
+        var result = await Sut.UploadDocuments(model);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        var vm = view.Model.ShouldBeOfType<ModificationUploadDocumentsViewModel>();
+
+        vm.UploadedDocuments.First().Status.ShouldBe(DocumentStatus.RequestRevisions);
+    }
+
+    [Fact]
     public async Task UploadDocuments_ValidFiles_UploadsAndRedirects()
     {
         var model = new ModificationUploadDocumentsViewModel
