@@ -29,6 +29,7 @@ public struct TempDataKeys
         public const string ReasonNotApproved = "td:reason_not_approved";
         public const string CanModificationSendToSponsor = "td:can_modification_send_to_sponsor";
         public const string CanCreateNewModification = "td:can_create_new_modifications";
+        public const string DateSponsorSubmittedOutcome = "td:date_sponsor_submitted_outcome";
     }
 
     public struct ProjectModificationChange

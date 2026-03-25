@@ -116,13 +116,10 @@
         <authorized role-is="@Roles.Applicant"
                     status-for="@modificationBaseModel.Status"
                     status-is="@ModificationStatus.RequestRevisions">
-            @if (ViewBag.RevisionSent == true)
-            {
-                <div class="govuk-summary-list__row">
-                    <dt class="govuk-summary-list__key"></dt>
-                    <dd class="govuk-summary-list__value"></dd>
-                </div>
-            }
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Date sponsor submitted</dt>
+                <dd class="govuk-summary-list__value">@modificationBaseModel.DateSponsorSubmittedOutcome</dd>
+            </div>
         </authorized>
     </feature>
 

@@ -84,6 +84,7 @@ public abstract class ModificationsControllerBase
             Category = modification.Category ?? Ranking.NotAvailable,
             ReviewType = modification.ReviewType ?? Ranking.NotAvailable,
             DateCreated = DateHelper.ConvertDateToString(modification.CreatedDate),
+            DateSponsorSubmittedOutcome = DateHelper.ConvertDateToString(modification.DateSponsorSubmittedOutcome),
             ReasonNotApproved = modification?.ReasonNotApproved ?? string.Empty,
             ReviewerComments = modification?.ReviewerComments,
             RevisionDescription = modification?.RevisionDescription,
@@ -257,6 +258,7 @@ public abstract class ModificationsControllerBase
         TempData[TempDataKeys.ProjectModification.OverallReviewType] = modification.ReviewType;
         TempData[TempDataKeys.IrasId] = irasId;
         TempData[TempDataKeys.ProjectModification.DateCreated] = modification.DateCreated;
+        TempData[TempDataKeys.ProjectModification.DateSponsorSubmittedOutcome] = modification.DateSponsorSubmittedOutcome;
 
         var (changesResult, initialQuestions, modificationChanges) = await GetModificationChanges(modification);
         if (changesResult is not null)
