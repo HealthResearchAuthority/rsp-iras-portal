@@ -96,4 +96,5 @@ public struct TempDataKeys
     public const string CollaboratorExists = "td:collaborator_exists";
     public const string CollaboratorAlreadyAdded = "td:collaborator_already_added";
     public const string ShowSponsorUserEditLink = "td:show_sponsor_user_edit_link";
+    public const string IsHaltRestartWarning = "td:is_halt_restart_warning";
 }
