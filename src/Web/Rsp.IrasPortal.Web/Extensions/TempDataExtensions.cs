@@ -81,6 +81,7 @@ public static class TempDataExtensions
         model.SpecificAreaOfChange = tempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string ?? string.Empty;
         model.SpecificAreaOfChangeId = tempData.PeekGuid(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
         model.DateCreated = tempData.Peek(TempDataKeys.ProjectModification.DateCreated)?.ToString() ?? string.Empty;
+        model.DateSponsorSubmittedOutcome = tempData.Peek(TempDataKeys.ProjectModification.DateSponsorSubmittedOutcome)?.ToString() ?? string.Empty;
         model.Status = tempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string ?? string.Empty;
         model.SponsorOrganisationUserId = tempData.PeekGuid(TempDataKeys.RevisionSponsorOrganisationUserId);
         model.RtsId = tempData.Peek(TempDataKeys.RevisionRtsId) as string ?? string.Empty;

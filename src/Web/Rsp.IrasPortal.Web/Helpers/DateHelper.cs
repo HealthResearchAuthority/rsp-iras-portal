@@ -21,4 +21,13 @@ public static class DateHelper
     {
         return inputDate.ToString("dd MMMM yyyy", new CultureInfo("en-GB"));
     }
+
+    public static string ConvertDateToString(DateTime? inputDate)
+    {
+        if (inputDate is null)
+        {
+            return string.Empty;
+        }
+        return inputDate.Value.ToString("dd MMMM yyyy", new CultureInfo("en-GB"));
+    }
 }

@@ -272,6 +272,7 @@ public class ModificationDetailsController
         {
             IrasId = irasId,
             ShortTitle = shortTitle,
+            DateSponsorSubmittedOutcome = DateHelper.ConvertDateToString(modification.Content.DateSponsorSubmittedOutcome),
             RevisionDescription = modification.Content.RevisionDescription,
             ProjectRecordId = projectRecordId,
             ModificationId = projectModificationId.ToString(),
