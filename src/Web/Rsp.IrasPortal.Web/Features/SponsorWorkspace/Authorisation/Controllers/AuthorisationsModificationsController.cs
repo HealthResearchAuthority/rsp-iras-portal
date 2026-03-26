@@ -232,12 +232,33 @@ public class AuthorisationsModificationsController
 
         var authoriseOutcomeViewModel = modification.Adapt<AuthoriseModificationsOutcomeViewModel>(config);
 
+        // get all documents for the modification and do pagination here
         var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
-            DocumentDetailsSection, pageNumber, pageSize, sortField, sortDirection);
+            DocumentDetailsSection, 1, int.MaxValue, sortField, sortDirection);
 
-        authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
+        var allDocuments = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
 
-        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents);
+        // Map the document types and statuses to user-friendly text for display in the view.
+        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, allDocuments);
+
+        // do sorting of status field here because status field is mapped and not stored in DB
+        if (sortField == nameof(ProjectOverviewDocumentDto.Status))
+        {
+            if (sortDirection == SortDirections.Ascending)
+            {
+                allDocuments = allDocuments?.OrderBy(d => d.Status);
+            }
+            else
+            {
+                allDocuments = allDocuments?.OrderByDescending(d => d.Status);
+            }
+        }
+
+        // apply pagination
+        var paginatedDocuments = allDocuments?.Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize);
+
+        authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Documents = paginatedDocuments ?? [];
 
         authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult.Item1?.Content?.TotalCount ?? 0)
         {

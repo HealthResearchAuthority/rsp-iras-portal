@@ -452,12 +452,33 @@ public class ProjectOverviewController
 
         searchQuery.AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document);
 
+        // get all documents for the modification and do pagination here
         var modificationsResponseResult = await projectModificationsService.GetDocumentsForProjectOverview(projectRecordId,
-            searchQuery, pageNumber, pageSize, sortField, sortDirection);
+            searchQuery, 1, int.MaxValue, sortField, sortDirection);
 
-        model.Documents = modificationsResponseResult?.Content?.Documents ?? [];
+        var allDocuments = modificationsResponseResult.Content?.Documents ?? [];
 
-        await MapDocumentTypesAndStatusesAsync(questionnaire, model.Documents);
+        // Map the document types and statuses to user-friendly text for display in the view.
+        await MapDocumentTypesAndStatusesAsync(questionnaire, allDocuments);
+
+        // do sorting of status field here because status field is mapped and not stored in DB
+        if (sortField == nameof(ProjectOverviewDocumentDto.Status))
+        {
+            if (sortDirection == SortDirections.Ascending)
+            {
+                allDocuments = allDocuments?.OrderBy(d => d.Status);
+            }
+            else
+            {
+                allDocuments = allDocuments?.OrderByDescending(d => d.Status);
+            }
+        }
+
+        // apply pagination
+        var paginatedDocuments = allDocuments?.Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize);
+
+        model.Documents = paginatedDocuments ?? [];
 
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
         {
