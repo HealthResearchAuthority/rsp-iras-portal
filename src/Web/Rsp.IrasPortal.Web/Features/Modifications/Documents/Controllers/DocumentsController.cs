@@ -2101,7 +2101,7 @@ public class DocumentsController
                 DateTimeStamp = DateTime.UtcNow,
                 Description = DocumentAuditEvents.DocumentDetailsCompleted,
                 FileName = viewModel.FileName ?? string.Empty,
-                User = HttpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty
+                User = HttpContext.Items[ContextItemKeys.Email]?.ToString() ?? string.Empty
             }
         };
 
