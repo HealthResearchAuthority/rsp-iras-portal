@@ -126,10 +126,30 @@ public class ReviewAllChangesController
             };
         }
 
+        // get all documents for the modification and do pagination here
         var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
-            DocumentDetailsSection, pageNumber, pageSize, sortField, sortDirection);
+            DocumentDetailsSection, 1, int.MaxValue, sortField, sortDirection);
 
-        modification.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
+        var allDocuments = modificationDocumentsResponseResult.Item1?.Content?.Documents;
+
+        // apply pagination
+        var paginatedDocuments = allDocuments?.Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize);
+
+        // do sorting of status field here because status field is mapped and not stored in DB
+        if (sortField == nameof(ProjectOverviewDocumentDto.Status))
+        {
+            if (sortDirection == SortDirections.Ascending)
+            {
+                paginatedDocuments = paginatedDocuments?.OrderBy(d => d.Status);
+            }
+            else
+            {
+                paginatedDocuments = paginatedDocuments?.OrderByDescending(d => d.Status);
+            }
+        }
+
+        modification.ProjectOverviewDocumentViewModel.Documents = paginatedDocuments ?? [];
 
         await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents);
 
