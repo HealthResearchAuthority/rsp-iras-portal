@@ -130,7 +130,9 @@ public class ReviewAllChangesController
         var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
             DocumentDetailsSection, 1, int.MaxValue, sortField, sortDirection);
 
-        var allDocuments = modificationDocumentsResponseResult.Item1?.Content?.Documents;
+        var allDocuments = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
+
+        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, allDocuments);
 
         // apply pagination
         var paginatedDocuments = allDocuments?.Skip((pageNumber - 1) * pageSize)
@@ -150,8 +152,6 @@ public class ReviewAllChangesController
         }
 
         modification.ProjectOverviewDocumentViewModel.Documents = paginatedDocuments ?? [];
-
-        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents);
 
         modification.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult.Item1?.Content?.TotalCount ?? 0)
         {
