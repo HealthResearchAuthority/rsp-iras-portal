@@ -77,7 +77,8 @@
                                                                         new { Field = nameof(ProjectOverviewDocumentDto.DocumentName), Label = "Document name" },
                                                                         new { Field = nameof(ProjectOverviewDocumentDto.FileName), Label = "File name" },
                                                                         new { Field = nameof(ProjectOverviewDocumentDto.DocumentVersion), Label = "Version" },
-                                                                        new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" }
+                                                                        new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" },
+																		new { Field = nameof(ProjectOverviewDocumentDto.Status), Label = "Status" }
                                                                         };
                                     }
 
@@ -105,7 +106,6 @@
                                                                                 })
                                         </th>
                                     }
-                                    <th scope="col" class="govuk-table__header">Status</th>
                                     @if (Model.Status is ModificationStatus.InDraft || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise))
                                     {
                                         <th scope="col" class="govuk-table__header">Action</th>
