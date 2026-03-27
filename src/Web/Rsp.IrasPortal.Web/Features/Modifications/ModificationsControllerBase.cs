@@ -653,7 +653,7 @@ public abstract class ModificationsControllerBase
         return (documentsForModification, questionnaire);
     }
 
-    protected IEnumerable<ProjectOverviewDocumentDto> GetSortedAndPaginatedDocuments(
+    protected static IEnumerable<ProjectOverviewDocumentDto> GetSortedAndPaginatedDocuments(
         IEnumerable<ProjectOverviewDocumentDto> allDocuments,
         string sortField,
         string sortDirection,
