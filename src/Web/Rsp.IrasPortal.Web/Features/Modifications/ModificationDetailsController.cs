@@ -133,22 +133,22 @@ public class ModificationDetailsController
 
             await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, allDocuments, false, true);
 
-            // apply pagination
-            var paginatedDocuments = allDocuments?.Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize);
-
             // do sorting of status field here because status field is mapped and not stored in DB
             if (sortField == nameof(ProjectOverviewDocumentDto.Status))
             {
                 if (sortDirection == SortDirections.Ascending)
                 {
-                    paginatedDocuments = paginatedDocuments?.OrderBy(d => d.Status);
+                    allDocuments = allDocuments.OrderBy(d => d.Status);
                 }
                 else
                 {
-                    paginatedDocuments = paginatedDocuments?.OrderByDescending(d => d.Status);
+                    allDocuments = allDocuments.OrderByDescending(d => d.Status);
                 }
             }
+
+            // apply pagination
+            var paginatedDocuments = allDocuments.Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
 
             modification.ProjectOverviewDocumentViewModel.Documents = paginatedDocuments ?? [];
 

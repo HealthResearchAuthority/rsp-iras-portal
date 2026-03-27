@@ -246,16 +246,16 @@ public class AuthorisationsModificationsController
         {
             if (sortDirection == SortDirections.Ascending)
             {
-                allDocuments = allDocuments?.OrderBy(d => d.Status);
+                allDocuments = allDocuments.OrderBy(d => d.Status);
             }
             else
             {
-                allDocuments = allDocuments?.OrderByDescending(d => d.Status);
+                allDocuments = allDocuments.OrderByDescending(d => d.Status);
             }
         }
 
         // apply pagination
-        var paginatedDocuments = allDocuments?.Skip((pageNumber - 1) * pageSize)
+        var paginatedDocuments = allDocuments.Skip((pageNumber - 1) * pageSize)
             .Take(pageSize);
 
         authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Documents = paginatedDocuments ?? [];
