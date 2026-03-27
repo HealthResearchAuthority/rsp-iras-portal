@@ -2,6 +2,7 @@
 @using Rsp.Gds.Component.Models
 @using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Application.Extensions
 @using Rsp.Portal.Domain.AccessControl
 @using Rsp.Portal.Web.Extensions
 @using Rsp.Portal.Web.Features.Modifications.Models
@@ -9,231 +10,268 @@
 @inject Microsoft.FeatureManagement.IFeatureManager FeatureManager
 
 @{
-    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
-    TempData[TempDataKeys.ProjectModification.ReviewAllChanges] = true;
-    ViewData[ViewDataKeys.ShowRemoveLink] = false;
-    ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
-    ViewData[ViewDataKeys.ShowModificationStatus] = true;
-    ViewData[ViewDataKeys.IsSponsorCheckAndAuthorise] = true;
-    ViewData[ViewDataKeys.ShowModificationDetails] = Model.Status != ModificationStatus.WithSponsor && Model.Status != ModificationStatus.ReviseAndAuthorise;
+	TempData[TempDataKeys.ProjectModification.ReviewAllChanges] = true;
+	ViewData[ViewDataKeys.ShowRemoveLink] = false;
+	ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
+	ViewData[ViewDataKeys.ShowModificationStatus] = true;
+	ViewData[ViewDataKeys.IsSponsorCheckAndAuthorise] = true;
+	ViewData[ViewDataKeys.ShowModificationDetails] = Model.Status != ModificationStatus.WithSponsor && Model.Status != ModificationStatus.ReviseAndAuthorise;
 
-    ViewBag.SponsorOrganisationUserId = Model.SponsorOrganisationUserId;
-    ViewBag.RtsId = Model.RtsId;
+	ViewBag.SponsorOrganisationUserId = Model.SponsorOrganisationUserId;
+	ViewBag.RtsId = Model.RtsId;
 
-    var isAuthoriser = TempData[TempDataKeys.IsAuthoriser] as bool? ?? false;
-    var tempHalt = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
-    if (tempHalt == AreasOfChange.ProjectHalt)
-    {
-        ViewData[ViewDataKeys.ShowChangeLink] = false;
-        ViewData[ViewDataKeys.ShowRemoveLink] = false;
-    }
+	var isAuthoriser = TempData[TempDataKeys.IsAuthoriser] as bool? ?? false;
+	var tempHalt = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
+	if (tempHalt == AreasOfChange.ProjectHalt)
+	{
+		ViewData[ViewDataKeys.ShowChangeLink] = false;
+		ViewData[ViewDataKeys.ShowRemoveLink] = false;
+	}
 
-    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
-    var pageContent = pageContentData ?? new Dictionary<string, MixedContentPageItem?>();
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+	var pageContent = pageContentData ?? new Dictionary<string, MixedContentPageItem?>();
 
-    var headline = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.Title", null);
-    var actionedModificationHeadline = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.ModificationActionedTitle", null);
-    var rankingTitle = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.RankingTitle", null);
-    var outcomeTitle = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.OutcomeTitle", null);
-    var outcome = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.Outcome", null);
-    var revisionDescriptionBySponsorTitle = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.RevisionBySponsorHeadline", null);
-    var revisionResponseByApplicantTitle = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.RevisionByApplicantHeadline", null);
-    var revisionDescriptionAfterReviseAndAuthoriseTitle = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.RevisionDesciptionAfterReviseAndAuthoriseHeadline", null);
-    // Detect field error for summary styling
-    var hasError = ViewData.ModelState.TryGetValue(nameof(Model.Outcome), out var entry) && entry!.Errors.Any();
+	var headline = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.Title", null);
+	var actionedModificationHeadline = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.ModificationActionedTitle", null);
+	var rankingTitle = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.RankingTitle", null);
+	var outcomeTitle = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.OutcomeTitle", null);
+	var outcome = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.Outcome", null);
+	var revisionDescriptionBySponsorTitle = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.RevisionBySponsorHeadline", null);
+	var revisionResponseByApplicantTitle = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.RevisionByApplicantHeadline", null);
+	var revisionDescriptionAfterReviseAndAuthoriseTitle = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.RevisionDesciptionAfterReviseAndAuthoriseHeadline", null);
+	// Detect field error for summary styling
+	var hasError = ViewData.ModelState.TryGetValue(nameof(Model.Outcome), out var entry) && entry!.Errors.Any();
 
-    // Radio options for the TagHelper
-    var outcomeOptions = new List<GdsOption>
+	// Radio options for the TagHelper
+	var outcomeOptions = new List<GdsOption>
 {
-        new() { Value = "Authorised", Label = "Authorised" },
-        new() { Value = "NotAuthorised", Label = "Not authorised" }
-    };
+		new() { Value = "Authorised", Label = "Authorised" },
+		new() { Value = "NotAuthorised", Label = "Not authorised" }
+	};
 
-    if (await FeatureManager.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
-    {
-        outcome = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.Outcome_Additional", null);
+	if (await FeatureManager.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+	{
+		outcome = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.Outcome_Additional", null);
 
-        outcomeOptions.Add(new GdsOption
-        {
-            Value = "ReviseAndAuthorise",
-            Label = "Revise and authorise"
-        });
+		outcomeOptions.Add(new GdsOption
+				{
+					Value = "ReviseAndAuthorise",
+					Label = "Revise and authorise"
+				});
 
-        if (ViewBag.RevisionSent == false)
-        {
-            outcomeOptions.Add(new GdsOption
-            {
-                Value = "RequestRevisions",
-                Label = "Request revisions"
-            });
-        }
-    }
+		if (ViewBag.RevisionSent == false)
+		{
+			outcomeOptions.Add(new GdsOption
+					{
+						Value = "RequestRevisions",
+						Label = "Request revisions"
+					});
+		}
+	}
 }
 
 @section Breadcrumb {
-    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
-    {
-        ("Sponsor workspace", Url.RouteUrl("sws:sponsorworkspace")),
-        ("Authorisations", Url.RouteUrl("sws:modifications", new { sponsorOrganisationUserId = Model.SponsorOrganisationUserId, rtsId = Model.RtsId })),
-    })
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("Sponsor workspace", Url.RouteUrl("sws:sponsorworkspace")),
+		("Authorisations", Url.RouteUrl("sws:modifications", new { sponsorOrganisationUserId = Model.SponsorOrganisationUserId, rtsId = Model.RtsId })),
+	})
 }
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <h1 status-for="Status"
-            status-in="@([ModificationStatus.WithSponsor, ModificationStatus.ReviseAndAuthorise])"
-            class="govuk-heading-l">
-            @Html.Raw(headline?.Value)
-        </h1>
+	<div class="govuk-grid-column-two-thirds">
+		<h1 status-for="Status"
+			status-in="@([ModificationStatus.WithSponsor, ModificationStatus.ReviseAndAuthorise])"
+			class="govuk-heading-l">
+			@Html.Raw(headline?.Value)
+		</h1>
 
-        <h1 status-for="Status"
-            status-in="@([ModificationStatus.WithSponsor, ModificationStatus.ReviseAndAuthorise])"
-            status-mode="Hide"
-            class="govuk-heading-l">
-            @Html.Raw(actionedModificationHeadline?.Value)
-        </h1>
+		<h1 status-for="Status"
+			status-in="@([ModificationStatus.WithSponsor, ModificationStatus.ReviseAndAuthorise])"
+			status-mode="Hide"
+			class="govuk-heading-l">
+			@Html.Raw(actionedModificationHeadline?.Value)
+		</h1>
 
-        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+		<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
-        <partial name="~/Features/Modifications/Shared/_ProjectModificationSummary.cshtml"
-                 model="Model"
-                 view-data="ViewData" />
+		<partial name="~/Features/Modifications/Shared/_ProjectModificationSummary.cshtml"
+				 model="Model"
+				 view-data="ViewData" />
 
-        <h2 class="govuk-heading-m">Summary details</h2>
-        <div class="govuk-summary-card">
-            <div class="govuk-summary-card__title-wrapper">
-                <h2 class="govuk-summary-card__title">
-                    @Html.Raw(rankingTitle?.Value)
-                </h2>
-            </div>
-            <div class="govuk-summary-card__content">
-                @{
-                    var ranking = new RankingOfChangeViewModel
-                    {
-                        ModificationType = Model.ModificationType,
-                        Category = Model.Category,
-                        ReviewType = Model.ReviewType
-                    };
-                }
-                <partial name="~/Features/Modifications/Shared/RankingOfChange.cshtml"
-                         model="ranking" />
-            </div>
-        </div>
-    </div>
+		<feature name="@FeatureFlags.DownloadPack">
+			@if (User.HasPermission(Permissions.MyResearch.Modifications_Download))
+			{
+				<div status-for="@Model.Status"
+					 status-in="@([ModificationStatus.WithSponsor,
+                                   ModificationStatus.NotAuthorised,
+                                   ModificationStatus.WithReviewBody,
+                                   ModificationStatus.Approved,
+                                   ModificationStatus.NotApproved,
+                                   ModificationStatus.ReviseAndAuthorise,
+                                   ModificationStatus.ReviewInProgress,
+                                   ModificationStatus.RequestForInformation])">
+					<h2 class="govuk-heading-m">Download a PDF of the modification information</h2>
+					<p class="govuk-body">
+						You'll need to send this to participating organisations along with your cover letter and copies of any supporting documents.
+					</p>
+					<a asp-controller="ReviewAllChanges" asp-action="DownloadModificationPdfFromHtml" class="govuk-button govuk-button--secondary">
+						Download modification information
+					</a>
+				</div>
+			}
+			else if (User.HasPermission(Permissions.MyResearch.Modifications_Download_Limited))
+			{
+				<div status-for="@Model.Status"
+					 status-in="@([ModificationStatus.Approved,
+                                                                                                                                                                                                                                                                                    ModificationStatus.NotApproved,])">
+					<h2 class="govuk-heading-m">Download a PDF of the modification information</h2>
+					<p class="govuk-body">
+						You'll need to send this to participating organisations along with your cover letter and copies of any supporting documents.
+					</p>
+					<a asp-controller="ReviewAllChanges" asp-action="DownloadModificationPdfFromHtml" class="govuk-button govuk-button--secondary">
+						Download modification information
+					</a>
+				</div>
+			}
+		</feature>
+
+		<h2 class="govuk-heading-m">Summary details</h2>
+		<div class="govuk-summary-card">
+			<div class="govuk-summary-card__title-wrapper">
+				<h2 class="govuk-summary-card__title">
+					@Html.Raw(rankingTitle?.Value)
+				</h2>
+			</div>
+			<div class="govuk-summary-card__content">
+				@{
+					var ranking = new RankingOfChangeViewModel
+			{
+				ModificationType = Model.ModificationType,
+				Category = Model.Category,
+				ReviewType = Model.ReviewType
+			};
+				}
+				<partial name="~/Features/Modifications/Shared/RankingOfChange.cshtml"
+						 model="ranking" />
+			</div>
+		</div>
+	</div>
 </div>
 <div class="govuk-grid-row" status-for="@Model.Status" status-is="@ModificationStatus.WithSponsor">
-    @if (ViewBag.RevisionSent == true)
-    {
-        <div class="govuk-grid-column-two-thirds">
-            <div class="govuk-heading-m">
-                <strong> @Html.Raw(revisionDescriptionBySponsorTitle?.Value)</strong>
-            </div>
-        </div>
-    }
+	@if (ViewBag.RevisionSent == true)
+	{
+		<div class="govuk-grid-column-two-thirds">
+			<div class="govuk-heading-m">
+				<strong> @Html.Raw(revisionDescriptionBySponsorTitle?.Value)</strong>
+			</div>
+		</div>
+	}
 </div>
 <div class="govuk-grid-row" status-for="@Model.Status" status-is="@ModificationStatus.WithSponsor">
-    @if (ViewBag.RevisionSent == true)
-    {
-        <div class="govuk-grid-column-two-thirds">
-            <div class="govuk-body">
-                @Model.RevisionDescription
-            </div>
-        </div>
-    }
+	@if (ViewBag.RevisionSent == true)
+	{
+		<div class="govuk-grid-column-two-thirds">
+			<div class="govuk-body">
+				@Model.RevisionDescription
+			</div>
+		</div>
+	}
 </div>
 <div class="govuk-grid-row" status-for="@Model.Status" status-is="@ModificationStatus.WithSponsor">
-    @if (ViewBag.RevisionSent == true)
-    {
-        <div class="govuk-grid-column-two-thirds">
-            <div class="govuk-heading-m">
-                @Html.Raw(revisionResponseByApplicantTitle?.Value)
-            </div>
-        </div>
-    }
+	@if (ViewBag.RevisionSent == true)
+	{
+		<div class="govuk-grid-column-two-thirds">
+			<div class="govuk-heading-m">
+				@Html.Raw(revisionResponseByApplicantTitle?.Value)
+			</div>
+		</div>
+	}
 </div>
 <div class="govuk-grid-row" status-for="@Model.Status" status-is="@ModificationStatus.WithSponsor">
-    @if (ViewBag.RevisionSent == true)
-    {
-        <div class="govuk-grid-column-two-thirds">
-            <div class="govuk-body">
-                @Model.ApplicantRevisionResponse
-            </div>
-        </div>
-    }
+	@if (ViewBag.RevisionSent == true)
+	{
+		<div class="govuk-grid-column-two-thirds">
+			<div class="govuk-body">
+				@Model.ApplicantRevisionResponse
+			</div>
+		</div>
+	}
 </div>
 <feature name="@FeatureFlags.RevisionAndAuthorisation">
-    <div class="govuk-grid-row"
-         status-for="@Model.Status"
-         status-in="@([ModificationStatus.Approved, ModificationStatus.WithReviewBody])"
-         role-in="@([Roles.SystemAdministrator, Roles.OrganisationAdministrator, Roles.Sponsor, Roles.Applicant])">
-        @if (!string.IsNullOrWhiteSpace(Model.RevisionDescription))
-        {
-            <div class="govuk-grid-column-two-thirds">
-                <div class="govuk-heading-m">
-                    @Html.Raw(revisionDescriptionAfterReviseAndAuthoriseTitle?.Value)
-                </div>
-            </div>
-            <div class="govuk-grid-column-two-thirds">
-                <div class="govuk-body">
-                    @Model.RevisionDescription
-                </div>
-            </div>
-        }
-    </div>
+	<div class="govuk-grid-row"
+		 status-for="@Model.Status"
+		 status-in="@([ModificationStatus.Approved, ModificationStatus.WithReviewBody])"
+		 role-in="@([Roles.SystemAdministrator, Roles.OrganisationAdministrator, Roles.Sponsor, Roles.Applicant])">
+		@if (!string.IsNullOrWhiteSpace(Model.RevisionDescription))
+		{
+			<div class="govuk-grid-column-two-thirds">
+				<div class="govuk-heading-m">
+					@Html.Raw(revisionDescriptionAfterReviseAndAuthoriseTitle?.Value)
+				</div>
+			</div>
+			<div class="govuk-grid-column-two-thirds">
+				<div class="govuk-body">
+					@Model.RevisionDescription
+				</div>
+			</div>
+		}
+	</div>
 </feature>
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
-        <partial name="~/Features/Modifications/Views/_NavigationTabPartial.cshtml"
-                 model="Model"
-                 view-data="ViewData" />
-    </div>
+	<div class="govuk-grid-column-full">
+		<partial name="~/Features/Modifications/Views/_NavigationTabPartial.cshtml"
+				 model="Model"
+				 view-data="ViewData" />
+	</div>
 </div>
 
 @if (isAuthoriser)
 {
-    <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
-                status-for="Status"
-                status-is="@ModificationStatus.WithSponsor">
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <h2 class="govuk-heading-m">@Html.Raw(outcomeTitle?.Value)</h2>
-                @Html.Raw(outcome?.Value)
-            </div>
-        </div>
+	<authorized permission="@Permissions.Sponsor.Modifications_Authorise"
+				status-for="Status"
+				status-is="@ModificationStatus.WithSponsor">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<h2 class="govuk-heading-m">@Html.Raw(outcomeTitle?.Value)</h2>
+				@Html.Raw(outcome?.Value)
+			</div>
+		</div>
 
-        <form method="post">
-            <!-- round-trip context -->
-            <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
-            <input type="hidden" name="IrasId" value="@Model.IrasId" />
-            <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
-            <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
-            <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
-            <input type="hidden" name="ProjectModificationId" value="@Model.ProjectModificationId" />
-            <input type="hidden" name="ReviewType" value="@Model.ReviewType" />
-            <input type="hidden" name="ModificationIdentifier" value="@Model.ModificationIdentifier" />
-            <input type="hidden" name="RtsId" value="@Model.RtsId" />
+		<form method="post">
+			<!-- round-trip context -->
+			<input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
+			<input type="hidden" name="IrasId" value="@Model.IrasId" />
+			<input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
+			<input type="hidden" name="ModificationId" value="@Model.ModificationId" />
+			<input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+			<input type="hidden" name="ProjectModificationId" value="@Model.ProjectModificationId" />
+			<input type="hidden" name="ReviewType" value="@Model.ReviewType" />
+			<input type="hidden" name="ModificationIdentifier" value="@Model.ModificationIdentifier" />
+			<input type="hidden" name="RtsId" value="@Model.RtsId" />
 
-            <div class="govuk-form-group @(hasError ? "govuk-form-group--error" : "")">
+			<div class="govuk-form-group @(hasError ? "govuk-form-group--error" : "")">
 
-                @if (hasError)
-                {
-                    <p class="govuk-error-message">
-                        @ViewData.ModelState[nameof(Model.Outcome)]?.Errors?.FirstOrDefault()?.ErrorMessage
-                    </p>
-                }
+				@if (hasError)
+				{
+					<p class="govuk-error-message">
+						@ViewData.ModelState[nameof(Model.Outcome)]?.Errors?.FirstOrDefault()?.ErrorMessage
+					</p>
+				}
 
-                <rsp-gds-radio-group asp-for="Outcome"
-                                     label-text=" "
-                                     label-css-class="govuk-label govuk-label--s font-weight-none"
-                                     options="outcomeOptions"
-                                     div-inline-class="govuk-radios"
-                                     hint-html="">
-                </rsp-gds-radio-group>
-            </div>
+				<rsp-gds-radio-group asp-for="Outcome"
+									 label-text=" "
+									 label-css-class="govuk-label govuk-label--s font-weight-none"
+									 options="outcomeOptions"
+									 div-inline-class="govuk-radios"
+									 hint-html="">
+				</rsp-gds-radio-group>
+			</div>
 
-            <partial name="_SubmitButton"
-                     model="@("sws:checkandauthorise", "Confirm selection", new Dictionary<string, string>())" />
-        </form>
-    </authorized>
+			<partial name="_SubmitButton"
+					 model="@("sws:checkandauthorise", "Confirm selection", new Dictionary<string, string>())" />
+		</form>
+	</authorized>
 }

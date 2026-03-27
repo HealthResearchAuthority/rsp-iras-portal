@@ -3,7 +3,9 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Moq;
 using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Responses;
@@ -230,6 +232,210 @@ public class AddDocumentDetailsListTests : TestServiceBase<DocumentsController>
         // doc2: no answers, should be Incomplete
         var doc2 = model.UploadedDocuments.Single(d => d.DocumentId == docWithoutAnswers);
         Assert.Equal(DocumentDetailStatus.Incomplete.ToString(), doc2.Status);
+    }
+
+    [Fact]
+    public async Task AddDocumentDetailsList_WhenReviseAndAuthoriseAndComplete_ReturnsReviseAndAuthorise()
+    {
+        var docId = Guid.NewGuid();
+
+        // RETURN ONE DOCUMENT WITH STATUS = ReviseAndAuthorise
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentRequest>
+                {
+                new()
+                {
+                    Id = docId,
+                    Status = DocumentStatus.ReviseAndAuthorise,
+                    FileName = "doc1.pdf",
+                    FileSize = 123,
+                    DocumentStoragePath = "https://storage/doc1.pdf"
+                }
+                }
+            });
+
+        // RETURN CMS QUESTIONSET
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    Id = "pdm-document-metadata",
+                    Version = "1.0",
+                    ActiveFrom = DateTime.UtcNow,
+                    ActiveTo = DateTime.UtcNow.AddYears(1),
+                    Sections =
+                    [
+                        new SectionModel
+                    {
+                        Id = "S1",
+                        Questions =
+                        [
+                            new QuestionModel
+                            {
+                                Id = "Q1",
+                                QuestionId = "Test",
+                                Name = "Test Question",
+                                Version = "1.0",
+                                CategoryId = "cat",
+                                SectionSequence = 1,
+                                Sequence = 1,
+                                ShortName = "Short Q",
+                                AnswerDataType = "Dropdown",
+                                Conformance = "Mandatory",
+                                QuestionFormat = "dropdown",
+                                Answers = [ new() { Id = "opt1", OptionName = "Option 1" } ]
+                            }
+                        ]
+                    }
+                    ]
+                }
+            });
+
+        // FORCE COMPLETE (EvaluateDocumentCompletion → false)
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentAnswers(docId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content =
+                [
+                    new() { QuestionId = "Test", AnswerText = "aa", SelectedOption = "opt1", OptionType = "dropdown" }
+                ]
+            });
+
+        // Validator mock
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        // TempData
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "Safety",
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.ShortProjectTitle] = "Short Title",
+            [TempDataKeys.IrasId] = 999,
+        };
+
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+
+        // ACT
+        var result = await Sut.AddDocumentDetailsList();
+
+        // ASSERT
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<ModificationReviewDocumentsViewModel>(viewResult.Model);
+
+        var doc = model.UploadedDocuments.Single();
+        Assert.Equal(DocumentStatus.ReviseAndAuthorise, doc.Status);
+    }
+
+    [Fact]
+    public async Task AddDocumentDetailsList_WhenReviseAndAuthoriseAndIncomplete_ReturnsIncomplete()
+    {
+        var docId = Guid.NewGuid();
+
+        // MOCK DOCUMENT WITH STATUS = ReviseAndAuthorise
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content =
+                [
+                    new()
+                {
+                    Id = docId,
+                    Status = DocumentStatus.ReviseAndAuthorise,
+                    FileName = "doc.pdf",
+                    FileSize = 123,
+                    DocumentStoragePath = "https://storage/doc.pdf"
+                }
+                ]
+            });
+
+        // RETURN CMS QUESTIONSET
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pdm-document-metadata", It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    Id = "pdm-document-metadata",
+                    Version = "1.0",
+                    ActiveFrom = DateTime.UtcNow,
+                    ActiveTo = DateTime.UtcNow.AddYears(1),
+                    Sections =
+                    [
+                        new SectionModel
+                    {
+                        Id = "S1",
+                        Questions =
+                        [
+                            new QuestionModel
+                            {
+                                Id = "Q1",
+                                QuestionId = "Test",
+                                Name = "Test Question",
+                                Version = "1.0",
+                                CategoryId = "cat",
+                                SectionSequence = 1,
+                                Sequence = 1,
+                                ShortName = "Short Q",
+                                AnswerDataType = "Dropdown",
+                                Conformance = "Mandatory",
+                                QuestionFormat = "dropdown",
+                                Answers = [ new() { Id = "opt1", OptionName = "Option 1" } ]
+                            }
+                        ]
+                    }
+                    ]
+                }
+            });
+
+        // NO ANSWERS → INCOMPLETE
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationDocumentAnswers(docId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new List<ProjectModificationDocumentAnswerDto>()
+            });
+
+        // Validator mock
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.SpecificAreaOfChangeText] = "Safety",
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "record-123",
+            [TempDataKeys.ShortProjectTitle] = "Short Title",
+            [TempDataKeys.IrasId] = 999,
+        };
+
+        Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+
+        // ACT
+        var result = await Sut.AddDocumentDetailsList();
+
+        // ASSERT
+        var vm = Assert.IsType<ModificationReviewDocumentsViewModel>(
+            Assert.IsType<ViewResult>(result).Model
+        );
+
+        Assert.Equal(DocumentDetailStatus.Incomplete.ToString(), vm.UploadedDocuments.Single().Status);
     }
 
     [Fact]
