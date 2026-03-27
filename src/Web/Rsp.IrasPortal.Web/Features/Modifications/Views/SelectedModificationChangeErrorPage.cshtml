@@ -13,11 +13,13 @@
     TempData.Keep(TempDataKeys.ProjectModification.ProjectModificationIdentifier);
     var title = pageContent.GetValueOrDefault("Modifications.ConfirmModificationJourney.Title", null);
     var projectHaltChangeBody = pageContent.GetValueOrDefault("Modifications.ConfirmModificationJourney.Content", null);
+    var projectRestartChangeBody = pageContent.GetValueOrDefault("Modifications.ConfirmModificationJourney.RestartContent", null);
     var primarySponsorChangeBody = pageContent.GetValueOrDefault("Modifications.ConfirmModificationJourney.PrimarySponsorChangeContent", null);
 
     var body = Model.InvalidSpecificAreaOfChangeId switch
     {
         AreasOfChange.ProjectHalt => projectHaltChangeBody,
+        AreasOfChange.ProjectRestart => projectRestartChangeBody,
         AreasOfChange.ChangeOfPrimarySponsor => primarySponsorChangeBody,
         _ => null
     };

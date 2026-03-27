@@ -220,6 +220,26 @@
 		}
 	</div>
 </feature>
+<feature name="@FeatureFlags.RequestRevisions">
+    <div class="govuk-grid-row"
+         status-for="@Model.Status"
+         status-in="@([ModificationStatus.Approved, ModificationStatus.WithReviewBody])"
+         role-in="@([Roles.SystemAdministrator, Roles.OrganisationAdministrator, Roles.Sponsor])">
+        @if (!string.IsNullOrWhiteSpace(Model.ApplicantRevisionResponse))
+        {
+            <div class="govuk-grid-column-two-thirds">
+                <div class="govuk-heading-m">
+                    @Html.Raw(revisionResponseByApplicantTitle?.Value)
+                </div>
+            </div>
+            <div class="govuk-grid-column-two-thirds">
+                <div class="govuk-body">
+                    @Model.ApplicantRevisionResponse
+                </div>
+            </div>
+        }
+    </div>
+</feature>
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-full">
 		<partial name="~/Features/Modifications/Views/_NavigationTabPartial.cshtml"

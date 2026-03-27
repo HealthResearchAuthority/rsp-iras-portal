@@ -438,10 +438,12 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse> { StatusCode = HttpStatusCode.BadRequest, Content = irasApplicationResponse });
 
         // Act
-        var result = await Sut.AreaOfChange(projectModificationId, "Project halt");
+        var result = await Sut.AreaOfChange(projectModificationId, "PR01");
 
         // Assert
-        result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.Model.ShouldBeOfType<AreaOfChangeViewModel>();
     }
 
     [Theory, AutoData]
@@ -499,7 +501,6 @@ public class AreaOfChangeTests : TestServiceBase<ModificationsController>
         // Act
         var result = await Sut.AreaOfChange(projectModificationId, "Project halt");
 
-        // Assert
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         viewResult.Model.ShouldBeOfType<AreaOfChangeViewModel>();

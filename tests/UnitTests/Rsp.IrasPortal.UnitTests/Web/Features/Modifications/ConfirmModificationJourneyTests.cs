@@ -21,12 +21,14 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
     private readonly Mock<IValidator<AreaOfChangeViewModel>> _validator;
     private readonly Mock<ICmsQuestionsetService> _cmsService;
     private readonly Mock<IProjectModificationsService> _modsService;
+    private readonly Mock<IApplicationsService> _mockApplicationsService;
 
     public ConfirmModificationJourneyTests()
     {
         _validator = Mocker.GetMock<IValidator<AreaOfChangeViewModel>>();
         _cmsService = Mocker.GetMock<ICmsQuestionsetService>();
         _modsService = Mocker.GetMock<IProjectModificationsService>();
+        _mockApplicationsService = Mocker.GetMock<IApplicationsService>();
     }
 
     [Theory, AutoData]
@@ -48,7 +50,19 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
         {
             [TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(areaChanges)
         };
+        var apiResponse = new ApiResponse<IrasApplicationResponse>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            new IrasApplicationResponse(),
+            new()
+        );
 
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(a => a.GetProjectRecord(It.IsAny<string>())).ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = apiResponse.Content
+            });
         // Act
         var result = await Sut.ConfirmModificationJourney(model, false);
 
@@ -89,6 +103,19 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = new ProjectModificationChangeResponse { Id = Guid.NewGuid() }
+            });
+        var apiResponse = new ApiResponse<IrasApplicationResponse>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            new IrasApplicationResponse(),
+            new()
+        );
+
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(a => a.GetProjectRecord(It.IsAny<string>())).ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = apiResponse.Content
             });
 
         // Act
@@ -158,6 +185,19 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
                 Content = new ProjectModificationChangeResponse { Id = Guid.NewGuid() }
             });
 
+        var apiResponse = new ApiResponse<IrasApplicationResponse>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            new IrasApplicationResponse(),
+            new()
+        );
+
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(a => a.GetProjectRecord(It.IsAny<string>())).ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = apiResponse.Content
+            });
         var httpContext = new DefaultHttpContext();
         httpContext.Items["Respondent"] = new { GivenName = "Test", FamilyName = "User" };
 
@@ -181,7 +221,19 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
         _validator
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AreaOfChangeViewModel>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ValidationResult([new ValidationFailure("AreaOfChangeId", "Required")]));
+        var apiResponse = new ApiResponse<IrasApplicationResponse>
+       (
+           new HttpResponseMessage(HttpStatusCode.OK),
+           new IrasApplicationResponse(),
+           new()
+       );
 
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(a => a.GetProjectRecord(It.IsAny<string>())).ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = apiResponse.Content
+            });
         // Act
         var result = await Sut.ConfirmModificationJourney(model, false);
 
@@ -207,7 +259,19 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
                 StatusCode = HttpStatusCode.OK,
                 Content = new ProjectModificationChangeResponse { ProjectModificationId = modificationId, Id = Guid.NewGuid() }
             });
+        var apiResponse = new ApiResponse<IrasApplicationResponse>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            new IrasApplicationResponse(),
+            new()
+        );
 
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(a => a.GetProjectRecord(It.IsAny<string>())).ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = apiResponse.Content
+            });
         // Act
         var result = await Sut.ConfirmModificationJourney(model, true);
 
@@ -283,6 +347,19 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             });
 
         SetupCmsJourney("section-static");
+        var apiResponse = new ApiResponse<IrasApplicationResponse>
+       (
+           new HttpResponseMessage(HttpStatusCode.OK),
+           new IrasApplicationResponse(),
+           new()
+       );
+
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(a => a.GetProjectRecord(It.IsAny<string>())).ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = apiResponse.Content
+            });
 
         // Act
         var result = await Sut.ConfirmModificationJourney(model, false);
@@ -321,7 +398,19 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
                 StatusCode = HttpStatusCode.OK,
                 Content = new CmsQuestionSetResponse { Sections = [] }
             });
+        var apiResponse = new ApiResponse<IrasApplicationResponse>
+       (
+           new HttpResponseMessage(HttpStatusCode.OK),
+           new IrasApplicationResponse(),
+           new()
+       );
 
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(a => a.GetProjectRecord(It.IsAny<string>())).ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = apiResponse.Content
+            });
         // Act
         var result = await Sut.ConfirmModificationJourney(model, false);
 
@@ -352,6 +441,19 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             });
 
         SetupCmsJourney("section-static");
+        var apiResponse = new ApiResponse<IrasApplicationResponse>
+       (
+           new HttpResponseMessage(HttpStatusCode.OK),
+           new IrasApplicationResponse(),
+           new()
+       );
+
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(a => a.GetProjectRecord(It.IsAny<string>())).ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = apiResponse.Content
+            });
 
         // Act (action different from saveAndContinue/saveForLater)
         var result = await Sut.ConfirmModificationJourney(model, false);
@@ -395,6 +497,19 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             });
 
         SetupCmsJourney("section-static");
+        var apiResponse = new ApiResponse<IrasApplicationResponse>
+       (
+           new HttpResponseMessage(HttpStatusCode.OK),
+           new IrasApplicationResponse(),
+           new()
+       );
+
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(a => a.GetProjectRecord(It.IsAny<string>())).ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = apiResponse.Content
+            });
 
         // Act
         var result = await Sut.ConfirmModificationJourney(model, false);
@@ -440,7 +555,19 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
                 StatusCode = HttpStatusCode.OK,
                 Content = new ProjectModificationChangeResponse { ProjectModificationId = modificationId }
             });
+        var apiResponse = new ApiResponse<IrasApplicationResponse>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            new IrasApplicationResponse(),
+            new()
+        );
 
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(a => a.GetProjectRecord(It.IsAny<string>())).ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = apiResponse.Content
+            });
         SetupCmsJourney("section-static");
 
         // Act
@@ -487,6 +614,19 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             });
 
         SetupCmsJourney("section-static");
+        var apiResponse = new ApiResponse<IrasApplicationResponse>
+       (
+           new HttpResponseMessage(HttpStatusCode.OK),
+           new IrasApplicationResponse(),
+           new()
+       );
+
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(a => a.GetProjectRecord(It.IsAny<string>())).ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = apiResponse.Content
+            });
 
         // Act
         var result = await Sut.ConfirmModificationJourney(model, true);
@@ -533,6 +673,19 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             });
 
         SetupCmsJourney("section-static");
+        var apiResponse = new ApiResponse<IrasApplicationResponse>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            new IrasApplicationResponse(),
+            new()
+        );
+
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(a => a.GetProjectRecord(It.IsAny<string>())).ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new IrasApplicationResponse { FullProjectTitle = "Test", ShortProjectTitle = "test1", Status = "Active", IrasId = 123 }
+            });
 
         // Act
         var result = await Sut.ConfirmModificationJourney(model, false);
@@ -578,6 +731,19 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
             });
 
         SetupCmsJourney("section-static");
+        var apiResponse = new ApiResponse<IrasApplicationResponse>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            new IrasApplicationResponse(),
+            new()
+        );
+
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(a => a.GetProjectRecord(It.IsAny<string>())).ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = apiResponse.Content
+            });
 
         // Act
         var result = await Sut.ConfirmModificationJourney(model, false);
@@ -632,7 +798,19 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
                 StatusCode = HttpStatusCode.OK,
                 Content = new ProjectModificationChangeResponse { ProjectModificationId = modificationId }
             });
+        var apiResponse = new ApiResponse<IrasApplicationResponse>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            new IrasApplicationResponse(),
+            new()
+        );
 
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(a => a.GetProjectRecord(It.IsAny<string>())).ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = apiResponse.Content
+            });
         SetupCmsJourney("section-static");
 
         // Act

@@ -664,7 +664,7 @@ public class ReviewAllChangesController
 
                 TempData.Remove(TempDataKeys.ModelState);
                 TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
-
+                TempData[TempDataKeys.RequestRevisionDescription] = model.ApplicantRevisionResponse;
                 return RedirectToRoute("pmc:ModificationDetails", new
                 {
                     projectRecordId = model.ProjectRecordId,
@@ -688,6 +688,8 @@ public class ReviewAllChangesController
                     model.ReasonNotApproved,
                     model.ApplicantRevisionResponse
                 );
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
+            TempData[TempDataKeys.RequestRevisionDescription] = model.ApplicantRevisionResponse;
             return RedirectToRoute("pov:postapproval", new { projectRecordId = model.ProjectRecordId });
         }
 
