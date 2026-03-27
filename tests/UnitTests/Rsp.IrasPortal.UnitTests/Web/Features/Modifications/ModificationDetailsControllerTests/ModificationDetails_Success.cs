@@ -772,4 +772,20 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
         var model = view.Model.ShouldBeOfType<ModificationDetailsViewModel>();
         model.ModificationChanges.Count.ShouldBe(0);
     }
+    [Theory, AutoData]
+    public void ConfirmRemoveChange_Returns_View(Guid modificationChangeId, string modificationChangeName)
+    {
+        var http = new DefaultHttpContext();
+        Sut.ControllerContext = new() { HttpContext = http };
+        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
+        Sut.TempData.Add(TempDataKeys.SpecificAreaOfChangeOptionNameKey, "test");
+
+        var result = Sut.ConfirmRemoveChange(modificationChangeId.ToString(), modificationChangeName);
+
+        var resultView = result.ShouldBeOfType<ViewResult>();
+        var model = resultView.Model.ShouldBeOfType<ModificationDetailsViewModel>();
+        model.ModificationChangeId.ShouldBe(modificationChangeId.ToString());
+        model.SpecificAreaOfChange.ShouldBe(modificationChangeName);
+        Sut.TempData.ShouldNotContainKey(TempDataKeys.SpecificAreaOfChangeOptionNameKey);
+    }
 }
