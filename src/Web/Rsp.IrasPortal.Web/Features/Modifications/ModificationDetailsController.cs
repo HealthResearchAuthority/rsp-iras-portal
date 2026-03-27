@@ -129,14 +129,14 @@ public class ModificationDetailsController
             var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
             DocumentDetailsSection, 1, int.MaxValue, sortField, sortDirection, isSponsorRevisingModification: true);
 
-            var allDocuments = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
+            var allDocuments = modificationDocumentsResponseResult.Item1?.Content?.Documents;
 
-            await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, allDocuments, false, true);
+            await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, allDocuments ?? [], false, true);
 
             // apply pagination
-            var paginatedDocuments = GetSortedAndPaginatedDocuments(allDocuments, sortField, sortDirection, pageSize, pageNumber);
+            var paginatedDocuments = GetSortedAndPaginatedDocuments(allDocuments ?? [], sortField, sortDirection, pageSize, pageNumber);
 
-            modification.ProjectOverviewDocumentViewModel.Documents = paginatedDocuments ?? [];
+            modification.ProjectOverviewDocumentViewModel.Documents = paginatedDocuments;
 
             modification.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult.Item1?.Content?.TotalCount ?? 0)
             {
