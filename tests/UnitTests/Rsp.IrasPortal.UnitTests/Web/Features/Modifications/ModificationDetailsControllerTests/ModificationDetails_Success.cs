@@ -703,6 +703,68 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
                 }
             });
 
+        // DocumentDetails question set
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet(
+                It.Is<string>(x => x == "pdm-document-metadata"),
+                It.IsAny<string?>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new()
+                {
+                    Sections =
+                    [
+                        new()
+                    {
+                        Id = "DOC1",
+                        CategoryId = "D1",
+                        Questions =
+                        [
+                            new QuestionModel
+                            {
+                                Id = "DocType",
+                                QuestionId = ModificationQuestionIds.DocumentType,
+                                AnswerDataType = "Text",
+                                CategoryId = "D1"
+                            },
+                        ]
+                    }
+                    ]
+                }
+            });
+
+        // SponsorDetails questionset
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet(
+                It.Is<string>(x => x == "pm-sponsor-reference"),
+                It.IsAny<string?>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new()
+                {
+                    Sections =
+                    [
+                        new()
+                    {
+                        Id = "SP1",
+                        CategoryId = "SPC",
+                        Questions =
+                        [
+                            new QuestionModel
+                            {
+                                Id = "SPQ1",
+                                QuestionId = "SPQ1",
+                                AnswerDataType = "Text",
+                                CategoryId = "SPC"
+                            }
+                        ]
+                    }
+                    ]
+                }
+            });
+
         // Documents
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetDocumentsForModification(
@@ -810,7 +872,7 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
                 {
                     Id = modId,
                     ModificationIdentifier = modId.ToString(),
-                    Status = ModificationStatus.InDraft,
+                    Status = ModificationStatus.RequestRevisions,
                     ProjectRecordId = "PR1",
                     ModificationNumber = 1,
                     CreatedDate = DateTime.UtcNow,
@@ -862,6 +924,15 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
                         }
                     ]
                 }
+            });
+
+        // Sponsor answers
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationAnswers(modId, "PR1"))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = [new() { QuestionId = "SPQ1", AnswerText = "SponsorAnswer" }]
             });
 
         // 4. For UpdateModificationChanges flow we need journey questions and answers per change call; set validator minimal

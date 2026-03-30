@@ -134,7 +134,7 @@ public class ModificationDetailsController
             await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, allDocuments, false, true);
 
             // apply pagination
-            var paginatedDocuments = GetSortedAndPaginatedDocuments(allDocuments ?? [], sortField, sortDirection, pageSize, pageNumber);
+            var paginatedDocuments = GetSortedAndPaginatedDocuments(allDocuments, sortField, sortDirection, pageSize, pageNumber);
 
             modification.ProjectOverviewDocumentViewModel.Documents = paginatedDocuments;
 
