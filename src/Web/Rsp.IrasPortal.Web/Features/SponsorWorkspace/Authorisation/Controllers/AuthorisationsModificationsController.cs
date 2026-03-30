@@ -736,7 +736,7 @@ public class AuthorisationsModificationsController
 
     private (bool flowControl, IActionResult value) IsModificationChangeExist(AuthoriseModificationsOutcomeViewModel model)
     {
-        if (model?.ModificationChanges == null || model.ModificationChanges?.Count == 0)
+        if (model.ModificationChanges == null || model.ModificationChanges.Count == 0)
         {
             return (flowControl: false, value: View("NoChangesToSubmit", new BaseProjectModificationViewModel
             {
