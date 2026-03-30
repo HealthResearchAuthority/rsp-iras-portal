@@ -49,4 +49,14 @@ public record IrasApplicationRequest
     /// IRAS ID of the application
     /// </summary>
     public int? IrasId { get; set; }
+
+    /// <summary>
+    /// Lead nation
+    /// </summary>
+    public string LeadNation { get; set; } = null!;
+
+    /// <summary>
+    /// Is NHS / HSC Organisation
+    /// </summary>
+    public bool IsNHSHSCOrganisation { get; set; }
 }
