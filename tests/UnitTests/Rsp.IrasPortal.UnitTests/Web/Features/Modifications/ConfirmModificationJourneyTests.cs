@@ -821,6 +821,63 @@ public class ConfirmModificationJourneyTests : TestServiceBase<ModificationsCont
         redirectResult.ViewName.ShouldBe("SelectedModificationChangeErrorPage");
     }
 
+    [Fact]
+    public async Task ConfirmModificationJourney_When_No_ProjectRecords_Present()
+    {
+        // Arrange
+        var modificationId = Guid.NewGuid();
+        var model = new AreaOfChangeViewModel { ProjectRecordId = "PR1", AreaOfChangeId = "A1", SpecificChangeId = "0c715e3f-22bd-47fb-9a37-710e0248b761" };
+        var existing = new List<string> { "0c715e3f-22bd-47fb-9a37-710e0248b761" };
+        var ctx = new DefaultHttpContext();
+        var temp = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationId] = modificationId,
+            [TempDataKeys.ShortProjectTitle] = "Test project",
+            [TempDataKeys.IrasId] = 123456,
+            [TempDataKeys.ProjectModification.AreaOfChanges] = JsonSerializer.Serialize(AreasBuild()),
+            [TempDataKeys.ProjectRecordId] = model.ProjectRecordId ?? "PR1",
+            [TempDataKeys.SpecificAreaOfChangeOptionNameKey] = JsonSerializer.Serialize(existing),
+            [TempDataKeys.ProjectRecordStatus] = "Project halt"
+        };
+        temp[TempDataKeys.ProjectModification.ProjectModificationChangeId] = modificationId;
+        Sut.TempData = temp;
+        Sut.ControllerContext = new ControllerContext { HttpContext = ctx };
+
+        _validator
+       .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AreaOfChangeViewModel>>(), It.IsAny<CancellationToken>()))
+       .ReturnsAsync(new ValidationResult());
+
+        // Modification change creation
+        _modsService
+            .Setup(s => s.CreateModificationChange(It.IsAny<ProjectModificationChangeRequest>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationChangeResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationChangeResponse { ProjectModificationId = modificationId }
+            });
+
+        SetupCmsJourney("section-static");
+        var apiResponse = new ApiResponse<IrasApplicationResponse>
+        (
+            new HttpResponseMessage(HttpStatusCode.OK),
+            new IrasApplicationResponse(),
+            new()
+        );
+
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(a => a.GetProjectRecord(It.IsAny<string>())).ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Content = null
+            });
+
+        // Act
+        var result = await Sut.ConfirmModificationJourney(model, false);
+
+        // Assert
+        result.ShouldBeNull();
+    }
+
     private void SetupTempData(AreaOfChangeViewModel model, List<AreaOfChangeDto> areas, Guid modificationId, Guid? modificationChangeId = null)
     {
         var existing = new List<string> { "Participant procedures", "Stop or restart" };

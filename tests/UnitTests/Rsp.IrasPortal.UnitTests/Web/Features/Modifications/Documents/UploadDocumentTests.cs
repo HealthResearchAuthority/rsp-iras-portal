@@ -77,7 +77,8 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
         {
             [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
-            [TempDataKeys.IrasId] = 999
+            [TempDataKeys.IrasId] = 999,
+            [TempDataKeys.ProjectModification.DateSponsorSubmittedOutcome] = DateTime.UtcNow,
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
         Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
@@ -141,7 +142,8 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
         {
             [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
-            [TempDataKeys.IrasId] = 999
+            [TempDataKeys.IrasId] = 999,
+            [TempDataKeys.ProjectModification.DateSponsorSubmittedOutcome] = DateTime.UtcNow,
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
         Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
@@ -172,7 +174,8 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
         {
             [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
-            [TempDataKeys.IrasId] = 999
+            [TempDataKeys.IrasId] = 999,
+            [TempDataKeys.ProjectModification.DateSponsorSubmittedOutcome] = DateTime.UtcNow,
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
         Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
@@ -215,7 +218,8 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999,
-            [TempDataKeys.ProjectModification.ProjectModificationStatus] = ModificationStatus.ReviseAndAuthorise
+            [TempDataKeys.ProjectModification.ProjectModificationStatus] = ModificationStatus.ReviseAndAuthorise,
+            [TempDataKeys.ProjectModification.DateSponsorSubmittedOutcome] = DateTime.UtcNow,
         };
 
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
@@ -263,7 +267,8 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
             [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
             [TempDataKeys.IrasId] = 999,
-            [TempDataKeys.ProjectModification.ProjectModificationStatus] = ModificationStatus.RequestRevisions
+            [TempDataKeys.ProjectModification.ProjectModificationStatus] = ModificationStatus.RequestRevisions,
+            [TempDataKeys.ProjectModification.DateSponsorSubmittedOutcome] = DateTime.UtcNow,
         };
 
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
@@ -330,7 +335,8 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
         {
             [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
-            [TempDataKeys.IrasId] = 999
+            [TempDataKeys.IrasId] = 999,
+            [TempDataKeys.ProjectModification.DateSponsorSubmittedOutcome] = DateTime.UtcNow,
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
         Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
@@ -391,7 +397,8 @@ public class UploadDocumentTests : TestServiceBase<DocumentsController>
         {
             [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
             [TempDataKeys.ProjectRecordId] = "record-123",
-            [TempDataKeys.IrasId] = 999
+            [TempDataKeys.IrasId] = 999,
+            [TempDataKeys.ProjectModification.DateSponsorSubmittedOutcome] = DateTime.UtcNow,
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
         Sut.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
