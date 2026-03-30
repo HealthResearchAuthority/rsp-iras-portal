@@ -189,32 +189,6 @@ else
                     Save for later
                 </a>
             }
-
-            @if (!Model.ModificationChanges.Any())
-            {
-                var routeData = new Dictionary<string, string>
-        {
-                    { "projectRecordId", Model.ProjectRecordId },
-                    { "routeName", "sws:modifications" },
-                    { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId ?? string.Empty },
-                    { "rtsId", Model.RtsId ?? string.Empty }
-                };
-
-                <a asp-route="pmc:saveforlater"
-                   asp-all-route-data="@routeData"
-                   status-for="Status"
-                   status-is="@ModificationStatus.ReviseAndAuthorise"
-                   class="govuk-button govuk-button--secondary">
-                    Save for later
-                </a>
-                <a asp-route="pov:postapproval"
-                   asp-route-projectRecordId="@Model.ProjectRecordId"
-                   status-for="Status"
-                   status-is="@ModificationStatus.RequestRevisions"
-                   class="govuk-button govuk-button--secondary">
-                    Save for later
-                </a>
-            }
         </div>
     </div>
 </div>
@@ -279,7 +253,7 @@ else
 <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
             status-for="Status"
             status-is="@ModificationStatus.ReviseAndAuthorise">
-    @if (isAuthoriser && Model.ModificationChanges.Any())
+    @if (isAuthoriser)
     {
         <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
         @if (Model?.ProjectOverviewDocumentViewModel?.Documents is null || !Model.ProjectOverviewDocumentViewModel.Documents.Any())
@@ -356,6 +330,9 @@ else
                     <input type="hidden" name="RtsId" value="@Model.RtsId" />
                     <input type="hidden" name="ReviewType" value="@Model.ReviewType" />
                     <input type="hidden" name="SpecificAreaOfChangeId" value="@Model.SpecificAreaOfChangeId" />
+                    <input type="hidden" name="Status" value="@Model.Status" />
+                    <input type="hidden" name="ModificationIdentifier" value="@Model.ModificationIdentifier" />
+                    <input type="hidden" name="DateCreated" value="@Model.DateCreated" />
 
                     @for (int i = 0; i < Model.ModificationChanges.Count; i++)
                     {
@@ -400,7 +377,6 @@ else
     <authorized role-is="@Roles.Applicant"
                 status-for="@Model.Status"
                 status-is="@ModificationStatus.RequestRevisions">
-
         <partial name="MakeRevision" model="Model" view-data="ViewData" />
     </authorized>
 </feature>

@@ -1963,7 +1963,12 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
     {
         var model = SetupAuthoriseOutcomeViewModel();
         model.ReviewType = "Review required";
-
+        model.ModificationChanges = [
+                     new ModificationChangeModel
+                 {
+                     SpecificAreaOfChangeId ="192152cb-db19-447c-b410-aa394f1de54c"
+                 }
+     ];
         Mocker.GetMock<IValidator<AuthoriseModificationsOutcomeViewModel>>()
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AuthoriseModificationsOutcomeViewModel>>(), default))
             .ReturnsAsync(new ValidationResult());
@@ -2002,7 +2007,12 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
     {
         var model = SetupAuthoriseOutcomeViewModel();
         model.ReviewType = "Review required";
-
+        model.ModificationChanges = [
+                     new ModificationChangeModel
+                 {
+                     SpecificAreaOfChangeId ="4e5570bf-9c27-4eeb-a874-5ba6244a32de"
+                 }
+     ];
         Mocker.GetMock<IValidator<AuthoriseModificationsOutcomeViewModel>>()
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AuthoriseModificationsOutcomeViewModel>>(), default))
             .ReturnsAsync(new ValidationResult());
@@ -2037,7 +2047,12 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
     public async Task AuthoriseRevision_IncompleteDocumentDetails_Redirects_To_DocumentDetailsIncomplete()
     {
         var model = SetupAuthoriseOutcomeViewModel();
-
+        model.ModificationChanges = [
+                     new ModificationChangeModel
+                 {
+                     SpecificAreaOfChangeId ="192152cb-db19-447c-b410-aa394f1de54c"
+                 }
+     ];
         Sut.SetEvaluateDocumentCompletionResult(true);
 
         Mocker.GetMock<IValidator<AuthoriseModificationsOutcomeViewModel>>()
@@ -2088,7 +2103,12 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
     public async Task AuthoriseRevision_MalwareScanInProgress_Redirects_To_DocumentsScanInProgress()
     {
         var model = SetupAuthoriseOutcomeViewModel();
-
+        model.ModificationChanges = [
+                     new ModificationChangeModel
+                 {
+                     SpecificAreaOfChangeId ="192152cb-db19-447c-b410-aa394f1de54c"
+                 }
+     ];
         Sut.SetEvaluateDocumentCompletionResult(false);
 
         Mocker.GetMock<IValidator<AuthoriseModificationsOutcomeViewModel>>()
@@ -2140,7 +2160,12 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
     {
         var model = SetupAuthoriseOutcomeViewModel();
         model.ReviewType = ""; // → "No review required"
-
+        model.ModificationChanges = [
+                     new ModificationChangeModel
+                 {
+                     SpecificAreaOfChangeId ="4e5570bf-9c27-4eeb-a874-5ba6244a32de"
+                 }
+     ];
         Mocker.GetMock<IValidator<AuthoriseModificationsOutcomeViewModel>>()
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AuthoriseModificationsOutcomeViewModel>>(), default))
             .ReturnsAsync(new ValidationResult());
@@ -2553,6 +2578,58 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
 
         // Assert
         result.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task AuthoriseRevision_When_No_Modification_Change_Exist_Return_Warning()
+    {
+        var model = SetupAuthoriseOutcomeViewModel();
+
+        Sut.SetEvaluateDocumentCompletionResult(true);
+
+        Mocker.GetMock<IValidator<AuthoriseModificationsOutcomeViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AuthoriseModificationsOutcomeViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetDocumentsForModification(
+                It.IsAny<Guid>(),
+                It.IsAny<ProjectOverviewDocumentSearchRequest>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()
+            ))
+            .ReturnsAsync(new ServiceResponse<ProjectOverviewDocumentResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectOverviewDocumentResponse
+                {
+                    Documents =
+                    [
+                        new ProjectOverviewDocumentDto
+                        {
+                            IsMalwareScanSuccessful = true
+                        }
+                    ]
+                }
+            });
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangesDocuments(
+                It.IsAny<Guid>(),
+                It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new[]
+                {
+                    new ProjectModificationDocumentRequest { FileName = "doc1.pdf", Status = ModificationStatus.ReviseAndAuthorise }
+                }
+            });
+
+        var result = await Sut.AuthoriseRevision(model, isSaveForLater: false);
+
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+
+        viewResult.ViewName.ShouldBe("NoChangesToSubmit");
     }
 
     public SponsorUserAuthorisationResult Authorised(Guid gid)

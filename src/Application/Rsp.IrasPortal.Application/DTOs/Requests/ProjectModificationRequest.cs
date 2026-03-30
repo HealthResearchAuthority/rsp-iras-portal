@@ -94,7 +94,8 @@ public record ProjectModificationRequest
     /// Gets or sets the submission date.
     /// This date is populated when a sponsor submits review outcome - if modification is Authorised, Not authorised, Requested revisions or Revised and authorised
     /// </summary>
-    public DateTime? DateSponsorSubmittedOutcomeDate { get; set; }
+    public DateTime? DateSponsorSubmittedOutcome { get; set; }
+
 
     /// <summary>
     /// The reason for rejecting approval.

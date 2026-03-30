@@ -103,6 +103,12 @@ public class ModificationDetailsController
             {
                 modification.RevisionDescription = revisionDescription.ToString();
             }
+            var requestRevisionDescription = TempData[TempDataKeys.RequestRevisionDescription];
+            if (!string.IsNullOrEmpty(requestRevisionDescription?.ToString()))
+            {
+                modification.ApplicantRevisionResponse = requestRevisionDescription.ToString();
+                TempData.Keep(TempDataKeys.RequestRevisionDescription);
+            }
 
             var sponsorDetailsQuestionsResponse = await cmsQuestionsetService.GetModificationQuestionSet(SponsorDetailsSectionId);
 
@@ -125,7 +131,7 @@ public class ModificationDetailsController
 
             modification.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
 
-            await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents, false, true);
+            await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents, false);
 
             modification.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult.Item1?.Content?.TotalCount ?? 0)
             {
@@ -151,6 +157,10 @@ public class ModificationDetailsController
         if (modification.ModificationChanges.All(c => c.ChangeStatus == ModificationStatus.ChangeReadyForSubmission))
         {
             modification.ChangesReadyForSubmission = true;
+        }
+        if (modification.ModificationChanges.Count == 0)
+        {
+            modification.NoChangesToSubmit = true;
         }
 
         var documentsSelectiveDownloadEnabled = await featureManager.IsEnabledAsync(FeatureFlags.DocumentsSelectiveDownload);

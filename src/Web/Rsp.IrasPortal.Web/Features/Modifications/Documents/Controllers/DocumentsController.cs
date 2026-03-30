@@ -623,7 +623,7 @@ public class DocumentsController
         var respondentId = (HttpContext.Items[ContextItemKeys.UserId] as string)!;
         model.ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
         model.IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
-
+        model.DateSponsorSubmittedOutcome = TempData.Peek(TempDataKeys.ProjectModification.DateSponsorSubmittedOutcome)?.ToString();
         var processedModel = await ProcessDocumentUploadsAsync(
             model,
             respondentId);

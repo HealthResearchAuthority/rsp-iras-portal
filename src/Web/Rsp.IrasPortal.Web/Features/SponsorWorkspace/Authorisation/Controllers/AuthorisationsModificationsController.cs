@@ -603,7 +603,6 @@ public class AuthorisationsModificationsController
         bool skipValidation = isSaveForLater && string.IsNullOrWhiteSpace(model.RevisionDescription);
         model.Outcome = "ReviseAndAuthorise";
         ModelState.Remove(nameof(model.Outcome));
-
         if (!skipValidation)
         {
             var context = new ValidationContext<AuthoriseModificationsOutcomeViewModel>(model);
@@ -644,7 +643,11 @@ public class AuthorisationsModificationsController
             TempData[TempDataKeys.ShowNotificationBanner] = true;
             return RedirectToAction(nameof(Modifications), new { sponsorOrganisationUserId = model.SponsorOrganisationUserId, rtsId = model.RtsId });
         }
-
+        (bool isValid, IActionResult result) = IsModificationChangeExist(model);
+        if (!isValid)
+        {
+            return result;
+        }
         // Fetch all modification documents (up to 200)
         var searchQuery = new ProjectOverviewDocumentSearchRequest();
         searchQuery.AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document);
@@ -729,6 +732,27 @@ public class AuthorisationsModificationsController
         }
         model.Outcome = "Authorised";
         return RedirectToAction(nameof(Confirmation), model);
+    }
+
+    private (bool flowControl, IActionResult value) IsModificationChangeExist(AuthoriseModificationsOutcomeViewModel model)
+    {
+        if (model.ModificationChanges == null || model.ModificationChanges.Count == 0)
+        {
+            return (flowControl: false, value: View("NoChangesToSubmit", new BaseProjectModificationViewModel
+            {
+                ProjectRecordId = model.ProjectRecordId,
+                IrasId = model.IrasId,
+                ShortTitle = model.ShortTitle,
+                ModificationId = model.ModificationId,
+                ModificationIdentifier = model.ModificationIdentifier,
+                RtsId = model.RtsId,
+                SponsorOrganisationUserId = model.SponsorOrganisationUserId.ToString(),
+                Status = model.Status,
+                DateCreated = model.DateCreated
+            }));
+        }
+
+        return (flowControl: true, value: null);
     }
 
     [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
