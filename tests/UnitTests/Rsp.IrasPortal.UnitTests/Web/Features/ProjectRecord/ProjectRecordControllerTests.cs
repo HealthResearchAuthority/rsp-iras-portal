@@ -54,7 +54,7 @@ public class ProjectRecordControllerTests : TestServiceBase<ProjectRecordControl
         Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
 
         // Provide ProjectRecord in TempData
-        var record = new ProjectRecordDto { IrasId = 1234, ShortProjectTitle = "Short", LongProjectTitle = "Long", LeadNation = "England" };
+        var record = new ProjectRecordDto { IRASID = 1234, ShortProjectTitle = "Short", LongProjectTitle = "Long", LeadNation = "England" };
         Sut.TempData[TempDataKeys.ProjectRecord] = JsonSerializer.Serialize(record);
 
         Mocker
@@ -87,7 +87,7 @@ public class ProjectRecordControllerTests : TestServiceBase<ProjectRecordControl
 
         var record = new ProjectRecordDto
         {
-            IrasId = 1234,
+            IRASID = 1234,
             ShortProjectTitle = "Short",
             LongProjectTitle = "Long",
             LeadNation = leadNation
@@ -139,7 +139,7 @@ public class ProjectRecordControllerTests : TestServiceBase<ProjectRecordControl
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
         Sut.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
 
-        var record = new ProjectRecordDto { IrasId = 5678, ShortProjectTitle = "Short T", LongProjectTitle = "Long T", LeadNation = "Northern Ireland" };
+        var record = new ProjectRecordDto { IRASID = 5678, ShortProjectTitle = "Short T", LongProjectTitle = "Long T", LeadNation = "Northern Ireland" };
         Sut.TempData[TempDataKeys.ProjectRecord] = JsonSerializer.Serialize(record);
 
         var section = new SectionModel { Id = "sec-1", SectionId = "s1" };
@@ -161,7 +161,7 @@ public class ProjectRecordControllerTests : TestServiceBase<ProjectRecordControl
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
         var model = view.Model.ShouldBeOfType<ProjectRecordViewModel>();
-        model.IrasId.ShouldBe(record.IrasId!.Value);
+        model.IrasId.ShouldBe(record.IRASID);
         model.ShortProjectTitle.ShouldBe(record.ShortProjectTitle);
         model.FullProjectTitle.ShouldBe(record.LongProjectTitle);
         model.SectionId.ShouldBe(section.Id);

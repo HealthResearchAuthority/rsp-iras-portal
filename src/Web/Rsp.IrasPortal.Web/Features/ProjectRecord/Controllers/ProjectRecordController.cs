@@ -62,7 +62,7 @@ public class ProjectRecordController
         var projectRecordViewModel = new ProjectRecordViewModel
         {
             // map the project details properties
-            IrasId = projectRecord.IrasId!.Value,
+            IrasId = projectRecord.IRASID,
             ShortProjectTitle = projectRecord.ShortProjectTitle!
         };
 
@@ -115,7 +115,7 @@ public class ProjectRecordController
         var projectRecordViewModel = questionnaire.Adapt<ProjectRecordViewModel>();
 
         // map the project details properties
-        projectRecordViewModel.IrasId = projectRecord.IrasId!.Value;
+        projectRecordViewModel.IrasId = projectRecord.IRASID;
         projectRecordViewModel.ShortProjectTitle = projectRecord.ShortProjectTitle!;
         projectRecordViewModel.FullProjectTitle = projectRecord.LongProjectTitle!;
         projectRecordViewModel.LeadNation = projectRecord.LeadNation!;
