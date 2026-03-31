@@ -263,7 +263,7 @@ public class AuthorisationsModificationsController
             }
         };
 
-        authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;
+        authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId.ToString();
         authoriseOutcomeViewModel.ProjectModificationId = projectModificationId;
         authoriseOutcomeViewModel.ModificationChangeId = modificationChangeId is null ? null : modificationChangeId.ToString();
         authoriseOutcomeViewModel.IrasId = irasId;
@@ -351,13 +351,13 @@ public class AuthorisationsModificationsController
             model.IrasId,
             model.ShortTitle,
             model.ProjectRecordId,
-            model.SponsorOrganisationUserId,
+            Guid.Parse(model.SponsorOrganisationUserId),
             model.RtsId
         );
 
         if (!ModelState.IsValid)
         {
-            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId, model.RtsId);
+            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(Guid.Parse(model.SponsorOrganisationUserId), model.RtsId);
 
             if (!sponsorOrganisationUser.IsSuccessStatusCode)
             {
@@ -516,14 +516,14 @@ public class AuthorisationsModificationsController
     [HttpGet]
     public async Task<IActionResult> RequestRevisions(AuthoriseModificationsOutcomeViewModel model)
     {
-        var auth = await sponsorUserAuthorisationService.AuthoriseWithOrganisationContextAsync(this, model.SponsorOrganisationUserId, User, model.RtsId);
+        var auth = await sponsorUserAuthorisationService.AuthoriseWithOrganisationContextAsync(this, Guid.Parse(model.SponsorOrganisationUserId), User, model.RtsId);
         if (!auth.IsAuthorised)
         {
             return auth.FailureResult!;
         }
 
         var sponsorOrganisationUser =
-            await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId, model.RtsId);
+            await sponsorOrganisationService.GetSponsorOrganisationUser(Guid.Parse(model.SponsorOrganisationUserId), model.RtsId);
 
         if (!sponsorOrganisationUser.IsSuccessStatusCode)
         {
@@ -565,7 +565,7 @@ public class AuthorisationsModificationsController
 
         if (!ModelState.IsValid)
         {
-            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId, model.RtsId);
+            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(Guid.Parse(model.SponsorOrganisationUserId), model.RtsId);
 
             if (!sponsorOrganisationUser.IsSuccessStatusCode)
             {
@@ -848,7 +848,7 @@ public class AuthorisationsModificationsController
     /// <returns></returns>
     private async Task<IActionResult> ValidateRequest(AuthoriseModificationsOutcomeViewModel model)
     {
-        var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId, model.RtsId);
+        var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(Guid.Parse(model.SponsorOrganisationUserId), model.RtsId);
 
         if (!sponsorOrganisationUser.IsSuccessStatusCode)
         {
