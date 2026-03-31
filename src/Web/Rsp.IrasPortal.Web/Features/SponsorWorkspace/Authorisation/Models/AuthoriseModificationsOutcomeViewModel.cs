@@ -10,7 +10,4 @@ public class AuthoriseModificationsOutcomeViewModel : ModificationDetailsViewMod
 
     // keep your route context so the POST can round-trip
     public Guid ProjectModificationId { get; set; }
-
-    //public Guid SponsorOrganisationUserId { get; set; }
-    //public string RtsId { get; set; }
 }
