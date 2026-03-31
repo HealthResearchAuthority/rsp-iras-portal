@@ -71,6 +71,16 @@ public class ModificationsControllerBaseTests
                 showIncompleteForReviseAndAuthoriseStatus
             );
         }
+
+        public IEnumerable<ProjectOverviewDocumentDto> Invoke_GetSortedAndPaginatedDocuments(
+          IEnumerable<ProjectOverviewDocumentDto> documents,
+          int pageSize,
+          int pageNumber,
+          string sortField,
+          string sortDirection)
+        {
+            return GetSortedAndPaginatedDocuments(documents, sortField, sortDirection, pageSize, pageNumber);
+        }
     }
 
     [Fact]
@@ -352,5 +362,57 @@ public class ModificationsControllerBaseTests
         );
 
         doc.DocumentType.ShouldBe("FriendlyNameA");
+    }
+
+    [Theory]
+    [AutoData]
+    public void ReturnCorrectSort_When_Status_Present_Ascending(IEnumerable<ProjectOverviewDocumentDto> allDocuments)
+    {
+        // arrange
+        var sortField = "Status";
+        var sortDirection = "asc";
+        var pageSize = 5;
+        var pageNumber = 1;
+
+        var expectedResult = allDocuments.OrderBy(d => d.Status).Take(pageSize);
+
+        // execute
+        var result = _controller.Invoke_GetSortedAndPaginatedDocuments(
+            allDocuments,
+            pageSize,
+            pageNumber,
+            sortField,
+            sortDirection
+        );
+
+        result.ShouldNotBeNull();
+        result.Count().ShouldBeLessThanOrEqualTo(pageSize);
+        result.ShouldBe(expectedResult);
+    }
+
+    [Theory]
+    [AutoData]
+    public void ReturnCorrectSort_When_Status_Present_Descending(IEnumerable<ProjectOverviewDocumentDto> allDocuments)
+    {
+        // arrange
+        var sortField = "Status";
+        var sortDirection = "desc";
+        var pageSize = 5;
+        var pageNumber = 1;
+
+        var expectedResult = allDocuments.OrderByDescending(d => d.Status).Take(pageSize);
+
+        // execute
+        var result = _controller.Invoke_GetSortedAndPaginatedDocuments(
+            allDocuments,
+            pageSize,
+            pageNumber,
+            sortField,
+            sortDirection
+        );
+
+        result.ShouldNotBeNull();
+        result.Count().ShouldBeLessThanOrEqualTo(pageSize);
+        result.ShouldBe(expectedResult);
     }
 }

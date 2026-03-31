@@ -703,6 +703,68 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
                 }
             });
 
+        // DocumentDetails question set
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet(
+                It.Is<string>(x => x == "pdm-document-metadata"),
+                It.IsAny<string?>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new()
+                {
+                    Sections =
+                    [
+                        new()
+                    {
+                        Id = "DOC1",
+                        CategoryId = "D1",
+                        Questions =
+                        [
+                            new QuestionModel
+                            {
+                                Id = "DocType",
+                                QuestionId = ModificationQuestionIds.DocumentType,
+                                AnswerDataType = "Text",
+                                CategoryId = "D1"
+                            },
+                        ]
+                    }
+                    ]
+                }
+            });
+
+        // SponsorDetails questionset
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet(
+                It.Is<string>(x => x == "pm-sponsor-reference"),
+                It.IsAny<string?>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new()
+                {
+                    Sections =
+                    [
+                        new()
+                    {
+                        Id = "SP1",
+                        CategoryId = "SPC",
+                        Questions =
+                        [
+                            new QuestionModel
+                            {
+                                Id = "SPQ1",
+                                QuestionId = "SPQ1",
+                                AnswerDataType = "Text",
+                                CategoryId = "SPC"
+                            }
+                        ]
+                    }
+                    ]
+                }
+            });
+
         // Documents
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetDocumentsForModification(
@@ -771,5 +833,248 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
         var view = result.ShouldBeOfType<ViewResult>();
         var model = view.Model.ShouldBeOfType<ModificationDetailsViewModel>();
         model.ModificationChanges.Count.ShouldBe(0);
+    }
+
+    [Theory, AutoData]
+    public void ConfirmRemoveChange_Returns_View(Guid modificationChangeId, string modificationChangeName)
+    {
+        var http = new DefaultHttpContext();
+        Sut.ControllerContext = new() { HttpContext = http };
+        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
+        Sut.TempData.Add(TempDataKeys.SpecificAreaOfChangeOptionNameKey, "test");
+
+        var result = Sut.ConfirmRemoveChange(modificationChangeId.ToString(), modificationChangeName);
+
+        var resultView = result.ShouldBeOfType<ViewResult>();
+        var model = resultView.Model.ShouldBeOfType<ModificationDetailsViewModel>();
+        model.ModificationChangeId.ShouldBe(modificationChangeId.ToString());
+        model.SpecificAreaOfChange.ShouldBe(modificationChangeName);
+        Sut.TempData.ShouldNotContainKey(TempDataKeys.SpecificAreaOfChangeOptionNameKey);
+    }
+
+    [Fact]
+    public async Task Returns_View_With_Empy_Array()
+    {
+        // Arrange
+        var http = new DefaultHttpContext();
+        Sut.ControllerContext = new() { HttpContext = http };
+        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
+
+        var modId = Guid.NewGuid();
+        var changeId = Guid.NewGuid();
+
+        // 1. GetModification -> one modification entry
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModification("PR1", It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationResponse
+                {
+                    Id = modId,
+                    ModificationIdentifier = modId.ToString(),
+                    Status = ModificationStatus.RequestRevisions,
+                    ProjectRecordId = "PR1",
+                    ModificationNumber = 1,
+                    CreatedDate = DateTime.UtcNow,
+                    UpdatedDate = DateTime.UtcNow,
+                    CreatedBy = "TestUser",
+                    UpdatedBy = "TestUser",
+                    ModificationType = "Substantial",
+                    Category = "Category A",
+                    ReviewType = "Full Review"
+                }
+            });
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses("PR1", It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationReviewResponse
+                {
+                    ModificationId = modId,
+                    RequestForInformationReasons = []
+                }
+            });
+
+        // 2. GetModificationChanges -> one change
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationChanges(It.IsAny<string>(), It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = [new() { Id = changeId, SpecificAreaOfChange = "SA1", AreaOfChange = "A1", Status = ModificationStatus.InDraft }]
+            });
+
+        // 3. GetInitialModificationQuestions -> resolve names
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetInitialModificationQuestions())
+            .ReturnsAsync(new ServiceResponse<StartingQuestionsDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StartingQuestionsDto
+                {
+                    AreasOfChange =
+                    [
+                        new()
+                        {
+                            AutoGeneratedId = "A1",
+                            OptionName = "Area Name",
+                            SpecificAreasOfChange = [ new() { AutoGeneratedId = "SA1", OptionName = "Specific Name" } ]
+                        }
+                    ]
+                }
+            });
+
+        // Sponsor answers
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationAnswers(modId, "PR1"))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = [new() { QuestionId = "SPQ1", AnswerText = "SponsorAnswer" }]
+            });
+
+        // SponsorDetails questionset
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet(
+                It.Is<string>(x => x == "pm-sponsor-reference"),
+                It.IsAny<string?>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new()
+                {
+                    Sections =
+                    [
+                        new()
+                    {
+                        Id = "SP1",
+                        CategoryId = "SPC",
+                        Questions =
+                        [
+                            new QuestionModel
+                            {
+                                Id = "SPQ1",
+                                QuestionId = "SPQ1",
+                                AnswerDataType = "Text",
+                                CategoryId = "SPC"
+                            }
+                        ]
+                    }
+                    ]
+                }
+            });
+
+        // DocumentDetails question set
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet(
+                It.Is<string>(x => x == "pdm-document-metadata"),
+                It.IsAny<string?>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new()
+                {
+                    Sections =
+                    [
+                        new()
+                    {
+                        Id = "DOC1",
+                        CategoryId = "D1",
+                        Questions =
+                        [
+                            new QuestionModel
+                            {
+                                Id = "DocType",
+                                QuestionId = ModificationQuestionIds.DocumentType,
+                                AnswerDataType = "Text",
+                                CategoryId = "D1"
+                            },
+                        ]
+                    }
+                    ]
+                }
+            });
+
+        // 4. For UpdateModificationChanges flow we need journey questions and answers per change call; set validator minimal
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationsJourney("SA1"))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    Sections = [new SectionModel { Id = "S1", CategoryId = "C1", Questions = [new QuestionModel { Id = "Q1", QuestionId = "Q1", Name = "Q1", AnswerDataType = "Text", CategoryId = "C1", Conformance = "Mandatory" }] }]
+                }
+            });
+
+        Mocker
+            .GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationChangeAnswers(changeId, It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = [] });
+
+        var answers = new List<RespondentAnswerDto>
+            {
+                new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project X" },
+                new() { QuestionId = QuestionIds.ProjectPlannedEndDate, AnswerText = "01/01/2025" }
+            };
+        Mocker
+            .GetMock<IRespondentService>()
+            .Setup(s => s.GetRespondentAnswers(It.IsAny<string>(), QuestionCategories.ProjectRecord))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>> { StatusCode = HttpStatusCode.OK, Content = answers });
+
+        // Use a permissive validator that sets IsValid true
+        Mocker
+            .GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new FluentValidation.Results.ValidationResult());
+
+        // Mock RankingOfChange response to avoid NullReferenceException
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationRanking(It.IsAny<RankingOfChangeRequest>()))
+            .ReturnsAsync(new ServiceResponse<RankingOfChangeResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new RankingOfChangeResponse
+                {
+                    ModificationType = new() { Substantiality = "Substantial", Order = 1 },
+                    Categorisation = new() { Category = "Category", Order = 1 },
+                    ReviewType = "ReviewType"
+                }
+            });
+
+        // Documents
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetDocumentsForModification(
+                modId,
+                It.IsAny<ProjectOverviewDocumentSearchRequest>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string?>(),
+                It.IsAny<string?>()))
+            .ReturnsAsync(new ServiceResponse<ProjectOverviewDocumentResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new()
+                {
+                    TotalCount = 0,
+                    Documents = null
+                }
+            });
+
+        // Act
+        var result = await Sut.ModificationDetails("PR1", "IRAS", "Short", modId, includeSelectiveDownloadError: true);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeOfType<ModificationDetailsViewModel>();
+
+        model.SupportingDocuments.Count().ShouldBe(0);
+        model.ModificationId.ShouldBe(modId.ToString());
+        model.ModificationChanges.Count.ShouldBe(1);
+        model.ModificationChanges[0].AreaOfChangeName.ShouldBe("Area Name");
+        model.ModificationChanges[0].SpecificChangeName.ShouldBe("Specific Name");
     }
 }
