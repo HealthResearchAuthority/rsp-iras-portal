@@ -834,6 +834,7 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
         var model = view.Model.ShouldBeOfType<ModificationDetailsViewModel>();
         model.ModificationChanges.Count.ShouldBe(0);
     }
+
     [Theory, AutoData]
     public void ConfirmRemoveChange_Returns_View(Guid modificationChangeId, string modificationChangeName)
     {
@@ -933,6 +934,68 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = [new() { QuestionId = "SPQ1", AnswerText = "SponsorAnswer" }]
+            });
+
+        // SponsorDetails questionset
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet(
+                It.Is<string>(x => x == "pm-sponsor-reference"),
+                It.IsAny<string?>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new()
+                {
+                    Sections =
+                    [
+                        new()
+                    {
+                        Id = "SP1",
+                        CategoryId = "SPC",
+                        Questions =
+                        [
+                            new QuestionModel
+                            {
+                                Id = "SPQ1",
+                                QuestionId = "SPQ1",
+                                AnswerDataType = "Text",
+                                CategoryId = "SPC"
+                            }
+                        ]
+                    }
+                    ]
+                }
+            });
+
+        // DocumentDetails question set
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet(
+                It.Is<string>(x => x == "pdm-document-metadata"),
+                It.IsAny<string?>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new()
+                {
+                    Sections =
+                    [
+                        new()
+                    {
+                        Id = "DOC1",
+                        CategoryId = "D1",
+                        Questions =
+                        [
+                            new QuestionModel
+                            {
+                                Id = "DocType",
+                                QuestionId = ModificationQuestionIds.DocumentType,
+                                AnswerDataType = "Text",
+                                CategoryId = "D1"
+                            },
+                        ]
+                    }
+                    ]
+                }
             });
 
         // 4. For UpdateModificationChanges flow we need journey questions and answers per change call; set validator minimal
