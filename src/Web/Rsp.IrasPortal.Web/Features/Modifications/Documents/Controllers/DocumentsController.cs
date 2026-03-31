@@ -785,7 +785,7 @@ public class DocumentsController
             await HandleSupersedeAnswerChange(viewModel, supersedeContext, reviewAllChanges);
 
             var redirect = HandleSupersedeRedirect(viewModel, questionnaire);
-            if (redirect != null)
+            if (!saveForLater && redirect != null)
             {
                 return redirect;
             }
@@ -2104,21 +2104,6 @@ public class DocumentsController
                 User = HttpContext.Items[ContextItemKeys.Email]?.ToString() ?? string.Empty
             }
         };
-
-        if (viewModel.ReplacesDocumentId != null && viewModel.ReplacesDocumentId != Guid.Empty)
-        {
-            var answersResponse = await respondentService.GetModificationDocumentDetails((Guid)viewModel.ReplacesDocumentId);
-
-            auditTrailRequest.Add(new ModificationDocumentsAuditTrailDto
-            {
-                Id = Guid.NewGuid(),
-                ProjectModificationId = viewModel.ModificationId,
-                DateTimeStamp = DateTime.UtcNow,
-                Description = DocumentAuditEvents.DocumentSuperseded,
-                FileName = answersResponse.Content?.FileName ?? string.Empty,
-                User = HttpContext.Items[ContextItemKeys.Email]?.ToString() ?? string.Empty
-            });
-        }
 
         await projectModificationsService.CreateModificationDocumentsAuditTrail(auditTrailRequest);
     }
