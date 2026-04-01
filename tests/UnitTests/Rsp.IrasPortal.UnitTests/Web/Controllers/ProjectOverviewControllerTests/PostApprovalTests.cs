@@ -91,6 +91,19 @@ public class PostApprovalTests : TestServiceBase<ProjectOverviewController>
                Content = userResponse
            });
 
+        var changes = new List<ProjectModificationChangeResponse>
+        {
+            new() { ProjectModificationId = Guid.NewGuid(), SpecificAreaOfChange = "AreaA" }
+        };
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsChangesForProject(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = changes
+            });
+
         // Act
         var result = await Sut.PostApproval("PR1", backRoute: null);
 

@@ -355,4 +355,16 @@ public interface IProjectModificationsService : IInterceptable
     /// </param>
     /// <returns>An asynchronous operation that returns the newly created project modification.</returns>
     Task<ServiceResponse<ProjectModificationResponse>> DuplicateModification(DuplicateModificationRequest duplicateModificationRequest);
+
+    /// <summary>
+    /// Retrieves all changes associated with a specific project.
+    /// </summary>
+    /// <param name="projectRecordId">
+    /// The unique identifier of the project record for which to retrieve changes.
+    /// <returns>
+    /// An asynchronous operation that returns a service response containing a collection of <see
+    /// cref="ProjectModificationChangeResponse"/> objects representing the changes for the
+    /// specified project modification.
+    /// </returns>
+    Task<ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationsChangesForProject(string projectRecordId);
 }

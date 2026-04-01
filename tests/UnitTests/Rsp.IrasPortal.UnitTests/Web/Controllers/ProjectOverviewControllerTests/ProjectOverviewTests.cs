@@ -84,6 +84,22 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
             });
     }
 
+    private void SetupModificationChangesForProjectRecord(string projectRecordId)
+    {
+        var changes = new List<ProjectModificationChangeResponse>
+        {
+            new() { ProjectModificationId = Guid.NewGuid(), SpecificAreaOfChange = "AreaA" }
+        };
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsChangesForProject(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = changes
+            });
+    }
+
     private void SetupRespondentAnswers(string projectRecordId, IEnumerable<RespondentAnswerDto> answers)
     {
         var respondentService = Mocker.GetMock<IRespondentService>();
@@ -783,6 +799,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
         SetupCMSService("ResearchLocations", "Research locations");
+        SetupModificationChangesForProjectRecord(projectRecordId);
 
         // Act
         var result = await Sut.ResearchLocations(projectRecordId, "");
@@ -844,6 +861,8 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
             .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), pageNumber, pageSize, sortField, sortDirection))
             .ReturnsAsync(serviceResponse);
 
+        SetupModificationChangesForProjectRecord(projectRecordId);
+
         // Act
         var result = await Sut.PostApproval(projectRecordId, "", pageNumber, pageSize, sortField, sortDirection);
 
@@ -878,6 +897,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
         SetupCMSService();
+        SetupModificationChangesForProjectRecord(projectRecordId);
 
         var modifications = new List<ModificationsDto>
         {
@@ -1234,6 +1254,8 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
                 StatusCode = HttpStatusCode.InternalServerError
             });
 
+        SetupModificationChangesForProjectRecord(projectRecordId);
+
         // Act
         var result = await Sut.ProjectDocuments(projectRecordId, "");
 
@@ -1289,6 +1311,8 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
             .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, sortField, sortDirection))
             .ReturnsAsync(serviceResponse);
 
+        SetupModificationChangesForProjectRecord(projectRecordId);
+
         // Act
         var result = await Sut.PostApproval(projectRecordId, "");
 
@@ -1332,6 +1356,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
         SetupCMSService();
+        SetupModificationChangesForProjectRecord(projectRecordId);
 
         var modifications = new List<ModificationsDto>
         {
@@ -1390,6 +1415,137 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         model.Pagination.PageSize.ShouldBe(pageSize);
         model.Pagination.SortField.ShouldBe(sortField);
         model.Pagination.SortDirection.ShouldBe(sortDirection);
+    }
+
+    [Fact]
+    public async Task PostApproval_When_ModificationsExist_Should_Fetch_And_Assign_AllProjectModificationChanges()
+    {
+        // Arrange
+        var projectRecordId = "456";
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+        SetupControllerContext(httpContext, tempData);
+
+        SetupProjectRecord(projectRecordId);
+        SetupRespondentAnswers(projectRecordId, new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Title" }
+        });
+        SetupCMSService();
+
+        var modifications = new List<ModificationsDto>
+        {
+            new() { ModificationId = "m1", ModificationType = "Type1", Status = "Approved" }
+        };
+
+        var modificationsResponse = new GetModificationsResponse
+        {
+            Modifications = modifications,
+            TotalCount = 1
+        };
+
+        var successfulModsResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = modificationsResponse
+        };
+
+        // Mock modification list
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsForProject(projectRecordId,
+                It.IsAny<ModificationSearchRequest>(), 1, 20,
+                It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(successfulModsResponse);
+
+        // Mock project changes response
+        var changes = new List<ProjectModificationChangeResponse>
+        {
+            new() { ProjectModificationId = Guid.NewGuid(), SpecificAreaOfChange = "AreaA" }
+        };
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsChangesForProject(projectRecordId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = changes
+            });
+        SetupModificationChangesForProjectRecord(projectRecordId);
+
+        // Act
+        var result = await Sut.PostApproval(projectRecordId, "");
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeOfType<PostApprovalViewModel>();
+
+        model.AllProjectModificationChanges.ShouldNotBeNull();
+        model.AllProjectModificationChanges.Count().ShouldBe(1);
+        model.AllProjectModificationChanges.First().SpecificAreaOfChange.ShouldBe("AreaA");
+
+        // verify GetModificationsChangesForProject WAS called
+        Mocker.GetMock<IProjectModificationsService>()
+            .Verify(s => s.GetModificationsChangesForProject(projectRecordId), Times.Once);
+    }
+
+    [Fact]
+    public async Task PostApproval_When_ChangesRequest_Fails_Should_Return_ServiceError()
+    {
+        // Arrange
+        var projectRecordId = "456";
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+        SetupControllerContext(httpContext, tempData);
+
+        SetupProjectRecord(projectRecordId);
+        SetupRespondentAnswers(projectRecordId, []);
+        SetupCMSService();
+        SetupModificationChangesForProjectRecord(projectRecordId);
+
+        var modifications = new List<ModificationsDto>
+    {
+        new() { ModificationId = "m1", ModificationType = "Type1", Status = "Approved" }
+    };
+
+        var modificationsResponse = new GetModificationsResponse
+        {
+            Modifications = modifications,
+            TotalCount = 1
+        };
+
+        var successfulModsResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = modificationsResponse
+        };
+
+        // Mock modifications list
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsForProject(projectRecordId,
+                It.IsAny<ModificationSearchRequest>(), 1, 20,
+                It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(successfulModsResponse);
+
+        // Mock FAILED changes call
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsChangesForProject(projectRecordId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
+            {
+                StatusCode = HttpStatusCode.InternalServerError
+            });
+
+        // Act
+        var result = await Sut.PostApproval(projectRecordId, "");
+
+        // Assert — returns ServiceError (which is an ObjectResult 500)
+        var error = result.ShouldBeOfType<StatusCodeResult>();
+        error.StatusCode.ShouldBe(500);
+
+        // Verify GetModificationsChangesForProject WAS called
+        Mocker.GetMock<IProjectModificationsService>()
+            .Verify(s => s.GetModificationsChangesForProject(projectRecordId), Times.Once);
     }
 
     [Fact]
@@ -1462,6 +1618,8 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
             {
                 StatusCode = HttpStatusCode.InternalServerError
             });
+
+        SetupModificationChangesForProjectRecord(projectRecordId);
 
         // Act
         var result = await Sut.ConfirmDeleteProject(projectRecordId);
@@ -1537,6 +1695,8 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
             .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, sortField, sortDirection))
              .ReturnsAsync(serviceResponse);
 
+        SetupModificationChangesForProjectRecord(projectRecordId);
+
         // Act
         var result = await Sut.PostApproval(projectRecordId, "", pageNumber, pageSize, sortField, sortDirection);
 
@@ -1592,6 +1752,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         SetupControllerContext(httpContext, tempData);
         SetupCMSService();
+        SetupModificationChangesForProjectRecord(projectRecordId);
 
         Mocker.GetMock<IApplicationsService>()
             .Setup(s => s.GetProjectRecord(projectRecordId))
@@ -1627,6 +1788,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupRespondentAnswers(projectRecordId, answers);
         SetupControllerContext(httpContext, tempData);
         SetupCMSService();
+        SetupModificationChangesForProjectRecord(projectRecordId);
 
         var serviceResponse = new ServiceResponse<GetModificationsResponse>
         {

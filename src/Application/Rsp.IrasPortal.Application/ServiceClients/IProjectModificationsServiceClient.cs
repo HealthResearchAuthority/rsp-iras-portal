@@ -130,6 +130,15 @@ public interface IProjectModificationsServiceClient
     public Task<ApiResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationChanges(string projectRecordId, Guid projectModificationId);
 
     /// <summary>
+    /// Retrieves all changes associated with a specific project.
+    /// </summary>
+    /// <param name="projectRecordId">
+    /// The unique identifier of the project record for which to retrieve changes.
+    /// <returns>An asynchronous operation that returns the requested project modification changes.</returns>
+    [Get("/projectmodifications/changesforproject")]
+    public Task<ApiResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationsChangesForProject(string projectRecordId);
+
+    /// <summary>
     /// Creates one or more modification documents associated with a project modification change.
     /// </summary>
     /// <param name="projectModificationChangeRequest">

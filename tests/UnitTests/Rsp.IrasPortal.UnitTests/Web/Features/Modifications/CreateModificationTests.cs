@@ -1,6 +1,7 @@
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.IrasPortal.Application.Enum;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
@@ -20,7 +21,11 @@ public class CreateModification : TestServiceBase<ModificationsController>
     {
         // Arrange
         // No ProjectRecordId or IrasId in TempData
-        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
+        var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.CanCreateNewModification] = ModificationCreationCheckResult.Success
+        };
+        Sut.TempData = tempData;
 
         Sut.ControllerContext = new ControllerContext
         {
@@ -45,7 +50,8 @@ public class CreateModification : TestServiceBase<ModificationsController>
         // Arrange
         var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectRecordId] = projectRecordId
+            [TempDataKeys.ProjectRecordId] = projectRecordId,
+            [TempDataKeys.ProjectModification.CanCreateNewModification] = ModificationCreationCheckResult.Success
         };
 
         // Simulate IrasId as int in TempData
@@ -95,7 +101,8 @@ public class CreateModification : TestServiceBase<ModificationsController>
         // Arrange
         var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectRecordId] = projectRecordId
+            [TempDataKeys.ProjectRecordId] = projectRecordId,
+            [TempDataKeys.ProjectModification.CanCreateNewModification] = ModificationCreationCheckResult.Success
         };
 
         tempData[TempDataKeys.IrasId] = irasId;
@@ -145,49 +152,115 @@ public class CreateModification : TestServiceBase<ModificationsController>
     }
 
     [Theory, AutoData]
-    public async Task CreateModification_Validation_Error(
-        string separator,
-        int irasId
-    )
+    public async Task CreateModification_Validation_Error_When_CanCreateNewModification_Is_Invalid(
+    string separator,
+    int irasId)
     {
         // Arrange
         var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectModification.CanCreateNewModification] = false,
+            [TempDataKeys.ProjectModification.CanCreateNewModification] = "INVALID_VALUE",
+            [TempDataKeys.IrasId] = irasId
         };
 
-        // Simulate IrasId as int in TempData
-        tempData[TempDataKeys.IrasId] = irasId;
         Sut.TempData = tempData;
-
-        // Mock GetRespondentFromContext extension
-        var respondent = new { GivenName = "John", FamilyName = "Doe" };
 
         Sut.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext()
         };
 
-        Sut.HttpContext.Items["Respondent"] = respondent;
+        Sut.HttpContext.Items["Respondent"] = new { Id = "user1" };
 
         // Act
         var result = await Sut.CreateModification(separator);
 
         // Assert
-        var actionResult = Assert.IsType<RedirectToActionResult>(result);
-        actionResult.ActionName.ShouldBe("CreateModificationOutcome");
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe("CreateModificationOutcome");
+        redirect.RouteValues!["result"].ShouldBe(ModificationCreationCheckResult.InvalidStatus);
+    }
+
+    [Theory, AutoData]
+    public async Task CreateModification_Allows_Creation_When_CanCreateNewModification_Is_Success(
+    string separator,
+    int irasId)
+    {
+        // Arrange
+        var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.CanCreateNewModification] = nameof(ModificationCreationCheckResult.Success),
+            [TempDataKeys.IrasId] = irasId,
+            [TempDataKeys.ProjectRecordId] = "ABC123"
+        };
+
+        Sut.TempData = tempData;
+
+        // Respondent mock
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+        Sut.HttpContext.Items["Respondent"] = new { Id = "userX" };
+
+        // Fake valid service response
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.CreateModification(It.IsAny<ProjectModificationRequest>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationResponse
+                {
+                    Id = Guid.NewGuid(),
+                    ModificationIdentifier = "ABC/123",
+                    ProjectRecordId = "ABC123"
+                }
+            });
+
+        // Act
+        var result = await Sut.CreateModification(separator);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe("AreaOfChange");
+    }
+
+    [Fact]
+    public async Task CreateModification_When_TempData_Missing_Should_Block_By_Default()
+    {
+        // Arrange
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+        Sut.HttpContext.Items["Respondent"] = new { Id = "user1" };
+
+        // Act
+        var result = await Sut.CreateModification("/");
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe("CreateModificationOutcome");
+        redirect.RouteValues!["result"].ShouldBe(ModificationCreationCheckResult.InvalidStatus);
     }
 
     [Fact]
     public void CreateModificationOutcome_Returns_ViewResult_With_Expected_ViewPath()
     {
         // Arrange
+        var result = Sut.CreateModificationOutcome(
+            Rsp.IrasPortal.Application.Enum.ModificationCreationCheckResult.InvalidStatus
+        );
+
         // Act
-        var result = Sut.CreateModificationOutcome();
+        var viewResult = result.ShouldBeOfType<ViewResult>();
 
         // Assert
-        var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("CreateModificationOutcome", viewResult.ViewName);
-        Assert.Null(viewResult.Model);
+        viewResult.ViewName.ShouldBe("CreateModificationOutcome");
+
+        viewResult.Model
+            .ShouldBe(Rsp.IrasPortal.Application.Enum.ModificationCreationCheckResult.InvalidStatus);
     }
 }

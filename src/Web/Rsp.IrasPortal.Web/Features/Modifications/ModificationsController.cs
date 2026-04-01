@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Azure;
 using Microsoft.FeatureManagement;
+using Rsp.IrasPortal.Application.Enum;
 using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
@@ -60,11 +61,19 @@ public class ModificationsController
     public async Task<IActionResult> CreateModification(string separator = "/")
     {
         //Restrict new modification creation if there is already in draft modification.
-        var canCreateNewModification = TempData[TempDataKeys.ProjectModification.CanCreateNewModification];
-
-        if (canCreateNewModification is false)
+        var raw = TempData[TempDataKeys.ProjectModification.CanCreateNewModification]?.ToString();
+        if (!Enum.TryParse(raw, out ModificationCreationCheckResult canCreateNewModification))
         {
-            return RedirectToAction(nameof(CreateModificationOutcome));
+            // Block by default
+            canCreateNewModification = ModificationCreationCheckResult.InvalidStatus;
+        }
+
+        if (canCreateNewModification != ModificationCreationCheckResult.Success)
+        {
+            return RedirectToAction(
+                nameof(CreateModificationOutcome),
+                new { result = canCreateNewModification }
+            );
         }
 
         // Retrieve IRAS ID from TempData
@@ -123,9 +132,9 @@ public class ModificationsController
     /// <returns></returns>
     [Authorize(Policy = Permissions.MyResearch.Modifications_Submit)]
     [HttpGet]
-    public IActionResult CreateModificationOutcome()
+    public IActionResult CreateModificationOutcome(ModificationCreationCheckResult result)
     {
-        return View("CreateModificationOutcome");
+        return View("CreateModificationOutcome", result);
     }
 
     /// <summary>
