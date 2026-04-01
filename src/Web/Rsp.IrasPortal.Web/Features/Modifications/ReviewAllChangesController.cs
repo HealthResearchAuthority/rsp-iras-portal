@@ -126,12 +126,18 @@ public class ReviewAllChangesController
             };
         }
 
+        // get all documents for the modification and do pagination here
         var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
-            DocumentDetailsSection, pageNumber, pageSize, sortField, sortDirection);
+            DocumentDetailsSection, 1, int.MaxValue, sortField, sortDirection);
 
-        modification.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
+        var allDocuments = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
 
-        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents);
+        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, allDocuments);
+
+        // apply pagination
+        var paginatedDocuments = GetSortedAndPaginatedDocuments(allDocuments, sortField, sortDirection, pageSize, pageNumber);
+
+        modification.ProjectOverviewDocumentViewModel.Documents = paginatedDocuments ?? [];
 
         modification.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult.Item1?.Content?.TotalCount ?? 0)
         {

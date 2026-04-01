@@ -1170,7 +1170,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         // Arrange
         var projectRecordId = "123";
         var pageNumber = 1;
-        var pageSize = 20;
+        var pageSize = int.MaxValue;
         var sortField = nameof(ModificationsModel.SentToRegulatorDate);
         var sortDirection = SortDirections.Ascending;
 

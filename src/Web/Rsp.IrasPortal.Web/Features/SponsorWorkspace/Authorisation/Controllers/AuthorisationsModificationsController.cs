@@ -232,12 +232,19 @@ public class AuthorisationsModificationsController
 
         var authoriseOutcomeViewModel = modification.Adapt<AuthoriseModificationsOutcomeViewModel>(config);
 
+        // get all documents for the modification and do pagination here
         var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
-            DocumentDetailsSection, pageNumber, pageSize, sortField, sortDirection);
+            DocumentDetailsSection, 1, int.MaxValue, sortField, sortDirection);
 
-        authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
+        var allDocuments = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
 
-        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents);
+        // Map the document types and statuses to user-friendly text for display in the view.
+        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, allDocuments);
+
+        // apply pagination
+        var paginatedDocuments = GetSortedAndPaginatedDocuments(allDocuments, sortField, sortDirection, pageSize, pageNumber);
+
+        authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Documents = paginatedDocuments ?? [];
 
         authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult.Item1?.Content?.TotalCount ?? 0)
         {
@@ -256,7 +263,7 @@ public class AuthorisationsModificationsController
             }
         };
 
-        authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;
+        authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId.ToString();
         authoriseOutcomeViewModel.ProjectModificationId = projectModificationId;
         authoriseOutcomeViewModel.ModificationChangeId = modificationChangeId is null ? null : modificationChangeId.ToString();
         authoriseOutcomeViewModel.IrasId = irasId;
@@ -344,13 +351,13 @@ public class AuthorisationsModificationsController
             model.IrasId,
             model.ShortTitle,
             model.ProjectRecordId,
-            model.SponsorOrganisationUserId,
+            Guid.Parse(model.SponsorOrganisationUserId),
             model.RtsId
         );
 
         if (!ModelState.IsValid)
         {
-            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId, model.RtsId);
+            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(Guid.Parse(model.SponsorOrganisationUserId), model.RtsId);
 
             if (!sponsorOrganisationUser.IsSuccessStatusCode)
             {
@@ -509,14 +516,14 @@ public class AuthorisationsModificationsController
     [HttpGet]
     public async Task<IActionResult> RequestRevisions(AuthoriseModificationsOutcomeViewModel model)
     {
-        var auth = await sponsorUserAuthorisationService.AuthoriseWithOrganisationContextAsync(this, model.SponsorOrganisationUserId, User, model.RtsId);
+        var auth = await sponsorUserAuthorisationService.AuthoriseWithOrganisationContextAsync(this, Guid.Parse(model.SponsorOrganisationUserId), User, model.RtsId);
         if (!auth.IsAuthorised)
         {
             return auth.FailureResult!;
         }
 
         var sponsorOrganisationUser =
-            await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId, model.RtsId);
+            await sponsorOrganisationService.GetSponsorOrganisationUser(Guid.Parse(model.SponsorOrganisationUserId), model.RtsId);
 
         if (!sponsorOrganisationUser.IsSuccessStatusCode)
         {
@@ -558,7 +565,7 @@ public class AuthorisationsModificationsController
 
         if (!ModelState.IsValid)
         {
-            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId, model.RtsId);
+            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(Guid.Parse(model.SponsorOrganisationUserId), model.RtsId);
 
             if (!sponsorOrganisationUser.IsSuccessStatusCode)
             {
@@ -841,7 +848,7 @@ public class AuthorisationsModificationsController
     /// <returns></returns>
     private async Task<IActionResult> ValidateRequest(AuthoriseModificationsOutcomeViewModel model)
     {
-        var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId, model.RtsId);
+        var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(Guid.Parse(model.SponsorOrganisationUserId), model.RtsId);
 
         if (!sponsorOrganisationUser.IsSuccessStatusCode)
         {

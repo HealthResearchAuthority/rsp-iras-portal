@@ -653,6 +653,30 @@ public abstract class ModificationsControllerBase
         return (documentsForModification, questionnaire);
     }
 
+    protected static IEnumerable<ProjectOverviewDocumentDto> GetSortedAndPaginatedDocuments(
+        IEnumerable<ProjectOverviewDocumentDto> allDocuments,
+        string sortField,
+        string sortDirection,
+        int pageSize,
+        int pageNumber)
+    {
+        // do sorting of status field here because status field is mapped and not stored in DB
+        if (sortField == nameof(ProjectOverviewDocumentDto.Status))
+        {
+            if (sortDirection == SortDirections.Ascending)
+            {
+                allDocuments = allDocuments.OrderBy(d => d.Status);
+            }
+            else
+            {
+                allDocuments = allDocuments.OrderByDescending(d => d.Status);
+            }
+        }
+
+        return allDocuments.Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize);
+    }
+
     /// <summary>
     /// Clones a questionnaire deeply to avoid shared references.
     /// </summary>
