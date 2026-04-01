@@ -1,5 +1,7 @@
-﻿@using Rsp.Portal.Application.Constants
+﻿@using Rsp.IrasPortal.Application.Enum
+@using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model ModificationCreationCheckResult
 @{
     ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
     var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId);
@@ -12,7 +14,25 @@
         : new Dictionary<string, MixedContentPageItem?>();
 
     var warningMessageTitle = pageContent.GetValueOrDefault("Modifications.CreateModificationOutcome.Title", null);
-    var warningMessageBody = pageContent.GetValueOrDefault("Modifications.CreateModificationOutcome.Body", null);
+    var warningMessageBodyForStatus = pageContent.GetValueOrDefault("Modifications.CreateModificationOutcome.Body", null);
+    var warningMessageBodyForBlockedSpecificAreaOfChange = pageContent.GetValueOrDefault("Modifications.CreateModificationOutcome.BodySpecificChangeInReview", null);
+       
+    var warningMessageBody = warningMessageBodyForStatus;
+
+    switch (Model)
+    {
+        case ModificationCreationCheckResult.InvalidStatus:
+            warningMessageBody = warningMessageBodyForStatus;
+            break;
+
+        case ModificationCreationCheckResult.BlockedSpecificAreaOfChange:
+            warningMessageBody = warningMessageBodyForBlockedSpecificAreaOfChange;
+            break;
+
+        default:
+            warningMessageBody = warningMessageBodyForStatus;
+            break;            
+    }
 }
 
 <div class="govuk-grid-row">

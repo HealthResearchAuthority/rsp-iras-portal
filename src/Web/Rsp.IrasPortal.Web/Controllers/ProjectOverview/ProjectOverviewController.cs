@@ -182,6 +182,17 @@ public class ProjectOverviewController
             AdditionalParameters = new Dictionary<string, string>() { { "projectRecordId", projectRecordId } }
         };
 
+        if (modificationsResponseResult?.Content?.Modifications != null &&
+            modificationsResponseResult.Content.Modifications.Any())
+        {
+            var allProjectModificationChanges = await projectModificationsService.GetModificationsChangesForProject(projectRecordId);
+            if (!allProjectModificationChanges.IsSuccessStatusCode)
+            {
+                return this.ServiceError(allProjectModificationChanges);
+            }
+            model.AllProjectModificationChanges = allProjectModificationChanges.Content ?? [];
+        }
+
         //project closure
         await GetProjectClosureDetails(projectRecordId, model);
 

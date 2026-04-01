@@ -88,7 +88,7 @@
                                ModificationStatus.NotAuthorised,
                                ModificationStatus.Withdrawn })"
                     status-mode="Show">
-            @if (modificationBaseModel.Status is not null)
+            @if (modificationBaseModel.Status is not null && !string.IsNullOrWhiteSpace(modificationBaseModel.DateCreated))
             {
                 <div class="govuk-summary-list__row">
                     <dt class="govuk-summary-list__key">Date created</dt>

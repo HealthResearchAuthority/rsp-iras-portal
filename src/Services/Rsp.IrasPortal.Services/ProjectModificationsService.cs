@@ -476,4 +476,20 @@ public class ProjectModificationsService(
 
         return apiResponse.ToServiceResponse();
     }
+
+    /// <summary>
+    /// Retrieves all changes associated with a specific project.
+    /// </summary>
+    /// <param name="projectRecordId">
+    /// The unique identifier of the project record for which to retrieve changes.
+    /// <returns>
+    /// An asynchronous operation that returns a service response containing a collection of <see
+    /// cref="ProjectModificationChangeResponse"/> objects representing the changes for the
+    /// specified project modification.
+    /// </returns>
+    public async Task<ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationsChangesForProject(string projectRecordId)
+    {
+        var apiResponse = await projectModificationsServiceClient.GetModificationsChangesForProject(projectRecordId);
+        return apiResponse.ToServiceResponse();
+    }
 }
