@@ -288,6 +288,19 @@ public interface IProjectModificationsService : IInterceptable
     public Task<ServiceResponse<ProjectModificationReviewResponse>> GetModificationReviewResponses(string projectRecordId, Guid modificationId);
 
     /// <summary>
+    /// Saves RFI responses for a project modification.
+    /// </summary>
+    /// <param name="modificationRfiResponseRequest">The request object containing the responses</param>
+    public Task<ServiceResponse> SaveModificationRfiResponses(ModificationRfiResponseRequest modificationRfiResponseRequest);
+
+    /// <summary>
+    /// Gets RFI responses for a project modification.
+    /// </summary>
+    /// <param name="projectRecordId">The project record ID</param>
+    /// <param name="modificationId">The modification ID</param>
+    public Task<ServiceResponse<ModificationRfiResponseResponse>> GetModificationRfiResponses(string projectRecordId, Guid modificationId);
+
+    /// <summary>
     /// Gets modifications for specific modificationId with filtering, sorting and pagination
     /// </summary>
     /// <param name="modificationId">

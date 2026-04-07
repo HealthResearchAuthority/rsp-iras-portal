@@ -127,7 +127,7 @@
                         </li>
                     }
 
-                    <li status-for="@Model!.Status" status-is="@ModificationStatus.RequestForInformation" class="govuk-service-navigation__item small-margin @(activeTabId == ModificationOverview.RequestForFurtherInformation ? "govuk-service-navigation__item--active" : "")">
+                    <li status-for="@Model!.Status" status-in="@([ModificationStatus.RequestForInformation, ModificationStatus.ResponseWithSponsor])" class="govuk-service-navigation__item small-margin @(activeTabId == ModificationOverview.RequestForFurtherInformation ? "govuk-service-navigation__item--active" : "")">
                         <a class="govuk-service-navigation__link"
                            asp-route=""
                            asp-all-route-data="baseRouteParams"

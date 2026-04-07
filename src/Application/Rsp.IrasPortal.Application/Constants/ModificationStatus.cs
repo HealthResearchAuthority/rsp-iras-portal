@@ -12,6 +12,7 @@ public struct ModificationStatus
     public const string NotAuthorised = "Not authorised";
     public const string RequestForInformation = "Request for further information";
     public const string Withdrawn = "Withdrawn";
+    public const string ResponseWithSponsor = "Response with sponsor";
 
     // BACKSTAGE VALUES
     public const string Received = "Received";

@@ -1,0 +1,22 @@
+﻿@using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models
+@model RfiDetailsViewModel
+@{
+    ViewBag.Title = "Request for further information";
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-panel govuk-panel--confirmation">
+            <h1 class="govuk-panel__title">
+                Response sent to sponsor
+            </h1>
+        </div>
+        <h2 class="govuk-heading-m">What happens next</h2>
+        <p class="govuk-body">
+            The response has been submitted to the sponsor. No further review or approval is needed.
+        </p>
+        <a class="govuk-button" asp-route="notifications:usernotificationsdashboard">
+            Return to notifications
+        </a>
+    </div>
+</div>

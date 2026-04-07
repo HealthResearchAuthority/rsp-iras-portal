@@ -64,6 +64,18 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
                 }
             });
 
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationRfiResponses("PR1", modId))
+            .ReturnsAsync(new ServiceResponse<ModificationRfiResponseResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ModificationRfiResponseResponse
+                {
+                    ModificationId = modId,
+                    RfiResponses = []
+                }
+            });
+
         // 2. GetModificationChanges -> one change
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationChanges(It.IsAny<string>(), It.IsAny<Guid>()))
@@ -188,6 +200,18 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
                 {
                     ModificationId = modId,
                     RequestForInformationReasons = []
+                }
+            });
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationRfiResponses("PR1", modId))
+            .ReturnsAsync(new ServiceResponse<ModificationRfiResponseResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ModificationRfiResponseResponse
+                {
+                    ModificationId = modId,
+                    RfiResponses = []
                 }
             });
 
@@ -531,6 +555,18 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
                 }
             });
 
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationRfiResponses("PR1", modId))
+            .ReturnsAsync(new ServiceResponse<ModificationRfiResponseResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ModificationRfiResponseResponse
+                {
+                    ModificationId = modId,
+                    RfiResponses = []
+                }
+            });
+
         // Act
         var result = await Sut.ModificationDetails("PR1", "IRAS", "Short", modId, sponsorUserId, rtsId);
 
@@ -826,6 +862,18 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
                 }
             });
 
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationRfiResponses("PR1", modId))
+            .ReturnsAsync(new ServiceResponse<ModificationRfiResponseResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ModificationRfiResponseResponse
+                {
+                    ModificationId = modId,
+                    RfiResponses = []
+                }
+            });
+
         // Act
         var result = await Sut.ModificationDetails("PR1", "IRAS", "Short", modId, sponsorUserId, rtsId);
 
@@ -895,6 +943,18 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
                 {
                     ModificationId = modId,
                     RequestForInformationReasons = []
+                }
+            });
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationRfiResponses("PR1", modId))
+            .ReturnsAsync(new ServiceResponse<ModificationRfiResponseResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ModificationRfiResponseResponse
+                {
+                    ModificationId = modId,
+                    RfiResponses = []
                 }
             });
 

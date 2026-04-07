@@ -1,0 +1,85 @@
+﻿@using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models
+@model RfiDetailsViewModel
+@{
+    ViewBag.Title = "Request for further information";
+}
+
+@section BackNavigation {
+    <partial name="_BackNavigation" model="@("rfi:rfidetails", "Back", new Dictionary<string,string>() { { "projectId", Model.ProjectId! }, {"modificationId", Model.ModificationGuid! } })" />
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+    </div>
+</div>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h2 class="govuk-heading-l">Request for further information</h2>
+        <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">IRAS ID</dt>
+                <dd class="govuk-summary-list__value">@Model.IrasId</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Short project title</dt>
+                <dd class="govuk-summary-list__value">@Model.ShortProjectTitle</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Modification ID</dt>
+                <dd class="govuk-summary-list__value">@Model.ModificationId</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Date reviewer submitted</dt>
+                <dd class="govuk-summary-list__value">@Model.DateSubmitted</dd>
+            </div>
+        </dl>
+    </div>
+</div>
+
+<h2 class="govuk-heading-m">Request for further information</h2>
+<form method="post" asp-action="RfiResponses">
+    @for (var i = 0; i < Model.RfiReasons.Count; i++)
+    {
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-one-third">
+                <label class="govuk-label" for="RfiReasons_@(i)_">
+                    Reason @(i + 1)
+                </label>
+            </div>
+            <div class="govuk-grid-column-two-thirds">
+                <p class="govuk-body">
+                    @Model.RfiReasons[i]
+                </p>
+            </div>
+        </div>
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-one-third">
+                <label class="govuk-label" for="RfiResponses_@(i)_">
+                    Response to reason @(i + 1)
+                </label>
+            </div>
+            <div class="govuk-grid-column-two-thirds">
+                <div class="govuk-form-group govuk-character-count mb-0" data-module="govuk-character-count" data-maxlength="300">
+                    <textarea asp-for="RfiResponses[i]"
+                                class="govuk-textarea govuk-js-character-count"
+                                rows="5"
+                                aria-describedby="RfiResponses_@(i)_-info">
+                    </textarea>
+                    <div id="RfiResponses_@(i)_-info" class="govuk-hint govuk-character-count__message"></div>
+                </div>
+            </div>
+        </div>
+        <hr />
+    }
+
+    <div class="save-buttons">
+        <button type="submit" class="govuk-button" data-module="govuk-button">
+            Save and continue
+        </button>
+        <button asp-route-saveForLater="true" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+            Save for later
+        </button>
+    </div>
+</form>

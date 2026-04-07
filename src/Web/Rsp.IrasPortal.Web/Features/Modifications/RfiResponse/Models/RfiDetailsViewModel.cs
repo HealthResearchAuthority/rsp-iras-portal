@@ -9,4 +9,5 @@ public class RfiDetailsViewModel
     public string? ModificationGuid { get; set; }
     public string? DateSubmitted { get; set; }
     public IList<string> RfiReasons { get; set; } = [];
+    public List<string> RfiResponses { get; set; } = [];
 }
