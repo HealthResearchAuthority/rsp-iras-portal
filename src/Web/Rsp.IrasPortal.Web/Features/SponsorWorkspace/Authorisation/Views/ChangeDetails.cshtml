@@ -8,9 +8,9 @@
 @inject IRtsService rtsService
 
 @{
-	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
-    TempData[TempDataKeys.ProjectModification.ReviewAllChanges] = true;       
+    TempData[TempDataKeys.ProjectModification.ReviewAllChanges] = true;
     ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
     ViewData[ViewDataKeys.ShowModificationStatus] = true;
 
@@ -22,7 +22,8 @@
 
     var selectedChange = Model.ModificationChanges.FirstOrDefault(c => c.ModificationChangeId.ToString() == Model.ModificationChangeId);
 
-    var checkAndAuthoriseNavParams = new { 
+    var checkAndAuthoriseNavParams = new
+    {
         projectRecordId = Model.ProjectRecordId,
         irasId = Model.IrasId,
         shortTitle = Model.ShortTitle,
@@ -35,21 +36,20 @@
     @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
     {
         ("Sponsor workspace", Url.RouteUrl("sws:sponsorworkspace")),
-        ("Authorisations", Url.RouteUrl("sws:modifications", new { sponsorOrganisationUserId = Model.SponsorOrganisationUserId, rtsId = Model.RtsId} )),
+        ("Authorisations", Url.RouteUrl("sws:modifications", new { sponsorOrganisationUserId = Model.SponsorOrganisationUserId, rtsId = Model.RtsId })),
         ("Check and authorise", Url.RouteUrl("sws:checkandauthorise", checkAndAuthoriseNavParams))
     })
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>       
+        <h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
 
         <partial name="~/Features/Modifications/Shared/_ProjectModificationSummary.cshtml"
                  model="Model"
                  view-data="ViewData" />
     </div>
 </div>
-
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
@@ -86,7 +86,20 @@
                         @answerText
                     </dd>
                 </div>
-                @foreach (var question in selectedChange.Questions)
+
+                @if (selectedChange.SpecificAreaOfChangeId is
+                            SpecificAreasOfChange.AddNewPics or
+                            SpecificAreasOfChange.AddNewSites or
+                            SpecificAreasOfChange.EarlyClosureSites or
+                            SpecificAreasOfChange.EarlyClosuresPics)
+                {
+                    <vc:participating-organisations-review project-record-id="@Model.ProjectRecordId"
+                                                           modification-change-id="@Model.ModificationChangeId"
+                                                           specific-area-of-change-id="@selectedChange.SpecificAreaOfChangeId"
+                                                           show-links="false" />
+                }
+
+                @foreach (var question in selectedChange.Questions.Where(q => q.SectionId != "pom-participating-organisation-details"))
                 {
                     <div class="govuk-summary-list__row">
                         <dt class="govuk-summary-list__key">
@@ -113,7 +126,7 @@
 
     <partial name="_SubmitButton"
              model=@(("sws:checkandauthorise",
-                          "Return to modification",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        "Return to modification",
                           new Dictionary<string, string>
                           {
                               ["projectRecordId"] = Model.ProjectRecordId,

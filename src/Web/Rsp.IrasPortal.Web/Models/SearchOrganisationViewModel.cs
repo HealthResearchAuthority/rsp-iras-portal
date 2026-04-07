@@ -8,8 +8,23 @@ namespace Rsp.Portal.Web.Models;
 /// </summary>
 public class SearchOrganisationViewModel : BaseProjectModificationViewModel
 {
+    /// <summary>
+    /// Gets or sets the search criteria for organisations.
+    /// </summary>
     public OrganisationSearchModel Search { get; set; } = new();
-    public IEnumerable<SelectableOrganisationViewModel> Organisations { get; set; } = [];
-    public List<string> SelectedOrganisationIds { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the list of organisations returned from the search.
+    /// </summary>
+    public List<SelectableOrganisationViewModel>? Organisations { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of selected organisation IDs.
+    /// </summary>
+    public List<string> SelectedOrganisationsIds { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the pagination information for the search results.
+    /// </summary>
     public PaginationViewModel? Pagination { get; set; }
 }

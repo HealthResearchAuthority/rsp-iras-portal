@@ -41,10 +41,10 @@
 
     // Group questions by their Section and order them by Sequence
     var groupedSections = Model.Questions
-.OrderBy(q => q.SectionSequence)
-.ThenBy(q => q.Sequence)
-.GroupBy(q => q.SectionId)
-.ToList();
+        .OrderBy(q => q.SectionSequence)
+        .ThenBy(q => q.Sequence)
+        .GroupBy(q => q.SectionId)
+        .ToList();
 
     var navigation = JsonSerializer.Deserialize<NavigationDto>((TempData.Peek(TempDataKeys.ProjectModificationChange.Navigation) as string)!);
 
@@ -57,21 +57,21 @@
     var parentQuestionAnswers = Model.GetParentQuestionAnswers();
 
     <script>
-        $(document).ready(function () {
-        const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
+            $(document).ready(function () {
+            const conditionalRules = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
 
-        // Loop through each rule and store it individually by QuestionId
-         conditionalRules.forEach(rule => {
-            sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
-         });
+            // Loop through each rule and store it individually by QuestionId
+             conditionalRules.forEach(rule => {
+                sessionStorage.setItem(rule.QuestionId, JSON.stringify(rule.Rules));
+             });
 
-         const parentAnswers = @Html.Raw(JsonSerializer.Serialize(parentQuestionAnswers));
+             const parentAnswers = @Html.Raw(JsonSerializer.Serialize(parentQuestionAnswers));
 
-        // Loop through each rule and store it individually by QuestionId
-        parentAnswers.forEach(parent => {
-            sessionStorage.setItem('A_'+parent.QuestionId, JSON.stringify(parent.Answers));
-         });
-    });
+            // Loop through each rule and store it individually by QuestionId
+            parentAnswers.forEach(parent => {
+                sessionStorage.setItem('A_'+parent.QuestionId, JSON.stringify(parent.Answers));
+             });
+        });
     </script>
 
     <script src="~/js/questionnaire.js"></script>
@@ -120,9 +120,19 @@
             @specificArea
         </h2>
 
+        @if (modification.SpecificAreaOfChangeId is
+                SpecificAreasOfChange.AddNewPics or
+                SpecificAreasOfChange.AddNewSites or
+                SpecificAreasOfChange.EarlyClosureSites or
+                SpecificAreasOfChange.EarlyClosuresPics)
+        {
+            <vc:participating-organisations-review project-record-id="@projectRecordId"
+                                                   modification-change-id="@modification.ModificationChangeId"
+                                                   specific-area-of-change-id="@modification.SpecificAreaOfChangeId" />
+        }
+
         @foreach (var sectionGroup in groupedSections)
         {
-
             @*<h2 class="govuk-heading-m govuk-!-margin-top-5">@sectionGroup.Key</h2>*@
             <dl class="govuk-summary-list govuk-!-margin-bottom-2">
 
