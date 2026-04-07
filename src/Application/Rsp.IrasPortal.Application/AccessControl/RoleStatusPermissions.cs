@@ -108,7 +108,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.NotAuthorised,
                     ModificationStatus.NotApproved,
                     ModificationStatus.RequestForInformation,
-                    ModificationStatus.Withdrawn
+                    ModificationStatus.Withdrawn,
+                    ModificationStatus.ResponseWithSponsor
                 }
             },
             {
@@ -121,7 +122,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.NotAuthorised,
                     ModificationStatus.NotApproved,
                     ModificationStatus.RequestForInformation,
-                    ModificationStatus.Withdrawn
+                    ModificationStatus.Withdrawn,
+                    ModificationStatus.ResponseWithSponsor
                 }
             },
             {
@@ -134,7 +136,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.NotAuthorised,
                     ModificationStatus.NotApproved,
                     ModificationStatus.RequestForInformation,
-                    ModificationStatus.Withdrawn
+                    ModificationStatus.Withdrawn,
+                    ModificationStatus.ResponseWithSponsor
                 }
             },
             {
@@ -146,7 +149,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.Received,
                     ModificationStatus.ReviewInProgress,
                     ModificationStatus.RequestForInformation,
-                    ModificationStatus.Withdrawn
+                    ModificationStatus.Withdrawn,
+                    ModificationStatus.ResponseWithSponsor
                 }
             },
             {
@@ -158,7 +162,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.Received,
                     ModificationStatus.ReviewInProgress,
                     ModificationStatus.RequestForInformation,
-                    ModificationStatus.Withdrawn
+                    ModificationStatus.Withdrawn,
+                    ModificationStatus.ResponseWithSponsor
                 }
             },
             {
@@ -170,7 +175,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.ReviewInProgress,
                     ModificationStatus.Received,
                     ModificationStatus.RequestForInformation,
-                    ModificationStatus.Withdrawn
+                    ModificationStatus.Withdrawn,
+                    ModificationStatus.ResponseWithSponsor
                 }
             }
         };

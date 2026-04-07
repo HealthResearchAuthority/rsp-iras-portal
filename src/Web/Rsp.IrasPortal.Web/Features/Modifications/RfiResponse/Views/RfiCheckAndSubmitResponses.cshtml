@@ -1,0 +1,71 @@
+﻿@using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models
+@model RfiDetailsViewModel
+@{
+    ViewBag.Title = "Request for further information";
+}
+
+@section BackNavigation {
+    <partial name="_BackNavigation" model="@("rfi:rfiresponses", "Back", new Dictionary<string,string>(){})" />
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">
+            Check the information before you send
+        </h1>
+        <div class="govuk-body">
+            Make sure the information is correct before you send the response. 
+            Once the response is sent to the sponsor, it cannot be changed.
+        </div>
+        <h2 class="govuk-heading-m">
+            Response to request for further information
+        </h2>
+    </div>
+</div>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+        <form method="post" asp-action="RfiSubmitResponses">
+            <dl class="govuk-summary-list">
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">
+                        Short project title
+                    </dt>
+                    <dd class="govuk-summary-list__value">
+                        @Model.ShortProjectTitle
+                    </dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">
+                        Modification ID
+                    </dt>
+                    <dd class="govuk-summary-list__value">
+                        @Model.ModificationId
+                    </dd>
+                </div>
+                @for (var i = 0; i < Model.RfiReasons.Count; i++)
+                {
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">
+                            Reason @(i + 1)
+                        </dt>
+                        <dd class="govuk-summary-list__value">
+                            @Model.RfiReasons[i]
+                        </dd>
+                    </div>
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">
+                            Response to reason @(i + 1)
+                        </dt>
+                        <dd class="govuk-summary-list__value">
+                            @(Model.RfiResponses.ElementAtOrDefault(i) ?? "No response provided")
+                        </dd>
+                        <dd class="govuk-summary-list__actions">
+                            <a class="govuk-link" asp-route="rfi:rfiresponses">Change<span class="govuk-visually-hidden"> response</span></a>
+                        </dd>
+                    </div>
+                }
+            </dl>
+            <button type="submit" class="govuk-button">Send response to sponsor</button>
+        </form>
+    </div>
+</div>

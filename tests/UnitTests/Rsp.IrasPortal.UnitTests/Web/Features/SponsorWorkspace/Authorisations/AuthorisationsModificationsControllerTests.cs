@@ -1423,6 +1423,18 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                 }
             });
 
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationRfiResponses(It.IsAny<string>(),
+                It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ModificationRfiResponseResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ModificationRfiResponseResponse
+                {
+                    RfiResponses = []
+                }
+            });
+
         // Defult - user is authorised
         Mocker.GetMock<ISponsorUserAuthorisationService>()
         .Setup(a => a.AuthoriseWithOrganisationContextAsync(
