@@ -69,6 +69,13 @@ public abstract class ModificationsControllerBase
             return (this.ServiceError(modificationReviewResponse), null);
         }
 
+        var modificationRfiResponsesResponse = await projectModificationsService.GetModificationRfiResponses(projectRecordId, projectModificationId);
+
+        if (!modificationRfiResponsesResponse.IsSuccessStatusCode)
+        {
+            return (this.ServiceError(modificationRfiResponsesResponse), null);
+        }
+
         TempData[TempDataKeys.ProjectModification.ProjectModificationStatus] = modification.Status;
 
         // Build the base view model with project metadata
@@ -89,6 +96,7 @@ public abstract class ModificationsControllerBase
             ReviewerComments = modification?.ReviewerComments,
             RevisionDescription = modification?.RevisionDescription,
             RequestForInformationReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? [],
+            RequestForInformationResponses = modificationRfiResponsesResponse.Content?.RfiResponses ?? [],
             ApplicantRevisionResponse = modification?.ApplicantRevisionResponse
         });
     }

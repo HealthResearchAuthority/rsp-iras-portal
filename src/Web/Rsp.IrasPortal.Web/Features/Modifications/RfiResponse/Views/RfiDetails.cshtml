@@ -93,8 +93,9 @@
 		<p class="govuk-body">
 			@Html.Raw(rfiRespondText?.Value)
 		</p>
-
-		<partial name="_SubmitButton" model="@("", "Respond", new Dictionary<string, string>())" />
+        <a asp-route="rfi:rfiresponses" class="govuk-button">
+            Respond
+        </a>
 		@{
 			ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
 		}

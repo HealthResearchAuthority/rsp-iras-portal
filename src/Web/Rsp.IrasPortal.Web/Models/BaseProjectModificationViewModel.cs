@@ -63,6 +63,11 @@ public class BaseProjectModificationViewModel
     public List<string> RequestForInformationReasons { get; set; } = [];
 
     /// <summary>
+    /// Gets or sets the list of responses provided by the applicant in response to the request for additional information.
+    /// </summary>
+    public List<string> RequestForInformationResponses { get; set; } = [];
+
+    /// <summary>
     /// Gets or sets the created date of the Modification
     /// </summary>
     public string DateCreated { get; set; } = null!;
