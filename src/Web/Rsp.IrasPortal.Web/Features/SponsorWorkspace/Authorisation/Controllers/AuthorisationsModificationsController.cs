@@ -45,6 +45,7 @@ public class AuthorisationsModificationsController
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
+    private const string SponsorReferenceCategoryId = "Sponsor reference";
     private readonly IRespondentService _respondentService = respondentService;
 
     [Authorize(Policy = Permissions.Sponsor.Modifications_Search)]
@@ -689,6 +690,15 @@ public class AuthorisationsModificationsController
         if (!allMalwareScansSuccessful)
         {
             return RedirectToRoute("pmc:DocumentsScanInProgress");
+        }
+
+        // CHECK FOR COMPLETE SPONSOR REFERENCE
+        var viewModel = await this.BuildSponsorQuestionnaireViewModel(Guid.Parse(model.ModificationId), model.ProjectRecordId, SponsorReferenceCategoryId);
+        var isValidSponsorReferece = await this.ValidateQuestionnaire(questionnaireValidator, viewModel, true);
+
+        if (!isValidSponsorReferece)
+        {
+            return View("SponsorReference", viewModel);
         }
 
         var reviewType = string.IsNullOrWhiteSpace(model.ReviewType)
