@@ -1,7 +1,8 @@
-﻿using Rsp.Portal.Application.DTOs;
+﻿using Rsp.Logging.Interceptors;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
-using Rsp.Logging.Interceptors;
 
 namespace Rsp.Portal.Application.Services;
 
@@ -21,14 +22,31 @@ public interface IRtsService : IInterceptable
     /// <param name="countries">Optional list of CountryName values to filter by (e.g., "England", "Wales").</param>
     /// <param name="sort">Sort direction: "asc" or "desc". Defaults to "asc".</param>
     /// <param name="sortField">Sort field: "name", "country", or "isactive". Defaults to "name".</param>
-    Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisationsByName(
+    Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisationsByName
+    (
         string name,
         string? role,
         int pageIndex = 1,
         int? pageSize = null,
         IEnumerable<string>? countries = null,
         string sort = "asc",
-        string sortField = "name");
+        string sortField = "name"
+    );
+
+    /// <summary>
+    /// Gets the organisations by name and role with optional pagination, country filtering, and sorting.
+    /// </summary>
+    /// <param name="request">The search request containing filters and pagination information.</param>
+    /// <param name="sort">Sort direction: "asc" or "desc". Defaults to "asc".</param>
+    /// <param name="sortField">Sort field: "name", "country", or "isactive". Defaults to "name".</param>
+    Task<ServiceResponse<OrganisationSearchResponse>> SearchOrganisations
+    (
+        OrganisationsSearchRequest request,
+        int pageIndex,
+        int? pageSize,
+        string sort = "asc",
+        string sortField = "name"
+    );
 
     /// <summary>
     /// Gets all organisations, with optional role/country filtering, sorting, and paging.
@@ -39,13 +57,15 @@ public interface IRtsService : IInterceptable
     /// <param name="countries">Optional list of CountryName values to filter by (e.g., "England", "Wales").</param>
     /// <param name="sort">Sort direction: "asc" or "desc". Defaults to "asc".</param>
     /// <param name="sortField">Sort field: "name", "country", or "isactive". Defaults to "name".</param>
-    Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations(
+    Task<ServiceResponse<OrganisationSearchResponse>> GetOrganisations
+    (
         string? role,
         int pageIndex = 1,
         int? pageSize = null,
         IEnumerable<string>? countries = null,
         string sort = "asc",
-        string sortField = "name");
+        string sortField = "name"
+    );
 
     /// <summary>
     /// Gets the organisation by Id

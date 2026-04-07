@@ -9,7 +9,7 @@ public class ValidateAsyncTests : TestServiceBase<SearchOrganisationViewModelVal
     public class SearchOrganisationViewModelValidatorTests : TestServiceBase<SearchOrganisationViewModelValidator>
     {
         [Fact]
-        public async Task ShouldPass_WhenSearchNameTermIsNull()
+        public async Task ShouldReturnError_WhenSearchNameTermIsNull()
         {
             var model = new SearchOrganisationViewModel
             {
@@ -21,11 +21,12 @@ public class ValidateAsyncTests : TestServiceBase<SearchOrganisationViewModelVal
 
             var result = await Sut.TestValidateAsync(model);
 
-            result.ShouldNotHaveValidationErrorFor(x => x.Search.SearchNameTerm);
+            result.ShouldHaveValidationErrorFor(x => x.Search.SearchNameTerm)
+                  .WithErrorMessage("Provide 3 or more characters to search");
         }
 
         [Fact]
-        public async Task ShouldPass_WhenSearchNameTermIsEmpty()
+        public async Task ShouldReturnError_WhenSearchNameTermIsEmpty()
         {
             var model = new SearchOrganisationViewModel
             {
@@ -37,7 +38,8 @@ public class ValidateAsyncTests : TestServiceBase<SearchOrganisationViewModelVal
 
             var result = await Sut.TestValidateAsync(model);
 
-            result.ShouldNotHaveValidationErrorFor(x => x.Search.SearchNameTerm);
+            result.ShouldHaveValidationErrorFor(x => x.Search.SearchNameTerm)
+                  .WithErrorMessage("Provide 3 or more characters to search");
         }
 
         [Fact]

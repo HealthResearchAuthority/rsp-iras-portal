@@ -1,5 +1,6 @@
 ﻿using Refit;
 using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
 
 namespace Rsp.Portal.Application.ServiceClients;
@@ -20,13 +21,15 @@ public interface IRtsServiceClient
     /// <param name="sort">Sort direction: "asc" or "desc". Defaults to "asc".</param>
     /// <param name="sortField">Sort field: "name", "country", or "isactive". Defaults to "name".</param>
     [Get("/organisations/getAll")]
-    Task<ApiResponse<OrganisationSearchResponse>> GetOrganisations(
+    Task<ApiResponse<OrganisationSearchResponse>> GetOrganisations
+    (
         string? role,
         int pageIndex = 1,
         int? pageSize = null,
         [Query(CollectionFormat.Multi), AliasAs("countries")] IEnumerable<string>? countries = null,
         string sort = "asc",
-        string sortField = "name");
+        string sortField = "name"
+    );
 
     /// <summary>
     /// Searches for organisations by name, with optional role/country filtering, sorting and paging.
@@ -39,16 +42,32 @@ public interface IRtsServiceClient
     /// <param name="sort">Sort direction: "asc" or "desc". Defaults to "asc".</param>
     /// <param name="sortField">Sort field: "name", "country", or "isactive". Defaults to "name".</param>
     [Get("/organisations/searchByName")]
-    Task<ApiResponse<OrganisationSearchResponse>> GetOrganisationsByName(
+    Task<ApiResponse<OrganisationSearchResponse>> GetOrganisationsByName
+    (
         string name,
         string? role,
         int pageIndex = 1,
         int? pageSize = null,
         [Query(CollectionFormat.Multi), AliasAs("countries")] IEnumerable<string>? countries = null,
         string sort = "asc",
-        string sortField = "name");
+        string sortField = "name"
+    );
 
-
+    /// <summary>
+    /// Searches for organisations by name, with optional role/country filtering, sorting and paging.
+    /// </summary>
+    /// <param name="request">The search request containing filters and pagination information.</param>
+    /// <param name="sort">Sort direction: "asc" or "desc". Defaults to "asc".</param>
+    /// <param name="sortField">Sort field: "name", "country", or "isactive". Defaults to "name".</param>
+    [Post("/organisations/searchOrganisations")]
+    Task<ApiResponse<OrganisationSearchResponse>> SearchOrganisations
+    (
+        OrganisationsSearchRequest request,
+        int pageIndex,
+        int? pageSize,
+        string sort = "asc",
+        string sortField = "name"
+    );
 
     /// <summary>
     /// Gets the organisation by Id
@@ -58,4 +77,3 @@ public interface IRtsServiceClient
     [Get("/organisations/getbyid")]
     public Task<ApiResponse<OrganisationDto>> GetOrganisation(string id);
 }
-

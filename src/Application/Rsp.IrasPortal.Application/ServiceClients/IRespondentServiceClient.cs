@@ -1,4 +1,5 @@
 ﻿using Refit;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
 
 namespace Rsp.Portal.Application.ServiceClients;
@@ -122,9 +123,56 @@ public interface IRespondentServiceClient
     [Get("/respondent/modificationdocumentanswer/{documentId}")]
     public Task<ApiResponse<IEnumerable<ProjectModificationDocumentAnswerDto>>> GetModificationDocumentAnswers(Guid documentId);
 
-    [Post("/respondent/modificationdocumentanswer")]
+    [Post("/respondent/modificationdocumentanswers")]
     public Task<IApiResponse> SaveModificationDocumentAnswer(List<ProjectModificationDocumentAnswerDto> projectModificationDocumentRequest);
 
     [Get("/respondent/modificationdocumentbytype/{projectRecordId}")]
     public Task<ApiResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationDocumentsByType(string projectRecordId, [Query] string? documentTypeId = null);
+
+    /// <summary>
+    /// Saves modification participating organisations for a project modification change.
+    /// </summary>
+    /// <param name="request">The modification participating organisations request.</param>
+    [Post("/respondent/modificationparticipatingorganisations")]
+    public Task<IApiResponse> SaveModificationParticipatingOrganisations(IEnumerable<ParticipatingOrganisationDto> request);
+
+    /// <summary>
+    /// Saves modification participating organisation answers for a project modification change.
+    /// </summary>
+    /// <param name="request">The modification participating organisation answers request.</param>
+    [Post("/respondent/modificationparticipatingorganisationanswers")]
+    public Task<IApiResponse> SaveModificationParticipatingOrganisationAnswers(IEnumerable<ParticipatingOrganisationAnswerDto> request);
+
+    /// <summary>
+    /// Gets modification participating organisations for a specific modification change and project record.
+    /// </summary>
+    /// <param name="modificationChangeId">The modification change identifier.</param>
+    /// <param name="projectRecordId">The project record identifier.</param>
+    /// <returns>A collection of documents for the modification.</returns>
+    [Get("/respondent/modificationparticipatingorganisations/{modificationChangeId}/{projectRecordId}")]
+    public Task<ApiResponse<IEnumerable<ParticipatingOrganisationDto>>> GetModificationParticipatingOrganisations(Guid modificationChangeId, string projectRecordId);
+
+    /// <summary>
+    /// Gets modification participating organisation answer for a specific organisation.
+    /// </summary>
+    /// <param name="participatingOrganisationId">The participating organisation identifier.</param>
+    /// <returns>A collection of participating organisation answers for the participating organisation.</returns>
+    [Get("/respondent/modificationparticipatingorganisationanswers/{participatingOrganisationId}")]
+    public Task<ApiResponse<IEnumerable<ParticipatingOrganisationAnswerDto>>> GetModificationParticipatingOrganisationAnswers(Guid participatingOrganisationId);
+
+    /// <summary>
+    /// Deletes a modification participating organisation by Id.
+    /// </summary>
+    /// <param name="participatingOrganisationId">The participating organisation identifier.</param>
+    [Delete("/respondent/modificationparticipatingorganisation/{participatingOrganisationId}")]
+    public Task<IApiResponse> DeleteModificationParticipatingOrganisation(Guid participatingOrganisationId);
+
+    /// <summary>
+    /// Gets modification participating organisations for a specific project record and area of change.
+    /// </summary>
+    /// <param name="projectRecordId">The project record identifier.</param>
+    /// <param name="specificAreaOfChange">The specific area of change identifier.</param>
+    /// <returns>A collection of participating organisations.</returns>
+    [Get("/respondent/modificationparticipatingorganisationbyarea/{projectRecordId}/{specificAreaOfChange}")]
+    public Task<ApiResponse<IEnumerable<ParticipatingOrganisationDto>>> GetModificationParticipatingOrganisationsBySpecificArea(string projectRecordId, string specificAreaOfChange);
 }

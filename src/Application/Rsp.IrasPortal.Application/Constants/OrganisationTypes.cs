@@ -1,17 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Rsp.Portal.Application.Constants;
+﻿namespace Rsp.Portal.Application.Constants;
 
 public static class OrganisationTypes
 {
-    public static readonly List<string> Types = [
-        "NHS or HSC organisations",
-        "Independent primary care contractors providing NHS or HSC services",
-        "Local councils",
-        "Other NHS or HSC setting",
-        "University"];
+    public static readonly List<string> Types =
+    [
+        "Care Trust",
+        "Dispensary Site",
+        "GP Practice",
+        "GP Practice in Northern Ireland",
+        "GP Practice in Wales",
+        "Integrated Care Board",
+        "Local Clinical Research Network",
+        "NHS Dental Practice",
+        "NHS Trust",
+        "Northern Ireland Health and Social Care Trust",
+        "Optical Site",
+        "Scottish Regional Health Board",
+        "Scottish Special Health Board",
+        "Special Health Authority Site",
+        "Welsh Local Health Board",
+        "Welsh Local Health Board Site"
+    ];
 }

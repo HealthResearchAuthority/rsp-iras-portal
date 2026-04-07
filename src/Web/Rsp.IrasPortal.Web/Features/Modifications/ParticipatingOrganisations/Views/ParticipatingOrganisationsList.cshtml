@@ -1,0 +1,110 @@
+﻿@using Rsp.IrasPortal.Web.Features.Modifications.ParticipatingOrganisations.Models
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Domain.Enums
+@using Rsp.Portal.Web.Helpers
+@model OrganisationsListViewModel
+
+@{
+    (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+    navModel = ("porgs:selectedparticipatingorganisations", "Back", new());
+
+    // If we know the specific area of change, dynamically build the page title to make the UI clearer.
+    // Otherwise, leave the title empty (will fallback to default in the view if needed).
+    ViewBag.Title = "Add participating organisations details";
+}
+
+<div class="govuk-width-container">
+    @section BackNavigation {
+        <partial name="_BackNavigation" model="navModel.Value" />
+    }
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <h1 class="govuk-heading-l">
+                @ViewBag.Title
+            </h1>
+            <partial name="_ProjectModificationSummary" />
+            <p class="govuk-body">
+                You will need to enter the following details for each of the participating organisations you have added:
+                <ul>
+                    <li>Full name of the Principal Investigator (PI)</li>
+                    <li>PI conflicts of interest</li>
+                    <li>Research team details (optional)</li>
+                </ul>
+            </p>
+            @if (Model.Organisations.Any())
+            {
+                <ul class="govuk-task-list">
+                    @foreach (var org in Model.Organisations)
+                    {
+                        <li class="govuk-task-list__item">
+
+                            <a asp-route="pod:participatingorganisationdetails" asp-route-organisationId="@org.OrganisationId"
+                               class="govuk-link govuk-task-list__link">
+                                Add details for @org.Name
+                            </a>
+
+                            <div class="govuk-task-list__status">
+                                <strong class="govuk-tag">
+                                    @org.DetailsStatus
+                                </strong>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="govuk-body">No organisations selected.</p>
+            }
+
+            <div class="govuk-button-group">
+                @{
+                    var routeValues = new Dictionary<string, string>
+                                {
+                                { "projectRecordId", Model.ProjectRecordId },
+                                { "categoryId", "Participating organisations" },
+                                { "sectionId", "pom-affected-organisations" }
+                                };
+
+                    <form method="post">
+                        <partial name="_SubmitButton" model="@("pmc:displayquestionnaire", "Save and continue", routeValues)" />
+                    </form>
+                }
+
+                <form asp-action="postapproval" method="get">
+                    <input type="hidden" name="projectRecordId" value="@Model.ProjectRecordId" />
+                    <input type="hidden" name="sponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+                    <input type="hidden" name="rtsId" value="@Model.RtsId" />
+
+                    <a asp-route="pmc:saveforlater"
+                       status-for="@Model.Status"
+                       status-is="@ModificationStatus.ReviseAndAuthorise"
+                       asp-route-projectRecordId="@Model.ProjectRecordId"
+                       asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
+                       asp-route-rtsId="@Model.RtsId"
+                       asp-route-routeName="sws:modifications"
+                       class="govuk-button govuk-button--secondary">
+                        Save for later
+                    </a>
+
+                    <a asp-route="pov:postapproval"
+                       status-for="@Model.Status"
+                       status-is="@ModificationStatus.RequestRevisions"
+                       asp-route-projectRecordId="@Model.ProjectRecordId"
+                       class="govuk-button govuk-button--secondary">
+                        Save for later
+                    </a>
+
+                    <a asp-route="pmc:saveforlater" status-for="@Model.Status" status-mode="Hide"
+                       status-in="@([ModificationStatus.ReviseAndAuthorise, ModificationStatus.RequestRevisions])"
+                       asp-route-projectRecordId="@Model.ProjectRecordId"
+                       asp-route-routeName="pov:postapproval"
+                       class="govuk-button govuk-button--secondary">
+                        Save for later
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -26,4 +26,5 @@ public static class SessionKeys
     public const string RequireProfileCreation = "session:require_profile_creation";
     public const string SponsorMyOrganisationsSearch = "session:sponsor_myorganisations_search";
     public const string SponsorMyOrganisationsProjectsSearch = "session:sponsor_myorganisations_projects_search";
+    public const string OrganisationsSearch = "session:organisations_search";
 }
