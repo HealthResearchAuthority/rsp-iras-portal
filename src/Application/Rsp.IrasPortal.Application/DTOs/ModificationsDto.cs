@@ -1,6 +1,4 @@
-﻿using Rsp.Portal.Application.Enum;
-
-namespace Rsp.Portal.Application.DTOs;
+﻿namespace Rsp.Portal.Application.DTOs;
 
 public class ModificationsDto
 {
@@ -20,7 +18,6 @@ public class ModificationsDto
     public string ReviewerName { get; set; }
     public DateTime CreatedAt { get; set; }
     public string Status { get; set; } = null!;
-    public ModificationStatusOrder StatusOrder { get; set; }
     public DateTime? SentToRegulatorDate { get; set; }
     public DateTime? SentToSponsorDate { get; set; }
 }
