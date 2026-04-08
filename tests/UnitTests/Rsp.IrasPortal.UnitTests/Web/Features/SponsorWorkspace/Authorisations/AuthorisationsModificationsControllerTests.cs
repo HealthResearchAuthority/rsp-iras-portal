@@ -29,6 +29,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
 {
     private readonly DefaultHttpContext _http;
     private readonly Guid _sponsorOrganisationUserId = Guid.NewGuid();
+    private readonly string SponsorReferenceCategoryId = "Sponsor reference";
 
     public AuthorisationsModificationsControllerTests()
     {
@@ -1402,10 +1403,56 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
             });
 
         Mocker
+           .GetMock<IRespondentService>()
+           .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
+           .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
+           { StatusCode = HttpStatusCode.OK, Content = [] });
+
+        Mocker
             .GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), It.IsAny<string>()))
+            .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), It.IsAny<string>(), SponsorReferenceCategoryId))
             .ReturnsAsync(new ServiceResponse<IEnumerable<RespondentAnswerDto>>
             { StatusCode = HttpStatusCode.OK, Content = [] });
+
+        var questionSet = new CmsQuestionSetResponse
+        {
+            Sections =
+            [
+                new SectionModel
+            {
+                Id = "pm-sponsor-reference",
+                CategoryId = SponsorReferenceCategoryId,
+                Questions =
+                [
+                    new QuestionModel
+                    {
+                        Id = "Q1",
+                        QuestionId = "Q1",
+                        Name = "Q1",
+                        CategoryId = SponsorReferenceCategoryId,
+                        AnswerDataType = "Text"
+                    }
+                ]
+            }
+            ]
+        };
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet(
+                "pm-sponsor-reference",
+                It.IsAny<string?>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = questionSet
+            });
+
+        // Validate questionnaire PASS
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(
+                It.IsAny<ValidationContext<QuestionnaireViewModel>>(),
+                default))
+            .ReturnsAsync(new ValidationResult());
 
         // Default behaviour for revision review when feature flag triggers it
         Mocker.GetMock<IProjectModificationsService>()
@@ -2267,6 +2314,41 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
 
         result.ShouldBeOfType<RedirectToActionResult>()
               .ActionName.ShouldBe(nameof(AuthorisationsModificationsController.Confirmation));
+    }
+
+    [Fact]
+    public async Task AuthoriseRevision_IncompleteSponsorReference_Returns_SponsorReference_View()
+    {
+        // Arrange
+        var model = SetupAuthoriseOutcomeViewModel();
+        model.ModificationChanges =
+        [
+            new ModificationChangeModel
+            {
+                SpecificAreaOfChangeId = Guid.NewGuid().ToString()
+            }
+        ];
+
+        Sut.SetEvaluateDocumentCompletionResult(false);
+        Mocker.GetMock<IValidator<AuthoriseModificationsOutcomeViewModel>>()
+            .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<AuthoriseModificationsOutcomeViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult());
+
+        // Validate questionnaire FAIL
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .Setup(v => v.ValidateAsync(
+                It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new ValidationResult(
+                new[] { new ValidationFailure("Q1", "Required") }
+            ));
+
+        // Act
+        var result = await Sut.AuthoriseRevision(model, isSaveForLater: false);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("SponsorReference");
+        viewResult.Model.ShouldBeOfType<QuestionnaireViewModel>();
     }
 
     [Fact]
