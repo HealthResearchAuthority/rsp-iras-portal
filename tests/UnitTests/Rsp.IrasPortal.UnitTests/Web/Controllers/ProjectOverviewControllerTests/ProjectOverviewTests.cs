@@ -8,7 +8,6 @@ using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
-using Rsp.Portal.Application.Enum;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Web.Controllers.ProjectOverview;
@@ -1294,10 +1293,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var modificationsResponse = new GetModificationsResponse
         {
-            Modifications = modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(item.Status, true, out var statusEnum)
-            ? (int)statusEnum
-            : (int)ModificationStatusOrder.None)
-            .ToList() ?? [],
+            Modifications = modifications.OrderByDescending(m => m.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions).ToList() ?? [],
             TotalCount = 1
         };
 
@@ -1367,10 +1363,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
 
         var modificationsResponse = new GetModificationsResponse
         {
-            Modifications = modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(item.Status, true, out var statusEnum)
-            ? (int)statusEnum
-            : (int)ModificationStatusOrder.None)
-            .ToList() ?? [],
+            Modifications = modifications.OrderByDescending(m => m.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions).ToList() ?? [],
             TotalCount = 1
         };
 
@@ -1770,15 +1763,17 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     }
 
     [Fact]
-    public async Task PostApproval_ShouldReturnView_WithSortedModifications_WhenSortFieldIsCreatedAt()
+    public async Task PostApproval_ShouldReturnView_WithInDraftAndRequestRevisionsFirst_AndKeepCreatedAtOrder_WhenSortFieldIsCreatedAt()
     {
         // Arrange
         var projectRecordId = "PRJ123";
         var sortField = nameof(ModificationsModel.CreatedAt);
         var sortDirection = SortDirections.Descending;
-        var httpContext = CreateHttpContextWithSession(); // CHANGED
+
+        var httpContext = CreateHttpContextWithSession();
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
+
         var answers = new List<RespondentAnswerDto>
         {
             new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project Y" }
@@ -1790,6 +1785,7 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupCMSService();
         SetupModificationChangesForProjectRecord(projectRecordId);
 
+        // Order here represents CreatedAt order coming from the service
         var serviceResponse = new ServiceResponse<GetModificationsResponse>
         {
             StatusCode = HttpStatusCode.OK,
@@ -1799,8 +1795,8 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
                 Modifications = new List<ModificationsDto>
                 {
                     new () { Id = "1", ModificationId = "M1", Status = ModificationStatus.InDraft },
-                    new () { Id = "2", ModificationId = "M2", Status = ModificationStatus.RequestRevisions },
-                    new () { Id = "3", ModificationId = "M3", Status = ModificationStatus.WithSponsor },
+                    new () { Id = "2", ModificationId = "M2", Status = ModificationStatus.WithSponsor },
+                    new () { Id = "3", ModificationId = "M3", Status = ModificationStatus.RequestRevisions },
                     new () { Id = "4", ModificationId = "M4", Status = ModificationStatus.ReviseAndAuthorise },
                     new () { Id = "5", ModificationId = "M5", Status = ModificationStatus.WithReviewBody },
                     new () { Id = "6", ModificationId = "M6", Status = ModificationStatus.Approved },
@@ -1812,38 +1808,59 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-        .Setup(s => s.GetModificationsForProject(
+            .Setup(s => s.GetModificationsForProject(
+                projectRecordId,
+                It.IsAny<ModificationSearchRequest>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                sortField,
+                sortDirection))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.PostApproval(
             projectRecordId,
-            It.IsAny<ModificationSearchRequest>(),
+            "",
             It.IsAny<int>(),
             It.IsAny<int>(),
             sortField,
-            sortDirection))
-        .ReturnsAsync(serviceResponse);
-
-        // Act
-        var result = await Sut.PostApproval(projectRecordId, "", It.IsAny<int>(), It.IsAny<int>(), sortField, sortDirection);
+            sortDirection);
 
         // Assert
-        var viewResult = Assert.IsType<ViewResult>(result);
-        var model = Assert.IsType<PostApprovalViewModel>(viewResult.Model);
-        Assert.NotNull(model.Modifications);
-        Assert.Equal(sortField, model.Pagination.SortField);
-        Assert.Equal(sortDirection, model.Pagination.SortDirection);
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeOfType<PostApprovalViewModel>();
 
-        var expectedOrder = new[]
+        model.Modifications.ShouldNotBeNull();
+        model.Pagination.SortField.ShouldBe(sortField);
+        model.Pagination.SortDirection.ShouldBe(sortDirection);
+
+        // Business rule:
+        // InDraft and RequestRevisions must be first, rest keeps CreatedAt order
+        var priorityStatuses = model.Modifications
+            .Take(2)
+            .Select(m => m.Status)
+            .ToList();
+
+        priorityStatuses.ShouldBe(new List<object?>
         {
-            ModificationStatus.InDraft,             // 0
-            ModificationStatus.RequestRevisions,    // 1
-            ModificationStatus.WithSponsor,         // 2
-            ModificationStatus.ReviseAndAuthorise,  // 3
-            ModificationStatus.NotAuthorised,       // 4
-            ModificationStatus.WithReviewBody,      // 5
-            ModificationStatus.Approved,            // 6
-            ModificationStatus.NotApproved,         // 7
-            "Something unexpected"                  // 1000
-        };
+            ModificationStatus.InDraft,
+            ModificationStatus.RequestRevisions
+        });
 
-        Assert.Equal(expectedOrder, model.Modifications.Select(m => m.Status));
+        var remainingStatuses = model.Modifications
+            .Skip(2)
+            .Select(m => m.Status)
+            .ToList();
+
+        remainingStatuses.ShouldBe(new List<object?>
+        {
+            ModificationStatus.WithSponsor,
+            ModificationStatus.ReviseAndAuthorise,
+            ModificationStatus.WithReviewBody,
+            ModificationStatus.Approved,
+            ModificationStatus.NotApproved,
+            ModificationStatus.NotAuthorised,
+            "Something unexpected"
+        });
     }
 }

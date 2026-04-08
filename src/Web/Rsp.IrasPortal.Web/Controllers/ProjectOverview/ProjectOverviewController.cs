@@ -9,7 +9,6 @@ using Rsp.IrasPortal.Web.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
-using Rsp.Portal.Application.Enum;
 using Rsp.Portal.Application.Extensions;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
@@ -168,10 +167,9 @@ public class ProjectOverviewController
             .ToList() ?? [];
         if (sortField == nameof(ModificationsModel.CreatedAt))
         {
-            model.Modifications = model.Modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(GetEnumStatus(item.Status!), true, out var statusEnum)
-                  ? (int)statusEnum
-                  : (int)ModificationStatusOrder.None)
-              .ToList();
+            model.Modifications = model.Modifications
+                .OrderByDescending(m => m.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions)
+                .ToList();
         }
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
         {
@@ -784,17 +782,4 @@ public class ProjectOverviewController
 
         return Ok(projectTeamModel);
     }
-
-    private static string? GetEnumStatus(string status) => status switch
-    {
-        ModificationStatus.InDraft => nameof(ModificationStatusOrder.InDraft),
-        ModificationStatus.RequestRevisions => nameof(ModificationStatusOrder.RequestRevisions),
-        ModificationStatus.WithSponsor => nameof(ModificationStatusOrder.WithSponsor),
-        ModificationStatus.ReviseAndAuthorise => nameof(ModificationStatusOrder.ReviseAndAuthorise),
-        ModificationStatus.WithReviewBody => nameof(ModificationStatusOrder.WithRegulator),
-        ModificationStatus.Approved => nameof(ModificationStatusOrder.Approved),
-        ModificationStatus.NotApproved => nameof(ModificationStatusOrder.NotApproved),
-        ModificationStatus.NotAuthorised => nameof(ModificationStatusOrder.NotAuthorised),
-        _ => nameof(ModificationStatusOrder.None)
-    };
 }
