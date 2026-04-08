@@ -1,0 +1,44 @@
+﻿@using Rsp.IrasPortal.Web.Features.Modifications.ParticipatingOrganisations.Models
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Web.Extensions
+@model (Guid Id, string OrganisationName)
+
+@{
+    var title = $"Are you sure you want to remove {Model.OrganisationName}?";
+
+    string cancelUrl;
+    (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+
+    var baseModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
+
+    var reviewChangesParams = new Dictionary<string, string> {
+                                { "projectRecordId", baseModel.ProjectRecordId },
+                                { "specificAreaOfChangeId", baseModel.SpecificAreaOfChangeId! },
+                                { "modificationChangeId", baseModel.ModificationChangeId! },
+                                { "reviseChange", bool.TrueString },
+                                };
+
+    cancelUrl = Url.RouteUrl("pmc:reviewchanges", reviewChangesParams);
+    navModel = ("pmc:reviewchanges", "Back", reviewChangesParams);
+
+    @* @section is added for the back button, so that we can render something below the back button
+        and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+        the named section *@
+    @section BackNavigation {
+        <partial name="_BackNavigation" model="navModel.Value" />
+    }
+}
+
+<h1 class="govuk-heading-l">@title</h1>
+
+<div class="save-buttons">
+    <a asp-route="porgs:deselectorganisation"
+       asp-route-organisationId="@Model.Id"
+       asp-route-redirectToReview="@(true)"
+       class="govuk-button govuk-button--warning"
+       data-module="govuk-button">
+        Remove organisation
+    </a>
+
+    <a href="@cancelUrl" class="govuk-button govuk-button--secondary">Keep organisation</a>
+</div>

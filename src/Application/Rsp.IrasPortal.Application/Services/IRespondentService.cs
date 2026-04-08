@@ -1,4 +1,5 @@
-﻿using Rsp.Logging.Interceptors;
+﻿using Rsp.IrasPortal.Application.DTOs;
+using Rsp.Logging.Interceptors;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Responses;
 
@@ -122,4 +123,45 @@ public interface IRespondentService : IInterceptable
     Task<ServiceResponse> SaveModificationDocuments(List<ProjectModificationDocumentRequest> request);
 
     Task<ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationDocumentsByType(string projectRecordId, string? documentTypeId);
+
+    /// <summary>
+    /// Retrieves modification participating organisations matching the given specification.
+    /// </summary>
+    /// <param name="projectModificationChangeId">The modification change identifier.</param>
+    /// <param name="projectRecordId">The project record identifier.</param>
+    /// <returns>A collection of <see cref="ModificationParticipatingOrganisationDto"/> objects.</returns>
+    Task<ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>> GetModificationParticipatingOrganisations(Guid projectModificationChangeId, string projectRecordId);
+
+    /// <summary>
+    /// Retrieves modification participating organisations for a project record and specific area of change.
+    /// </summary>
+    /// <param name="projectRecordId">The project record identifier.</param>
+    /// <param name="specificAreaOfChange">The specific area of change identifier.</param>
+    /// <returns>A collection of <see cref="ModificationParticipatingOrganisationDto"/> objects.</returns>
+    Task<ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>> GetModificationParticipatingOrganisationsBySpecificArea(string projectRecordId, string specificAreaOfChange);
+
+    /// <summary>
+    /// Retrieves modification participating organisation answer matching the given specification.
+    /// </summary>
+    /// <param name="modificationParticipatingOrganisationId">The modification participating organisation identifier.</param>
+    /// <returns>A collection of <see cref="ModificationParticipatingOrganisationAnswerDto"/> objects.</returns>
+    Task<ServiceResponse<IEnumerable<ParticipatingOrganisationAnswerDto>>> GetModificationParticipatingOrganisationAnswers(Guid modificationParticipatingOrganisationId);
+
+    /// <summary>
+    /// Saves the provided modification participating oraganisations that match the given specification.
+    /// </summary>
+    /// <param name="respondentAnswers">The list of modification participating oraganisations to save.</param>
+    Task<ServiceResponse> SaveModificationParticipatingOrganisations(List<ParticipatingOrganisationDto> respondentAnswers);
+
+    /// <summary>
+    /// Saves the provided modification participating oraganisation answer that match the given specification.
+    /// </summary>
+    /// <param name="respondentAnswers">The modification participating organisation answers to save.</param>
+    Task<ServiceResponse> SaveModificationParticipatingOrganisationAnswers(List<ParticipatingOrganisationAnswerDto> respondentAnswers);
+
+    /// <summary>
+    /// Deletes a modification participating organisation and its related answers by Id.
+    /// </summary>
+    /// <param name="modificationParticipatingOrganisationId">The participating organisation identifier.</param>
+    Task<ServiceResponse> DeleteModificationParticipatingOrganisation(Guid modificationParticipatingOrganisationId);
 }

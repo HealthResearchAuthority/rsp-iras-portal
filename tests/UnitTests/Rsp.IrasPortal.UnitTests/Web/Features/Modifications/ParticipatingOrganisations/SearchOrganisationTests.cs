@@ -3,7 +3,10 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
 using Rsp.Portal.Web.Features.Modifications.ParticipatingOrganisations.Controllers;
 using Rsp.Portal.Web.Models;
 
@@ -15,6 +18,11 @@ public class SearchOrganisationTests : TestServiceBase<ParticipatingOrganisation
     public async Task SearchOrganisation_Post_ReturnsView_WithValidationErrors()
     {
         // Arrange
+        var http = new DefaultHttpContext();
+        http.Request.Method = HttpMethods.Post;
+        Sut.ControllerContext = new ControllerContext { HttpContext = http };
+        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
+
         var model = new SearchOrganisationViewModel
         {
             Search = new OrganisationSearchModel
@@ -29,7 +37,7 @@ public class SearchOrganisationTests : TestServiceBase<ParticipatingOrganisation
             .ReturnsAsync(new ValidationResult([new ValidationFailure(nameof(model.Search.SearchNameTerm), "Provide 3 or more characters to search")]));
 
         // Act
-        var result = await Sut.SearchOrganisation(model);
+        var result = await Sut.SearchOrganisation(model: model);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -43,28 +51,50 @@ public class SearchOrganisationTests : TestServiceBase<ParticipatingOrganisation
     }
 
     [Fact]
-    public void SaveSelection_WithSaveForLaterTrue_And_ReviseAndAuthorise_RedirectsToSwsModifications()
+    public async Task SaveSelection_WithSaveForLaterTrue_And_ReviseAndAuthorise_RedirectsToSwsModifications()
     {
         // Arrange
         var http = new DefaultHttpContext();
+        http.Items[ContextItemKeys.UserId] = Guid.NewGuid().ToString();
+        Sut.ControllerContext = new ControllerContext { HttpContext = http };
+
         var sponsorId = Guid.NewGuid();
+        var modificationChangeId = Guid.NewGuid();
+
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.ProjectRecordId] = "PRJ-123",
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = modificationChangeId,
             [TempDataKeys.ProjectModification.ProjectModificationStatus] = ModificationStatus.ReviseAndAuthorise,
-            [TempDataKeys.RevisionSponsorOrganisationUserId] = sponsorId
+            [TempDataKeys.RevisionSponsorOrganisationUserId] = sponsorId,
+            [TempDataKeys.RevisionRtsId] = "RTS-1"
+        };
+
+        Mocker
+            .GetMock<IRespondentService>()
+            .Setup(s => s.SaveModificationParticipatingOrganisations(It.IsAny<List<ParticipatingOrganisationDto>>()))
+            .ReturnsAsync(new ServiceResponse().WithStatus());
+
+        var model = new SearchOrganisationViewModel
+        {
+            Organisations =
+            [
+                new SelectableOrganisationViewModel
+                {
+                    IsSelected = true,
+                    Organisation = new OrganisationModel { Id = "org-1" }
+                }
+            ]
         };
 
         // Act
-        var result = Sut.SaveSelection(saveForLater: true);
+        var result = await Sut.ConfirmSelection(model, saveForLater: true);
 
         // Assert
-        // TempData flags
         Sut.TempData[TempDataKeys.ShowNotificationBanner].ShouldBe(true);
         Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker].ShouldNotBeNull();
         Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker].ShouldBeOfType<Guid>();
 
-        // Route
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("sws:modifications");
         redirect.RouteValues.ShouldNotBeNull();
@@ -72,18 +102,41 @@ public class SearchOrganisationTests : TestServiceBase<ParticipatingOrganisation
     }
 
     [Fact]
-    public void SaveSelection_WithSaveForLaterTrue_RedirectsToPostApproval_AndSetsTempDataFlags()
+    public async Task SaveSelection_WithSaveForLaterTrue_RedirectsToPostApproval_AndSetsTempDataFlags()
     {
         // Arrange
+        var http = new DefaultHttpContext();
+        http.Items[ContextItemKeys.UserId] = Guid.NewGuid().ToString();
+        Sut.ControllerContext = new ControllerContext { HttpContext = http };
+
         const string projectRecordId = "PRJ-123";
-        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        var modificationChangeId = Guid.NewGuid();
+
+        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectRecordId] = projectRecordId
-            // No status in TempData -> not ReviseAndAuthorise
+            [TempDataKeys.ProjectRecordId] = projectRecordId,
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = modificationChangeId
+        };
+
+        Mocker
+            .GetMock<IRespondentService>()
+            .Setup(s => s.SaveModificationParticipatingOrganisations(It.IsAny<List<ParticipatingOrganisationDto>>()))
+            .ReturnsAsync(new ServiceResponse().WithStatus());
+
+        var model = new SearchOrganisationViewModel
+        {
+            Organisations =
+            [
+                new SelectableOrganisationViewModel
+                {
+                    IsSelected = true,
+                    Organisation = new OrganisationModel { Id = "org-1" }
+                }
+            ]
         };
 
         // Act
-        var result = Sut.SaveSelection(saveForLater: true);
+        var result = await Sut.ConfirmSelection(model, saveForLater: true);
 
         // Assert
         Sut.TempData[TempDataKeys.ShowNotificationBanner].ShouldBe(true);
@@ -94,42 +147,66 @@ public class SearchOrganisationTests : TestServiceBase<ParticipatingOrganisation
         redirectResult.RouteName.ShouldBe("pov:postapproval");
         redirectResult.RouteValues.ShouldNotBeNull();
         redirectResult.RouteValues!["projectRecordId"].ShouldBe(projectRecordId);
-
-        // Ensure sponsor key not present on post-approval path
         redirectResult.RouteValues.ContainsKey("sponsorOrganisationUserId").ShouldBeFalse();
     }
 
     [Fact]
-    public void SaveSelection_WithSaveForLaterFalse_RedirectsToParticipatingOrganisation()
+    public async Task SaveSelection_WithSaveForLaterFalse_RedirectsToParticipatingOrganisation()
     {
+        var http = new DefaultHttpContext();
+        Sut.ControllerContext = new ControllerContext { HttpContext = http };
+
         const string projectRecordId = "PRJ-123";
-        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
         {
             [TempDataKeys.ProjectRecordId] = projectRecordId
         };
 
         // Act
-        var result = Sut.SaveSelection(saveForLater: false);
+        var result = await Sut.ConfirmSelection(new(), saveForLater: false);
 
         // Assert
-        var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
-        redirectResult.ActionName.ShouldBe("ParticipatingOrganisation");
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.ViewName.ShouldBe("SearchOrganisation");
+        Sut.ModelState.ContainsKey("participating-organisations").ShouldBeTrue();
     }
 
     [Fact]
-    public void SaveSelection_WithSaveForLaterTrue_SetsNotificationBannerAndChangeMarker()
+    public async Task SaveSelection_WithSaveForLaterTrue_SetsNotificationBannerAndChangeMarker()
     {
         // Arrange
+        var http = new DefaultHttpContext();
+        http.Items[ContextItemKeys.UserId] = Guid.NewGuid().ToString();
+        Sut.ControllerContext = new ControllerContext { HttpContext = http };
+
         const string projectRecordId = "PRJ-123";
-        var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        var tempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.ProjectRecordId] = projectRecordId
+            [TempDataKeys.ProjectRecordId] = projectRecordId,
+            [TempDataKeys.ProjectModification.ProjectModificationChangeId] = Guid.NewGuid()
         };
 
         Sut.TempData = tempData;
 
+        Mocker
+            .GetMock<IRespondentService>()
+            .Setup(s => s.SaveModificationParticipatingOrganisations(It.IsAny<List<ParticipatingOrganisationDto>>()))
+            .ReturnsAsync(new ServiceResponse().WithStatus());
+
+        var model = new SearchOrganisationViewModel
+        {
+            Organisations =
+            [
+                new SelectableOrganisationViewModel
+                {
+                    IsSelected = true,
+                    Organisation = new OrganisationModel { Id = "org-1" }
+                }
+            ]
+        };
+
         // Act
-        var result = Sut.SaveSelection(saveForLater: true);
+        await Sut.ConfirmSelection(model, saveForLater: true);
 
         // Assert
         tempData[TempDataKeys.ShowNotificationBanner].ShouldBe(true);

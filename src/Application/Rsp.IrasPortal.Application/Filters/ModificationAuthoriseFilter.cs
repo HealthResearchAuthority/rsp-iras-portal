@@ -49,14 +49,9 @@ public class ModificationAuthoriseFilter : IAsyncAuthorizationFilter, IAsyncActi
             return;
         }
 
-        if (user.HasPermission(_permission))
-        {
-            return;
-        }
-        else
+        if (!user.HasPermission(_permission))
         {
             context.Result = new ForbidResult();
-            return;
         }
     }
 

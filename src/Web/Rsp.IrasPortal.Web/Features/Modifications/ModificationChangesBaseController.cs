@@ -207,6 +207,8 @@ public class ModificationChangesBaseController
     /// <param name="projectRecordId">ApplicationId to submit</param>
     public async Task<IActionResult> ReviewChanges(string projectRecordId, Guid specificAreaOfChangeId, Guid modificationChangeId, bool reviseChange = false)
     {
+        const string OrganisationDetailsSection = "pom-participating-organisation-details";
+
         // get the responent answers for the category
         var respondentServiceResponse = await respondentService.GetModificationChangeAnswers(modificationChangeId, projectRecordId);
 
@@ -267,6 +269,67 @@ public class ModificationChangesBaseController
         TempData[ProjectModification.ShowApplicabilityQuestions] = specificAreaOfChange?.ShowApplicabilityQuestions;
 
         var respondentAnswers = respondentServiceResponse.Content!;
+
+        // we need to validate the participating organisations for AddNewSites
+        // questions separately for each participating organisation, so remove from the main questionnaire
+        if
+        (
+            specificAreaOfChangeId.ToString() is
+                SpecificAreasOfChange.AddNewPics or
+                SpecificAreasOfChange.AddNewSites or
+                SpecificAreasOfChange.EarlyClosureSites or
+                SpecificAreasOfChange.EarlyClosuresPics
+        )
+        {
+            var sections = questionSetServiceResponse.Content!.Sections.ToList();
+
+            sections.RemoveAll(s => s.Id == OrganisationDetailsSection);
+
+            questionSetServiceResponse.Content.Sections = sections;
+        }
+
+        // cater for participating organisations questions
+        if (specificAreaOfChangeId.ToString() is SpecificAreasOfChange.AddNewSites)
+        {
+            var getParticipatingOrganisationsResponse = await respondentService.GetModificationParticipatingOrganisations(modificationChangeId, projectRecordId);
+            var orgsQuestionSet = await cmsQuestionsetService.GetModificationQuestionSet(OrganisationDetailsSection);
+
+            var questionIndex = 0;
+
+            foreach (var organisation in getParticipatingOrganisationsResponse.Content!)
+            {
+                var questionnaireViewModel = QuestionsetHelpers.BuildQuestionnaireViewModel(orgsQuestionSet.Content!);
+
+                var participatingOrgsQuestionnaire = questionnaireViewModel;
+
+                var answersResponse = await respondentService.GetModificationParticipatingOrganisationAnswers(organisation.Id);
+
+                var answers = answersResponse.Content ?? [];
+
+                participatingOrgsQuestionnaire.Questions = questionnaireViewModel.Questions.ConvertAll(cmsQ =>
+                {
+                    var matchingAnswer = answers.FirstOrDefault(a => a.QuestionId == cmsQ.QuestionId);
+
+                    cmsQ.Index = questionIndex++;
+
+                    if (matchingAnswer == null)
+                    {
+                        return cmsQ;
+                    }
+
+                    cmsQ.Id = matchingAnswer.Id;
+
+                    return cmsQ;
+                });
+
+                participatingOrgsQuestionnaire.UpdateWithRespondentAnswers(answers);
+
+                if (reviseChange)
+                {
+                    await this.ValidateQuestionnaire(validator, participatingOrgsQuestionnaire, true);
+                }
+            }
+        }
 
         // convert the questions response to QuestionnaireViewModel
         var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionSetServiceResponse.Content!);

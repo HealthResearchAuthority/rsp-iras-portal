@@ -254,10 +254,8 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
         result.ShouldBeOfType<ForbidResult>();
     }
 
-    [Theory]
-    [AutoData]
-    public async Task Modifications_When_Modifications_Service_Fails_Returns_ServiceError(
-        GetModificationsResponse modificationResponse)
+    [Fact]
+    public async Task Modifications_When_Modifications_Service_Fails_Returns_ServiceError()
     {
         // Arrange
         Mocker.GetMock<ISponsorUserAuthorisationService>()

@@ -528,22 +528,89 @@ public abstract class ModificationsControllerBase
 
     protected async Task<List<ModificationChangeModel>> UpdateModificationChanges(string projectRecordId, List<ModificationChangeModel> modificationChanges)
     {
+        const string OrganisationDetailsSection = "pom-participating-organisation-details";
+
         foreach (var modificationChange in modificationChanges)
         {
             // get the responent answers for the category
-            var respondentServiceResponse = await respondentService.GetModificationChangeAnswers(modificationChange.ModificationChangeId, projectRecordId);
+            var getModificationChangeAnswersResponse = await respondentService.GetModificationChangeAnswers(modificationChange.ModificationChangeId, projectRecordId);
 
             // get the questions for the modification journey
             var questionSetServiceResponse = await cmsQuestionsetService.GetModificationsJourney(modificationChange.SpecificAreaOfChangeId);
 
             // return the error view if unsuccessfull
-            if (!respondentServiceResponse.IsSuccessStatusCode || !questionSetServiceResponse.IsSuccessStatusCode)
+            if (!getModificationChangeAnswersResponse.IsSuccessStatusCode || !questionSetServiceResponse.IsSuccessStatusCode)
             {
                 // return the modificationChanges unchanged in case of error
                 return modificationChanges;
             }
 
-            var respondentAnswers = respondentServiceResponse.Content!;
+            // we need to validate the participating organisations for AddNewSites
+            // questions separately for each participating organisation, so remove from the main questionnaire
+            if
+            (
+                modificationChange.SpecificAreaOfChangeId is
+                    SpecificAreasOfChange.AddNewPics or
+                    SpecificAreasOfChange.AddNewSites or
+                    SpecificAreasOfChange.EarlyClosureSites or
+                    SpecificAreasOfChange.EarlyClosuresPics
+            )
+            {
+                var sections = questionSetServiceResponse.Content!.Sections.ToList();
+
+                sections.RemoveAll(s => s.Id == OrganisationDetailsSection);
+
+                questionSetServiceResponse.Content.Sections = sections;
+            }
+
+            var isParticipatingOrgsQuestionnaireValid = true;
+
+            // cater for participating organisations questions
+            if (modificationChange.SpecificAreaOfChangeId is SpecificAreasOfChange.AddNewSites)
+            {
+                var getParticipatingOrganisationsResponse = await respondentService.GetModificationParticipatingOrganisations(modificationChange.ModificationChangeId, projectRecordId);
+                var orgsQuestionSet = await cmsQuestionsetService.GetModificationQuestionSet(OrganisationDetailsSection);
+
+                var questionIndex = 0;
+
+                foreach (var organisation in getParticipatingOrganisationsResponse.Content!)
+                {
+                    var questionnaireViewModel = QuestionsetHelpers.BuildQuestionnaireViewModel(orgsQuestionSet.Content!);
+
+                    var participatingOrganisationQuestionnaire = questionnaireViewModel;
+
+                    var answersResponse = await respondentService.GetModificationParticipatingOrganisationAnswers(organisation.Id);
+
+                    var answers = answersResponse.Content ?? [];
+
+                    participatingOrganisationQuestionnaire.Questions = questionnaireViewModel.Questions.ConvertAll(cmsQ =>
+                    {
+                        var matchingAnswer = answers.FirstOrDefault(a => a.QuestionId == cmsQ.QuestionId);
+
+                        cmsQ.Index = questionIndex++;
+
+                        if (matchingAnswer == null)
+                        {
+                            return cmsQ;
+                        }
+
+                        cmsQ.Id = matchingAnswer.Id;
+
+                        return cmsQ;
+                    });
+
+                    participatingOrganisationQuestionnaire.UpdateWithRespondentAnswers(answers);
+
+                    isParticipatingOrgsQuestionnaireValid = await this.ValidateQuestionnaire(validator, participatingOrganisationQuestionnaire, true, false);
+
+                    if (!isParticipatingOrgsQuestionnaireValid)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            var respondentAnswers = getModificationChangeAnswersResponse.Content!;
 
             // convert the questions response to QuestionnaireViewModel
             var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionSetServiceResponse.Content!);
@@ -561,7 +628,7 @@ public abstract class ModificationsControllerBase
             // Validate the questionnaire (mandatory-only) using FluentValidation
             var result = await this.ValidateQuestionnaire(validator, questionnaire, true, false);
 
-            modificationChange.ChangeStatus = result ?
+            modificationChange.ChangeStatus = result && isParticipatingOrgsQuestionnaireValid ?
                 ModificationStatus.ChangeReadyForSubmission :
                 ModificationStatus.Unfinished;
 
