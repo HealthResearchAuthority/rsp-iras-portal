@@ -158,6 +158,62 @@ public class RemoveFiltersTests : TestServiceBase<ProjectOverviewController>
         updated.ModificationType.ShouldBeNull();
     }
 
+    [Fact]
+    public async Task RemoveFilter_WhenValidationFails_ShouldStoreModelStateInTempData_AndRedirect()
+    {
+        // Arrange
+        var validationResult = new ValidationResult(new[]
+        {
+            new ValidationFailure(
+                nameof(ApprovalsSearchModel.FromDay),
+                "From date is invalid")
+        });
+
+        SetupValidValidator(validationResult);
+
+        var httpContext = new DefaultHttpContext
+        {
+            Session = new InMemorySession()
+        };
+
+        var tempData = new TempDataDictionary(
+            httpContext,
+            Mock.Of<ITempDataProvider>());
+
+        tempData[TempDataKeys.ProjectRecordId] = "rec-1";
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+
+        Sut.TempData = tempData;
+
+        var model = new ApprovalsSearchModel
+        {
+            FromDay = "99", // invalid on purpose
+            FromMonth = "01",
+            FromYear = "2023"
+        };
+
+        SetSessionModel(model);
+
+        // Act
+        var result = await Sut.RemoveFilter("datesubmitted-from");
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe("pov:postapproval");
+
+        tempData.ShouldContainKey(TempDataKeys.ModelState);
+
+        var serializedModelState = tempData[TempDataKeys.ModelState]
+            .ShouldBeOfType<string>();
+
+        serializedModelState.ShouldContain(
+            nameof(ApprovalsSearchModel.FromDay));
+    }
+
     private void SetSessionModel(ApprovalsSearchModel model)
     {
         _http.Session.SetString(SessionKeys.PostApprovalsSearch, JsonSerializer.Serialize(model));
