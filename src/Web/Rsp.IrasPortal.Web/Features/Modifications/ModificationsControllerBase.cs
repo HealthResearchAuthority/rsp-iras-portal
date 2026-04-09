@@ -508,7 +508,8 @@ public abstract class ModificationsControllerBase
             if (!doc.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
                 (doc.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase) ||
                 doc.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase) ||
-                doc.Status.Equals(DocumentStatus.RequestRevisions, StringComparison.OrdinalIgnoreCase)))
+                doc.Status.Equals(DocumentStatus.RequestRevisions, StringComparison.OrdinalIgnoreCase) ||
+                doc.Status.Equals(DocumentStatus.RequestForInformation, StringComparison.OrdinalIgnoreCase)))
             {
                 bool isIncomplete = await EvaluateDocumentCompletion(doc.Id, questionnaire, addModelErrors);
 
@@ -704,7 +705,8 @@ public abstract class ModificationsControllerBase
                     DocumentStatus.Uploaded,
                     DocumentStatus.Failed,
                     DocumentStatus.Incomplete,
-                    DocumentStatus.Complete
+                    DocumentStatus.Complete,
+                    DocumentStatus.RequestForInformation
             };
 
             foreach (var status in toAdd)

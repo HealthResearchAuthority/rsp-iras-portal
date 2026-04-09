@@ -136,19 +136,21 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     }
 
     [Theory, AutoData]
-    public void RfiResponses_GET_Returns_View_With_Model
+    public async Task RfiResponses_GET_Returns_View_With_Model
     (
         RfiDetailsViewModel tempDataModel,
         Guid modificationId
     )
     {
-        tempDataModel.ModificationGuid = modificationId.ToString();
+        tempDataModel.ModificationId = modificationId.ToString();
         SetupTempData(tempDataModel);
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.SaveModificationRfiResponses(It.IsAny<ModificationRfiResponseRequest>()))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
-        var result = Sut.RfiResponses();
+        var result = await Sut.RfiResponses(tempDataModel, false);
 
-        var view = result.ShouldBeOfType<ViewResult>();
-        view.Model.ShouldBeAssignableTo<RfiDetailsViewModel>();
+        var view = result.ShouldBeOfType<RedirectToActionResult>();
     }
 
     [Theory, AutoData]
@@ -158,7 +160,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         Guid modificationId
     )
     {
-        model.ModificationGuid = modificationId.ToString();
+        model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1", "Reason 2"];
         model.RfiResponses = ["Response 1", ""];
 
@@ -178,7 +180,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         Guid modificationId
     )
     {
-        model.ModificationGuid = modificationId.ToString();
+        model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1"];
         model.RfiResponses = ["Response 1"];
 
@@ -198,7 +200,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         Guid modificationId
     )
     {
-        model.ModificationGuid = modificationId.ToString();
+        model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1"];
         model.RfiResponses = ["Response 1"];
 
@@ -220,7 +222,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         Guid modificationId
     )
     {
-        model.ModificationGuid = modificationId.ToString();
+        model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1"];
         model.RfiResponses = ["Response 1"];
         SetupTempData(model);
@@ -242,7 +244,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         Guid modificationId
     )
     {
-        tempDataModel.ModificationGuid = modificationId.ToString();
+        tempDataModel.ModificationId = modificationId.ToString();
 
         SetupTempData(tempDataModel);
 
@@ -259,7 +261,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         Guid modificationId
     )
     {
-        model.ModificationGuid = modificationId.ToString();
+        model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1"];
         model.RfiResponses = ["Response 1"];
 
@@ -280,7 +282,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         Guid modificationId
     )
     {
-        model.ModificationGuid = modificationId.ToString();
+        model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1"];
         model.RfiResponses = ["Response 1"];
 

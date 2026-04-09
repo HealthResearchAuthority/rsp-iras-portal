@@ -1,12 +1,9 @@
-﻿namespace Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models;
+﻿using Rsp.Portal.Web.Features.Modifications.Models;
 
-public class RfiDetailsViewModel
+namespace Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models;
+
+public class RfiDetailsViewModel : ModificationDetailsViewModel
 {
-    public string? IrasId { get; set; }
-    public string? ProjectId { get; set; }
-    public string? ShortProjectTitle { get; set; }
-    public string? ModificationId { get; set; }
-    public string? ModificationGuid { get; set; }
     public string? DateSubmitted { get; set; }
     public IList<string> RfiReasons { get; set; } = [];
     public List<string> RfiResponses { get; set; } = [];

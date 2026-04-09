@@ -108,7 +108,7 @@
                                                                                 })
                                         </th>
                                     }
-                                    @if (Model.Status is ModificationStatus.InDraft || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise))
+                                    @if (Model.Status is ModificationStatus.InDraft || Model.Status is ModificationStatus.RequestForInformation || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise))
                                     {
                                         <th scope="col" class="govuk-table__header">Action</th>
                                     }
@@ -194,6 +194,7 @@
                                         @if (
                                            Model.Status is ModificationStatus.InDraft
                                            || Model.Status is ModificationStatus.RequestRevisions
+                                           || Model.Status is ModificationStatus.RequestForInformation
                                            || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise)
                                        )
                                         {
@@ -205,6 +206,13 @@
                                                        asp-route-reviewAllChanges="true"
                                                        class="govuk-link">
                                                         Change details
+                                                    </a>
+                                                    <a asp-route="pmc:confirmdeletedocument"
+                                                       asp-route-id="@modification.Id"
+                                                       asp-route-backRoute="toaddpage"
+                                                       class="govuk-link">
+                                                        Remove
+                                                        <span class="govuk-visually-hidden"> @modification.FileName</span>
                                                     </a>
                                                 }
                                             </td>

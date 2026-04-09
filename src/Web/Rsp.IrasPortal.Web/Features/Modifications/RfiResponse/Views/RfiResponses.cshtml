@@ -5,7 +5,7 @@
 }
 
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("rfi:rfidetails", "Back", new Dictionary<string,string>() { { "projectId", Model.ProjectId! }, {"modificationId", Model.ModificationGuid! } })" />
+    <partial name="_BackNavigation" model="@("rfi:rfidetails", "Back", new Dictionary<string, string>() { { "projectId", Model.ProjectRecordId! }, { "modificationId", Model.ModificationId! } })" />
 }
 
 <div class="govuk-grid-row">
@@ -24,11 +24,11 @@
             </div>
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">Short project title</dt>
-                <dd class="govuk-summary-list__value">@Model.ShortProjectTitle</dd>
+                <dd class="govuk-summary-list__value">@Model.ShortTitle</dd>
             </div>
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">Modification ID</dt>
-                <dd class="govuk-summary-list__value">@Model.ModificationId</dd>
+                <dd class="govuk-summary-list__value">@Model.ModificationIdentifier</dd>
             </div>
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">Date reviewer submitted</dt>
@@ -40,6 +40,8 @@
 
 <h2 class="govuk-heading-m">Request for further information</h2>
 <form method="post" asp-action="RfiResponses">
+
+    <input type="hidden" name="projectModificationId" value="@Model.ModificationId" />
     @for (var i = 0; i < Model.RfiReasons.Count; i++)
     {
         <div class="govuk-grid-row">
@@ -63,15 +65,42 @@
             <div class="govuk-grid-column-two-thirds">
                 <div class="govuk-form-group govuk-character-count mb-0" data-module="govuk-character-count" data-maxlength="300">
                     <textarea asp-for="RfiResponses[i]"
-                                class="govuk-textarea govuk-js-character-count"
-                                rows="5"
-                                aria-describedby="RfiResponses_@(i)_-info">
-                    </textarea>
+                              class="govuk-textarea govuk-js-character-count"
+                              rows="5"
+                              aria-describedby="RfiResponses_@(i)_-info">
+                        </textarea>
                     <div id="RfiResponses_@(i)_-info" class="govuk-hint govuk-character-count__message"></div>
                 </div>
             </div>
         </div>
         <hr />
+    }
+
+    <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+    @if (Model?.ProjectOverviewDocumentViewModel?.Documents is null || !Model.ProjectOverviewDocumentViewModel.Documents.Any())
+    {
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h2 class="govuk-heading-m">Supporting documents</h2>
+                <p class="govuk-body">
+                    If any of the changes you're making involve an update to any project documents, make sure you add a copy of the original and updated documents.
+                </p>
+            </div>
+        </div>
+        <div class="govuk-button-group">
+            <form method="get">
+                @{
+                    ViewBag.Style = "govuk-button govuk-button--secondary";
+                }
+                <partial name="_SubmitButton" model="@("pmc:projectdocument", "Add documents", new Dictionary<string, string> { })" />
+            </form>
+        </div>
+    }
+    else
+    {
+        <form method="get">
+            <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
+        </form>
     }
 
     <div class="save-buttons">

@@ -225,7 +225,8 @@ public static class RoleStatusPermissions
                     DocumentStatus.NotAuthorised,
                     DocumentStatus.NotApproved,
                     DocumentStatus.Withdrawn,
-                    DocumentStatus.Superseded
+                    DocumentStatus.Superseded,
+                    DocumentStatus.RequestForInformation
                 }
             },
             {
