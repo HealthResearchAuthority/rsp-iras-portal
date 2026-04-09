@@ -665,7 +665,7 @@ public class DocumentsController
     }
 
     [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Download)]
-    public async Task<IActionResult> DownloadDocumentsAsZip(string folderName)
+    public async Task<IActionResult> DownloadDocumentsAsZip(string folderName, string downloadSource)
     {
         var context = GetModificationContext();
 
@@ -675,9 +675,9 @@ public class DocumentsController
             return error;
         }
 
-        var response = await DownloadFolderZip(folderName, context.ModificationIdentifier);
+        var response = await DownloadFolderZip(folderName, context.ModificationIdentifier, downloadSource);
 
-        return File(response.FileBytes, "application/zip", response.FileName);
+        return response.Content;
     }
 
     [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Download)]
@@ -2605,7 +2605,7 @@ public class DocumentsController
         return Guid.Parse(blobPath.Split('/')[1]);
     }
 
-    private async Task<(byte[] FileBytes, string FileName)> DownloadFolderZip(string folderName, string? modificationIdentifier)
+    private async Task<ServiceResponse<IActionResult>> DownloadFolderZip(string folderName, string? modificationIdentifier, string downloadSource)
     {
         var irasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
 
@@ -2613,10 +2613,27 @@ public class DocumentsController
 
         var saveAsFileName = BuildZipFileName(modificationIdentifier);
 
-        return await blobStorageService.DownloadFolderAsZipAsync(
+        var projectModificationId = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is Guid modId
+               ? modId : Guid.NewGuid();
+
+        var isSponsorRevisingModification = false;
+        if (downloadSource == "ModificationDetails")
+        {
+            isSponsorRevisingModification = true;
+        }
+
+        // Add modification documents
+        var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
+        DocumentDetailsSection, 1, 100, nameof(ProjectOverviewDocumentDto.DocumentType), SortDirections.Ascending, isSponsorRevisingModification: isSponsorRevisingModification);
+
+        var selectedDocuments = modificationDocumentsResponseResult.Item1.Content?.Documents
+            .Select(d => d.DocumentStoragePath ?? string.Empty)
+            .ToList();
+
+        return await blobStorageService.DownloadFilesAsZipAsync(
             blobClient,
             CleanContainerName,
-            $"{irasId}/{folderName}",
+            selectedDocuments,
             saveAsFileName);
     }
 
@@ -2628,12 +2645,10 @@ public class DocumentsController
 
         var saveAsFileName = BuildZipFileName(modificationIdentifier);
 
-        var result = await blobStorageService.DownloadFilesAsZipAsync(
+        return await blobStorageService.DownloadFilesAsZipAsync(
             blobClient,
             CleanContainerName,
             selectedDocuments,
             saveAsFileName);
-
-        return result;
     }
 }

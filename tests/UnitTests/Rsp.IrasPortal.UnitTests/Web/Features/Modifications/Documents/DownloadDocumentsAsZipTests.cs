@@ -60,7 +60,7 @@ public class DownloadDocumentsAsZipTests : TestServiceBase<DocumentsController>
         };
 
         // Act
-        var result = await Sut.DownloadDocumentsAsZip(folderName);
+        var result = await Sut.DownloadDocumentsAsZip(folderName, string.Empty);
 
         // Assert
         result.ShouldBeOfType<FileContentResult>();
@@ -139,7 +139,7 @@ public class DownloadDocumentsAsZipTests : TestServiceBase<DocumentsController>
         };
 
         // Act
-        var result = await Sut.DownloadDocumentsAsZip(folderName);
+        var result = await Sut.DownloadDocumentsAsZip(folderName, "ReviewAllChanges");
 
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();
