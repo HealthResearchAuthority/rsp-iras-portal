@@ -49,6 +49,11 @@
     var navigation = JsonSerializer.Deserialize<NavigationDto>((TempData.Peek(TempDataKeys.ProjectModificationChange.Navigation) as string)!);
 
     TempData[TempDataKeys.ProjectModificationChange.ReviewChanges] = true;
+    @if (modification.Status == ModificationStatus.RequestRevisions)
+    {
+        TempData[TempDataKeys.ShowNotificationBanner] = true;
+
+    }
 
     <script src="~/lib/jquery/dist/jquery.js"></script>
 
@@ -121,10 +126,10 @@
         </h2>
 
         @if (modification.SpecificAreaOfChangeId is
-                SpecificAreasOfChange.AddNewPics or
-                SpecificAreasOfChange.AddNewSites or
-                SpecificAreasOfChange.EarlyClosureSites or
-                SpecificAreasOfChange.EarlyClosuresPics)
+         SpecificAreasOfChange.AddNewPics or
+         SpecificAreasOfChange.AddNewSites or
+         SpecificAreasOfChange.EarlyClosureSites or
+         SpecificAreasOfChange.EarlyClosuresPics)
         {
             <vc:participating-organisations-review project-record-id="@projectRecordId"
                                                    modification-change-id="@modification.ModificationChangeId"
