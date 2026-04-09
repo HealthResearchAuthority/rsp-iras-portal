@@ -1594,43 +1594,19 @@ public class DocumentsController
                 ShowSupersedeDocumentSection = string.Equals(previousVersionOfDocumentAnswer, QuestionIds.PreviousVersionOfDocumentYesOption, StringComparison.OrdinalIgnoreCase),
                 MetaDataDocumentTypeId = documentTypeId,
 
-                Questions = cmsQuestions.Questions.Select(cmsQ =>
-                {
-                    var matchingAnswer = answers.FirstOrDefault(a => a.QuestionId == cmsQ.QuestionId);
-
-                    return new QuestionViewModel
-                    {
-                        Id = matchingAnswer?.Id,
-                        Index = questionIndex++,
-                        QuestionId = cmsQ.QuestionId,
-                        VersionId = cmsQ.VersionId,
-                        Category = cmsQ.Category,
-                        SectionId = cmsQ.SectionId,
-                        Section = cmsQ.Section,
-                        Sequence = cmsQ.Sequence,
-                        Heading = cmsQ.Heading,
-                        QuestionText = cmsQ.QuestionText,
-                        QuestionType = cmsQ.QuestionType,
-                        DataType = cmsQ.DataType,
-                        IsMandatory = cmsQ.IsMandatory,
-                        IsOptional = cmsQ.IsOptional,
-                        AnswerText = matchingAnswer?.AnswerText,
-                        SelectedOption = matchingAnswer?.SelectedOption,
-                        Answers = cmsQ?.Answers?
-                        .Select(ans => new AnswerViewModel
-                        {
-                            AnswerId = ans.AnswerId,
-                            AnswerText = ans.AnswerText,
-                            // Set true if CMS already marked it OR if it exists in answersResponse
-                            IsSelected = ans.IsSelected || answers.Any(a => a.SelectedOption == ans.AnswerId)
-                        })
-                        .ToList() ?? new List<AnswerViewModel>(),
-                        Rules = cmsQ?.Rules ?? new List<RuleDto>(),
-                        ShortQuestionText = cmsQ?.ShortQuestionText ?? string.Empty,
-                        IsModificationQuestion = true,
-                        GuidanceComponents = cmsQ?.GuidanceComponents ?? new List<ComponentContent>()
-                    };
-                }).ToList()
+                Questions = cmsQuestions.Questions.ConvertAll
+                (
+                    cmsQ => QuestionsetHelpers.MapQuestionWithAnswers
+                    (
+                        cmsQ,
+                        answers,
+                        questionIndex++,
+                        a => a.QuestionId,
+                        a => a.Id,
+                        a => a.AnswerText,
+                        a => a.SelectedOption
+                    )
+                )
             };
 
             viewModels.Add(vm);

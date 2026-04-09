@@ -85,6 +85,57 @@ public static class QuestionsetHelpers
         return questionnaire;
     }
 
+    public static QuestionViewModel MapQuestionWithAnswers<TAnswer>
+    (
+        QuestionViewModel cmsQuestion,
+        IEnumerable<TAnswer> answers,
+        int index,
+        Func<TAnswer, string?> questionIdSelector,
+        Func<TAnswer, Guid?> idSelector,
+        Func<TAnswer, string?> answerTextSelector,
+        Func<TAnswer, string?> selectedOptionSelector
+    )
+    {
+        var matchingAnswer = answers.FirstOrDefault(a => questionIdSelector(a) == cmsQuestion.QuestionId);
+
+        var selectedOptions = answers
+            .Select(selectedOptionSelector)
+            .Where(option => !string.IsNullOrWhiteSpace(option))
+            .ToHashSet();
+
+        return new QuestionViewModel
+        {
+            Id = matchingAnswer is null ? null : idSelector(matchingAnswer),
+            Index = index,
+            QuestionId = cmsQuestion.QuestionId,
+            VersionId = cmsQuestion.VersionId,
+            Category = cmsQuestion.Category,
+            SectionId = cmsQuestion.SectionId,
+            Section = cmsQuestion.Section,
+            Sequence = cmsQuestion.Sequence,
+            Heading = cmsQuestion.Heading,
+            QuestionText = cmsQuestion.QuestionText,
+            QuestionType = cmsQuestion.QuestionType,
+            DataType = cmsQuestion.DataType,
+            IsMandatory = cmsQuestion.IsMandatory,
+            IsOptional = cmsQuestion.IsOptional,
+            AnswerText = matchingAnswer is null ? null : answerTextSelector(matchingAnswer),
+            SelectedOption = matchingAnswer is null ? null : selectedOptionSelector(matchingAnswer),
+            Answers = cmsQuestion.Answers
+                .ConvertAll(ans => new AnswerViewModel
+                {
+                    AnswerId = ans.AnswerId,
+                    AnswerText = ans.AnswerText,
+                    IsSelected = ans.IsSelected || selectedOptions.Contains(ans.AnswerId)
+                })
+,
+            Rules = cmsQuestion.Rules ?? [],
+            ShortQuestionText = cmsQuestion.ShortQuestionText ?? string.Empty,
+            IsModificationQuestion = true,
+            GuidanceComponents = cmsQuestion.GuidanceComponents ?? []
+        };
+    }
+
     public static IEnumerable<QuestionsResponse> QuestionTransformer(SectionModel section)
     {
         var response = new List<QuestionsResponse>();
