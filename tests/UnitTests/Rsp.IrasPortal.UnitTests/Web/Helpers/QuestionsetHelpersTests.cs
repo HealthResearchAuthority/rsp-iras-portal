@@ -1,5 +1,6 @@
 ﻿using Rsp.Portal.Application.DTOs.CmsQuestionset;
 using Rsp.Portal.Web.Helpers;
+using Rsp.Portal.Web.Models;
 
 namespace Rsp.Portal.UnitTests.Web.Helpers;
 
@@ -148,5 +149,76 @@ public class QuestionsetHelpersTests : TestServiceBase
         result.Count.ShouldBe(1);
         result.First().Rules.ShouldBeEmpty();
         result.First().Answers.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void MapQuestionWithAnswers_ShouldMapMatchingAnswerAndSelectedOptions()
+    {
+        // Arrange
+        var answerId = Guid.NewGuid();
+        var cmsQuestion = new QuestionViewModel
+        {
+            QuestionId = "Q1",
+            VersionId = "v1",
+            Category = "Cat1",
+            SectionId = "Sec1",
+            Section = "Section",
+            Sequence = 1,
+            Heading = "1",
+            QuestionText = "Question 1",
+            QuestionType = "Radio button",
+            DataType = "Radio button",
+            IsMandatory = true,
+            IsOptional = false,
+            ShortQuestionText = "Q1",
+            Answers =
+            [
+                new AnswerViewModel { AnswerId = "A1", AnswerText = "Option 1", IsSelected = false },
+                new AnswerViewModel { AnswerId = "A2", AnswerText = "Option 2", IsSelected = false }
+            ]
+        };
+
+        var answers = new List<TestAnswer>
+        {
+            new()
+            {
+                Id = answerId,
+                QuestionId = "Q1",
+                AnswerText = "Some answer",
+                SelectedOption = "A1"
+            }
+        };
+
+        // Act
+        var mapped = QuestionsetHelpers.MapQuestionWithAnswers
+        (
+            cmsQuestion,
+            answers,
+            index: 7,
+            questionIdSelector: a => a.QuestionId,
+            idSelector: a => a.Id,
+            answerTextSelector: a => a.AnswerText,
+            selectedOptionSelector: a => a.SelectedOption
+        );
+
+        // Assert
+        mapped.Id.ShouldBe(answerId);
+        mapped.Index.ShouldBe(7);
+        mapped.QuestionId.ShouldBe("Q1");
+        mapped.AnswerText.ShouldBe("Some answer");
+        mapped.SelectedOption.ShouldBe("A1");
+        mapped.Answers.Single(a => a.AnswerId == "A1").IsSelected.ShouldBeTrue();
+        mapped.Answers.Single(a => a.AnswerId == "A2").IsSelected.ShouldBeFalse();
+    }
+
+    private sealed class TestAnswer
+    {
+        public Guid? Id { get; set; }
+
+        public string? QuestionId { get; set; }
+
+        public string? AnswerText { get; set; }
+
+        public string? SelectedOption { get; set; }
     }
 }
