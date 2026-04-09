@@ -11,6 +11,7 @@ using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
@@ -613,6 +614,7 @@ public class DocumentsController
     /// </returns>
     [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Upload)]
     [HttpPost]
+    [CmsContentAction(nameof(ProjectDocument))]
     public async Task<IActionResult> UploadDocuments(ModificationUploadDocumentsViewModel model)
     {
         // If the posted model is null (due to exceeding max request size)

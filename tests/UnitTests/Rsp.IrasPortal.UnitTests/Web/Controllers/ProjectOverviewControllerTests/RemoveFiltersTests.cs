@@ -39,7 +39,7 @@ public class RemoveFiltersTests : TestServiceBase<ProjectOverviewController>
         Sut.TempData = MockTempData.Object;
         SetSessionModel(model);
 
-        var result = Sut.RemoveFilter("datesubmitted-from");
+        var result = await Sut.RemoveFilter("datesubmitted-from");
 
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("pov:postapproval");
@@ -56,7 +56,7 @@ public class RemoveFiltersTests : TestServiceBase<ProjectOverviewController>
         Sut.TempData = MockTempData.Object;
         SetSessionModel(model);
 
-        var result = Sut.RemoveFilter("datesubmitted-to");
+        var result = await Sut.RemoveFilter("datesubmitted-to");
 
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("pov:postapproval");
@@ -81,7 +81,7 @@ public class RemoveFiltersTests : TestServiceBase<ProjectOverviewController>
         Sut.TempData = MockTempData.Object;
         SetSessionModel(model);
 
-        var result = Sut.RemoveFilter("datesubmitted");
+        var result = await Sut.RemoveFilter("datesubmitted");
 
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("pov:postapproval");
@@ -98,7 +98,7 @@ public class RemoveFiltersTests : TestServiceBase<ProjectOverviewController>
         Sut.TempData = MockTempData.Object;
         SetSessionModel(model);
 
-        var result = Sut.RemoveFilter("modificationtype");
+        var result = await Sut.RemoveFilter("modificationtype");
 
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("pov:postapproval");
@@ -115,7 +115,7 @@ public class RemoveFiltersTests : TestServiceBase<ProjectOverviewController>
         Sut.TempData = MockTempData.Object;
         SetSessionModel(model);
 
-        var result = Sut.RemoveFilter("status");
+        var result = await Sut.RemoveFilter("status");
 
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("pov:postapproval");
@@ -132,7 +132,7 @@ public class RemoveFiltersTests : TestServiceBase<ProjectOverviewController>
         Sut.TempData = MockTempData.Object;
         SetSessionModel(model);
 
-        var result = Sut.RemoveFilter("reviewtype");
+        var result = await Sut.RemoveFilter("reviewtype");
 
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("pov:postapproval");
@@ -149,13 +149,69 @@ public class RemoveFiltersTests : TestServiceBase<ProjectOverviewController>
         Sut.TempData = MockTempData.Object;
         SetSessionModel(model);
 
-        var result = Sut.RemoveFilter("category");
+        var result = await Sut.RemoveFilter("category");
 
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("pov:postapproval");
 
         var updated = GetSessionModel();
         updated.ModificationType.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task RemoveFilter_WhenValidationFails_ShouldStoreModelStateInTempData_AndRedirect()
+    {
+        // Arrange
+        var validationResult = new ValidationResult(new[]
+        {
+            new ValidationFailure(
+                nameof(ApprovalsSearchModel.FromDay),
+                "From date is invalid")
+        });
+
+        SetupValidValidator(validationResult);
+
+        var httpContext = new DefaultHttpContext
+        {
+            Session = new InMemorySession()
+        };
+
+        var tempData = new TempDataDictionary(
+            httpContext,
+            Mock.Of<ITempDataProvider>());
+
+        tempData[TempDataKeys.ProjectRecordId] = "rec-1";
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+
+        Sut.TempData = tempData;
+
+        var model = new ApprovalsSearchModel
+        {
+            FromDay = "99", // invalid on purpose
+            FromMonth = "01",
+            FromYear = "2023"
+        };
+
+        SetSessionModel(model);
+
+        // Act
+        var result = await Sut.RemoveFilter("datesubmitted-from");
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe("pov:postapproval");
+
+        tempData.ShouldContainKey(TempDataKeys.ModelState);
+
+        var serializedModelState = tempData[TempDataKeys.ModelState]
+            .ShouldBeOfType<string>();
+
+        serializedModelState.ShouldContain(
+            nameof(ApprovalsSearchModel.FromDay));
     }
 
     private void SetSessionModel(ApprovalsSearchModel model)
