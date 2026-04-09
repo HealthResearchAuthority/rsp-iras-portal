@@ -1,0 +1,150 @@
+﻿@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Microsoft.FeatureManagement
+@using Rsp.IrasPortal.Web.Features.Modifications.ParticipatingOrganisations.Models
+@using Rsp.Portal.Application.Constants
+@using System.Globalization
+@model IEnumerable<OrganisationDetailsViewModel>
+@inject IFeatureManager featureManager
+@{
+    ViewBag.Title = "Review your organisation information";
+}
+
+@{
+    // Try to read the IRAS ID from TempData, default to 0 if missing and Project Record Id default to empty string if missing
+    var irasId = TempData.Peek(TempDataKeys.IrasId) as int? ?? 0;
+    var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
+    var status = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string ?? string.Empty;
+    var sponsorOrganisationUserId = TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId);
+    var rtsId = TempData.Peek(TempDataKeys.RevisionRtsId) as string ?? string.Empty;
+
+    // Title used in the validation error summary
+    var errorSummaryTitle = "There is a problem";
+
+    // Prepare the navigation model depending on whether we have a lastQuestion
+    (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+    navModel = ("por:participatingorganisationslist", "Back", new());
+
+    var reviseChange = ViewContext.HttpContext.Request.Query["reviseChange"].ToString() is "true" or "True";
+    var reviewAllChanges = TempData[TempDataKeys.ProjectModification.ReviewAllChanges] is true;
+    var showLinks = ViewData[ViewDataKeys.ShowParticipatingOrgsLinks] is true;
+}
+
+@* @section is added for the back button, so that we can render something below the back button
+    and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+    the named section *@
+@section BackNavigation {
+    <partial name="_BackNavigation" model="navModel.Value" />
+}
+
+@{
+    // Collect everything in one payload
+    var allParentAnswers = Model.SelectMany(org => org.GetParentQuestionAnswers()).ToList();
+    var conditionalRules = Model.SelectMany(org => org.GetConditionalRules()).ToList();
+}
+
+<script>
+    $(function () {
+        // Clear existing sessionStorage before loading the page
+        sessionStorage.clear();
+
+        // Store parent answers
+        const parentAnswers = @Html.Raw(JsonSerializer.Serialize(allParentAnswers))
+        parentAnswers.forEach(parent => {
+            let existing = sessionStorage.getItem(parent.QuestionId);
+            let answers = existing ? JSON.parse(existing) : [];
+            answers = answers.concat(parent.Answers);
+            sessionStorage.setItem(parent.QuestionId, JSON.stringify(answers));
+        });
+
+        // init rules handler with all conditional questions and their rules
+        const conditionalRulesData = @Html.Raw(JsonSerializer.Serialize(conditionalRules))
+        conditionalRulesHandler.init(conditionalRulesData);
+    });
+</script>
+
+@foreach (var (model, index) in Model.Select((question, index) => (question, index)))
+{
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+            Participating organisation
+        </dt>
+        <dd class="govuk-summary-list__value">
+            @(model.OrganisationName)
+            @(model.OrganisationAddress)
+        </dd>
+
+        @if (!reviewAllChanges && showLinks)
+        {
+            <dd class="govuk-summary-list__actions">
+                <a asp-route="porgs:removeparticipatingorganisation"
+                   asp-route-organisationId="@(model.Id)"
+                   asp-route-organisationName="@(model.OrganisationName)"
+                   class="govuk-link">Remove</a>
+            </dd>
+        }
+    </div>
+
+    @* // Group questions by their Section and order them *@
+
+    var groupedSections = model.Questions
+        .OrderBy(q => q.SectionSequence)
+        .ThenBy(q => q.Sequence)
+        .GroupBy(q => q.SectionId)
+        .ToList();
+
+    // Get the key of the first section (e.g., for special handling like IRAS ID)
+    var firstSectionKey = groupedSections.FirstOrDefault()?.Key;
+
+    @foreach (var sectionGroup in groupedSections)
+    {
+        @foreach (var question in sectionGroup)
+        {
+            string questionKey = question.GetModelKey();
+            bool fieldHasErrors = ViewData.ModelState[questionKey]?.ValidationState == ModelValidationState.Invalid;
+            string conditionalClass = !question.IsOptional && !question.IsMandatory && question.Rules.Any() ? "conditional" : "";
+            string parentAttributes = conditionalClass != "" ? $"data-parents=\"{string.Join(',', question.Rules.Select(r => r.ParentQuestionId))}\" data-questionid=\"{question.QuestionId}\"" : "";
+            string questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText;
+
+            <div class="@conditionalClass govuk-summary-list__row" id="@questionKey" @Html.Raw(parentAttributes)>
+
+                <input type="hidden" name="data-orgindex" value="@index" />
+
+                <dt class="govuk-summary-list__key">@questionText</dt>
+                <dd class="govuk-summary-list__value @(fieldHasErrors ? "govuk-error-summary__list" : "")">
+                    @if (question.IsMissingAnswer())
+                    {
+                        if (!reviewAllChanges && showLinks)
+                        {
+                            <a class="govuk-link" href="@Url.RouteUrl("pod:participatingorganisationdetails", new { organisationId = model.Id, reviewAnswers = true })">
+                                @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        <input type="hidden" id="@question.QuestionId" name="hiddenResponse" value="@question.SelectedOption" />
+                        @Html.Raw(question.GetDisplayText())
+                    }
+                </dd>
+                <dd class="govuk-summary-list__actions">
+                    @if (!question.IsMissingAnswer() && (!reviewAllChanges && showLinks))
+                    {
+                        <a class="govuk-link" href="@Url.RouteUrl("pod:participatingorganisationdetails", new { organisationId = model.Id, reviewAnswers = true })">
+                            @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
+                        </a>
+                    }
+                </dd>
+            </div>
+        }
+
+        if (!reviewAllChanges)
+        {
+            <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+        }
+
+    }
+}
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/js/participating-organisations-review.js"></script>

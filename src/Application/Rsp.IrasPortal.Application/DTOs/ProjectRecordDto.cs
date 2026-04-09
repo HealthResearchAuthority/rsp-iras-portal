@@ -8,7 +8,7 @@ public record ProjectRecordDto
     /// <summary>
     /// Optional IRAS project identifier.
     /// </summary>
-    public int? IrasId { get; set; }
+    public int IRASID { get; set; }
 
     /// <summary>
     /// Optional record identifier from the source system.
@@ -29,4 +29,5 @@ public record ProjectRecordDto
     /// Optional long or descriptive project title.
     /// </summary>
     public string? LongProjectTitle { get; set; }
+    public string? LeadNation { get; set; }
 }

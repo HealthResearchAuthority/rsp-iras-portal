@@ -11,6 +11,7 @@ using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses.CmsContent;
+using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
@@ -613,6 +614,7 @@ public class DocumentsController
     /// </returns>
     [ModificationAuthorise(Permissions.MyResearch.ProjectDocuments_Upload)]
     [HttpPost]
+    [CmsContentAction(nameof(ProjectDocument))]
     public async Task<IActionResult> UploadDocuments(ModificationUploadDocumentsViewModel model)
     {
         // If the posted model is null (due to exceeding max request size)
@@ -623,7 +625,7 @@ public class DocumentsController
         var respondentId = (HttpContext.Items[ContextItemKeys.UserId] as string)!;
         model.ProjectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
         model.IrasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
-
+        model.DateSponsorSubmittedOutcome = TempData.Peek(TempDataKeys.ProjectModification.DateSponsorSubmittedOutcome)?.ToString();
         var processedModel = await ProcessDocumentUploadsAsync(
             model,
             respondentId);
@@ -785,7 +787,7 @@ public class DocumentsController
             await HandleSupersedeAnswerChange(viewModel, supersedeContext, reviewAllChanges);
 
             var redirect = HandleSupersedeRedirect(viewModel, questionnaire);
-            if (redirect != null)
+            if (!saveForLater && redirect != null)
             {
                 return redirect;
             }
@@ -1381,7 +1383,8 @@ public class DocumentsController
         string irasId,
         object? projectModificationId,
         string projectRecordId,
-        string respondentId
+        string respondentId,
+        string uploadedDocumentStatus = DocumentStatus.Uploaded
     )
     {
         var blobClient = GetBlobClient(false);
@@ -1398,7 +1401,7 @@ public class DocumentsController
             FileName = blob.FileName,
             DocumentStoragePath = blob.BlobUri,
             FileSize = blob.FileSize,
-            Status = DocumentStatus.Uploaded
+            Status = uploadedDocumentStatus
         });
 
         await projectModificationsService.CreateDocumentModification(uploadedDocuments);
@@ -1593,43 +1596,19 @@ public class DocumentsController
                 ShowSupersedeDocumentSection = string.Equals(previousVersionOfDocumentAnswer, QuestionIds.PreviousVersionOfDocumentYesOption, StringComparison.OrdinalIgnoreCase),
                 MetaDataDocumentTypeId = documentTypeId,
 
-                Questions = cmsQuestions.Questions.Select(cmsQ =>
-                {
-                    var matchingAnswer = answers.FirstOrDefault(a => a.QuestionId == cmsQ.QuestionId);
-
-                    return new QuestionViewModel
-                    {
-                        Id = matchingAnswer?.Id,
-                        Index = questionIndex++,
-                        QuestionId = cmsQ.QuestionId,
-                        VersionId = cmsQ.VersionId,
-                        Category = cmsQ.Category,
-                        SectionId = cmsQ.SectionId,
-                        Section = cmsQ.Section,
-                        Sequence = cmsQ.Sequence,
-                        Heading = cmsQ.Heading,
-                        QuestionText = cmsQ.QuestionText,
-                        QuestionType = cmsQ.QuestionType,
-                        DataType = cmsQ.DataType,
-                        IsMandatory = cmsQ.IsMandatory,
-                        IsOptional = cmsQ.IsOptional,
-                        AnswerText = matchingAnswer?.AnswerText,
-                        SelectedOption = matchingAnswer?.SelectedOption,
-                        Answers = cmsQ?.Answers?
-                        .Select(ans => new AnswerViewModel
-                        {
-                            AnswerId = ans.AnswerId,
-                            AnswerText = ans.AnswerText,
-                            // Set true if CMS already marked it OR if it exists in answersResponse
-                            IsSelected = ans.IsSelected || answers.Any(a => a.SelectedOption == ans.AnswerId)
-                        })
-                        .ToList() ?? new List<AnswerViewModel>(),
-                        Rules = cmsQ?.Rules ?? new List<RuleDto>(),
-                        ShortQuestionText = cmsQ?.ShortQuestionText ?? string.Empty,
-                        IsModificationQuestion = true,
-                        GuidanceComponents = cmsQ?.GuidanceComponents ?? new List<ComponentContent>()
-                    };
-                }).ToList()
+                Questions = cmsQuestions.Questions.ConvertAll
+                (
+                    cmsQ => QuestionsetHelpers.MapQuestionWithAnswers
+                    (
+                        cmsQ,
+                        answers,
+                        questionIndex++,
+                        a => a.QuestionId,
+                        a => a.Id,
+                        a => a.AnswerText,
+                        a => a.SelectedOption
+                    )
+                )
             };
 
             viewModels.Add(vm);
@@ -1929,6 +1908,16 @@ public class DocumentsController
             return model;
         }
 
+        // Handle Request revisions and Revise and authorise modification statuses - as initial document statuses
+        var modificationStatus = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string;
+
+        var documentStatus = modificationStatus switch
+        {
+            ModificationStatus.ReviseAndAuthorise => DocumentStatus.ReviseAndAuthorise,
+            ModificationStatus.RequestRevisions => DocumentStatus.RequestRevisions,
+            _ => DocumentStatus.Uploaded
+        };
+
         // Upload valid files
         if (validationResult.ValidFiles.Count > 0)
         {
@@ -1937,7 +1926,8 @@ public class DocumentsController
                 model.IrasId,
                 model.ModificationId == null ? Guid.Empty : Guid.Parse(model.ModificationId),
                 model.ProjectRecordId,
-                respondentId);
+                respondentId,
+                documentStatus);
 
             // Persist SUCCESS audit events AFTER successful upload
             if (validationResult.SuccessAuditEvents.Count > 0)
@@ -2089,24 +2079,9 @@ public class DocumentsController
                 DateTimeStamp = DateTime.UtcNow,
                 Description = DocumentAuditEvents.DocumentDetailsCompleted,
                 FileName = viewModel.FileName ?? string.Empty,
-                User = HttpContext.Items[ContextItemKeys.UserId]?.ToString() ?? string.Empty
+                User = HttpContext.Items[ContextItemKeys.Email]?.ToString() ?? string.Empty
             }
         };
-
-        if (viewModel.ReplacesDocumentId != null && viewModel.ReplacesDocumentId != Guid.Empty)
-        {
-            var answersResponse = await respondentService.GetModificationDocumentDetails((Guid)viewModel.ReplacesDocumentId);
-
-            auditTrailRequest.Add(new ModificationDocumentsAuditTrailDto
-            {
-                Id = Guid.NewGuid(),
-                ProjectModificationId = viewModel.ModificationId,
-                DateTimeStamp = DateTime.UtcNow,
-                Description = DocumentAuditEvents.DocumentSuperseded,
-                FileName = answersResponse.Content?.FileName ?? string.Empty,
-                User = HttpContext.Items[ContextItemKeys.Email]?.ToString() ?? string.Empty
-            });
-        }
 
         await projectModificationsService.CreateModificationDocumentsAuditTrail(auditTrailRequest);
     }

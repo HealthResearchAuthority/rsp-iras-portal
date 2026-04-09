@@ -29,6 +29,8 @@ public struct TempDataKeys
         public const string ReasonNotApproved = "td:reason_not_approved";
         public const string CanModificationSendToSponsor = "td:can_modification_send_to_sponsor";
         public const string CanCreateNewModification = "td:can_create_new_modifications";
+        public const string DateSponsorSubmittedOutcome = "td:date_sponsor_submitted_outcome";
+        public const string SelectedParticipatingOrganisations = "td:selected_participating_organisations";
     }
 
     public struct ProjectModificationChange
@@ -68,7 +70,8 @@ public struct TempDataKeys
     public const string ModelState = "td:model_state";
     public const string ShowNotificationBanner = "td:show_notification_banner";
     public const string ShowProjectDeletedBanner = "td:show_project_deleted_banner";
-    public const string OrganisationSearchModel = "td:organisationSearchModel";
+    public const string OrganisationSearchModel = "td:organisation_search_model";
+    public const string OrganisationSearchResults = "td:organisation_search_results";
     public const string Status = "td:status";
     public const string SelectedProjectModifications = "td:selected_project_modifications";
     public const string ModificationTasklistReviewerId = "td:reviewer_id";
@@ -96,4 +99,8 @@ public struct TempDataKeys
     public const string CollaboratorExists = "td:collaborator_exists";
     public const string CollaboratorAlreadyAdded = "td:collaborator_already_added";
     public const string ShowSponsorUserEditLink = "td:show_sponsor_user_edit_link";
+    public const string IsHaltRestartWarning = "td:is_halt_restart_warning";
+    public const string RequestRevisionDescription = "td:request_revision_description";
+    public const string RequestRevisionHeadline = "td:request_revision_headline";
+    public const string RfiDetails = "td:rfi_details";
 }

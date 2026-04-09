@@ -24,7 +24,8 @@
                                             new { Field = nameof(ProjectOverviewDocumentDto.DocumentName), Label = "Document name" },
                                             new { Field = nameof(ProjectOverviewDocumentDto.FileName), Label = "File name" },
                                             new { Field = nameof(ProjectOverviewDocumentDto.DocumentVersion), Label = "Version" },
-                                            new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" }
+                                            new { Field = nameof(ProjectOverviewDocumentDto.DocumentDate), Label = "Document date" },
+											new { Field = nameof(ProjectOverviewDocumentDto.Status), Label = "Status" }
                                         };
 
                                     }
@@ -35,7 +36,6 @@
                                             @header.Label
                                         </th>
                                     }
-                                    <th scope="col" class="govuk-table__header">Status</th>
                                 </tr>
                             </thead>
                             <tbody class="govuk-table__body govuk-body-s">
@@ -53,11 +53,35 @@
                                                 </div>
                                             }
                                         </td>
-                                        <td class="govuk-table__cell">@modification.DocumentName</td>
-                                        <td class="govuk-table__cell">@modification.FileName</td>
-                                        <td class="govuk-table__cell">@modification.DocumentVersion</td>
-                                        <td class="govuk-table__cell">@modification.DocumentDate?.ToString("d MMM yyyy")</td>
-                                        <td class="govuk-table__cell">@ModificationStatusHelper.ToUiStatus(modification.Status)</td>
+                                        <td class="govuk-table__cell">
+                                            <div class="wrapped-table-cell">
+                                                @modification.DocumentName
+                                            </div>
+                                        </td>
+
+                                        <td class="govuk-table__cell">
+                                            <div class="wrapped-table-cell">
+                                                @modification.FileName
+                                            </div>
+                                        </td>
+
+                                        <td class="govuk-table__cell">
+                                            <div class="wrapped-table-cell">
+                                                @modification.DocumentVersion
+                                            </div>
+                                        </td>
+
+                                        <td class="govuk-table__cell">
+                                            <div class="wrapped-table-cell">
+                                                @modification.DocumentDate?.ToString("d MMM yyyy")
+                                            </div>
+                                        </td>
+
+                                        <td class="govuk-table__cell">
+                                            <div class="wrapped-table-cell">
+                                                @ModificationStatusHelper.ToUiStatus(modification.Status)
+                                            </div>
+                                        </td>
                                         @if (Model.Status is ModificationStatus.InDraft)
                                         {
                                             <td class="govuk-table__cell">

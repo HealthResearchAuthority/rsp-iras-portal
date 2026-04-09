@@ -383,6 +383,29 @@ public class ProjectModificationsService(
     }
 
     /// <summary>
+    /// Saves RFI responses for a project modification.
+    /// </summary>
+    /// <param name="modificationRfiResponseRequest">The request object containing the responses</param>
+    public async Task<ServiceResponse> SaveModificationRfiResponses(ModificationRfiResponseRequest modificationRfiResponseRequest)
+    {
+        var apiResponse = await projectModificationsServiceClient.SaveModificationRfiResponses(modificationRfiResponseRequest);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
+    /// Gets RFI responses for a project modification.
+    /// </summary>
+    /// <param name="projectRecordId">The project record ID</param>
+    /// <param name="modificationId">The modification ID</param>
+    public async Task<ServiceResponse<ModificationRfiResponseResponse>> GetModificationRfiResponses(string projectRecordId, Guid modificationId)
+    {
+        var apiResponse = await projectModificationsServiceClient.GetModificationRfiResponses(projectRecordId, modificationId);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
     /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination
     /// </summary>
     /// <param name="modificationId">
@@ -474,6 +497,22 @@ public class ProjectModificationsService(
             sortDirection
         );
 
+        return apiResponse.ToServiceResponse();
+    }
+
+    /// <summary>
+    /// Retrieves all changes associated with a specific project.
+    /// </summary>
+    /// <param name="projectRecordId">
+    /// The unique identifier of the project record for which to retrieve changes.
+    /// <returns>
+    /// An asynchronous operation that returns a service response containing a collection of <see
+    /// cref="ProjectModificationChangeResponse"/> objects representing the changes for the
+    /// specified project modification.
+    /// </returns>
+    public async Task<ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationsChangesForProject(string projectRecordId)
+    {
+        var apiResponse = await projectModificationsServiceClient.GetModificationsChangesForProject(projectRecordId);
         return apiResponse.ToServiceResponse();
     }
 }

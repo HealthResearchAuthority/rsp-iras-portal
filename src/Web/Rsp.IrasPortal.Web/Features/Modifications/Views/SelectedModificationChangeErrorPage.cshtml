@@ -12,15 +12,9 @@
     Model.AreaOfChangeViewModel.ModificationIdentifier = TempData[TempDataKeys.ProjectModification.ProjectModificationIdentifier] as string;
     TempData.Keep(TempDataKeys.ProjectModification.ProjectModificationIdentifier);
     var title = pageContent.GetValueOrDefault("Modifications.ConfirmModificationJourney.Title", null);
-    var projectHaltChangeBody = pageContent.GetValueOrDefault("Modifications.ConfirmModificationJourney.Content", null);
-    var primarySponsorChangeBody = pageContent.GetValueOrDefault("Modifications.ConfirmModificationJourney.PrimarySponsorChangeContent", null);
+    var body = pageContent.GetValueOrDefault("Modifications.ConfirmModificationJourney.Content", null);   
 
-    var body = Model.InvalidSpecificAreaOfChangeId switch
-    {
-        AreasOfChange.ProjectHalt => projectHaltChangeBody,
-        AreasOfChange.ChangeOfPrimarySponsor => primarySponsorChangeBody,
-        _ => null
-    };
+    TempData[TempDataKeys.IsHaltRestartWarning] = true;
 }
 
 <div class="govuk-grid-row">

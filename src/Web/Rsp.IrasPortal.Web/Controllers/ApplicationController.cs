@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
@@ -180,6 +181,11 @@ public class ApplicationController
         var projectRecord = validationServiceResponse.Content!;
 
         TempData[TempDataKeys.ProjectRecord] = JsonSerializer.Serialize(projectRecord.Data);
+
+        if (projectRecord.Data?.LeadNation == null)
+        {
+            return HandleMissingLeadNation(validationServiceResponse);
+        }
 
         // play back project details for confirmation using the ProjectRecord in TempData
         return RedirectToRoute($"prc:{section.StaticViewName}", new
@@ -463,5 +469,15 @@ public class ApplicationController
     public IActionResult ValidateProjectClosure(ProjectClosuresModel model)
     {
         return View("/Features/ProjectOverview/Views/ValidateProjectClosure.cshtml", model);
+    }
+
+    private IActionResult HandleMissingLeadNation(ServiceResponse<ProjectRecordValidationResponse> validationServiceResponse)
+    {
+        var projectRecord = validationServiceResponse.Content!;
+
+        TempData[TempDataKeys.ProjectRecord] =
+            JsonSerializer.Serialize(projectRecord.Data);
+
+        return RedirectToRoute("prc:missingleadnation");
     }
 }

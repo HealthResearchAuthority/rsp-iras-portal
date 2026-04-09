@@ -69,6 +69,13 @@ public abstract class ModificationsControllerBase
             return (this.ServiceError(modificationReviewResponse), null);
         }
 
+        var modificationRfiResponsesResponse = await projectModificationsService.GetModificationRfiResponses(projectRecordId, projectModificationId);
+
+        if (!modificationRfiResponsesResponse.IsSuccessStatusCode)
+        {
+            return (this.ServiceError(modificationRfiResponsesResponse), null);
+        }
+
         TempData[TempDataKeys.ProjectModification.ProjectModificationStatus] = modification.Status;
 
         // Build the base view model with project metadata
@@ -84,10 +91,12 @@ public abstract class ModificationsControllerBase
             Category = modification.Category ?? Ranking.NotAvailable,
             ReviewType = modification.ReviewType ?? Ranking.NotAvailable,
             DateCreated = DateHelper.ConvertDateToString(modification.CreatedDate),
+            DateSponsorSubmittedOutcome = DateHelper.ConvertDateToString(modification.DateSponsorSubmittedOutcome),
             ReasonNotApproved = modification?.ReasonNotApproved ?? string.Empty,
             ReviewerComments = modification?.ReviewerComments,
             RevisionDescription = modification?.RevisionDescription,
             RequestForInformationReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? [],
+            RequestForInformationResponses = modificationRfiResponsesResponse.Content?.RfiResponses ?? [],
             ApplicantRevisionResponse = modification?.ApplicantRevisionResponse
         });
     }
@@ -257,6 +266,7 @@ public abstract class ModificationsControllerBase
         TempData[TempDataKeys.ProjectModification.OverallReviewType] = modification.ReviewType;
         TempData[TempDataKeys.IrasId] = irasId;
         TempData[TempDataKeys.ProjectModification.DateCreated] = modification.DateCreated;
+        TempData[TempDataKeys.ProjectModification.DateSponsorSubmittedOutcome] = modification.DateSponsorSubmittedOutcome;
 
         var (changesResult, initialQuestions, modificationChanges) = await GetModificationChanges(modification);
         if (changesResult is not null)
@@ -371,9 +381,18 @@ public abstract class ModificationsControllerBase
              a.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase) ||
              a.Status.Equals(DocumentStatus.RequestRevisions, StringComparison.OrdinalIgnoreCase)))
         {
-            status = (await EvaluateDocumentCompletion(a.Id, questionnaire)
-                ? DocumentDetailStatus.Incomplete
-                : DocumentDetailStatus.Complete).ToString();
+            var isIncomplete = await EvaluateDocumentCompletion(a.Id, questionnaire);
+            if (a.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase)
+                    && !isIncomplete)
+            {
+                status = DocumentStatus.ReviseAndAuthorise;
+            }
+            else
+            {
+                status = (isIncomplete
+                    ? DocumentDetailStatus.Incomplete
+                    : DocumentDetailStatus.Complete).ToString();
+            }
         }
 
         return new DocumentSummaryItemDto
@@ -409,7 +428,12 @@ public abstract class ModificationsControllerBase
         clonedQuestionnaire = await PopulateAnswersFromDocuments(clonedQuestionnaire, answers);
 
         // Validate questionnaire
-        var isValid = await this.ValidateQuestionnaire(validator, clonedQuestionnaire, addModelErrors);
+        var isValid = await this.ValidateQuestionnaire(
+            validator,
+            clonedQuestionnaire,
+            true,
+            addModelErrors
+        );
 
         var supersedeDocumentsEnabled = await featureManager.IsEnabledAsync(FeatureFlags.SupersedingDocuments);
 
@@ -440,7 +464,8 @@ public abstract class ModificationsControllerBase
     protected async Task MapDocumentTypesAndStatusesAsync(
       QuestionnaireViewModel questionnaire,
       IEnumerable<ProjectOverviewDocumentDto> documents,
-      bool addModelErrors = true)
+      bool addModelErrors = true,
+      bool showIncompleteForReviseAndAuthoriseStatus = false)
     {
         if (questionnaire?.Questions == null || documents == null)
             return;
@@ -470,36 +495,122 @@ public abstract class ModificationsControllerBase
             }
 
             // ---- B. Update completion status ----
+
+            // skip validation for incomplete - if document status is ReviseAndAuthorise and its not Review and authorise view
+            if (!showIncompleteForReviseAndAuthoriseStatus &&
+                doc.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase))
+            {
+                doc.Status = DocumentStatus.ReviseAndAuthorise;
+                continue;
+            }
+
             if (!doc.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
-                doc.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase))
+                (doc.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase) ||
+                doc.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase) ||
+                doc.Status.Equals(DocumentStatus.RequestRevisions, StringComparison.OrdinalIgnoreCase)))
             {
                 bool isIncomplete = await EvaluateDocumentCompletion(doc.Id, questionnaire, addModelErrors);
 
-                doc.Status = isIncomplete
-                    ? DocumentDetailStatus.Incomplete.ToString()
-                    : DocumentDetailStatus.Complete.ToString();
+                if (doc.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase)
+                    && !isIncomplete)
+                {
+                    doc.Status = DocumentStatus.ReviseAndAuthorise;
+                }
+                else
+                {
+                    doc.Status = (isIncomplete
+                        ? DocumentDetailStatus.Incomplete
+                        : DocumentDetailStatus.Complete).ToString();
+                }
             }
         }
     }
 
     protected async Task<List<ModificationChangeModel>> UpdateModificationChanges(string projectRecordId, List<ModificationChangeModel> modificationChanges)
     {
+        const string OrganisationDetailsSection = "pom-participating-organisation-details";
+
         foreach (var modificationChange in modificationChanges)
         {
             // get the responent answers for the category
-            var respondentServiceResponse = await respondentService.GetModificationChangeAnswers(modificationChange.ModificationChangeId, projectRecordId);
+            var getModificationChangeAnswersResponse = await respondentService.GetModificationChangeAnswers(modificationChange.ModificationChangeId, projectRecordId);
 
             // get the questions for the modification journey
             var questionSetServiceResponse = await cmsQuestionsetService.GetModificationsJourney(modificationChange.SpecificAreaOfChangeId);
 
             // return the error view if unsuccessfull
-            if (!respondentServiceResponse.IsSuccessStatusCode || !questionSetServiceResponse.IsSuccessStatusCode)
+            if (!getModificationChangeAnswersResponse.IsSuccessStatusCode || !questionSetServiceResponse.IsSuccessStatusCode)
             {
                 // return the modificationChanges unchanged in case of error
                 return modificationChanges;
             }
 
-            var respondentAnswers = respondentServiceResponse.Content!;
+            // we need to validate the participating organisations for AddNewSites
+            // questions separately for each participating organisation, so remove from the main questionnaire
+            if
+            (
+                modificationChange.SpecificAreaOfChangeId is
+                    SpecificAreasOfChange.AddNewPics or
+                    SpecificAreasOfChange.AddNewSites or
+                    SpecificAreasOfChange.EarlyClosureSites or
+                    SpecificAreasOfChange.EarlyClosuresPics
+            )
+            {
+                var sections = questionSetServiceResponse.Content!.Sections.ToList();
+
+                sections.RemoveAll(s => s.Id == OrganisationDetailsSection);
+
+                questionSetServiceResponse.Content.Sections = sections;
+            }
+
+            var isParticipatingOrgsQuestionnaireValid = true;
+
+            // cater for participating organisations questions
+            if (modificationChange.SpecificAreaOfChangeId is SpecificAreasOfChange.AddNewSites)
+            {
+                var getParticipatingOrganisationsResponse = await respondentService.GetModificationParticipatingOrganisations(modificationChange.ModificationChangeId, projectRecordId);
+                var orgsQuestionSet = await cmsQuestionsetService.GetModificationQuestionSet(OrganisationDetailsSection);
+
+                var questionIndex = 0;
+
+                foreach (var organisation in getParticipatingOrganisationsResponse.Content!)
+                {
+                    var questionnaireViewModel = QuestionsetHelpers.BuildQuestionnaireViewModel(orgsQuestionSet.Content!);
+
+                    var participatingOrganisationQuestionnaire = questionnaireViewModel;
+
+                    var answersResponse = await respondentService.GetModificationParticipatingOrganisationAnswers(organisation.Id);
+
+                    var answers = answersResponse.Content ?? [];
+
+                    participatingOrganisationQuestionnaire.Questions = questionnaireViewModel.Questions.ConvertAll(cmsQ =>
+                    {
+                        var matchingAnswer = answers.FirstOrDefault(a => a.QuestionId == cmsQ.QuestionId);
+
+                        cmsQ.Index = questionIndex++;
+
+                        if (matchingAnswer == null)
+                        {
+                            return cmsQ;
+                        }
+
+                        cmsQ.Id = matchingAnswer.Id;
+
+                        return cmsQ;
+                    });
+
+                    participatingOrganisationQuestionnaire.UpdateWithRespondentAnswers(answers);
+
+                    isParticipatingOrgsQuestionnaireValid = await this.ValidateQuestionnaire(validator, participatingOrganisationQuestionnaire, true, false);
+
+                    if (!isParticipatingOrgsQuestionnaireValid)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            var respondentAnswers = getModificationChangeAnswersResponse.Content!;
 
             // convert the questions response to QuestionnaireViewModel
             var questionnaire = QuestionsetHelpers.BuildQuestionnaireViewModel(questionSetServiceResponse.Content!);
@@ -517,7 +628,7 @@ public abstract class ModificationsControllerBase
             // Validate the questionnaire (mandatory-only) using FluentValidation
             var result = await this.ValidateQuestionnaire(validator, questionnaire, true, false);
 
-            modificationChange.ChangeStatus = result ?
+            modificationChange.ChangeStatus = result && isParticipatingOrgsQuestionnaireValid ?
                 ModificationStatus.ChangeReadyForSubmission :
                 ModificationStatus.Unfinished;
 
@@ -615,6 +726,30 @@ public abstract class ModificationsControllerBase
         );
 
         return (documentsForModification, questionnaire);
+    }
+
+    protected static IEnumerable<ProjectOverviewDocumentDto> GetSortedAndPaginatedDocuments(
+        IEnumerable<ProjectOverviewDocumentDto> allDocuments,
+        string sortField,
+        string sortDirection,
+        int pageSize,
+        int pageNumber)
+    {
+        // do sorting of status field here because status field is mapped and not stored in DB
+        if (sortField == nameof(ProjectOverviewDocumentDto.Status))
+        {
+            if (sortDirection == SortDirections.Ascending)
+            {
+                allDocuments = allDocuments.OrderBy(d => d.Status);
+            }
+            else
+            {
+                allDocuments = allDocuments.OrderByDescending(d => d.Status);
+            }
+        }
+
+        return allDocuments.Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize);
     }
 
     /// <summary>

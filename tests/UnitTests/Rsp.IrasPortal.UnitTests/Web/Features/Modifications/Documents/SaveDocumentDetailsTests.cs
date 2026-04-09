@@ -1027,6 +1027,7 @@ public class SaveDocumentDetailsTests : TestServiceBase<DocumentsController>
             HttpContext = new DefaultHttpContext()
         };
         controller.HttpContext.Items[ContextItemKeys.UserId] = "respondent-1";
+        controller.HttpContext.Items[ContextItemKeys.Email] = "respondent-1";
 
         controller.TempData = new TempDataDictionary(
             controller.HttpContext,

@@ -288,6 +288,19 @@ public interface IProjectModificationsService : IInterceptable
     public Task<ServiceResponse<ProjectModificationReviewResponse>> GetModificationReviewResponses(string projectRecordId, Guid modificationId);
 
     /// <summary>
+    /// Saves RFI responses for a project modification.
+    /// </summary>
+    /// <param name="modificationRfiResponseRequest">The request object containing the responses</param>
+    public Task<ServiceResponse> SaveModificationRfiResponses(ModificationRfiResponseRequest modificationRfiResponseRequest);
+
+    /// <summary>
+    /// Gets RFI responses for a project modification.
+    /// </summary>
+    /// <param name="projectRecordId">The project record ID</param>
+    /// <param name="modificationId">The modification ID</param>
+    public Task<ServiceResponse<ModificationRfiResponseResponse>> GetModificationRfiResponses(string projectRecordId, Guid modificationId);
+
+    /// <summary>
     /// Gets modifications for specific modificationId with filtering, sorting and pagination
     /// </summary>
     /// <param name="modificationId">
@@ -355,4 +368,16 @@ public interface IProjectModificationsService : IInterceptable
     /// </param>
     /// <returns>An asynchronous operation that returns the newly created project modification.</returns>
     Task<ServiceResponse<ProjectModificationResponse>> DuplicateModification(DuplicateModificationRequest duplicateModificationRequest);
+
+    /// <summary>
+    /// Retrieves all changes associated with a specific project.
+    /// </summary>
+    /// <param name="projectRecordId">
+    /// The unique identifier of the project record for which to retrieve changes.
+    /// <returns>
+    /// An asynchronous operation that returns a service response containing a collection of <see
+    /// cref="ProjectModificationChangeResponse"/> objects representing the changes for the
+    /// specified project modification.
+    /// </returns>
+    Task<ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationsChangesForProject(string projectRecordId);
 }

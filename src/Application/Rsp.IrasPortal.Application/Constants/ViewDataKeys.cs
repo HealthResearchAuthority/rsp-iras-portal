@@ -16,4 +16,5 @@ public struct ViewDataKeys
     public const string UrlReferrer = "vd:url_referrer";
     public const string IsSponsorCheckAndAuthorise = "vd:is_sponsor_check_authorise";
     public const string ShowModificationDetails = "vd:show_modification_details";
+    public const string ShowParticipatingOrgsLinks = "vd:show_participating_orgs_links";
 }

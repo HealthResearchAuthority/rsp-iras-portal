@@ -17,11 +17,14 @@
             { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId ?? string.Empty },
             { "rtsId", Model.RtsId ?? string.Empty }
         };
-}
 
-@*@section BackNavigation {
-        <partial name="_BackNavigation" model="@("pmc:modificationdetails", "Back", modificationParams)" />
-    }*@
+    var saveButtonTitle = Model.Status switch
+    {
+        ModificationStatus.RequestRevisions => "Return to make revision",
+        ModificationStatus.ReviseAndAuthorise => "Return to revise and authorise",
+        _ => "Return to modification details"
+    };
+}
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
@@ -39,10 +42,12 @@
            status-mode="Hide">
             You can't send this modification to sponsor for review until you've added at least one change. Return to the modification details page where you can add a change.
         </p>
-         
+
         <div class="save-buttons">
-            <a class="govuk-button" asp-route="pmc:modificationdetails" asp-all-route-data="modificationParams">
-                Return to modification details
+            <a class="govuk-button"
+               asp-route="pmc:modificationdetails"
+               asp-all-route-data="modificationParams">
+                @saveButtonTitle
             </a>
         </div>
     </div>

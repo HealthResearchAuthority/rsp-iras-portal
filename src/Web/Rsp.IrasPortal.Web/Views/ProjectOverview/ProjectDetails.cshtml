@@ -6,111 +6,114 @@
 @model ProjectOverviewModel
 
 @{
-    ViewBag.Title = "Project overview";
-    ViewBag.Active = ProjectOverview.ProjectDetails;
+	ViewBag.Title = "Project overview";
+	ViewBag.Active = ProjectOverview.ProjectDetails;
 }
 
 @{
-    var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
-    var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
-                      ?? new Dictionary<string, string>();
-    var modificationId = Context.Request.Query["modificationId"].ToString();
-    bool addIrasIdInFirstGroup = true;
+	var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
+	var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
+					  ?? new Dictionary<string, string>();
+	var modificationId = Context.Request.Query["modificationId"].ToString();
+	bool addIrasIdInFirstGroup = true;
 
-    var tdBackRouteValues = TempData.Peek(TempDataKeys.ProjectOverviewReferrer.BackRouteValues);
+	var tdBackRouteValues = TempData.Peek(TempDataKeys.ProjectOverviewReferrer.BackRouteValues);
 
-    var backRouteValues = JsonSerializer.Deserialize<Dictionary<string, string>>
-        (tdBackRouteValues != null ? tdBackRouteValues.ToString()! : "{}") ?? new Dictionary<string, string>();
+	var backRouteValues = JsonSerializer.Deserialize<Dictionary<string, string>>
+		(tdBackRouteValues != null ? tdBackRouteValues.ToString()! : "{}") ?? new Dictionary<string, string>();
 }
 
 @if (routeName is null || routeName.ToLower() == "app:welcome")
 {
-    @section Breadcrumb {
-        @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
-	    {
-		    ("My research", Url.RouteUrl("app:welcome"))
-	    })
-    }
+	@section Breadcrumb {
+		@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+		{
+			("My research", Url.RouteUrl("app:welcome"))
+		})
+	}
 }
 else
 {
-    @section BackNavigation {
-        <partial name="_BackNavigation" model="@(routeName, "Back", backRouteValues)" />
-    }
+	@section BackNavigation {
+		<partial name="_BackNavigation" model="@(routeName, "Back", backRouteValues)" />
+	}
 }
 
 @if (TempData[TempDataKeys.ShowNotificationBanner] is not null)
 {
-    <partial name="_NotificationBanner"
-             model="@(new NotificationBannerModel
-                    {
-                        Title = "Success",
-                        Heading = $"Modification {modificationId} has been deleted"
-                    })" />
+	<partial name="_NotificationBanner"
+			 model="@(new NotificationBannerModel
+					{
+						Title = "Success",
+						Heading = $"Modification {modificationId} has been deleted"
+					})" />
 }
 
 <partial name="_NavigationHeaderPartial" model="@Model" />
 
 <div class="govuk-grid-row">
-    <div class="govuk-width-container govuk-!-margin-top-4">
-        @foreach (var group in Model.SectionGroupQuestions)
-        {
-        <h2 class="govuk-heading-m">@group.SectionGroup</h2>
-        <dl class="govuk-summary-list">
+	<div class="govuk-width-container govuk-!-margin-top-4">
+		@foreach (var group in Model.SectionGroupQuestions)
+		{
+		<h2 class="govuk-heading-m">@group.SectionGroup</h2>
+		<dl class="govuk-summary-list">
 
-            @if (addIrasIdInFirstGroup)
-            {
-                <div class="govuk-summary-list__row">
-                    <dt class="govuk-summary-list__key">
-                        IRAS ID
-                    </dt>
-                    <dd class="govuk-summary-list__value">
-                        @Model.IrasId
-                    </dd>
-                </div>                                
-            }
+			@if (addIrasIdInFirstGroup)
+			{
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">
+						IRAS ID
+					</dt>
+					<dd class="govuk-summary-list__value">
+						@Model.IrasId
+					</dd>
+				</div>                                
+			}
 
-            @foreach (var question in group.Questions)
-            {
-                string questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText;
+			@foreach (var question in group.Questions)
+			{
+				@if (!(question.QuestionId == QuestionIds.LeadNation && string.IsNullOrWhiteSpace(question.GetDisplayText(includePrompt: false))))
+				{
+				    string questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText;
 
-                if (string.Equals(question.QuestionId, QuestionIds.PrimarySponsorOrganisation, StringComparison.Ordinal))
-                {
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key">@questionText</dt>
-                        <dd class="govuk-summary-list__value">
-                            @Model.OrganisationName
-                        </dd>
-                    </div>
-                }
-                else
-                {
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key">@questionText</dt>
-                        <dd class="govuk-summary-list__value">
-                            @Html.Raw(question.GetDisplayText(includePrompt: false))
-                        </dd>
-                    </div>
-                }
-            }       
-            
-            @if (addIrasIdInFirstGroup)
-            {
-                @if (@Model.ActualProjectClosureDate != null)
-                {
-                <div class="govuk-summary-list__row">
-                    <dt class="govuk-summary-list__key">
-                        Actual project closure date
-                    </dt>
-                    <dd class="govuk-summary-list__value">
-                        @Model.ActualProjectClosureDate
-                    </dd>
-                </div> 
-                }
+				    if (string.Equals(question.QuestionId, QuestionIds.PrimarySponsorOrganisation, StringComparison.Ordinal))
+				    {
+					    <div class="govuk-summary-list__row">
+						    <dt class="govuk-summary-list__key">@questionText</dt>
+						    <dd class="govuk-summary-list__value">
+							    @Model.OrganisationName
+						    </dd>
+					    </div>
+				    }
+				    else
+				    {
+					    <div class="govuk-summary-list__row">
+						    <dt class="govuk-summary-list__key">@questionText</dt>
+						    <dd class="govuk-summary-list__value">
+							    @Html.Raw(question.GetDisplayText(includePrompt: false))
+						    </dd>
+					    </div>
+				    }
+				}
+			}
+			
+			@if (addIrasIdInFirstGroup)
+			{
+				@if (@Model.ActualProjectClosureDate != null)
+				{
+				<div class="govuk-summary-list__row">
+					<dt class="govuk-summary-list__key">
+						Actual project closure date
+					</dt>
+					<dd class="govuk-summary-list__value">
+						@Model.ActualProjectClosureDate
+					</dd>
+				</div> 
+				}
 
-                addIrasIdInFirstGroup = false;
-            }
-        </dl>            
-        }
-    </div>
+				addIrasIdInFirstGroup = false;
+			}
+		</dl>            
+		}
+	</div>
 </div>

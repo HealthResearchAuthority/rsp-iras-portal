@@ -1,4 +1,5 @@
-﻿using Rsp.Portal.Application.DTOs.Requests;
+﻿using Rsp.IrasPortal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.ServiceClients;
 using Rsp.Portal.Application.Services;
@@ -182,6 +183,48 @@ public class RespondentService(IRespondentServiceClient respondentServiceClient)
     public async Task<ServiceResponse<IEnumerable<ProjectModificationDocumentRequest>>> GetModificationDocumentsByType(string projectRecordId, string? documentTypeId)
     {
         var apiResponse = await respondentServiceClient.GetModificationDocumentsByType(projectRecordId, documentTypeId);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>> GetModificationParticipatingOrganisations(Guid projectModificationChangeId, string projectRecordId)
+    {
+        var apiResponse = await respondentServiceClient.GetModificationParticipatingOrganisations(projectModificationChangeId, projectRecordId);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>> GetModificationParticipatingOrganisationsBySpecificArea(string projectRecordId, string specificAreaOfChange)
+    {
+        var apiResponse = await respondentServiceClient.GetModificationParticipatingOrganisationsBySpecificArea(projectRecordId, specificAreaOfChange);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse<IEnumerable<ParticipatingOrganisationAnswerDto>>> GetModificationParticipatingOrganisationAnswers(Guid modificationParticipatingOrganisationId)
+    {
+        var apiResponse = await respondentServiceClient.GetModificationParticipatingOrganisationAnswers(modificationParticipatingOrganisationId);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse> SaveModificationParticipatingOrganisations(List<ParticipatingOrganisationDto> respondentAnswers)
+    {
+        var apiResponse = await respondentServiceClient.SaveModificationParticipatingOrganisations(respondentAnswers);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse> SaveModificationParticipatingOrganisationAnswers(List<ParticipatingOrganisationAnswerDto> respondentAnswers)
+    {
+        var apiResponse = await respondentServiceClient.SaveModificationParticipatingOrganisationAnswers(respondentAnswers);
+
+        return apiResponse.ToServiceResponse();
+    }
+
+    public async Task<ServiceResponse> DeleteModificationParticipatingOrganisation(Guid modificationParticipatingOrganisationId)
+    {
+        var apiResponse = await respondentServiceClient.DeleteModificationParticipatingOrganisation(modificationParticipatingOrganisationId);
 
         return apiResponse.ToServiceResponse();
     }

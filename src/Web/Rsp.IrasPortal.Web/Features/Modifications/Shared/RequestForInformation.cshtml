@@ -1,12 +1,13 @@
 ﻿@using Rsp.Portal.Web.Features.Modifications.Models
 @model ModificationDetailsViewModel
 
+<h2 class="govuk-heading-m">Request for further information</h2>
 @for (var i = 0; i < Model.RequestForInformationReasons.Count; i++)
 {
     <div class="govuk-summary-card">
         <div class="govuk-summary-card__title-wrapper">
             <h2 class="govuk-summary-card__title">
-                Request for further information
+                Request for further information and response
             </h2>
         </div>
         <div class="govuk-summary-card__content">
@@ -18,6 +19,14 @@
                         </dt>
                         <dd class="govuk-summary-list__value">
                             @Model.RequestForInformationReasons[i]
+                        </dd>
+                    </div>
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">
+                            Response @(i + 1)
+                        </dt>
+                        <dd class="govuk-summary-list__value">
+                            @(Model.RequestForInformationResponses.ElementAtOrDefault(i))
                         </dd>
                     </div>
                 </dl>

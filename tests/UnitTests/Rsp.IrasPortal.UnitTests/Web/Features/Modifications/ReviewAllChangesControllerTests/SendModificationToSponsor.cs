@@ -429,6 +429,10 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
     public async Task SendRevisionResponseToSponsor_IsSaveForLaterTrue_ShouldUpdateStatusAndRedirect()
     {
         // Arrange
+        Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ShowNotificationBanner] = true
+        };
         var mockProjectModificationService = new Mock<IProjectModificationsService>();
         var model = new ModificationDetailsViewModel
         {

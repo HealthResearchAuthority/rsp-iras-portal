@@ -103,6 +103,12 @@ public class ModificationDetailsController
             {
                 modification.RevisionDescription = revisionDescription.ToString();
             }
+            var requestRevisionDescription = TempData[TempDataKeys.RequestRevisionDescription];
+            if (!string.IsNullOrEmpty(requestRevisionDescription?.ToString()))
+            {
+                modification.ApplicantRevisionResponse = requestRevisionDescription.ToString();
+                TempData.Keep(TempDataKeys.RequestRevisionDescription);
+            }
 
             var sponsorDetailsQuestionsResponse = await cmsQuestionsetService.GetModificationQuestionSet(SponsorDetailsSectionId);
 
@@ -121,11 +127,16 @@ public class ModificationDetailsController
 
             // Add modification documents
             var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
-            DocumentDetailsSection, pageNumber, pageSize, sortField, sortDirection, isSponsorRevisingModification: true);
+            DocumentDetailsSection, 1, int.MaxValue, sortField, sortDirection, isSponsorRevisingModification: true);
 
-            modification.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
+            var allDocuments = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
 
-            await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents, false);
+            await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, allDocuments, false, showIncompleteForReviseAndAuthoriseStatus: true);
+
+            // apply pagination
+            var paginatedDocuments = GetSortedAndPaginatedDocuments(allDocuments, sortField, sortDirection, pageSize, pageNumber);
+
+            modification.ProjectOverviewDocumentViewModel.Documents = paginatedDocuments;
 
             modification.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult.Item1?.Content?.TotalCount ?? 0)
             {
@@ -151,6 +162,10 @@ public class ModificationDetailsController
         if (modification.ModificationChanges.All(c => c.ChangeStatus == ModificationStatus.ChangeReadyForSubmission))
         {
             modification.ChangesReadyForSubmission = true;
+        }
+        if (modification.ModificationChanges.Count == 0)
+        {
+            modification.NoChangesToSubmit = true;
         }
 
         var documentsSelectiveDownloadEnabled = await featureManager.IsEnabledAsync(FeatureFlags.DocumentsSelectiveDownload);
@@ -272,6 +287,7 @@ public class ModificationDetailsController
         {
             IrasId = irasId,
             ShortTitle = shortTitle,
+            DateSponsorSubmittedOutcome = DateHelper.ConvertDateToString(modification.Content.DateSponsorSubmittedOutcome),
             RevisionDescription = modification.Content.RevisionDescription,
             ProjectRecordId = projectRecordId,
             ModificationId = projectModificationId.ToString(),

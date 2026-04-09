@@ -8,6 +8,8 @@ using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.UnitTests;
 using Rsp.Portal.Web.Features.Modifications;
+using Rsp.Portal.Web.Features.Modifications.Models;
+using Rsp.Portal.Web.Helpers;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.ModificationDetailsControllerTests;
 
@@ -28,6 +30,7 @@ public class MakeRequestRevisionByApplicantTests : TestServiceBase<ModificationD
         };
         Sut.TempData = tempData;
         var modId = Guid.NewGuid();
+        var testDate = DateTime.Now;
         Mocker
           .GetMock<IProjectModificationsService>()
           .Setup(s => s.GetModification(It.IsAny<string>(), It.IsAny<Guid>()))
@@ -47,7 +50,8 @@ public class MakeRequestRevisionByApplicantTests : TestServiceBase<ModificationD
                   UpdatedBy = "TestUser",
                   ModificationType = "Substantial",
                   Category = "Category A",
-                  ReviewType = "Full Review"
+                  ReviewType = "Full Review",
+                  DateSponsorSubmittedOutcome = testDate
               }
           });
 
@@ -62,6 +66,8 @@ public class MakeRequestRevisionByApplicantTests : TestServiceBase<ModificationD
         var view = Assert.IsType<ViewResult>(result);
         Assert.IsType<ViewResult>(result);
         Assert.Equal("MakeRevisonByApplicant", view.ViewName);
+        var model = view.Model.ShouldBeOfType<ModificationDetailsViewModel>();
+        model.DateSponsorSubmittedOutcome.ShouldBe(DateHelper.ConvertDateToString(testDate));
     }
 
     [Fact]

@@ -12,6 +12,7 @@
     TempData.Keep(TempDataKeys.ProjectModification.ProjectModificationIdentifier);
     var title = pageContent.GetValueOrDefault("Modifications.ConfirmModificationJourney.ProjectRestartWarningTitle", null);
     var body = pageContent.GetValueOrDefault("Modifications.ConfirmModificationJourney.ProjectRestartWarningContent", null);
+    TempData[TempDataKeys.IsHaltRestartWarning] = true;
 }
 
 <div class="govuk-grid-row">

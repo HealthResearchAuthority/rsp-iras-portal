@@ -105,6 +105,18 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
             });
 
         Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationRfiResponses("PR1", modId))
+            .ReturnsAsync(new ServiceResponse<ModificationRfiResponseResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ModificationRfiResponseResponse
+                {
+                    ModificationId = modId,
+                    RfiResponses = []
+                }
+            });
+
+        Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModificationChanges(It.IsAny<string>(), It.IsAny<Guid>()))
             .ReturnsAsync(new ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>
             {
@@ -157,6 +169,18 @@ public class ReviewAllChanges_ServiceErrorCases : TestServiceBase<ReviewAllChang
                 {
                     ModificationId = modId,
                     RequestForInformationReasons = []
+                }
+            });
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationRfiResponses("PR1", modId))
+            .ReturnsAsync(new ServiceResponse<ModificationRfiResponseResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ModificationRfiResponseResponse
+                {
+                    ModificationId = modId,
+                    RfiResponses = []
                 }
             });
 

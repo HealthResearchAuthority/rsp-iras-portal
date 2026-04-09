@@ -9,18 +9,24 @@
     ViewData[ViewDataKeys.ShowModificationStatus] = false;
 
     var modificationParams = new Dictionary<string, string>
-    {
+{
         { "projectRecordId", Model.ProjectRecordId },
         { "irasId", Model.IrasId },
         { "shortTitle", Model.ShortTitle ?? string.Empty },
         { "projectModificationId", Model.ModificationId ?? string.Empty },
         { "projectModificationIdentifier", Model.ModificationIdentifier ?? string.Empty }
     };
+    Model.DateSponsorSubmittedOutcome = TempData.Peek(TempDataKeys.ProjectModification.DateSponsorSubmittedOutcome)?.ToString();
 }
 
 @section BackNavigation {
-    @{
-        <partial name="_BackNavigation" model="@("pmc:reviewallchanges", "Back", modificationParams)"/>
+    @if (Model.Status is ModificationStatus.RequestRevisions)
+    {
+        <partial name="_BackNavigation" model="@("pmc:modificationdetails", "Back", modificationParams)" />
+    }
+    else
+    {
+        <partial name="_BackNavigation" model="@("pmc:reviewallchanges", "Back", modificationParams)" />
     }
 }
 
@@ -28,7 +34,7 @@
     <div class="govuk-grid-column-two-thirds">
         <h1 class="govuk-heading-l">Confirm that you want to permanently delete modification @Model.ModificationIdentifier</h1>
         @{
-            <partial name="_ProjectModificationSummary" model="Model" viewData="ViewData"/>
+            <partial name="_ProjectModificationSummary" model="Model" viewData="ViewData" />
         }
         <p class="govuk-body">Deleting a modification cannot be undone.</p>
 
@@ -37,7 +43,7 @@
         }
         <form method="post">
             <partial name="_SubmitButton"
-                     model="@("pmc:DeleteModificationConfirmed", "Delete modification", modificationParams)"/>
+                     model="@("pmc:DeleteModificationConfirmed", "Delete modification", modificationParams)" />
         </form>
     </div>
 </div>

@@ -9,7 +9,6 @@ using Rsp.IrasPortal.Web.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
-using Rsp.Portal.Application.Enum;
 using Rsp.Portal.Application.Extensions;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
@@ -168,10 +167,9 @@ public class ProjectOverviewController
             .ToList() ?? [];
         if (sortField == nameof(ModificationsModel.CreatedAt))
         {
-            model.Modifications = model.Modifications.OrderBy(item => Enum.TryParse<ModificationStatusOrder>(GetEnumStatus(item.Status!), true, out var statusEnum)
-                  ? (int)statusEnum
-                  : (int)ModificationStatusOrder.None)
-              .ToList();
+            model.Modifications = model.Modifications
+                .OrderByDescending(m => m.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions)
+                .ToList();
         }
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
         {
@@ -181,6 +179,17 @@ public class ProjectOverviewController
             RouteName = "pov:postapproval",
             AdditionalParameters = new Dictionary<string, string>() { { "projectRecordId", projectRecordId } }
         };
+
+        if (modificationsResponseResult?.Content?.Modifications != null &&
+            modificationsResponseResult.Content.Modifications.Any())
+        {
+            var allProjectModificationChanges = await projectModificationsService.GetModificationsChangesForProject(projectRecordId);
+            if (!allProjectModificationChanges.IsSuccessStatusCode)
+            {
+                return this.ServiceError(allProjectModificationChanges);
+            }
+            model.AllProjectModificationChanges = allProjectModificationChanges.Content ?? [];
+        }
 
         //project closure
         await GetProjectClosureDetails(projectRecordId, model);
@@ -452,12 +461,19 @@ public class ProjectOverviewController
 
         searchQuery.AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document);
 
+        // get all documents for the modification and do pagination here
         var modificationsResponseResult = await projectModificationsService.GetDocumentsForProjectOverview(projectRecordId,
-            searchQuery, pageNumber, pageSize, sortField, sortDirection);
+            searchQuery, 1, int.MaxValue, sortField, sortDirection);
 
-        model.Documents = modificationsResponseResult?.Content?.Documents ?? [];
+        var allDocuments = modificationsResponseResult.Content?.Documents ?? [];
 
-        await MapDocumentTypesAndStatusesAsync(questionnaire, model.Documents);
+        // Map the document types and statuses to user-friendly text for display in the view.
+        await MapDocumentTypesAndStatusesAsync(questionnaire, allDocuments);
+
+        // apply pagination
+        var paginatedDocuments = GetSortedAndPaginatedDocuments(allDocuments, sortField, sortDirection, pageSize, pageNumber);
+
+        model.Documents = paginatedDocuments ?? [];
 
         model.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationsResponseResult?.Content?.TotalCount ?? 0)
         {
@@ -515,8 +531,6 @@ public class ProjectOverviewController
             return result;
         }
 
-        model.ProjectOverviewModel = projectOverview.Value as ProjectOverviewModel;
-
         var validationResult = await validator.ValidateAsync(model.Search);
 
         if (!validationResult.IsValid)
@@ -526,7 +540,8 @@ public class ProjectOverviewController
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }
 
-            return View(nameof(PostApproval), model);
+            TempData.Remove(TempDataKeys.ModelState);
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
         }
 
         HttpContext.Session.SetString(SessionKeys.PostApprovalsSearch, JsonSerializer.Serialize(model.Search));
@@ -546,7 +561,7 @@ public class ProjectOverviewController
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Search)]
     [HttpGet("/projectoverview/removefilter", Name = "pov:removefilter")]
-    public IActionResult RemoveFilter(string key, [FromQuery] string? model = null)
+    public async Task<IActionResult> RemoveFilter(string key, [FromQuery] string? model = null)
     {
         var viewModel = new PostApprovalViewModel();
 
@@ -590,6 +605,19 @@ public class ProjectOverviewController
             case "status":
                 viewModel.Search!.Status = null;
                 break;
+        }
+
+        var validation = await validator.ValidateAsync(viewModel.Search);
+
+        if (!validation.IsValid)
+        {
+            foreach (var error in validation.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            TempData.Remove(TempDataKeys.ModelState);
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
         }
 
         HttpContext.Session.SetString(SessionKeys.PostApprovalsSearch, JsonSerializer.Serialize(viewModel.Search));
@@ -766,17 +794,4 @@ public class ProjectOverviewController
 
         return Ok(projectTeamModel);
     }
-
-    private static string? GetEnumStatus(string status) => status switch
-    {
-        ModificationStatus.InDraft => nameof(ModificationStatusOrder.InDraft),
-        ModificationStatus.RequestRevisions => nameof(ModificationStatusOrder.RequestRevisions),
-        ModificationStatus.WithSponsor => nameof(ModificationStatusOrder.WithSponsor),
-        ModificationStatus.ReviseAndAuthorise => nameof(ModificationStatusOrder.ReviseAndAuthorise),
-        ModificationStatus.WithReviewBody => nameof(ModificationStatusOrder.WithRegulator),
-        ModificationStatus.Approved => nameof(ModificationStatusOrder.Approved),
-        ModificationStatus.NotApproved => nameof(ModificationStatusOrder.NotApproved),
-        ModificationStatus.NotAuthorised => nameof(ModificationStatusOrder.NotAuthorised),
-        _ => nameof(ModificationStatusOrder.None)
-    };
 }

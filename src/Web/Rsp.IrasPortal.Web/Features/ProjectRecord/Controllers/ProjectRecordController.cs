@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text.Json;
 using Mapster;
@@ -37,6 +37,36 @@ public class ProjectRecordController
     public IActionResult ProjectNotEligible()
     {
         return View();
+    }
+
+    [ExcludeFromCodeCoverage]
+    public IActionResult MissingLeadNation()
+    {
+        // get the validated harp project record request from TempData
+        var harpProjectRecord = TempData.Peek(TempDataKeys.ProjectRecord) as string;
+
+        if (string.IsNullOrWhiteSpace(harpProjectRecord))
+        {
+            var serviceResponse = new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Error = "Project record request data is missing."
+            };
+
+            return this.ServiceError(serviceResponse);
+        }
+
+        var projectRecord = JsonSerializer.Deserialize<ProjectRecordDto>(harpProjectRecord)!;
+
+        // project details view model inherits from questionnaire view model it can adapt to it
+        var projectRecordViewModel = new ProjectRecordViewModel
+        {
+            // map the project details properties
+            IrasId = projectRecord.IRASID,
+            ShortProjectTitle = projectRecord.ShortProjectTitle!
+        };
+
+        return View(projectRecordViewModel);
     }
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Create)]
@@ -85,9 +115,26 @@ public class ProjectRecordController
         var projectRecordViewModel = questionnaire.Adapt<ProjectRecordViewModel>();
 
         // map the project details properties
-        projectRecordViewModel.IrasId = projectRecord.IrasId!.Value;
+        projectRecordViewModel.IrasId = projectRecord.IRASID;
         projectRecordViewModel.ShortProjectTitle = projectRecord.ShortProjectTitle!;
         projectRecordViewModel.FullProjectTitle = projectRecord.LongProjectTitle!;
+        projectRecordViewModel.LeadNation = projectRecord.LeadNation!;
+        // Map LeadNation text → optionId
+        projectRecordViewModel.LeadNationSelectedOption = projectRecord.LeadNation switch
+        {
+            var x when x == UkCountryNames.England => QuestionAnswersOptionsIds.England,
+            var x when x == UkCountryNames.NorthernIreland => QuestionAnswersOptionsIds.NorthernIreland,
+            var x when x == UkCountryNames.Scotland => QuestionAnswersOptionsIds.Scotland,
+            var x when x == UkCountryNames.Wales => QuestionAnswersOptionsIds.Wales,
+            _ => string.Empty
+        };
+
+        projectRecordViewModel.IsNHSHSCOrganisationSelectedOption = QuestionAnswersOptionsIds.No;
+        if (projectRecord.LeadNation != "The study does not involve the NHS")
+        {
+            projectRecordViewModel.IsNHSHSCOrganisation = true;
+            projectRecordViewModel.IsNHSHSCOrganisationSelectedOption = QuestionAnswersOptionsIds.Yes;
+        }
 
         projectRecordViewModel.SectionId = section.Id;
 
@@ -129,6 +176,8 @@ public class ProjectRecordController
             StartDate = DateTime.Now,
             UserId = userId,
             IrasId = model.IrasId,
+            LeadNation = model.LeadNation,
+            IsNHSHSCOrganisation = model.IsNHSHSCOrganisation
         };
 
         // Call the service to create the new application

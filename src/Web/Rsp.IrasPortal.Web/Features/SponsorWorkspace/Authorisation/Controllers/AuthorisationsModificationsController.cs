@@ -45,6 +45,7 @@ public class AuthorisationsModificationsController
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
     private const string SponsorDetailsSectionId = "pm-sponsor-reference";
+    private const string SponsorReferenceCategoryId = "Sponsor reference";
     private readonly IRespondentService _respondentService = respondentService;
 
     [Authorize(Policy = Permissions.Sponsor.Modifications_Search)]
@@ -232,12 +233,19 @@ public class AuthorisationsModificationsController
 
         var authoriseOutcomeViewModel = modification.Adapt<AuthoriseModificationsOutcomeViewModel>(config);
 
+        // get all documents for the modification and do pagination here
         var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
-            DocumentDetailsSection, pageNumber, pageSize, sortField, sortDirection);
+            DocumentDetailsSection, 1, int.MaxValue, sortField, sortDirection);
 
-        authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
+        var allDocuments = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
 
-        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents);
+        // Map the document types and statuses to user-friendly text for display in the view.
+        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, allDocuments);
+
+        // apply pagination
+        var paginatedDocuments = GetSortedAndPaginatedDocuments(allDocuments, sortField, sortDirection, pageSize, pageNumber);
+
+        authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Documents = paginatedDocuments ?? [];
 
         authoriseOutcomeViewModel.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult.Item1?.Content?.TotalCount ?? 0)
         {
@@ -256,7 +264,7 @@ public class AuthorisationsModificationsController
             }
         };
 
-        authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId;
+        authoriseOutcomeViewModel.SponsorOrganisationUserId = sponsorOrganisationUserId.ToString();
         authoriseOutcomeViewModel.ProjectModificationId = projectModificationId;
         authoriseOutcomeViewModel.ModificationChangeId = modificationChangeId is null ? null : modificationChangeId.ToString();
         authoriseOutcomeViewModel.IrasId = irasId;
@@ -344,13 +352,13 @@ public class AuthorisationsModificationsController
             model.IrasId,
             model.ShortTitle,
             model.ProjectRecordId,
-            model.SponsorOrganisationUserId,
+            Guid.Parse(model.SponsorOrganisationUserId),
             model.RtsId
         );
 
         if (!ModelState.IsValid)
         {
-            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId, model.RtsId);
+            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(Guid.Parse(model.SponsorOrganisationUserId), model.RtsId);
 
             if (!sponsorOrganisationUser.IsSuccessStatusCode)
             {
@@ -509,14 +517,14 @@ public class AuthorisationsModificationsController
     [HttpGet]
     public async Task<IActionResult> RequestRevisions(AuthoriseModificationsOutcomeViewModel model)
     {
-        var auth = await sponsorUserAuthorisationService.AuthoriseWithOrganisationContextAsync(this, model.SponsorOrganisationUserId, User, model.RtsId);
+        var auth = await sponsorUserAuthorisationService.AuthoriseWithOrganisationContextAsync(this, Guid.Parse(model.SponsorOrganisationUserId), User, model.RtsId);
         if (!auth.IsAuthorised)
         {
             return auth.FailureResult!;
         }
 
         var sponsorOrganisationUser =
-            await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId, model.RtsId);
+            await sponsorOrganisationService.GetSponsorOrganisationUser(Guid.Parse(model.SponsorOrganisationUserId), model.RtsId);
 
         if (!sponsorOrganisationUser.IsSuccessStatusCode)
         {
@@ -558,7 +566,7 @@ public class AuthorisationsModificationsController
 
         if (!ModelState.IsValid)
         {
-            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId, model.RtsId);
+            var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(Guid.Parse(model.SponsorOrganisationUserId), model.RtsId);
 
             if (!sponsorOrganisationUser.IsSuccessStatusCode)
             {
@@ -603,7 +611,6 @@ public class AuthorisationsModificationsController
         bool skipValidation = isSaveForLater && string.IsNullOrWhiteSpace(model.RevisionDescription);
         model.Outcome = "ReviseAndAuthorise";
         ModelState.Remove(nameof(model.Outcome));
-
         if (!skipValidation)
         {
             var context = new ValidationContext<AuthoriseModificationsOutcomeViewModel>(model);
@@ -644,7 +651,11 @@ public class AuthorisationsModificationsController
             TempData[TempDataKeys.ShowNotificationBanner] = true;
             return RedirectToAction(nameof(Modifications), new { sponsorOrganisationUserId = model.SponsorOrganisationUserId, rtsId = model.RtsId });
         }
-
+        (bool isValid, IActionResult result) = IsModificationChangeExist(model);
+        if (!isValid)
+        {
+            return result;
+        }
         // Fetch all modification documents (up to 200)
         var searchQuery = new ProjectOverviewDocumentSearchRequest();
         searchQuery.AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document);
@@ -679,6 +690,15 @@ public class AuthorisationsModificationsController
         if (!allMalwareScansSuccessful)
         {
             return RedirectToRoute("pmc:DocumentsScanInProgress");
+        }
+
+        // CHECK FOR COMPLETE SPONSOR REFERENCE
+        var viewModel = await this.BuildSponsorQuestionnaireViewModel(Guid.Parse(model.ModificationId), model.ProjectRecordId, SponsorReferenceCategoryId);
+        var isValidSponsorReferece = await this.ValidateQuestionnaire(questionnaireValidator, viewModel, true);
+
+        if (!isValidSponsorReferece)
+        {
+            return View("SponsorReference", viewModel);
         }
 
         var reviewType = string.IsNullOrWhiteSpace(model.ReviewType)
@@ -729,6 +749,27 @@ public class AuthorisationsModificationsController
         }
         model.Outcome = "Authorised";
         return RedirectToAction(nameof(Confirmation), model);
+    }
+
+    private (bool flowControl, IActionResult value) IsModificationChangeExist(AuthoriseModificationsOutcomeViewModel model)
+    {
+        if (model.ModificationChanges == null || model.ModificationChanges.Count == 0)
+        {
+            return (flowControl: false, value: View("NoChangesToSubmit", new BaseProjectModificationViewModel
+            {
+                ProjectRecordId = model.ProjectRecordId,
+                IrasId = model.IrasId,
+                ShortTitle = model.ShortTitle,
+                ModificationId = model.ModificationId,
+                ModificationIdentifier = model.ModificationIdentifier,
+                RtsId = model.RtsId,
+                SponsorOrganisationUserId = model.SponsorOrganisationUserId.ToString(),
+                Status = model.Status,
+                DateCreated = model.DateCreated
+            }));
+        }
+
+        return (flowControl: true, value: null);
     }
 
     [Authorize(Policy = Permissions.Sponsor.Modifications_Review)]
@@ -817,7 +858,7 @@ public class AuthorisationsModificationsController
     /// <returns></returns>
     private async Task<IActionResult> ValidateRequest(AuthoriseModificationsOutcomeViewModel model)
     {
-        var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(model.SponsorOrganisationUserId, model.RtsId);
+        var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(Guid.Parse(model.SponsorOrganisationUserId), model.RtsId);
 
         if (!sponsorOrganisationUser.IsSuccessStatusCode)
         {

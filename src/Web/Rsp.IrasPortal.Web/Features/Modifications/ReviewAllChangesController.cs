@@ -71,6 +71,8 @@ public class ReviewAllChangesController
         bool includeSelectiveDownloadError = false
     )
     {
+        const string OrganisationDetailsSection = "pom-participating-organisation-details";
+
         // Populate TempData with project details for actual modification journey
         TempData[TempDataKeys.IrasId] = irasId;
         TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
@@ -86,6 +88,17 @@ public class ReviewAllChangesController
 
         // validate and update the status and answers for the change
         modification.ModificationChanges = await UpdateModificationChanges(projectRecordId, modification.ModificationChanges);
+
+        //modification.ModificationChanges.RemoveAll
+        //(
+        //    c =>
+        //        c.SpecificAreaOfChangeId is
+        //            SpecificAreasOfChange.AddNewPics or
+        //            SpecificAreasOfChange.AddNewSites or
+        //            SpecificAreasOfChange.EarlyClosureSites or
+        //            SpecificAreasOfChange.EarlyClosuresPics &&
+        //        c.Questions.Any(q => q.SectionId == OrganisationDetailsSection)
+        //);
 
         if (modification.ModificationChanges.Count == 0)
         {
@@ -126,12 +139,18 @@ public class ReviewAllChangesController
             };
         }
 
+        // get all documents for the modification and do pagination here
         var modificationDocumentsResponseResult = await this.GetModificationDocuments(projectModificationId,
-            DocumentDetailsSection, pageNumber, pageSize, sortField, sortDirection);
+            DocumentDetailsSection, 1, int.MaxValue, sortField, sortDirection);
 
-        modification.ProjectOverviewDocumentViewModel.Documents = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
+        var allDocuments = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
 
-        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, modification.ProjectOverviewDocumentViewModel.Documents);
+        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, allDocuments);
+
+        // apply pagination
+        var paginatedDocuments = GetSortedAndPaginatedDocuments(allDocuments, sortField, sortDirection, pageSize, pageNumber);
+
+        modification.ProjectOverviewDocumentViewModel.Documents = paginatedDocuments ?? [];
 
         modification.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult.Item1?.Content?.TotalCount ?? 0)
         {
@@ -664,7 +683,7 @@ public class ReviewAllChangesController
 
                 TempData.Remove(TempDataKeys.ModelState);
                 TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
-
+                TempData[TempDataKeys.RequestRevisionDescription] = model.ApplicantRevisionResponse;
                 return RedirectToRoute("pmc:ModificationDetails", new
                 {
                     projectRecordId = model.ProjectRecordId,
@@ -688,6 +707,8 @@ public class ReviewAllChangesController
                     model.ReasonNotApproved,
                     model.ApplicantRevisionResponse
                 );
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
+            TempData[TempDataKeys.RequestRevisionDescription] = model.ApplicantRevisionResponse;
             return RedirectToRoute("pov:postapproval", new { projectRecordId = model.ProjectRecordId });
         }
 

@@ -36,4 +36,31 @@ public class RemoveChange_Action : TestServiceBase<ModificationDetailsController
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
         redirect.ActionName.ShouldBe(nameof(ModificationDetailsController.ModificationDetails));
     }
+
+    [Fact]
+    public async Task Redirects_To_Error_On_Failure()
+    {
+        // Arrange
+        var http = new DefaultHttpContext();
+        Sut.ControllerContext = new() { HttpContext = http };
+        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.NewGuid(),
+            [TempDataKeys.ProjectRecordId] = "PR1",
+            [TempDataKeys.IrasId] = "12345",
+            [TempDataKeys.ShortProjectTitle] = "Short"
+        };
+
+        Mocker
+            .GetMock<IProjectModificationsService>()
+            .Setup(s => s.RemoveModificationChange(It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.BadGateway });
+
+        // Act
+        var result = await Sut.RemoveChange(Guid.NewGuid(), "name");
+
+        // Assert
+        var code = result.ShouldBeOfType<StatusCodeResult>();
+        code.StatusCode.ShouldBe((int)HttpStatusCode.BadGateway);
+    }
 }

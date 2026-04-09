@@ -1,5 +1,6 @@
 ﻿@using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Web.Features.Modifications.Models
+@using Rsp.Portal.Web.Helpers
 @model ModificationDetailsViewModel
 
 <div class="govuk-grid-row">
@@ -40,10 +41,20 @@
                         };
                     }
                     <strong class="govuk-tag @tagClass">
-                        @Model.Status
+                        @ModificationStatusHelper.ToUiStatus(Model.Status)
                     </strong>
                 </dd>
             </div>
+            
+            @if (!string.IsNullOrWhiteSpace(Model.ReasonNotApproved))
+            {
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Reason for not authorised</dt>
+                    <dd class="govuk-summary-list__value">@Model.ReasonNotApproved</dd>
+                </div>
+            }
+     
+
         </dl>
         
         <h2 class="govuk-heading-m">Summary details</h2>

@@ -130,6 +130,15 @@ public interface IProjectModificationsServiceClient
     public Task<ApiResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationChanges(string projectRecordId, Guid projectModificationId);
 
     /// <summary>
+    /// Retrieves all changes associated with a specific project.
+    /// </summary>
+    /// <param name="projectRecordId">
+    /// The unique identifier of the project record for which to retrieve changes.
+    /// <returns>An asynchronous operation that returns the requested project modification changes.</returns>
+    [Get("/projectmodifications/changesforproject")]
+    public Task<ApiResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationsChangesForProject(string projectRecordId);
+
+    /// <summary>
     /// Creates one or more modification documents associated with a project modification change.
     /// </summary>
     /// <param name="projectModificationChangeRequest">
@@ -264,6 +273,21 @@ public interface IProjectModificationsServiceClient
     /// <returns>Returns the modification review properties</returns>
     [Get("/projectmodifications/getreviewresponses")]
     public Task<ApiResponse<ProjectModificationReviewResponse>> GetModificationReviewResponses(string projectRecordId, Guid modificationId);
+
+    /// <summary>
+    /// Saves RFI responses for a project modification.
+    /// </summary>
+    /// <param name="modificationRfiResponseRequest">The request object containing the RFI responses</param>
+    [Post("/projectmodifications/saverfiresponses")]
+    public Task<IApiResponse> SaveModificationRfiResponses(ModificationRfiResponseRequest modificationRfiResponseRequest);
+
+    /// <summary>
+    /// Gets RFI responses for a project modification.
+    /// </summary>
+    /// <param name="projectRecordId">The project record ID</param>
+    /// <param name="modificationId">The modification ID</param>
+    [Get("/projectmodifications/getrfiresponses")]
+    public Task<ApiResponse<ModificationRfiResponseResponse>> GetModificationRfiResponses(string projectRecordId, Guid modificationId);
 
     /// <summary>
     /// Gets modifications for specific ProjectRecordId with filtering, sorting and pagination

@@ -1262,3 +1262,8 @@ button.govuk-pagination__item--current {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+
+.wrapped-table-cell {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
