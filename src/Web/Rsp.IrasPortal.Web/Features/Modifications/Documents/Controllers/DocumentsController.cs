@@ -1099,6 +1099,21 @@ public class DocumentsController
         var linkedAnswersLookup = existingLinkedAnswers
             .ToDictionary(a => a.QuestionId, StringComparer.OrdinalIgnoreCase);
 
+        // find answers to remove
+        var currentQuestionIds = currentAnswers
+            .Select(a => a.QuestionId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var answersToRemove = existingLinkedAnswers
+            .Where(a => !currentQuestionIds.Contains(a.QuestionId))
+            .ToList();
+
+        // delete extra answers
+        if (answersToRemove.Count > 0)
+        {
+            await projectModificationsService.DeleteDocumentAnswers(answersToRemove);
+        }
+
         var mergedAnswers = new List<ProjectModificationDocumentAnswerDto>();
 
         foreach (var current in currentAnswers)
