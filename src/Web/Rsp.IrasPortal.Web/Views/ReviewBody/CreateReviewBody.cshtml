@@ -1,4 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using Rsp.Gds.Component.Models
+@using Rsp.IrasPortal.Application.Constants
 @using Rsp.Portal.Application.Constants
 @model AddUpdateReviewBodyModel
 
@@ -50,6 +52,12 @@
                                     options="UkCountryNames.Countries"
                                     legend-class="govuk-label govuk-label--s" />
 
+            <rsp-gds-select asp-for="ReviewBodyType" 
+                            label-text="Review body type"
+                            default-option-text="@(String.Empty)"
+                            options="@(ReviewBodyType.OptionsMap.OrderBy(option => option.Key)
+                                                                .Select(option => new GdsOption { Value = option.Value, Label = option.Value }))")"/>
+
             <rsp-gds-input asp-for="EmailAddress"
                            label-text="Email address"
                            input-type="email"
@@ -61,6 +69,7 @@
                                               word-count-error-for="_DescriptionExcessWordCount"
                                               rows="5"
                                               width-class="govuk-!-width-full" />
+
             <partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
         </form>
     </div>
