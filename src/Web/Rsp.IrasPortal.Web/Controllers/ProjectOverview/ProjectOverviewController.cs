@@ -531,8 +531,6 @@ public class ProjectOverviewController
             return result;
         }
 
-        model.ProjectOverviewModel = projectOverview.Value as ProjectOverviewModel;
-
         var validationResult = await validator.ValidateAsync(model.Search);
 
         if (!validationResult.IsValid)
@@ -542,7 +540,8 @@ public class ProjectOverviewController
                 ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
             }
 
-            return View(nameof(PostApproval), model);
+            TempData.Remove(TempDataKeys.ModelState);
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
         }
 
         HttpContext.Session.SetString(SessionKeys.PostApprovalsSearch, JsonSerializer.Serialize(model.Search));
@@ -562,7 +561,7 @@ public class ProjectOverviewController
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Search)]
     [HttpGet("/projectoverview/removefilter", Name = "pov:removefilter")]
-    public IActionResult RemoveFilter(string key, [FromQuery] string? model = null)
+    public async Task<IActionResult> RemoveFilter(string key, [FromQuery] string? model = null)
     {
         var viewModel = new PostApprovalViewModel();
 
@@ -606,6 +605,19 @@ public class ProjectOverviewController
             case "status":
                 viewModel.Search!.Status = null;
                 break;
+        }
+
+        var validation = await validator.ValidateAsync(viewModel.Search);
+
+        if (!validation.IsValid)
+        {
+            foreach (var error in validation.Errors)
+            {
+                ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+            }
+
+            TempData.Remove(TempDataKeys.ModelState);
+            TempData.TryAdd(TempDataKeys.ModelState, ModelState.ToDictionary(), true);
         }
 
         HttpContext.Session.SetString(SessionKeys.PostApprovalsSearch, JsonSerializer.Serialize(viewModel.Search));

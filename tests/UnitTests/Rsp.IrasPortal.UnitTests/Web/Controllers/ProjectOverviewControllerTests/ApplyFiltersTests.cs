@@ -54,9 +54,14 @@ public class ApplyFiltersTests : TestServiceBase<ProjectOverviewController>
     public async Task ApplyFilters_ShouldRedirectTo_PostApproval_With_Valid_View()
     {
         // Arrange
-        SetupValidatorResult(new ValidationResult());
-        _ = MockTempData.Setup(a => a.Peek(It.IsAny<string>())).Returns("rec-1");
-        Sut.TempData = MockTempData.Object;
+        var validationResult = new ValidationResult(new[]
+            {
+                new ValidationFailure(
+                    nameof(ApprovalsSearchModel.ChiefInvestigatorName),
+                    "Test error")
+            });
+
+        SetupValidatorResult(validationResult);
 
         var applicationService = Mocker.GetMock<IApplicationsService>();
         var respondentService = Mocker.GetMock<IRespondentService>();
@@ -100,6 +105,14 @@ public class ApplyFiltersTests : TestServiceBase<ProjectOverviewController>
         };
         Sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
 
+        var tempData = new TempDataDictionary(
+            httpContext,
+            Mock.Of<ITempDataProvider>());
+
+        tempData[TempDataKeys.ProjectRecordId] = "rec-1";
+
+        Sut.TempData = tempData;
+
         var searchModel = new ApprovalsSearchModel { ChiefInvestigatorName = "Abc" };
         var viewModel = new PostApprovalViewModel { Search = searchModel };
 
@@ -109,6 +122,12 @@ public class ApplyFiltersTests : TestServiceBase<ProjectOverviewController>
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("pov:postapproval");
+
+        var serializedModelState = Sut.TempData[TempDataKeys.ModelState]
+            .ShouldBeOfType<string>();
+
+        serializedModelState.ShouldContain(
+            nameof(ApprovalsSearchModel.ChiefInvestigatorName));
     }
 
     private void SetupValidatorResult(ValidationResult result)

@@ -39,7 +39,7 @@ public class RemoveFiltersTests : TestServiceBase<ProjectOverviewController>
         Sut.TempData = MockTempData.Object;
         SetSessionModel(model);
 
-        var result = Sut.RemoveFilter("datesubmitted-from");
+        var result = await Sut.RemoveFilter("datesubmitted-from");
 
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("pov:postapproval");
@@ -56,7 +56,7 @@ public class RemoveFiltersTests : TestServiceBase<ProjectOverviewController>
         Sut.TempData = MockTempData.Object;
         SetSessionModel(model);
 
-        var result = Sut.RemoveFilter("datesubmitted-to");
+        var result = await Sut.RemoveFilter("datesubmitted-to");
 
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("pov:postapproval");
@@ -81,7 +81,7 @@ public class RemoveFiltersTests : TestServiceBase<ProjectOverviewController>
         Sut.TempData = MockTempData.Object;
         SetSessionModel(model);
 
-        var result = Sut.RemoveFilter("datesubmitted");
+        var result = await Sut.RemoveFilter("datesubmitted");
 
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("pov:postapproval");
@@ -98,7 +98,7 @@ public class RemoveFiltersTests : TestServiceBase<ProjectOverviewController>
         Sut.TempData = MockTempData.Object;
         SetSessionModel(model);
 
-        var result = Sut.RemoveFilter("modificationtype");
+        var result = await Sut.RemoveFilter("modificationtype");
 
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("pov:postapproval");
@@ -115,7 +115,7 @@ public class RemoveFiltersTests : TestServiceBase<ProjectOverviewController>
         Sut.TempData = MockTempData.Object;
         SetSessionModel(model);
 
-        var result = Sut.RemoveFilter("status");
+        var result = await Sut.RemoveFilter("status");
 
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("pov:postapproval");
@@ -132,7 +132,7 @@ public class RemoveFiltersTests : TestServiceBase<ProjectOverviewController>
         Sut.TempData = MockTempData.Object;
         SetSessionModel(model);
 
-        var result = Sut.RemoveFilter("reviewtype");
+        var result = await Sut.RemoveFilter("reviewtype");
 
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("pov:postapproval");
@@ -149,7 +149,7 @@ public class RemoveFiltersTests : TestServiceBase<ProjectOverviewController>
         Sut.TempData = MockTempData.Object;
         SetSessionModel(model);
 
-        var result = Sut.RemoveFilter("category");
+        var result = await Sut.RemoveFilter("category");
 
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
         redirect.RouteName.ShouldBe("pov:postapproval");
