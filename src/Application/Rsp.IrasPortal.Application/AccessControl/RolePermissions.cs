@@ -44,7 +44,8 @@ public static class RolePermissions
                 MyResearch.Modifications_Withdraw,
                 MyResearch.Modifications_Download,
                 MyResearch.Modifications_Resubmission,
-                MyResearch.ModificationsHistory_Read
+                MyResearch.ModificationsHistory_Read,
+                MyResearch.Modifications_ParticipatingOrganisations_Search
             }
         },
         {
@@ -64,6 +65,7 @@ public static class RolePermissions
                 MyResearch.Modifications_Review,
                 MyResearch.ModificationsHistory_Read,
                 MyResearch.Modifications_Download,
+                MyResearch.Modifications_ParticipatingOrganisations_Search,
 
                 // Sponsor Workspace
                 Sponsor.Modifications_Review,
@@ -172,6 +174,7 @@ public static class RolePermissions
                 MyResearch.Modifications_List,
                 MyResearch.Modifications_Review,
                 MyResearch.ModificationsHistory_Read,
+                MyResearch.Modifications_ParticipatingOrganisations_Search,
 
                 // Sponsor Workspace
                 Sponsor.Modifications_Review,

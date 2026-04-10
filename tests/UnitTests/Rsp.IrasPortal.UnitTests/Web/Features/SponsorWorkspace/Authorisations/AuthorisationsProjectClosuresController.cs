@@ -138,7 +138,6 @@ public class AuthorisationsProjectClosuresControllerTests
                 }
             });
 
-
         var authResult = SponsorUserAuthorisationResult
             .Ok(_sponsorOrganisationUserId)
             .WithSponsorOrganisations(new[]
@@ -241,7 +240,8 @@ public class AuthorisationsProjectClosuresControllerTests
             DateTime closureDate,
             string plannedEndDateAnswer,
             string shortTitleAnswer,
-            object? questionSetContent = null
+            object? questionSetContent = null,
+            bool closureAlreadyActioned = false
     )
     {
         // 1) ProjectRecord
@@ -292,16 +292,23 @@ public class AuthorisationsProjectClosuresControllerTests
             .Setup(c => c.GetQuestionSet(null, null))
             .ReturnsAsync(qsResponse);
 
+        var projectClosures = new List<ProjectClosuresResponse>();
+
+        if (!closureAlreadyActioned)
+        {
+            projectClosures = new List<ProjectClosuresResponse>
+                {
+                    new ProjectClosuresResponse {ProjectRecordId = projectRecordId, ClosureDate = closureDate, Status = "With sponsor" }
+                };
+        }
+
         // 4) ProjectClosure (ActualEndDate)
         var pcResponse = new ServiceResponse<ProjectClosuresSearchResponse>
         {
             StatusCode = HttpStatusCode.OK,
             Content = new ProjectClosuresSearchResponse
             {
-                ProjectClosures = new List<ProjectClosuresResponse>
-                {
-                    new ProjectClosuresResponse {ProjectRecordId = projectRecordId, ClosureDate = closureDate, Status = "With sponsor" }
-                }
+                ProjectClosures = projectClosures
             }
         };
         Mocker.GetMock<IProjectClosuresService>()
@@ -471,7 +478,7 @@ public class AuthorisationsProjectClosuresControllerTests
         hydrated.ShortProjectTitle.ShouldBe(shortTitleAnswer);
 
         sponsorOrganisationService.Verify(
-                s => s.GetSponsorOrganisationUser(posted.SponsorOrganisationUserId,posted.RtsId),
+                s => s.GetSponsorOrganisationUser(posted.SponsorOrganisationUserId, posted.RtsId),
                 Times.Once
             );
 
@@ -524,7 +531,7 @@ public class AuthorisationsProjectClosuresControllerTests
         serviceError.StatusCode.ShouldBe((int)HttpStatusCode.InternalServerError);
 
         sponsorOrganisationService.Verify(
-            s => s.GetSponsorOrganisationUser(posted.SponsorOrganisationUserId,posted.RtsId),
+            s => s.GetSponsorOrganisationUser(posted.SponsorOrganisationUserId, posted.RtsId),
             Times.Once
         );
     }
@@ -957,7 +964,6 @@ public class AuthorisationsProjectClosuresControllerTests
                 "123"))
             .ReturnsAsync(authResult);
 
-
         // Act: pageNumber=0, sortField=UserEmail
         var result = await Sut.ProjectClosures(
             sponsorOrganisationUserId: _sponsorOrganisationUserId,
@@ -970,6 +976,43 @@ public class AuthorisationsProjectClosuresControllerTests
         // Assert
         var status = result.ShouldBeOfType<StatusCodeResult>();
         status.StatusCode.ShouldBe((int)HttpStatusCode.BadRequest);
+    }
+
+    [Theory]
+    [AutoData]
+    public async Task CheckAndAuthoriseProjectClosure_Redirects_When_Already_Actioned(string projectRecordId, string rtsId)
+    {
+        // Arrange
+        var irasId = 123456;
+        var closureDate = new DateTime(2025, 01, 10);
+        var plannedEndDateAnswer = "2025-02-20";
+        var shortTitleAnswer = "abc";
+
+        ArrangeBuilderSuccess(
+            projectRecordId,
+            irasId,
+            closureDate,
+            plannedEndDateAnswer,
+            shortTitleAnswer,
+            closureAlreadyActioned: true
+        );
+
+        var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
+        sponsorOrganisationService
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new SponsorOrganisationUserDto { Id = Guid.NewGuid() }
+            });
+
+        // Act
+        var result = await Sut.CheckAndAuthoriseProjectClosure(projectRecordId, _sponsorOrganisationUserId, rtsId);
+
+        // Assert
+        var resultAction = result.ShouldBeOfType<RedirectToActionResult>();
+        resultAction.ActionName.ShouldBe("ProjectDetails");
+        resultAction.ControllerName.ShouldBe("ProjectOverview");
     }
 
     public SponsorUserAuthorisationResult Authorised(Guid gid)

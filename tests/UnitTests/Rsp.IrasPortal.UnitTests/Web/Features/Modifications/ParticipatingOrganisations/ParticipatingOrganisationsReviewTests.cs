@@ -133,6 +133,129 @@ public class ParticipatingOrganisationsReviewTests : TestServiceBase<Participati
         model[0].Questions.ShouldBeEmpty();
     }
 
+    [Fact]
+    public async Task InvokeAsync_WithOrganisationId_ForAddNewSites_ReturnsOnlyFilteredOrganisation()
+    {
+        // Arrange
+        var projectRecordId = "PR-3";
+        var modificationChangeId = Guid.NewGuid();
+        var includedOrgId = Guid.NewGuid();
+        var excludedOrgId = Guid.NewGuid();
+
+        var http = new DefaultHttpContext();
+        Sut.ViewComponentContext = new ViewComponentContext
+        {
+            ViewContext = new()
+            {
+                HttpContext = http,
+                TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
+            }
+        };
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationParticipatingOrganisations(modificationChangeId, projectRecordId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content =
+                [
+                    new ParticipatingOrganisationDto { Id = includedOrgId, OrganisationId = "ORG-1" },
+                    new ParticipatingOrganisationDto { Id = excludedOrgId, OrganisationId = "ORG-2" }
+                ]
+            });
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet("pom-participating-organisation-details", null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = BuildQuestionSet()
+            });
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationParticipatingOrganisationAnswers(includedOrgId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ParticipatingOrganisationAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = [new ParticipatingOrganisationAnswerDto { QuestionId = "Q1", AnswerText = "included" }]
+            });
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation("ORG-1"))
+            .ReturnsAsync(new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new OrganisationDto { Id = "ORG-1", Name = "Included" }
+            });
+
+        // Act
+        var result = await Sut.InvokeAsync(projectRecordId, modificationChangeId.ToString(), SpecificAreasOfChange.AddNewSites, organisationId: includedOrgId);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewViewComponentResult>();
+        var model = view.ViewData.Model.ShouldBeOfType<List<OrganisationDetailsViewModel>>();
+        model.Count.ShouldBe(1);
+        model.Single().Id.ShouldBe(includedOrgId);
+        model.Single().Questions.Single().AnswerText.ShouldBe("included");
+
+        Mocker.GetMock<IRtsService>().Verify(s => s.GetOrganisation("ORG-1"), Times.Once);
+        Mocker.GetMock<IRtsService>().Verify(s => s.GetOrganisation("ORG-2"), Times.Never);
+        Mocker.GetMock<IRespondentService>().Verify(s => s.GetModificationParticipatingOrganisationAnswers(includedOrgId), Times.Once);
+        Mocker.GetMock<IRespondentService>().Verify(s => s.GetModificationParticipatingOrganisationAnswers(excludedOrgId), Times.Never);
+    }
+
+    [Fact]
+    public async Task InvokeAsync_WithOrganisationId_ForNonSiteArea_ReturnsOnlyFilteredOrganisation()
+    {
+        // Arrange
+        var projectRecordId = "PR-4";
+        var modificationChangeId = Guid.NewGuid();
+        var includedOrgId = Guid.NewGuid();
+        var excludedOrgId = Guid.NewGuid();
+
+        var http = new DefaultHttpContext();
+        Sut.ViewComponentContext = new ViewComponentContext
+        {
+            ViewContext = new()
+            {
+                HttpContext = http,
+                TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
+            }
+        };
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.GetModificationParticipatingOrganisations(modificationChangeId, projectRecordId))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content =
+                [
+                    new ParticipatingOrganisationDto { Id = includedOrgId, OrganisationId = "ORG-1" },
+                    new ParticipatingOrganisationDto { Id = excludedOrgId, OrganisationId = "ORG-2" }
+                ]
+            });
+
+        Mocker.GetMock<IRtsService>()
+            .Setup(s => s.GetOrganisation("ORG-1"))
+            .ReturnsAsync(new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new OrganisationDto { Id = "ORG-1", Name = "Included" }
+            });
+
+        // Act
+        var result = await Sut.InvokeAsync(projectRecordId, modificationChangeId.ToString(), specificAreaOfChangeId: "other-area", organisationId: includedOrgId);
+
+        // Assert
+        var view = result.ShouldBeOfType<ViewViewComponentResult>();
+        var model = view.ViewData.Model.ShouldBeOfType<List<OrganisationDetailsViewModel>>();
+        model.Count.ShouldBe(1);
+        model.Single().Id.ShouldBe(includedOrgId);
+
+        Mocker.GetMock<IRtsService>().Verify(s => s.GetOrganisation("ORG-1"), Times.Once);
+        Mocker.GetMock<IRtsService>().Verify(s => s.GetOrganisation("ORG-2"), Times.Never);
+    }
+
     private static CmsQuestionSetResponse BuildQuestionSet()
     {
         return new CmsQuestionSetResponse

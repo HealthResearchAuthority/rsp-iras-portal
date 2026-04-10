@@ -39,15 +39,24 @@
                     {
                         <li class="govuk-task-list__item">
 
-                            <a asp-route="pod:participatingorganisationdetails" asp-route-organisationId="@org.OrganisationId"
-                               class="govuk-link govuk-task-list__link">
+                            <a asp-route="pod:participatingorganisationdetails"
+                                   asp-route-organisationId="@org.OrganisationId"
+                                   asp-route-organisationName="@org.Name"
+                                   class="govuk-link govuk-task-list__link">
                                 Add details for @org.Name
                             </a>
 
                             <div class="govuk-task-list__status">
-                                <strong class="govuk-tag">
+                                @if (org.DetailsStatus == nameof(OrganisationDetailsStatus.Complete))
+                                {
                                     @org.DetailsStatus
-                                </strong>
+                                }
+                                else
+                                {
+                                    <strong class="govuk-tag">
+                                        @org.DetailsStatus
+                                    </strong>
+                                }
                             </div>
                         </li>
                     }
@@ -78,29 +87,30 @@
                     <input type="hidden" name="rtsId" value="@Model.RtsId" />
 
                     <a asp-route="pmc:saveforlater"
-                       status-for="@Model.Status"
-                       status-is="@ModificationStatus.ReviseAndAuthorise"
-                       asp-route-projectRecordId="@Model.ProjectRecordId"
-                       asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
-                       asp-route-rtsId="@Model.RtsId"
-                       asp-route-routeName="sws:modifications"
-                       class="govuk-button govuk-button--secondary">
+                           status-for="@Model.Status"
+                           status-is="@ModificationStatus.ReviseAndAuthorise"
+                           asp-route-projectRecordId="@Model.ProjectRecordId"
+                           asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
+                           asp-route-rtsId="@Model.RtsId"
+                           asp-route-routeName="sws:modifications"
+                           class="govuk-button govuk-button--secondary">
                         Save for later
                     </a>
 
                     <a asp-route="pov:postapproval"
-                       status-for="@Model.Status"
-                       status-is="@ModificationStatus.RequestRevisions"
-                       asp-route-projectRecordId="@Model.ProjectRecordId"
-                       class="govuk-button govuk-button--secondary">
+                           status-for="@Model.Status"
+                           status-is="@ModificationStatus.RequestRevisions"
+                           asp-route-projectRecordId="@Model.ProjectRecordId"
+                           asp-route-showBanner="true"
+                           class="govuk-button govuk-button--secondary">
                         Save for later
                     </a>
 
                     <a asp-route="pmc:saveforlater" status-for="@Model.Status" status-mode="Hide"
-                       status-in="@([ModificationStatus.ReviseAndAuthorise, ModificationStatus.RequestRevisions])"
-                       asp-route-projectRecordId="@Model.ProjectRecordId"
-                       asp-route-routeName="pov:postapproval"
-                       class="govuk-button govuk-button--secondary">
+                           status-in="@([ModificationStatus.ReviseAndAuthorise, ModificationStatus.RequestRevisions])"
+                           asp-route-projectRecordId="@Model.ProjectRecordId"
+                           asp-route-routeName="pov:postapproval"
+                           class="govuk-button govuk-button--secondary">
                         Save for later
                     </a>
                 </form>
