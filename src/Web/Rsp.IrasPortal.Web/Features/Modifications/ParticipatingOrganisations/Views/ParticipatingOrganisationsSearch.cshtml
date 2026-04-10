@@ -21,8 +21,13 @@
 
                 @Html.ValidationMessageFor(m => m.Search.SearchNameTerm, "", new { @class = "govuk-error-message" })
 
+                <h2 class="govuk-heading-m">Search organisations</h2>
+
+                <p class="govuk-body">
+                    Search by name and use the advanced filter to narrow it down.
+                </p>
+
                 <div class="govuk-input__wrapper">
-                    <span id="find-organisation-label" class="govuk-visually-hidden">Search by name and address and use the advanced filter to narrow it down.</span>
                     <input asp-for="Search.SearchNameTerm" class="govuk-input" type="text" id="Search.SearchNameTerm" aria-labelledby="find-organisation-label" value="@(Model.Search?.SearchNameTerm ?? string.Empty)" />
                     <button class="govuk-button mb-0 govuk-button--secondary" style="margin-left:10px" type="submit" name="action" value="search">
                         Search
@@ -103,6 +108,7 @@
                                     <fieldset class="govuk-fieldset">
                                         <rsp-gds-checkbox-group asp-for="Search.OrganisationStatuses"
                                                                 label-text="Select all that apply"
+                                                                readonly-items=""
                                                                 options="OrganisationStatuses.Statuses"
                                                                 conditional-field="false"
                                                                 legend-class="govuk-label govuk-label--s font-weight-none"
@@ -136,9 +142,9 @@
                         {
                             <li>
                                 <a asp-route="porgs:removefilter"
-                                   asp-route-key="@filterKey"
-                                   asp-route-value="@val.Trim()"
-                                   class="search-filter-summary__remove-filter">
+                                       asp-route-key="@filterKey"
+                                       asp-route-value="@val.Trim()"
+                                       class="search-filter-summary__remove-filter">
                                     <span class="search-filter-summary__remove-filter-text">
                                         <span class="govuk-visually-hidden">Remove filter</span>
                                         @($"{filterKey} - {val}")

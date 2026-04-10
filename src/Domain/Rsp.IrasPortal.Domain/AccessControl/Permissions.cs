@@ -157,6 +157,11 @@ public static class Permissions
         /// allows duplicating modifications
         /// </summary>
         public const string Modifications_Resubmission = "myresearch.modifications.resubmission";
+
+        /// <summary>
+        /// allows searching participating organisations in modifications
+        /// </summary>
+        public const string Modifications_ParticipatingOrganisations_Search = "myresearch.modifications.participating_orgs_search";
     }
 
     // Sponsor Workspace Permissions

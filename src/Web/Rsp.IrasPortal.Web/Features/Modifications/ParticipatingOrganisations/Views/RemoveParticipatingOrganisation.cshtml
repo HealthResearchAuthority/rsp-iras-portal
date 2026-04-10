@@ -31,6 +31,16 @@
 
 <h1 class="govuk-heading-l">@title</h1>
 
+<vc:participating-organisations-review project-record-id="@baseModel.ProjectRecordId"
+                                       modification-change-id="@baseModel.ModificationChangeId"
+                                       specific-area-of-change-id="@baseModel.SpecificAreaOfChangeId"
+                                       organisation-id="@Model.Id"
+                                       show-links="false" />
+
+<p class="govuk-body">
+    If you remove this organisation you will need to add it again if it is still required.
+</p>
+
 <div class="save-buttons">
     <a asp-route="porgs:deselectorganisation"
        asp-route-organisationId="@Model.Id"

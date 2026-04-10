@@ -116,7 +116,7 @@
                     {
                         if (!reviewAllChanges && showLinks)
                         {
-                            <a class="govuk-link" href="@Url.RouteUrl("pod:participatingorganisationdetails", new { organisationId = model.Id, reviewAnswers = true })">
+                            <a class="govuk-link" href="@Url.RouteUrl("pod:participatingorganisationdetails", new { organisationId = model.Id, organisationName = model.OrganisationName, reviewAnswers = true })">
                                 @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
                             </a>
                         }
@@ -130,7 +130,7 @@
                 <dd class="govuk-summary-list__actions">
                     @if (!question.IsMissingAnswer() && (!reviewAllChanges && showLinks))
                     {
-                        <a class="govuk-link" href="@Url.RouteUrl("pod:participatingorganisationdetails", new { organisationId = model.Id, reviewAnswers = true })">
+                        <a class="govuk-link" href="@Url.RouteUrl("pod:participatingorganisationdetails", new { organisationId = model.Id, organisationName = model.OrganisationName, reviewAnswers = true })">
                             @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
                         </a>
                     }

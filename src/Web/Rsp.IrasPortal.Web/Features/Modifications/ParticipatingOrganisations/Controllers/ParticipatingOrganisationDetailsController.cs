@@ -36,13 +36,14 @@ public class ParticipatingOrganisationDetailsController
     /// Populates metadata from TempData.
     /// </summary>
     [ModificationAuthorise(Permissions.MyResearch.Modifications_Update)]
-    public async Task<IActionResult> ParticipatingOrganisationDetails(Guid organisationId, bool reviewAnswers = false, bool reviewAllChanges = false)
+    public async Task<IActionResult> ParticipatingOrganisationDetails(Guid organisationId, string organisationName, bool reviewAnswers = false, bool reviewAllChanges = false)
     {
         var baseModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
 
         // Populate the view model with base project and document metadata.
         var viewModel = new OrganisationDetailsViewModel
         {
+            OrganisationName = organisationName,
             ProjectRecordId = baseModel.ProjectRecordId,
             ShortTitle = baseModel.ShortTitle,
             IrasId = baseModel.IrasId,
