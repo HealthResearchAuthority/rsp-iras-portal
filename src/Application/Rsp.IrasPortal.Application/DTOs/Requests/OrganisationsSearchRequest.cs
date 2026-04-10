@@ -8,5 +8,5 @@ public class OrganisationsSearchRequest
     public List<string> ExcludingRoles { get; set; } = [OrganisationRoles.Sponsor];
     public List<string> Countries { get; set; } = [];
     public List<string> OrganisationTypes { get; set; } = [];
-    public List<string> OrganisationStatuses { get; set; } = [];
+    public List<bool> OrganisationStatuses { get; set; } = [];
 }

@@ -20,7 +20,7 @@ public class ParticipatingOrganisationsReview
     private const string OrganisationDetailsSection = "pom-participating-organisation-details";
 
     private Guid _modificationChangeId;
-
+    private Guid? _organisationId;
     private string _projectRecordId = null!;
 
     public async Task<IViewComponentResult> InvokeAsync
@@ -28,11 +28,13 @@ public class ParticipatingOrganisationsReview
         string projectRecordId,
         string modificationChangeId,
         string specificAreaOfChangeId,
+        Guid? organisationId = null,
         bool showLinks = true
     )
     {
         _projectRecordId = projectRecordId;
         _modificationChangeId = Guid.Parse(modificationChangeId);
+        _organisationId = organisationId;
 
         var organisationsWithDetails = specificAreaOfChangeId == SpecificAreasOfChange.AddNewSites ?
             await GetOrganisationsWithDetails() :
@@ -41,10 +43,6 @@ public class ParticipatingOrganisationsReview
         ViewData[ViewDataKeys.ShowParticipatingOrgsLinks] = showLinks;
 
         return View("/Features/Modifications/ParticipatingOrganisations/Components/ParticipatingOrganisationsReview.cshtml", organisationsWithDetails);
-
-        // Validate the questionnaire; details are incomplete if there are no answers or validation fails
-        // var isValid = await this.ValidateQuestionnaire(validator, questionnaire, true, false);
-        //return View();
     }
 
     private async Task<IList<OrganisationDetailsViewModel>> GetOrganisations()
@@ -60,7 +58,7 @@ public class ParticipatingOrganisationsReview
 
         var viewModels = new List<OrganisationDetailsViewModel>();
 
-        foreach (var org in response!.Content!)
+        foreach (var org in response!.Content!.Where(o => _organisationId is null || o.Id == _organisationId))
         {
             var organisationResponse = await rtsService.GetOrganisation(org.OrganisationId);
 
@@ -115,7 +113,7 @@ public class ParticipatingOrganisationsReview
 
         var questionIndex = 0;
 
-        foreach (var org in response!.Content!)
+        foreach (var org in response!.Content!.Where(o => _organisationId is null || o.Id == _organisationId))
         {
             var organisationResponse = await rtsService.GetOrganisation(org.OrganisationId);
 

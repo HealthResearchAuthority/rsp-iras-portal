@@ -19,6 +19,7 @@ public static class OrganisationTypes
         "Scottish Special Health Board",
         "Special Health Authority Site",
         "Welsh Local Health Board",
-        "Welsh Local Health Board Site"
+        "Welsh Local Health Board Site",
+        "NICRNPC"
     ];
 }

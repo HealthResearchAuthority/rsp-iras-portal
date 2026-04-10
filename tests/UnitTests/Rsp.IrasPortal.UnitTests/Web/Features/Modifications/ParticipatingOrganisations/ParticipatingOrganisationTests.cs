@@ -30,7 +30,7 @@ public class ParticipatingOrganisationTests : TestServiceBase<ParticipatingOrgan
         };
 
         // Act
-        var result = await Sut.ParticipatingOrganisation();
+        var result = await Sut.ParticipatingOrganisations();
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -50,7 +50,7 @@ public class ParticipatingOrganisationTests : TestServiceBase<ParticipatingOrgan
         Sut.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
         // Act
-        var result = await Sut.ParticipatingOrganisation();
+        var result = await Sut.ParticipatingOrganisations();
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -83,7 +83,7 @@ public class ParticipatingOrganisationTests : TestServiceBase<ParticipatingOrgan
         };
 
         // Act
-        var result = await Sut.ParticipatingOrganisation();
+        var result = await Sut.ParticipatingOrganisations();
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();

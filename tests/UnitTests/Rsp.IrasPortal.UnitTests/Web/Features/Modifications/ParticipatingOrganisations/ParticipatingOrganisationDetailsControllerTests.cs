@@ -21,6 +21,7 @@ public class ParticipatingOrganisationDetailsControllerTests : TestServiceBase<P
     {
         // Arrange
         var organisationId = Guid.NewGuid();
+        var organisationName = "Organisation 1";
         var http = new DefaultHttpContext();
         Sut.ControllerContext = new ControllerContext { HttpContext = http };
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
@@ -58,13 +59,14 @@ public class ParticipatingOrganisationDetailsControllerTests : TestServiceBase<P
             });
 
         // Act
-        var result = await Sut.ParticipatingOrganisationDetails(organisationId, reviewAnswers: true, reviewAllChanges: true);
+        var result = await Sut.ParticipatingOrganisationDetails(organisationId, organisationName, reviewAnswers: true, reviewAllChanges: true);
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
         var model = view.Model.ShouldBeOfType<OrganisationDetailsViewModel>();
         model.ReviewAnswers.ShouldBeTrue();
         model.ReviewAllChanges.ShouldBeTrue();
+        model.OrganisationName.ShouldBe(organisationName);
         model.Questions.Count.ShouldBe(1);
         model.Questions[0].AnswerText.ShouldBe("answer");
         model.Questions[0].Answers.Single().IsSelected.ShouldBeTrue();
