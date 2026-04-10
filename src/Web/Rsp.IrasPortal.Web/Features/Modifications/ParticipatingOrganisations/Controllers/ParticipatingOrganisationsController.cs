@@ -164,7 +164,9 @@ public class ParticipatingOrganisationsController
         }).ToList() ?? [];
 
         // Adjust total count for pagination to reflect the filtered results.
-        var totalCount = response.Content?.TotalCount - selectedOrganisationsIds.Count ?? 0;
+        var totalCount = response.Content?.TotalCount ?? 0;
+
+        totalCount = Math.Max(0, totalCount - selectedOrganisationsIds.Count);
 
         viewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, totalCount)
         {
