@@ -110,9 +110,14 @@ public class ProjectOverviewController
         int pageNumber = 1,
         int pageSize = 20,
         string sortField = nameof(ModificationsModel.CreatedAt),
-        string sortDirection = SortDirections.Descending
+        string sortDirection = SortDirections.Descending,
+        bool showBanner = false
     )
     {
+        if (showBanner)
+        {
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
+        }
         UpdateModificationRelatedTempData();
 
         var result = await GetProjectOverviewResult(projectRecordId!, backRoute);

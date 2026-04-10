@@ -47,6 +47,10 @@ public class AddUpdateReviewBodyModelValidator : AbstractValidator<AddUpdateRevi
                     context.AddFailure("_DescriptionExcessWordCount", $"You have {excessWords} word{(excessWords == 1 ? "" : "s")} too many");
                 }
             });
+
+        RuleFor(x => x.ReviewBodyType)
+            .NotEmpty()
+            .WithMessage("Select a review body type");
     }
 
     private static int GetWordCount(string? text)

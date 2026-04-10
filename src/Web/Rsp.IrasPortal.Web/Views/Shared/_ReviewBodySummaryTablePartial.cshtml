@@ -49,6 +49,20 @@
 			</td>
 		</tr>
 
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Review body type</b>
+            </td>
+            <td class="govuk-table__cell line-break-anywhere">
+                @Model.ReviewBodyModel.ReviewBodyType
+                <input type="hidden" asp-for="ReviewBodyModel.ReviewBodyType" name="ReviewBodyType" value="@Model.ReviewBodyModel.ReviewBodyType" />
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">
+                @{
+                    await RenderEditLink("review body type");
+                }
+            </td>
+        </tr>
 
 		<tr class="govuk-table__row">
 			<td class="govuk-table__cell">

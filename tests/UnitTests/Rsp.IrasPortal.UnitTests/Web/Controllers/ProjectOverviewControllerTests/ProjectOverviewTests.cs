@@ -1863,4 +1863,48 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
             "Something unexpected"
         });
     }
+
+    [Fact]
+    public async Task PostApproval_When_ShowBanner_Set_True()
+    {
+        // Arrange
+        var projectRecordId = "789";
+        var httpContext = CreateHttpContextWithSession();
+        var pageNumber = 1;
+        var pageSize = 20;
+        var sortField = nameof(ModificationsModel.CreatedAt);
+        var sortDirection = SortDirections.Descending;
+        var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ShowNotificationBanner] = true
+        };
+        var answers = new List<RespondentAnswerDto>
+        {
+            new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Project Z" }
+        };
+
+        SetupProjectRecord(projectRecordId);
+        SetupRespondentAnswers(projectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+        SetupCMSService();
+
+        var serviceResponse = new ServiceResponse<GetModificationsResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = null
+        };
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsForProject(projectRecordId, It.IsAny<ModificationSearchRequest>(), 1, 20, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.PostApproval(projectRecordId, "", pageNumber, pageSize, sortField, sortDirection, true);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeOfType<PostApprovalViewModel>();
+        model.Modifications.ShouldBeEmpty();
+        model.Pagination.TotalCount.ShouldBe(0);
+    }
 }
