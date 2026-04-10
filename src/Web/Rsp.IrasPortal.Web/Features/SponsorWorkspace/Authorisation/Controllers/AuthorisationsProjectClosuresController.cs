@@ -14,7 +14,6 @@ using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models;
-using Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Services;
 using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
 
@@ -61,7 +60,7 @@ public class AuthorisationsProjectClosuresController
             SponsorOrganisationUserId = sponsorOrganisationUserId,
             RtsId = rtsId
         };
-        
+
         // getting search query
         var json = HttpContext.Session.GetString(SessionKeys.SponsorAuthorisationsProjectClosuresSearch);
         if (!string.IsNullOrEmpty(json))
@@ -278,7 +277,8 @@ public class AuthorisationsProjectClosuresController
             PlannedEndDate = DateHelper.ConvertDateToString(endDateAnswer),
             IrasId = projectRecord.IrasId,
             ShortProjectTitle = titleAnswer,
-            RtsId = rtsId
+            RtsId = rtsId,
+            HasBeenActioned = closure == null // closure has already been actioned by sponsor if there is no record with status "WithSponsor"
         };
 
         return Ok(model);
@@ -295,6 +295,23 @@ public class AuthorisationsProjectClosuresController
         if (result is not OkObjectResult outcome)
         {
             return result;
+        }
+
+        var model = outcome.Value as AuthoriseProjectClosuresOutcomeViewModel;
+
+        if (model != null && model.HasBeenActioned)
+        {
+            // If the project closure has already been actioned,
+            // redirect to the project overview page instead of showing the authorisation form
+
+            return RedirectToAction(
+                "ProjectDetails",
+                "ProjectOverview",
+                new
+                {
+                    projectRecordId = model.ProjectRecordId
+                }
+            );
         }
 
         var sponsorOrganisationUser =
