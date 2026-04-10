@@ -16,4 +16,5 @@ public class AuthoriseProjectClosuresOutcomeViewModel
     public int? IrasId { get; set; }
     public string? ShortProjectTitle { get; set; }
     public string RtsId { get; set; }
+    public bool HasBeenActioned { get; set; }
 }
