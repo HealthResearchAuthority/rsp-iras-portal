@@ -1267,3 +1267,15 @@ button.govuk-pagination__item--current {
     word-break: break-word;
     overflow-wrap: anywhere;
 }
+
+.adjust-govuk-link-color a {
+    color: #1D70B8;
+}
+
+.adjust-govuk-link-color a:hover {
+    color: #003078;
+}
+
+.adjust-govuk-link-color a:visited {
+    color: #4C2C92;
+}

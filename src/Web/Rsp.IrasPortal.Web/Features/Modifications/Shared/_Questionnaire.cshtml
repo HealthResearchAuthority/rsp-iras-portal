@@ -114,7 +114,7 @@
                 var parents = conditional ? string.Join(',', question.Rules.Select(rule => rule.ParentQuestionId)) : "";
                 var questionId = conditional ? question.QuestionId : "";
 
-                <div class="govuk-form-group @(conditional ? "conditional" : "")" data-parents="@parents" data-questionid="@questionId">
+                <div class="govuk-form-group adjust-govuk-link-color @(conditional ? "conditional" : "")" data-parents="@parents" data-questionid="@questionId">
                     <partial name="Guidance" model="question.GuidanceComponents" />
                 </div>
             }
