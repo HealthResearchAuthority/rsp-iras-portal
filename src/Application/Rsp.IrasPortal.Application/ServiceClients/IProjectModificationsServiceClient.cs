@@ -386,4 +386,16 @@ public interface IProjectModificationsServiceClient
     /// <returns>An asynchronous operation that returns the newly created project modification.</returns>
     [Post("/projectmodifications/duplicatemodification")]
     public Task<ApiResponse<ProjectModificationResponse>> DuplicateModification(DuplicateModificationRequest duplicateModificationRequest);
+
+    /// <summary>
+    /// Deletes one or more modification documents associated with a project modification change.
+    /// </summary>
+    /// <param name="projectModificationChangeRequest">
+    /// A list of <see cref="ProjectModificationDocumentRequest"/> representing the documents to be created.
+    /// </param>
+    /// <returns>
+    /// A task representing the asynchronous operation. The task result contains the API response indicating success or failure.
+    /// </returns>
+    [Post("/projectmodifications/deletemodificationdocumentanswers")]
+    public Task<IApiResponse> DeleteDocumentAnswers(List<ProjectModificationDocumentAnswerDto> projectModificationChangeRequest);
 }

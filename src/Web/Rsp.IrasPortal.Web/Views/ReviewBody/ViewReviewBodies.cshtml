@@ -30,6 +30,8 @@
     var addNewLink = pageContent.GetValueOrDefault("ReviewBody.View.AddNewLink", null);
     var searchTitle = pageContent.GetValueOrDefault("ReviewBody.View.SearchTitle", null);
     var searchHint = pageContent.GetValueOrDefault("ReviewBody.View.SearchHintText", null);
+
+   var showSuccessMessage = TempData[TempDataKeys.ShowNotificationBanner];
 }
 
 @section Breadcrumb {
@@ -65,6 +67,18 @@
 <div class="govuk-grid-row">
 
 	<div class="govuk-grid-column-two-thirds">
+
+    @if (showSuccessMessage is true)
+		{
+			<partial name="_NotificationBanner"
+					 model="@(new NotificationBannerModel
+                        {
+                            Title = "Success",
+                            Heading = "Review body has been added"
+                        })" />
+
+		}
+
 		<form method="post" class="govuk-form-group" asp-route="rbc:applyfilters" asp-route-fromPagination="false">
 			<label class="govuk-label" for="Search.SearchQuery">
 				<b>@Html.Raw(searchTitle?.Value)</b>

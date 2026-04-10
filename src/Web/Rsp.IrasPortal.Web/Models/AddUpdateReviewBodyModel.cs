@@ -6,6 +6,7 @@ public class AddUpdateReviewBodyModel
     public string? RegulatoryBodyName { get; set; }
     public string? EmailAddress { get; set; }
     public string? Description { get; set; }
+    public string? ReviewBodyType { get; set; }
     public List<string> Countries { get; set; } = new();
     public bool IsActive { get; set; } = true;
     public string? CreatedBy { get; set; }

@@ -380,4 +380,6 @@ public interface IProjectModificationsService : IInterceptable
     /// specified project modification.
     /// </returns>
     Task<ServiceResponse<IEnumerable<ProjectModificationChangeResponse>>> GetModificationsChangesForProject(string projectRecordId);
+
+    Task<ServiceResponse> DeleteDocumentAnswers(List<ProjectModificationDocumentAnswerDto> documentAnswersRequest);
 }
