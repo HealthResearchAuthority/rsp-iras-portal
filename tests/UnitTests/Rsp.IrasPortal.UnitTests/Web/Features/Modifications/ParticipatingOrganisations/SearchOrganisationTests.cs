@@ -301,6 +301,8 @@ public class SearchOrganisationTests : TestServiceBase<ParticipatingOrganisation
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<SearchOrganisationViewModel>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ValidationResult());
 
+        OrganisationsSearchRequest? capturedRequest = null;
+
         Mocker.GetMock<IRtsService>()
             .Setup(s => s.SearchOrganisations(
                 It.IsAny<OrganisationsSearchRequest>(),
@@ -308,6 +310,7 @@ public class SearchOrganisationTests : TestServiceBase<ParticipatingOrganisation
                 It.IsAny<int?>(),
                 It.IsAny<string>(),
                 It.IsAny<string>()))
+            .Callback<OrganisationsSearchRequest, int, int?, string, string>((request, _, _, _, _) => capturedRequest = request)
             .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -344,8 +347,11 @@ public class SearchOrganisationTests : TestServiceBase<ParticipatingOrganisation
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
         var model = view.Model.ShouldBeOfType<SearchOrganisationViewModel>();
-        model.Organisations.Count.ShouldBe(1);
-        model.Organisations.Single().Organisation.Id.ShouldBe("org-2");
+        model.Organisations.Count.ShouldBe(2);
+        model.Pagination.TotalCount.ShouldBe(2);
+
+        capturedRequest.ShouldNotBeNull();
+        capturedRequest!.ExcludedOrganisationIds.ShouldBe(["org-1"]);
 
         Mocker.GetMock<IRespondentService>()
             .Verify(s => s.GetModificationParticipatingOrganisationsBySpecificArea("PR-1", SpecificAreasOfChange.AddNewSites), Times.Once);
@@ -354,21 +360,19 @@ public class SearchOrganisationTests : TestServiceBase<ParticipatingOrganisation
     }
 
     [Fact]
-    public async Task SearchOrganisation_WhenExistingOrgLookupFails_ReturnsServiceError()
+    public async Task SearchOrganisation_WithNoSpecificArea_PassesEmptyExcludedOrganisationIds()
     {
         // Arrange
         var http = new DefaultHttpContext();
         http.Request.Method = HttpMethods.Post;
         Sut.ControllerContext = new ControllerContext { HttpContext = http };
-        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
-        {
-            [TempDataKeys.ProjectRecordId] = "PR-1",
-            [TempDataKeys.ProjectModification.SpecificAreaOfChangeId] = Guid.Parse(SpecificAreasOfChange.EarlyClosureSites)
-        };
+        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
 
         Mocker.GetMock<IValidator<SearchOrganisationViewModel>>()
             .Setup(v => v.ValidateAsync(It.IsAny<ValidationContext<SearchOrganisationViewModel>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ValidationResult());
+
+        OrganisationsSearchRequest? capturedRequest = null;
 
         Mocker.GetMock<IRtsService>()
             .Setup(s => s.SearchOrganisations(
@@ -377,33 +381,27 @@ public class SearchOrganisationTests : TestServiceBase<ParticipatingOrganisation
                 It.IsAny<int?>(),
                 It.IsAny<string>(),
                 It.IsAny<string>()))
+            .Callback<OrganisationsSearchRequest, int, int?, string, string>((request, _, _, _, _) => capturedRequest = request)
             .ReturnsAsync(new ServiceResponse<OrganisationSearchResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new OrganisationSearchResponse()
-            });
-
-        Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationParticipatingOrganisationsBySpecificArea("PR-1", SpecificAreasOfChange.EarlyClosureSites))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>
-            {
-                StatusCode = HttpStatusCode.BadRequest,
-                Error = "failure"
-            });
-
-        Mocker.GetMock<IRespondentService>()
-            .Setup(s => s.GetModificationParticipatingOrganisationsBySpecificArea("PR-1", SpecificAreasOfChange.EarlyClosuresPics))
-            .ReturnsAsync(new ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = []
+                Content = new OrganisationSearchResponse
+                {
+                    Organisations = [],
+                    TotalCount = 0
+                }
             });
 
         // Act
         var result = await Sut.SearchOrganisation();
 
         // Assert
-        result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
+        result.ShouldBeOfType<ViewResult>();
+        capturedRequest.ShouldNotBeNull();
+        capturedRequest!.ExcludedOrganisationIds.ShouldBeEmpty();
+
+        Mocker.GetMock<IRespondentService>()
+            .Verify(s => s.GetModificationParticipatingOrganisationsBySpecificArea(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
