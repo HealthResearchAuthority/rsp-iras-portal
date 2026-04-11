@@ -81,6 +81,7 @@ public class ParticipatingOrganisationsController
             }
         }
 
+        // Reapply project/modification IDs that are carried across requests via TempData.
         var viewModel = TempData.PopulateBaseProjectModificationProperties(model);
 
         var validationResult = await searchOrganisationValidator.ValidateAsync(new ValidationContext<SearchOrganisationViewModel>(viewModel));
@@ -121,6 +122,7 @@ public class ParticipatingOrganisationsController
             return this.ServiceError(existingSelectedOrgsResponse.First(r => !r.IsSuccessStatusCode));
         }
 
+        // Use IDs only because filtering is done against RTS search results, keyed by organisation ID.
         var selectedOrganisationsIds = existingSelectedOrgsResponse
                 .SelectMany(r => r.Content ?? [])
                 .Select(o => o.OrganisationId)
@@ -137,36 +139,34 @@ public class ParticipatingOrganisationsController
                 "Active organisations" => true,
                 "Terminated organisations" => false,
                 _ => false
-            })
+            }),
+            ExcludedOrganisationIds = selectedOrganisationsIds
         };
 
-        // Request extra rows to compensate for organisations that will be filtered out after retrieval.
-        var response = await rtsService.SearchOrganisations(organisationsSearchRequest, pageNumber, pageSize + selectedOrganisationsIds.Count, sortDirection!, sortField!);
+        // Call the search endpoint with the compiled criteria and selected org exclusions for de-duplication.
+        var response = await rtsService.SearchOrganisations(organisationsSearchRequest, pageNumber, pageSize, sortDirection!, sortField!);
 
         if (!response.IsSuccessStatusCode)
         {
             return this.ServiceError(response);
         }
 
-        // Remove organisations already selected in this modification context.
-        response.Content!.Organisations = [.. response.Content!.Organisations.ExceptBy(selectedOrganisationsIds, o => o.Id).Take(pageSize)];
-
-        viewModel.Organisations = response.Content?.Organisations?.Select(dto => new SelectableOrganisationViewModel
-        {
-            Organisation = new OrganisationModel
+        viewModel.Organisations = response.Content?.Organisations?.Select
+        (
+            dto => new SelectableOrganisationViewModel
             {
-                Id = dto.Id,
-                Name = dto.Name,
-                Address = dto.Address,
-                CountryName = dto.CountryName,
-                Type = dto.Type
+                Organisation = new OrganisationModel
+                {
+                    Id = dto.Id,
+                    Name = dto.Name,
+                    Address = dto.Address,
+                    CountryName = dto.CountryName,
+                    Type = dto.Type
+                }
             }
-        }).ToList() ?? [];
+        ).ToList() ?? [];
 
-        // Adjust total count for pagination to reflect the filtered results.
         var totalCount = response.Content?.TotalCount ?? 0;
-
-        totalCount = Math.Max(0, totalCount - selectedOrganisationsIds.Count);
 
         viewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, totalCount)
         {
@@ -210,6 +210,7 @@ public class ParticipatingOrganisationsController
                 return View(nameof(SearchOrganisation), searchOrganisationViewModel);
             }
 
+            // Fallback when no persisted results are available (for example, expired TempData/session).
             searchOrganisationViewModel.Pagination = new PaginationViewModel(1, 10, searchOrganisationViewModel.Organisations?.Count ?? 0)
             {
                 SortField = sortField,
@@ -253,6 +254,7 @@ public class ParticipatingOrganisationsController
             TempData[TempDataKeys.ShowNotificationBanner] = true;
             TempData[TempDataKeys.ProjectModification.ProjectModificationChangeMarker] = Guid.NewGuid();
 
+            // Route depends on whether the modification is in sponsor revision flow or post-approval flow.
             if (status is ModificationStatus.ReviseAndAuthorise)
             {
                 return RedirectToRoute("sws:modifications", new { sponsorOrganisationUserId, rtsId });
@@ -331,6 +333,7 @@ public class ParticipatingOrganisationsController
 
         if (redirectToReview)
         {
+            // Preserve required route values so the review screen can reopen in revise mode.
             var reviewChangesParams = new Dictionary<string, string> {
                                 { "projectRecordId", baseModel.ProjectRecordId },
                                 { "specificAreaOfChangeId", baseModel.SpecificAreaOfChangeId! },
@@ -366,6 +369,7 @@ public class ParticipatingOrganisationsController
 
             if (orgSearchModel != null)
             {
+                // Keep name search term, but clear chip-based filters so user can quickly restart filtering.
                 orgSearchModel.Countries.Clear();
                 orgSearchModel.OrganisationStatuses.Clear();
                 orgSearchModel.OrganisationTypes.Clear();
@@ -393,6 +397,7 @@ public class ParticipatingOrganisationsController
             return RedirectToAction(nameof(ParticipatingOrganisations));
         }
 
+        // Remove a single value from the persisted filter list represented by the selected chip.
         switch (key)
         {
             case OrganisationSearch.CountryKey:
