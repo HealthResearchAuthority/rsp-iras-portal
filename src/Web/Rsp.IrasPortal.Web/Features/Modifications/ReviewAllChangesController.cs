@@ -72,8 +72,6 @@ public class ReviewAllChangesController
         string? backRoute = null
     )
     {
-        const string OrganisationDetailsSection = "pom-participating-organisation-details";
-
         // Populate TempData with project details for actual modification journey
         TempData[TempDataKeys.IrasId] = irasId;
         TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
@@ -89,17 +87,6 @@ public class ReviewAllChangesController
 
         // validate and update the status and answers for the change
         modification.ModificationChanges = await UpdateModificationChanges(projectRecordId, modification.ModificationChanges);
-
-        //modification.ModificationChanges.RemoveAll
-        //(
-        //    c =>
-        //        c.SpecificAreaOfChangeId is
-        //            SpecificAreasOfChange.AddNewPics or
-        //            SpecificAreasOfChange.AddNewSites or
-        //            SpecificAreasOfChange.EarlyClosureSites or
-        //            SpecificAreasOfChange.EarlyClosuresPics &&
-        //        c.Questions.Any(q => q.SectionId == OrganisationDetailsSection)
-        //);
 
         if (modification.ModificationChanges.Count == 0)
         {

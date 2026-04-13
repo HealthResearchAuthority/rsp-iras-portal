@@ -36,7 +36,6 @@
             <div class="govuk-grid-column-full">
                 <div class="govuk-table-wrapper">
                     <form method="get" id="projectdocuments-selection">
-                        @Html.AntiForgeryToken()
                         <div id="supporting-documents-description-label">
                             @Html.Raw(description?.Value)
                         </div>
@@ -262,7 +261,7 @@
     </div>
 </div>
 
-<div status-for="Status" status-in="@([ModificationStatus.InDraft,ModificationStatus.RequestRevisions] )" class="govuk-button-group">
+<div status-for="Status" status-in="@([ModificationStatus.InDraft,ModificationStatus.RequestRevisions,ModificationStatus.RequestForInformation] )" class="govuk-button-group">
     <form method="get">
         @{
             ViewBag.Style = "govuk-button govuk-button--secondary";
