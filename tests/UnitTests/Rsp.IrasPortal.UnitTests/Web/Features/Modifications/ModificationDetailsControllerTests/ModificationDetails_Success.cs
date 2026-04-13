@@ -891,6 +891,9 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
         Sut.TempData.Add(TempDataKeys.SpecificAreaOfChangeOptionNameKey, "test");
 
+        var expectedStatus = ModificationStatus.InDraft;
+        Sut.TempData.Add(TempDataKeys.ProjectModification.ProjectModificationStatus, expectedStatus);
+
         var result = Sut.ConfirmRemoveChange(modificationChangeId.ToString(), modificationChangeName);
 
         var resultView = result.ShouldBeOfType<ViewResult>();
@@ -898,6 +901,7 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
         model.ModificationChangeId.ShouldBe(modificationChangeId.ToString());
         model.SpecificAreaOfChange.ShouldBe(modificationChangeName);
         Sut.TempData.ShouldNotContainKey(TempDataKeys.SpecificAreaOfChangeOptionNameKey);
+        model.Status.ShouldBe(expectedStatus);
     }
 
     [Fact]

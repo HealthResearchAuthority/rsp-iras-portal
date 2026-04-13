@@ -9,8 +9,7 @@
 @inject IFeatureManager featureManager
 
 @{
-    (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
-    ViewBag.Title = $"Select document to replace";
+    (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;    
     var errorSummaryTitle = "There is a problem";
 
     var modificationParams = new Dictionary<string, string>
@@ -58,6 +57,7 @@ else
         "Tracked" => "Clean",
         _ => Model?.DocumentType
     };
+    ViewBag.Title = $"Link {displayDocumentType?.ToLower()} document";
 }
 
 <div class="govuk-grid-row">
@@ -148,7 +148,10 @@ else
                 </div>
 
                 <div class="govuk-form-group @(hasFileErrors ? "govuk-form-group--error" : "")">
-                    <label class="govuk-label" for="File">Upload documents</label>
+                    <label class="govuk-label" for="File">Upload clean or tracked document</label>
+                    <p id="file-hint" class="govuk-hint">
+                        If the clean or tracked version of this document doesn't appear in the list you can add it here
+                    </p>
 
                     @if (hasFileErrors)
                     {
@@ -166,7 +169,7 @@ else
                                id="File"
                                name="File"
                                type="file"
-                               aria-label="Upload documents" />
+                               aria-describedby="file-hint"/>
                     </div>
                 </div>
 

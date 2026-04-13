@@ -12,7 +12,7 @@ public class AuthoriseModificationsOutcomeViewModelValidator : AbstractValidator
     private readonly string RevisionDescriptionMandatoryErrorMessage = "Enter a description of revisions you want to request";
     private readonly string RevisionDescriptionMaxCharactersErrorMessage = $"The description must be between 1 and {MaxCharactersCount} characters";
     private readonly string ReviseAndAuthoriseMaxCharactersErrorMessage = $"The description must be between 1 and {ReviseAndAuthoriseCharactersCount} characters";
-    private readonly string ReviseAndAuthoriseMandatoryErrorMessage = "Enter a brief summary of the revisions you have made";
+    private readonly string ReviseAndAuthoriseMandatoryErrorMessage = "Enter a description of the revisions made";
 
     private readonly string ModificationsNotAuthorisedErrorMessage = "Enter a reason for not authorising the modification";
     private readonly string ModificationsNotAuthorisedCharactersErrorMessage = $"The reason must be between 1 and {ReasonMaxCharactersCount} characters";

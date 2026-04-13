@@ -223,6 +223,7 @@ public class ModificationDetailsController
         TempData.Remove(TempDataKeys.SpecificAreaOfChangeOptionNameKey);
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
 
+        viewModel.Status = (viewModel as BaseProjectModificationViewModel).Status;
         viewModel.ModificationChangeId = modificationChangeId;
         viewModel.SpecificAreaOfChange = modificationChangeName;
 
@@ -291,6 +292,7 @@ public class ModificationDetailsController
             RevisionDescription = modification.Content.RevisionDescription,
             ProjectRecordId = projectRecordId,
             ModificationId = projectModificationId.ToString(),
+            Status = modification.Content.Status,
             ModificationIdentifier = modification.Content.ModificationIdentifier
         };
         TempData[TempDataKeys.RevisionDescription] = modification.Content.RevisionDescription;
