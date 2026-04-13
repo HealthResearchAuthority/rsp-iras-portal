@@ -10,7 +10,7 @@
 
 @{
     (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
-    ViewBag.Title = $"Select document to replace";
+    ViewBag.Title = $"Clean or tracked document";
     var errorSummaryTitle = "There is a problem";
 
     var modificationParams = new Dictionary<string, string>
@@ -55,7 +55,7 @@ else
     <div class="govuk-grid-column-two-thirds">
         <form method="post">
             <h1 class="govuk-heading-l">
-                'Type' of document
+                Clean or tracked document
             </h1>
 
             <table class="govuk-table">
@@ -118,7 +118,7 @@ else
                 <input type="hidden" asp-for="@Model.MetaDataDocumentTypeId" />
                 <input type="hidden" asp-for="@Model.LinkedDocumentId" />
 
-                <legend class="govuk-hint" aria-describedby="clean-tracked-hint">
+                <legend class="govuk-body" aria-describedby="clean-tracked-hint">
                     Is this a clean or tracked document?
                 </legend>
 
@@ -154,7 +154,7 @@ else
 
             </govuk-fieldset>
 
-            <div class="save-buttons">
+            <div class="save-buttons govuk-!-margin-top-4">
                 @if (Model.ReviewAllChanges)
                 {
                     <partial name="_SubmitButton" model="@("pmc:savesupersededocumentdetails", "Save changes", new Dictionary<string, string> { { "reviewAllChanges", bool.TrueString } })" />

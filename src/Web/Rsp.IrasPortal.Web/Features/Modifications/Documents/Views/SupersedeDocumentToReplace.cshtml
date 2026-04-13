@@ -145,7 +145,7 @@ else
 
                 </div>
             </govuk-fieldset>
-            <div class="save-buttons">
+            <div class="save-buttons govuk-!-margin-top-5">
                 @if (Model.ReviewAllChanges)
                 {
                     <partial name="_SubmitButton" model="@("pmc:savesupersededocumentdetails", "Save changes", new Dictionary<string, string> { { "reviewAllChanges", bool.TrueString } })" />

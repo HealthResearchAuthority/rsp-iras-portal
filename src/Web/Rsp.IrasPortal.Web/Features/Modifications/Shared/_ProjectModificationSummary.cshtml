@@ -116,10 +116,13 @@
         <authorized role-is="@Roles.Applicant"
                     status-for="@modificationBaseModel.Status"
                     status-is="@ModificationStatus.RequestRevisions">
-            <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">Date sponsor submitted</dt>
-                <dd class="govuk-summary-list__value">@modificationBaseModel.DateSponsorSubmittedOutcome</dd>
-            </div>
+            @if (modificationBaseModel.Status is not null && !string.IsNullOrWhiteSpace(modificationBaseModel.DateSponsorSubmittedOutcome))
+            {
+                <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">Date sponsor submitted</dt>
+                    <dd class="govuk-summary-list__value">@modificationBaseModel.DateSponsorSubmittedOutcome</dd>
+                </div>
+            }            
         </authorized>
     </feature>
 
