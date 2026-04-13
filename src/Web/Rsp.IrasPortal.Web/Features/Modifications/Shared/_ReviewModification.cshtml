@@ -35,7 +35,8 @@
                                    ModificationStatus.NotApproved,
                                    ModificationStatus.ReviseAndAuthorise,
                                    ModificationStatus.ReviewInProgress,
-                                   ModificationStatus.RequestForInformation])">
+                                   ModificationStatus.RequestForInformation,
+                                   ModificationStatus.ResponseWithSponsor])">
                     <h2 class="govuk-heading-m">Download a PDF of the modification information</h2>
                     <p class="govuk-body">
                         You'll need to send this to participating organisations along with your cover letter and copies of any supporting documents.
@@ -48,8 +49,7 @@
             else if (User.HasPermission(Permissions.MyResearch.Modifications_Download_Limited))
             {
                 <div status-for="@Model.Status"
-                     status-in="@([ModificationStatus.Approved,
-                                                                                                                                                                                                                                                                                    ModificationStatus.NotApproved,])">
+                     status-in="@([ModificationStatus.Approved, ModificationStatus.NotApproved])">
                     <h2 class="govuk-heading-m">Download a PDF of the modification information</h2>
                     <p class="govuk-body">
                         You'll need to send this to participating organisations along with your cover letter and copies of any supporting documents.
@@ -125,17 +125,19 @@
     </div>
 </feature>
 <div class="govuk-grid-row">
-    @if (Model.Status != ModificationStatus.InDraft && Model.Status != ModificationStatus.RequestRevisions)
-    {
-        <partial name="_NavigationTabPartial" model="Model" view-data="ViewData" />
-    }
-    else
-    {
-        <h2 class="govuk-heading-m">Changes</h2>
-        <partial name="ModificationChanges" model="Model" view-data="ViewData" />
+    <div class="govuk-grid-column-full">
+        @if (Model.Status != ModificationStatus.InDraft && Model.Status != ModificationStatus.RequestRevisions)
+        {
+            <partial name="_NavigationTabPartial" model="Model" view-data="ViewData" />
+        }
+        else
+        {
+            <h2 class="govuk-heading-m">Changes</h2>
+            <partial name="ModificationChanges" model="Model" view-data="ViewData" />
 
-        <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
+            <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
 
-        <partial name="SponsorDetails" model="Model" view-data="ViewData" />
-    }
+            <partial name="SponsorDetails" model="Model" view-data="ViewData" />
+        }
+    </div>
 </div>
