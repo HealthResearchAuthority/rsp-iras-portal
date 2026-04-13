@@ -75,7 +75,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         var viewResult = result.ShouldBeOfType<ViewResult>();
         var model = viewResult.Model.ShouldBeAssignableTo<RfiDetailsViewModel>();
         model.IrasId.ShouldBe(projectRecordResponse.IrasId.ToString());
-        model.ModificationId.ShouldBe(modificationResponse.ModificationIdentifier);
+        model.ModificationId.ShouldBe(modificationId.ToString());
         model.RfiReasons.Count.ShouldBe(rfiResponse.RequestForInformationReasons.Count);
     }
 
