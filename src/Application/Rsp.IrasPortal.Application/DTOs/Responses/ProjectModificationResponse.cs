@@ -109,4 +109,9 @@ public record ProjectModificationResponse
     /// Get or Set the request revision response by applicant
     /// </summary>
     public string? ApplicantRevisionResponse { get; set; } = null;
+
+    /// <summary>
+    /// Gets or sets whether the modification has been duplicated
+    /// </summary>
+    public bool HasBeenDuplicated { get; set; }
 }
