@@ -97,7 +97,8 @@ public abstract class ModificationsControllerBase
             RevisionDescription = modification?.RevisionDescription,
             RequestForInformationReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? [],
             RequestForInformationResponses = modificationRfiResponsesResponse.Content?.RfiResponses ?? [],
-            ApplicantRevisionResponse = modification?.ApplicantRevisionResponse
+            ApplicantRevisionResponse = modification?.ApplicantRevisionResponse,
+            HasBeenDuplicated = modification.HasBeenDuplicated
         });
     }
 

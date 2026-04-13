@@ -88,4 +88,9 @@ public class BaseProjectModificationViewModel
     /// Thia holds the revision response by the applicant
     /// </summary>
     public string? ApplicantRevisionResponse { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the modification has been duplicated
+    /// </summary>
+    public bool HasBeenDuplicated { get; set; }
 }
