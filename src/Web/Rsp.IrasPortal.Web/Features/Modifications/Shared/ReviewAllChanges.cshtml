@@ -28,7 +28,8 @@
     ViewData[ViewDataKeys.ShowModificationDetails] = true;
     var projectTitle = !string.IsNullOrEmpty(Model.ShortTitle) ? Model.ShortTitle : "Project overview";
     var linkBackToReferrer = TempData[TempDataKeys.ProjectModification.LinkBackToReferrer];
-    var urlReferrer = TempData[TempDataKeys.ProjectModification.UrlReferrer];
+    var backRoute = Context.Request.Query["backRoute"].ToString();
+    var urlReferrer = TempData[TempDataKeys.ProjectModification.UrlReferrer] ?? backRoute;
     var urlSegments = urlReferrer?.ToString()!.Split('/', StringSplitOptions.RemoveEmptyEntries);
     var previousController = string.Empty;
     // Assuming URL pattern: /Controller/Action
@@ -51,7 +52,7 @@
     ViewBag.RequestRevisionTitle = requestRevisionHeadline?.Value;
 }
 
-@if (Model.Status != ModificationStatus.InDraft && !(previousController is ApprovalsSearch.ControllerName or ModificationsTasklist.ControllerName))
+@if (Model.Status != ModificationStatus.InDraft && !(previousController is ApprovalsSearch.ControllerName or ModificationsTasklist.ControllerName or ProjectOverview.ControllerName))
 {
     <authorized role-is="@Roles.Applicant">
 

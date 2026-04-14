@@ -20,6 +20,7 @@
 	var projectTitle = !string.IsNullOrEmpty(Model?.ProjectOverviewModel?.ProjectTitle) ? Model.ProjectOverviewModel.ProjectTitle : "Project overview";
 
 	var tdBackRouteValues = TempData.Peek(TempDataKeys.ProjectOverviewReferrer.BackRouteValues);
+    TempData[TempDataKeys.ProjectModification.LinkBackToReferrer] = true;
 
 	var backRouteValues = JsonSerializer.Deserialize<Dictionary<string, string>>
 		(tdBackRouteValues != null ? tdBackRouteValues.ToString()! : "{}") ?? new Dictionary<string, string>();
