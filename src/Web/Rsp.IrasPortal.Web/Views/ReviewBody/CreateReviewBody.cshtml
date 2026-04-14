@@ -22,6 +22,9 @@
     var editTitle = $"{errorPrefix}Edit review body details - Manage review bodies - System Administration";
     var createTitle = $"{errorPrefix}Add a new review body - Manage review bodies - System Administration";
     ViewBag.Title = ViewBag.Mode == "update" ? editTitle : createTitle;
+
+    var selectError = ViewData.ModelState.ContainsKey(nameof(Model.ReviewBodyType)) && ViewData.ModelState[nameof(Model.ReviewBodyType)]?.Errors.Count > 0;
+    var selectMessage = selectError ? ViewData.ModelState[nameof(Model.ReviewBodyType)]?.Errors.FirstOrDefault()?.ErrorMessage : null;
 }
 
 <form method="get">
@@ -52,11 +55,30 @@
                                     options="UkCountryNames.Countries"
                                     legend-class="govuk-label govuk-label--s" />
 
-            <rsp-gds-select asp-for="ReviewBodyType" 
+            @* <rsp-gds-select asp-for="ReviewBodyType" 
                             label-text="Review body type"
                             default-option-text="@(String.Empty)"
+                            include-default-option=false
                             options="@(ReviewBodyType.OptionsMap.OrderBy(option => option.Key)
-                                                                .Select(option => new GdsOption { Value = option.Value, Label = option.Value }))")"/>
+                                                                .Select(option => new GdsOption { Value = option.Value, Label = option.Value }))")"/> *@
+                                                                
+            <div class="govuk-form-group @(selectError ? "govuk-form-group--error" : "")">
+                <label class="govuk-label govuk-label--s" for="ReviewBodyType">
+                    Review body type
+                </label>
+                @if (selectError)
+                {
+                    <span class="govuk-error-message">@selectMessage</span>
+                }
+                <select class="govuk-select govuk-!-width-three-quarters" asp-for="ReviewBodyType" id="ReviewBodyType" name="ReviewBodyType">
+                    <option value="" selected disabled hidden></option>
+                    @foreach (var choice in ReviewBodyType.OptionsMap)
+                    {
+                        <option value="@choice.Value">@choice.Value</option>
+                    }
+                </select>
+            </div>
+            
 
             <rsp-gds-input asp-for="EmailAddress"
                            label-text="Email address"
