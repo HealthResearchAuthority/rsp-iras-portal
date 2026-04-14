@@ -42,16 +42,24 @@
                             (isRevisionBySponsor && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart)))
                 {
                     <li class="govuk-summary-card__action">
-
                         @{
                             var reviewChangesParams = new Dictionary<string, string> {
                                 { "projectRecordId", Model.ProjectRecordId },
                                 { "specificAreaOfChangeId", change.SpecificAreaOfChangeId },
                                 { "modificationChangeId", change.ModificationChangeId.ToString() },
                                 { "reviseChange", bool.TrueString },
-                                };
+                            };
 
-                            <a class="govuk-link" asp-route="pmc:reviewchanges" asp-all-route-data="reviewChangesParams">Change</a>
+                            <a class="govuk-link"
+                               asp-route="pmc:reviewchanges"
+                               asp-all-route-data="reviewChangesParams"
+                               aria-label="Change @change.SpecificChangeName">
+
+                                Change
+                                <span class="govuk-visually-hidden">
+                                    @change.SpecificChangeName
+                                </span>
+                            </a>
                         }
                     </li>
                 }
@@ -65,8 +73,13 @@
                         <a class="govuk-link"
                            asp-route="pmc:confirmremovechange"
                            asp-route-modificationChangeId="@change.ModificationChangeId"
-                           asp-route-modificationChangeName="@change.SpecificChangeName">
+                           asp-route-modificationChangeName="@change.SpecificChangeName"
+                           aria-label="Remove @change.SpecificChangeName">
+
                             Remove
+                            <span class="govuk-visually-hidden">
+                                @change.SpecificChangeName
+                            </span>
                         </a>
                     </li>
                 }
