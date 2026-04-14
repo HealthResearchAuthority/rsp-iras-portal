@@ -5,7 +5,8 @@
 @model ReviewBodySearchViewModel
 
 @{
-	ViewData["Title"] = "Manage review bodies - System Administration";
+    ViewData["Title"] = "Manage review bodies - System Administration";
+    ViewBag.Style = "govuk-button govuk-button--secondary";
 
 	var statusOptions = new List<GdsOption>
 	{
@@ -59,9 +60,21 @@
 	<div class="govuk-grid-column-one-half">
 		<h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
 	</div>
-	<div class="govuk-grid-column-one-half">
-		<a class="govuk-link govuk-body float-right" asp-route="rbc:createreviewbody">@Html.Raw(addNewLink?.Value)</a>
+</div>
+
+<div class="govuk-grid-row  govuk-!-margin-top-3">
+	<div class="govuk-grid-column-two-thirds">
+		<div class="govuk-label"><b>Add a new review body record</b></div>
 	</div>
+    <div class="govuk-grid-column-two-thirds govuk-!-margin-bottom-2">
+		<div class="govuk-label">You can create a profile for a review body.</div>
+	</div>
+    <div class="govuk-grid-column-two-thirds govuk-!-margin-bottom-4">
+        <a class="govuk-button" asp-route="rbc:createreviewbody">
+            Add a review body
+        </a>
+    </div>
+    
 </div>
 
 <div class="govuk-grid-row">
