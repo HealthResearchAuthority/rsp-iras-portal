@@ -62,7 +62,7 @@ public class ProjectOverviewController
     }
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Read)]
-    public async Task<IActionResult> ProjectDetails(string projectRecordId, string? backRoute, string? modificationId)
+    public async Task<IActionResult> ProjectDetails(string projectRecordId, string? backRoute, string? modificationId, string? prevReferrer)
     {
         // IF NAVIGATED FROM SHORT PROJECT TITLE LINKS
         if (backRoute != null && backRoute != TempData.Peek(TempDataKeys.ProjectOverviewReferrer.Referrer)?.ToString())
@@ -77,6 +77,12 @@ public class ProjectOverviewController
                 {
                     var uri = new Uri(referer.ToString());
                     var queryParams = QueryHelpers.ParseQuery(uri.Query).ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToString());
+
+                    if (prevReferrer is not null)
+                    {
+                        queryParams.Add("backRoute", prevReferrer);
+                        TempData[TempDataKeys.ProjectModification.LinkBackToReferrer] = true;
+                    }
 
                     TempData[TempDataKeys.ProjectOverviewReferrer.BackRouteValues] = JsonSerializer.Serialize(queryParams);
                 }
@@ -711,7 +717,6 @@ public class ProjectOverviewController
         TempData.Remove(TempDataKeys.ProjectModification.AreaOfChangeId);
         TempData.Remove(TempDataKeys.ProjectModification.SpecificAreaOfChangeId);
         TempData.Remove(TempDataKeys.ProjectModification.ProjectModificationChangeMarker);
-        TempData.Remove(TempDataKeys.ProjectModification.LinkBackToReferrer);
         TempData.Remove(TempDataKeys.ProjectModification.UrlReferrer);
 
         var keys = TempData.Keys.Where(key => key.StartsWith(TempDataKeys.ProjectModification.Questionnaire));

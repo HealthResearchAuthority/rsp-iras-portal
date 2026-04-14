@@ -8,4 +8,5 @@ public static class ProjectOverview
     public const string ResearchLocations = "Research locations";
     public const string PostApproval = "Post approval";
     public const string ProjectHistory = "Project history";
+    public const string ControllerName = "projectoverview";
 }

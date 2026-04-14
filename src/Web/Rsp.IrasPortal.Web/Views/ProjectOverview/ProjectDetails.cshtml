@@ -18,6 +18,7 @@
 	bool addIrasIdInFirstGroup = true;
 
 	var tdBackRouteValues = TempData.Peek(TempDataKeys.ProjectOverviewReferrer.BackRouteValues);
+    TempData[TempDataKeys.ProjectModification.LinkBackToReferrer] = true;
 
 	var backRouteValues = JsonSerializer.Deserialize<Dictionary<string, string>>
 		(tdBackRouteValues != null ? tdBackRouteValues.ToString()! : "{}") ?? new Dictionary<string, string>();

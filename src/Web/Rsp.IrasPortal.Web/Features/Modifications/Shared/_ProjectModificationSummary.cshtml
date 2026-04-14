@@ -31,6 +31,8 @@
     </authorized>
 
     var isHaltRestartWarning = TempData[TempDataKeys.IsHaltRestartWarning] as bool? ?? false;
+    var urlReferrer = TempData[TempDataKeys.ProjectModification.UrlReferrer];
+
 }
 
 <dl class="govuk-summary-list">
@@ -46,6 +48,7 @@
                 <a asp-route="pov:projectdetails"
                    asp-route-projectRecordId="@modificationBaseModel.ProjectRecordId"
                    asp-route-backRoute="pmc:reviewallchanges"
+                   asp-route-prevReferrer="@urlReferrer"
                    class="govuk-link">
                     @modificationBaseModel.ShortTitle
                 </a>
