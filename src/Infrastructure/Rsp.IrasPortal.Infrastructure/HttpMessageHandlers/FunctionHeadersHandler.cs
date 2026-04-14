@@ -36,6 +36,7 @@ public class FunctionHeadersHandler(AppSettings appSettings) : DelegatingHandler
         if (!string.IsNullOrWhiteSpace(bearerToken))
         {
             // no function key configured, skip adding header
+            request.Headers.Remove(HeaderNames.Authorization);
             request.Headers.Add(HeaderNames.Authorization, $"Bearer {bearerToken}");
         }
 
