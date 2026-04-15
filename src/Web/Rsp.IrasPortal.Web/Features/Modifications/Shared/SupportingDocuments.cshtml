@@ -107,7 +107,7 @@
                                                                                 })
                                         </th>
                                     }
-                                    @if (Model.Status is ModificationStatus.InDraft || Model.Status is ModificationStatus.RequestForInformation || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise))
+                                    @if (Model.Status is ModificationStatus.InDraft || Model.Status is ModificationStatus.RequestRevisions || Model.Status is ModificationStatus.RequestForInformation || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise))
                                     {
                                         <th scope="col" class="govuk-table__header">Action</th>
                                     }
@@ -206,6 +206,7 @@
                                                        class="govuk-link">
                                                         Change details
                                                     </a>
+                                                    <br />
                                                     <a asp-route="pmc:confirmdeletedocument"
                                                        asp-route-id="@modification.Id"
                                                        asp-route-backRoute="toaddpage"
