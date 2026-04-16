@@ -12,17 +12,20 @@
         });
 
         // Initially hide all elements with the 'conditional' class
-        $(".conditional").hide();
+        $(".po-conditional").hide();
 
         // Iterate over each conditional div on the page
-        document.querySelectorAll('div.conditional').forEach(div => {
-            const parentId = div.getAttribute('data-parents');   // Parent question(s) this div depends on
-            const questionId = div.getAttribute('data-questionid'); // This question's ID
+        $(".po-conditional").each((_, conditionalElement) => {
+            const $conditionalElement = $(conditionalElement);
+            const questionId = $conditionalElement.data("questionid");
+            const parentId = $conditionalElement.data("parents");
 
-            // Find the closest <dl> ancestor to determine which document index this div belongs to
-            //const dl = div.closest('dl');
-            const orgIndex = div.querySelector('input[type="hidden"][name="data-orgindex"]');
-            const orgIndexValue = orgIndex?.value; // Index of the document in the model
+            // Skip processing if questionId or parentId is missing
+            if (!questionId || !parentId) return;
+
+            // Find the hidden input to determine which document index this div belongs to
+            const orgIndex = $conditionalElement.find('input:hidden[name="data-orgindex"]');
+            const orgIndexValue = orgIndex.val(); // Index of the document in the model
 
             // Retrieve stored rules for the parent question and current question
             const rulesJson = sessionStorage.getItem(parentId);
@@ -46,8 +49,8 @@
 
                     // If conditions match, show the div and remove the 'conditional' class
                     if (matches) {
-                        div.classList.remove("conditional");
-                        div.style.display = "";
+                        $conditionalElement.removeClass("po-conditional");
+                        $conditionalElement.show();
                     }
                 }
             }

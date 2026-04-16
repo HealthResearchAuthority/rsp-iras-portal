@@ -17,12 +17,9 @@
 
     // Collect all rules for conditional questions
     var conditionalRules = Model.GetConditionalRules();
-    var allParentAnswers = Model.GetParentQuestionAnswers();
 
     var baseModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
 }
-
-<script src="~/lib/jquery/dist/jquery.js"></script>
 
 <script>
     $(document).ready(function () {
@@ -97,6 +94,13 @@
 
                 <input type="hidden" asp-for="Id" />
                 <input type="hidden" asp-for="OrganisationId" />
+                <input type="hidden" asp-for="@Model.ShortTitle" />
+                <input type="hidden" asp-for="@Model.IrasId" />
+                <input type="hidden" asp-for="@Model.ModificationId" />
+                <input type="hidden" asp-for="@Model.ModificationIdentifier" />
+                <input type="hidden" asp-for="@Model.ReviewAnswers" />
+                <input type="hidden" asp-for="@Model.ReviewAllChanges" />
+                <input type="hidden" asp-for="@Model.ProjectRecordId" />
 
                 @foreach (var question in Model.Questions)
                 {

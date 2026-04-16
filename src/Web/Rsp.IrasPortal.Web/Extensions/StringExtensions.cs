@@ -21,7 +21,7 @@ public static class StringExtensions
     {
         if (string.IsNullOrWhiteSpace(label)) return label;
 
-        var acronymsPattern = @"\b(nhs|hsc|nct|isrctn)\b";
+        var acronymsPattern = @"\b(pi|nhs|hsc|nct|isrctn)\b";
         var phrasesPattern = @"\b(chief investigator|principal investigator)\b";
 
         return Regex.Replace(

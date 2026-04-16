@@ -406,4 +406,82 @@ public class ValidateAsyncTests : TestServiceBase<QuestionViewModelDataValidator
         result
             .ShouldHaveValidationErrorFor(q => q.AnswerText);
     }
+
+    [Fact]
+    public async Task ValidateAsync_TextAreaDataType_AppliesAnswerTextRules()
+    {
+        // Arrange
+        var question = new QuestionViewModel
+        {
+            QuestionId = "Q-TEXTAREA",
+            DataType = "Text Area",
+            AnswerText = "abc",
+            Rules =
+            [
+                new RuleDto
+                {
+                    Conditions =
+                    [
+                        new ConditionDto
+                        {
+                            Operator = "LENGTH",
+                            Value = "5,10",
+                            Description = "Answer must be between 5 and 10 characters"
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(CreateValidationContext(question));
+
+        // Assert
+        result.ShouldHaveValidationErrorFor(q => q.AnswerText);
+    }
+
+    [Fact]
+    public async Task ValidateAsync_CheckboxDataType_WhenNoOptionSelected_ReturnsValidationErrorForAnswers()
+    {
+        // Arrange
+        var question = new QuestionViewModel
+        {
+            QuestionId = "Q-CHECK",
+            DataType = "Checkbox",
+            AnswerText = "has input",
+            Answers =
+            [
+                new AnswerViewModel { AnswerId = "A1", IsSelected = false },
+                new AnswerViewModel { AnswerId = "A2", IsSelected = false }
+            ]
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(CreateValidationContext(question));
+
+        // Assert
+        result.ShouldHaveValidationErrorFor(q => q.Answers);
+    }
+
+    [Theory]
+    [InlineData("Boolean")]
+    [InlineData("Radio button")]
+    [InlineData("Dropdown")]
+    public async Task ValidateAsync_ChoiceDataType_WhenSelectedOptionMissing_ReturnsValidationError(string dataType)
+    {
+        // Arrange
+        var question = new QuestionViewModel
+        {
+            QuestionId = "Q-CHOICE",
+            DataType = dataType,
+            AnswerText = "has input",
+            SelectedOption = ""
+        };
+
+        // Act
+        var result = await Sut.TestValidateAsync(CreateValidationContext(question));
+
+        // Assert
+        result.ShouldHaveValidationErrorFor(q => q.SelectedOption);
+    }
 }

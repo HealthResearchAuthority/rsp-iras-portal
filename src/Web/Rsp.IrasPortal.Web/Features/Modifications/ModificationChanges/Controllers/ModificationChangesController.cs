@@ -280,7 +280,8 @@ public class ModificationChangesController
             {
                 projectRecordId,
                 specificAreaOfChangeId = GetSpecificAreaOfChangeId(),
-                modificationChangeId = projectModificationChangeId
+                modificationChangeId = projectModificationChangeId,
+                reviseChange = isReviewInProgress
             });
         }
 
