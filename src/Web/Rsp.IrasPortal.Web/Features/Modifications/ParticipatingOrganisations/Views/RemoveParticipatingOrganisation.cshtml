@@ -31,6 +31,8 @@
 
 <h1 class="govuk-heading-l">@title</h1>
 
+<partial name="_ProjectModificationSummary" />
+
 <vc:participating-organisations-review project-record-id="@baseModel.ProjectRecordId"
                                        modification-change-id="@baseModel.ModificationChangeId"
                                        specific-area-of-change-id="@baseModel.SpecificAreaOfChangeId"
@@ -43,10 +45,10 @@
 
 <div class="save-buttons">
     <a asp-route="porgs:deselectorganisation"
-       asp-route-organisationId="@Model.Id"
-       asp-route-redirectToReview="@(true)"
-       class="govuk-button govuk-button--warning"
-       data-module="govuk-button">
+           asp-route-organisationId="@Model.Id"
+           asp-route-redirectToReview="@(true)"
+           class="govuk-button govuk-button--warning"
+           data-module="govuk-button">
         Remove organisation
     </a>
 

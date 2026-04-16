@@ -11,7 +11,7 @@ public class QuestionViewModelDataValidator : QuestionViewModelValidatorBase
         {
             RuleFor(x => x.AnswerText)
                 .NotEmpty()
-                .When(x => x.DataType is "Text" or "Email" or "Date")
+                .When(x => x.DataType is "Text" or "Email" or "Date" or "Text Area")
                 .WithMessage(GetValidationMessage)
                 .DependentRules(() =>
                 {

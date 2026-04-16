@@ -34,7 +34,7 @@
             <input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
             <input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.OriginalEmail ?? string.Empty)" />
             <input hidden readonly name="Status" asp-for="Status" value="@(Model.Status ?? string.Empty)" />
-			<input hidden readonly name="IdentityProviderId" asp-for="IdentityProviderId" value="@(Model.IdentityProviderId ?? string.Empty)" />
+            <input hidden readonly name="IdentityProviderId" asp-for="IdentityProviderId" value="@(Model.IdentityProviderId ?? string.Empty)" />
 
             @{
                 var order = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
@@ -83,7 +83,6 @@
                                     readonly-items="organisation_administrator,sponsor"
                                     readonly-item-property="Name" />
 
-
             <rsp-gds-checkbox-group asp-for="Country"
                                     label-text="Country"
                                     options="UkCountryNames.Countries"
@@ -115,7 +114,7 @@
 @if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
 {
     @section FooterResources {
-        <script src="~/lib/jquery/dist/jquery.js"></script>
+
         <script src="~/js/manageUsers.js"></script>
     }
 }

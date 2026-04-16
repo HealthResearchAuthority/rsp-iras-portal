@@ -293,36 +293,31 @@ public class ModificationChangesBaseController
         {
             var getParticipatingOrganisationsResponse = await respondentService.GetModificationParticipatingOrganisations(modificationChangeId, projectRecordId);
             var orgsQuestionSet = await cmsQuestionsetService.GetModificationQuestionSet(OrganisationDetailsSection);
+            var questionnaireViewModel = QuestionsetHelpers.BuildQuestionnaireViewModel(orgsQuestionSet.Content!);
 
             var questionIndex = 0;
 
             foreach (var organisation in getParticipatingOrganisationsResponse.Content!)
             {
-                var questionnaireViewModel = QuestionsetHelpers.BuildQuestionnaireViewModel(orgsQuestionSet.Content!);
-
-                var participatingOrgsQuestionnaire = questionnaireViewModel;
+                var participatingOrgsQuestionnaire = new QuestionnaireViewModel();
 
                 var answersResponse = await respondentService.GetModificationParticipatingOrganisationAnswers(organisation.Id);
 
                 var answers = answersResponse.Content ?? [];
 
-                participatingOrgsQuestionnaire.Questions = questionnaireViewModel.Questions.ConvertAll(cmsQ =>
-                {
-                    var matchingAnswer = answers.FirstOrDefault(a => a.QuestionId == cmsQ.QuestionId);
-
-                    cmsQ.Index = questionIndex++;
-
-                    if (matchingAnswer == null)
-                    {
-                        return cmsQ;
-                    }
-
-                    cmsQ.Id = matchingAnswer.Id;
-
-                    return cmsQ;
-                });
-
-                participatingOrgsQuestionnaire.UpdateWithRespondentAnswers(answers);
+                participatingOrgsQuestionnaire.Questions = questionnaireViewModel.Questions.ConvertAll
+                (
+                    cmsQ => QuestionsetHelpers.MapQuestionWithAnswers
+                    (
+                        cmsQ,
+                        answers,
+                        questionIndex++,
+                        a => a.QuestionId,
+                        a => a.Id,
+                        a => a.AnswerText,
+                        a => a.SelectedOption
+                    )
+                );
 
                 if (reviseChange)
                 {

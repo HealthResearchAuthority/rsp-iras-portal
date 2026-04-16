@@ -11,16 +11,6 @@
 }
 
 @{
-    // Try to read the IRAS ID from TempData, default to 0 if missing and Project Record Id default to empty string if missing
-    var irasId = TempData.Peek(TempDataKeys.IrasId) as int? ?? 0;
-    var projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string ?? string.Empty;
-    var status = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string ?? string.Empty;
-    var sponsorOrganisationUserId = TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId);
-    var rtsId = TempData.Peek(TempDataKeys.RevisionRtsId) as string ?? string.Empty;
-
-    // Title used in the validation error summary
-    var errorSummaryTitle = "There is a problem";
-
     // Prepare the navigation model depending on whether we have a lastQuestion
     (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
     navModel = ("por:participatingorganisationslist", "Back", new());
@@ -43,45 +33,47 @@
     var conditionalRules = Model.SelectMany(org => org.GetConditionalRules()).ToList();
 }
 
+<script src="~/js/participating-organisations-review.js"></script>
+
 <script>
     $(function () {
-        // Clear existing sessionStorage before loading the page
+        //Clear existing sessionStorage before loading the page
         sessionStorage.clear();
 
-        // Store parent answers
-        const parentAnswers = @Html.Raw(JsonSerializer.Serialize(allParentAnswers))
+        //Store parent answers
+        const parentAnswers = @Html.Raw(JsonSerializer.Serialize(allParentAnswers));
         parentAnswers.forEach(parent => {
             let existing = sessionStorage.getItem(parent.QuestionId);
             let answers = existing ? JSON.parse(existing) : [];
             answers = answers.concat(parent.Answers);
             sessionStorage.setItem(parent.QuestionId, JSON.stringify(answers));
+            sessionStorage.setItem('A_'+parent.QuestionId, JSON.stringify(parent.Answers));
         });
 
-        // init rules handler with all conditional questions and their rules
-        const conditionalRulesData = @Html.Raw(JsonSerializer.Serialize(conditionalRules))
+        //init rules handler with all conditional questions and their rules
+        const conditionalRulesData = @Html.Raw(JsonSerializer.Serialize(conditionalRules));
         conditionalRulesHandler.init(conditionalRulesData);
     });
 </script>
 
 @foreach (var (model, index) in Model.Select((question, index) => (question, index)))
 {
-    <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">
+    <div class="govuk-summary-list__row" style="border: none">
+        <div class="govuk-summary-list__key">
             Participating organisation
-        </dt>
-        <dd class="govuk-summary-list__value">
+        </div>
+        <div class="govuk-summary-list__value">
             @(model.OrganisationName)
             @(model.OrganisationAddress)
-        </dd>
-
+        </div>
         @if (!reviewAllChanges && showLinks)
         {
-            <dd class="govuk-summary-list__actions">
+            <div class="govuk-summary-list__actions">
                 <a asp-route="porgs:removeparticipatingorganisation"
                    asp-route-organisationId="@(model.Id)"
                    asp-route-organisationName="@(model.OrganisationName)"
                    class="govuk-link">Remove</a>
-            </dd>
+            </div>
         }
     </div>
 
@@ -102,16 +94,16 @@
         {
             string questionKey = question.GetModelKey();
             bool fieldHasErrors = ViewData.ModelState[questionKey]?.ValidationState == ModelValidationState.Invalid;
-            string conditionalClass = !question.IsOptional && !question.IsMandatory && question.Rules.Any() ? "conditional" : "";
+            string conditionalClass = !question.IsOptional && !question.IsMandatory && question.Rules.Any() ? "po-conditional" : "";
             string parentAttributes = conditionalClass != "" ? $"data-parents=\"{string.Join(',', question.Rules.Select(r => r.ParentQuestionId))}\" data-questionid=\"{question.QuestionId}\"" : "";
             string questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText;
 
-            <div class="@conditionalClass govuk-summary-list__row" id="@questionKey" @Html.Raw(parentAttributes)>
+            <div class="@conditionalClass govuk-summary-list__row" style="border: none" id="@questionKey" @Html.Raw(parentAttributes)>
 
                 <input type="hidden" name="data-orgindex" value="@index" />
 
-                <dt class="govuk-summary-list__key">@questionText</dt>
-                <dd class="govuk-summary-list__value @(fieldHasErrors ? "govuk-error-summary__list" : "")">
+                <div class="govuk-summary-list__key">@questionText</div>
+                <div class="govuk-summary-list__value @(fieldHasErrors ? "govuk-error-summary__list" : "")">
                     @if (question.IsMissingAnswer())
                     {
                         if (!reviewAllChanges && showLinks)
@@ -126,25 +118,25 @@
                         <input type="hidden" id="@question.QuestionId" name="hiddenResponse" value="@question.SelectedOption" />
                         @Html.Raw(question.GetDisplayText())
                     }
-                </dd>
-                <dd class="govuk-summary-list__actions">
+                </div>
+                <div class="govuk-summary-list__actions">
                     @if (!question.IsMissingAnswer() && (!reviewAllChanges && showLinks))
                     {
                         <a class="govuk-link" href="@Url.RouteUrl("pod:participatingorganisationdetails", new { organisationId = model.Id, organisationName = model.OrganisationName, reviewAnswers = true })">
                             @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
                         </a>
                     }
-                </dd>
+                </div>
             </div>
         }
 
-        if (!reviewAllChanges)
+        if (reviewAllChanges)
         {
-            <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+            <div aria-hidden="true" class="govuk-summary-list__row"></div>
         }
-
+        else
+        {
+            <hr aria-hidden="true" class="govuk-section-break--m govuk-section-break--visible" style="opacity:100">
+        }
     }
 }
-
-<script src="~/lib/jquery/dist/jquery.js"></script>
-<script src="~/js/participating-organisations-review.js"></script>

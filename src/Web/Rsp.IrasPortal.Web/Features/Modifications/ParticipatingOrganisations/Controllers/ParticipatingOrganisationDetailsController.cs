@@ -232,6 +232,9 @@ public class ParticipatingOrganisationDetailsController
 
         questionnaire.UpdateWithAnswers(model.Questions, questionnaire.Questions);
 
+        // update the model with rules and answers for validation
+        model.Questions = questionnaire.Questions;
+
         return await this.ValidateQuestionnaire(validator, questionnaire);
     }
 }
