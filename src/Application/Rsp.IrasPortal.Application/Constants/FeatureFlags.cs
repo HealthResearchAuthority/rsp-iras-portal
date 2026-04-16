@@ -70,6 +70,6 @@ public static class FeatureFlags
     // Enable user notifications area
     public const string UserNotifications = "System.UserNotifications";
 
-    // Enable user notifications area
+    // Enable Rec Member Management 
     public const string RecMemberManagement = "Rec.MemberManagement";
 }
