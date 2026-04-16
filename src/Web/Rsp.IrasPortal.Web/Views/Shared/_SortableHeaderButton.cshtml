@@ -2,29 +2,31 @@
 @model SortableHeaderModel
 
 @{
-	var nextSortDirection = 
-	(Model.CurrentSortField == Model.FieldName && 
-		Model.CurrentSortDirection == SortDirections.Ascending) ? 
-		SortDirections.Descending : 
-		SortDirections.Ascending;
-	var formAction = $"{Model.FormAction ?? Context.Request.Path}{(string.IsNullOrEmpty(Model.TableId) ? "" : $"#{Model.TableId}")}";
+    var nextSortDirection =
+        (Model.CurrentSortField == Model.FieldName &&
+         Model.CurrentSortDirection == SortDirections.Ascending)
+        ? SortDirections.Descending
+        : SortDirections.Ascending;
+
+    var routeValues = Model.AdditionalParameters
+        .Where(p => p.Key != "sortField" && p.Key != "sortDirection")
+        .ToDictionary(k => k.Key, v => v.Value);
+
+    routeValues["sortField"] = Model.FieldName;
+    routeValues["sortDirection"] = nextSortDirection;
+    routeValues["fromPagination"] = "true";
+
+    var url = Url.Action(null, routeValues);
 }
 
-<form method="get" action="@formAction">
-	@foreach (var param in Model.AdditionalParameters)
-	{
-		<input type="hidden" name="@param.Key" value="@param.Value" />
-	}
-	<input type="hidden" name="sortField" value="@Model.FieldName" />
-	<input type="hidden" name="sortDirection" value="@nextSortDirection" />
-	<input type="hidden" name="fromPagination" value="true" />
-	<button type="submit" class="table-header-sort-button js-sort-link">
-        <span>
-			<span class="govuk-visually-hidden">Sort </span>@Html.Raw(Model.DisplayText)
-        </span>		
-		@Html.Raw(GetSortIcon(Model.FieldName, Model.CurrentSortField, Model.CurrentSortDirection))
-	</button>
-</form>
+<a href="@url#@Model.TableId"
+   class="table-header-sort-button js-sort-link govuk-link govuk-link--no-visited-state"
+   style="text-decoration: none;">
+    <span>
+        <span class="govuk-visually-hidden">Sort </span>@Html.Raw(Model.DisplayText)
+    </span>
+    @Html.Raw(GetSortIcon(Model.FieldName, Model.CurrentSortField, Model.CurrentSortDirection))
+</a>
 
 @functions {
 	private string GetSortIcon(string field, string? currentField, string? currentDirection)

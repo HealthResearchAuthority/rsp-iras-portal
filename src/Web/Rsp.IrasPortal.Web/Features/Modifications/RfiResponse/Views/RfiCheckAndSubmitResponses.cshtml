@@ -31,7 +31,7 @@
                         Short project title
                     </dt>
                     <dd class="govuk-summary-list__value">
-                        @Model.ShortProjectTitle
+                        @Model.ShortTitle
                     </dd>
                 </div>
                 <div class="govuk-summary-list__row">
@@ -39,7 +39,7 @@
                         Modification ID
                     </dt>
                     <dd class="govuk-summary-list__value">
-                        @Model.ModificationId
+                        @Model.ModificationIdentifier
                     </dd>
                 </div>
                 @for (var i = 0; i < Model.RfiReasons.Count; i++)

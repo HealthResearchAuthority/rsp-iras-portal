@@ -20,9 +20,9 @@
 	var routeName = (ViewData["BackRoute"] as string);
 	var backRouteValues = new Dictionary<string, string?>
 		{
-			{ "projectRecordId", Model.ProjectId },
-			{ "projectModificationId", Model.ModificationGuid },
-			{ "shortTitle", Model.ShortProjectTitle },
+			{ "projectRecordId", Model.ProjectRecordId },
+			{ "projectModificationId", Model.ModificationId },
+            { "shortTitle", Model.ShortTitle },
 			{ "irasId", Model.IrasId }
 		};
 }
@@ -43,11 +43,11 @@
 			</div>
 			<div class="govuk-summary-list__row">
 				<dt class="govuk-summary-list__key">Short project title</dt>
-				<dd class="govuk-summary-list__value">@Model.ShortProjectTitle</dd>
+                <dd class="govuk-summary-list__value">@Model.ShortTitle</dd>
 			</div>
 			<div class="govuk-summary-list__row">
 				<dt class="govuk-summary-list__key">Modification ID</dt>
-				<dd class="govuk-summary-list__value">@Model.ModificationId</dd>
+				<dd class="govuk-summary-list__value">@Model.ModificationIdentifier</dd>
 			</div>
 			<div class="govuk-summary-list__row">
 				<dt class="govuk-summary-list__key">Date reviewer submitted</dt>
@@ -93,7 +93,7 @@
 		<p class="govuk-body">
 			@Html.Raw(rfiRespondText?.Value)
 		</p>
-        <a asp-route="rfi:rfiresponses" class="govuk-button">
+        <a asp-route="rfi:rfiresponses" asp-all-route-data="backRouteValues" class="govuk-button">
             Respond
         </a>
 		@{

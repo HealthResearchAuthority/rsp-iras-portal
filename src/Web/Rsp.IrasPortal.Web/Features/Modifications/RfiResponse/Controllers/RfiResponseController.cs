@@ -1,13 +1,19 @@
 ﻿using System.Text.Json;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models;
 using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Features.Modifications;
+using Rsp.Portal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Controllers;
 
@@ -16,9 +22,18 @@ namespace Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Controllers;
 [Route("/modifications/rfi/[action]", Name = "rfi:[action]")]
 public class RfiResponseController(
     IProjectModificationsService projectModificationsService,
-    IApplicationsService projectRecordService
-    ) : Controller
+    IApplicationsService projectRecordService,
+    IRespondentService respondentService,
+    ICmsQuestionsetService cmsQuestionsetService,
+    IModificationRankingService modificationRankingService,
+    ISponsorOrganisationService sponsorOrganisationService,
+    ISponsorUserAuthorisationService sponsorUserAuthorisationService,
+    IValidator<QuestionnaireViewModel> validator,
+    IFeatureManager featureManager
+    ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
 {
+    private const string DocumentDetailsSection = "pdm-document-metadata";
+
     [HttpGet]
     public async Task<IActionResult> RfiDetails(string projectId, Guid modificationId)
     {
@@ -49,13 +64,14 @@ public class RfiResponseController(
         }
 
         model.IrasId = projectRecord.Content!.IrasId.ToString();
-        model.ModificationId = modification.Content.ModificationIdentifier;
-        model.ShortProjectTitle = projectRecord.Content.ShortProjectTitle;
+        model.ModificationIdentifier = modification.Content.ModificationIdentifier;
+        model.ShortTitle = projectRecord.Content.ShortProjectTitle;
         model.DateSubmitted = modification.Content.SentToRegulatorDate?.ToString("dd MMMM yyyy");
         model.RfiReasons = rfiReasons.Content == null ? [] : rfiReasons.Content.RequestForInformationReasons;
         model.RfiResponses = rfiResponses.Content == null ? [] : rfiResponses.Content.RfiResponses;
-        model.ProjectId = projectId;
-        model.ModificationGuid = modificationId.ToString();
+        model.ProjectRecordId = projectId;
+        model.ModificationId = modificationId.ToString();
+        model.Status = modification.Content.Status;
 
         if (model.RfiResponses.Count < model.RfiReasons.Count)
         {
@@ -69,11 +85,54 @@ public class RfiResponseController(
     }
 
     [HttpGet]
-    public IActionResult RfiResponses()
+    public async Task<IActionResult> RfiResponses
+    (
+        string projectRecordId,
+        string irasId,
+        string shortTitle,
+        Guid projectModificationId,
+        Guid? sponsorOrganisationUserId = null,
+        string? rtsId = null,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string sortField = nameof(ProjectOverviewDocumentDto.DocumentType),
+        string sortDirection = SortDirections.Ascending,
+        bool includeSelectiveDownloadError = false
+    )
     {
         var jsonModel = TempData.Peek(TempDataKeys.RfiDetails)!.ToString()!;
 
         var model = JsonSerializer.Deserialize<RfiDetailsViewModel>(jsonModel)!;
+
+        // Add modification documents
+        var modificationDocumentsResponseResult = await this.GetModificationDocuments(Guid.Parse(model.ModificationId),
+        DocumentDetailsSection, 1, int.MaxValue, sortField, sortDirection, isSponsorRevisingModification: true);
+
+        var allDocuments = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
+
+        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, allDocuments, false, showIncompleteForReviseAndAuthoriseStatus: true);
+
+        // apply pagination
+        var paginatedDocuments = GetSortedAndPaginatedDocuments(allDocuments, sortField, sortDirection, pageSize, pageNumber);
+
+        model.ProjectOverviewDocumentViewModel.Documents = paginatedDocuments;
+
+        model.ProjectOverviewDocumentViewModel.Pagination = new PaginationViewModel(pageNumber, pageSize, modificationDocumentsResponseResult.Item1?.Content?.TotalCount ?? 0)
+        {
+            SortDirection = sortDirection,
+            SortField = sortField,
+            FormName = "projectdocuments-selection",
+            RouteName = "pmc:modificationdetails",
+            AdditionalParameters = new Dictionary<string, string>()
+                {
+                    { "projectRecordId", projectRecordId },
+                    { "irasId", irasId },
+                    { "shortTitle", shortTitle },
+                    { "projectModificationId", projectModificationId.ToString() },
+                    { "sponsorOrganisationUserId", sponsorOrganisationUserId.ToString()?? string.Empty },
+                    { "rtsId", rtsId ?? string.Empty }
+                }
+        };
 
         return View(model);
     }
@@ -95,7 +154,7 @@ public class RfiResponseController(
         var saveResponsesResponse = await projectModificationsService.SaveModificationRfiResponses(
             new ModificationRfiResponseRequest()
             {
-                ProjectModificationId = Guid.Parse(storedModel.ModificationGuid!),
+                ProjectModificationId = Guid.Parse(storedModel.ModificationId!),
                 Responses = [.. storedModel.RfiResponses],
             }
         );
@@ -113,10 +172,10 @@ public class RfiResponseController(
                 "ReviewAllChanges",
                 new
                 {
-                    projectRecordId = storedModel.ProjectId,
+                    projectRecordId = storedModel.ProjectRecordId,
                     irasId = storedModel.IrasId,
-                    shortTitle = storedModel.ShortProjectTitle,
-                    projectModificationId = Guid.Parse(storedModel.ModificationGuid!),
+                    shortTitle = storedModel.ShortTitle,
+                    projectModificationId = Guid.Parse(storedModel.ModificationId!),
                 }
             );
         }
@@ -144,8 +203,8 @@ public class RfiResponseController(
 
         var updateStatusResponse = await projectModificationsService.UpdateModificationStatus
         (
-            storedModel.ProjectId!,
-            Guid.Parse(storedModel.ModificationGuid!),
+            storedModel.ProjectRecordId!,
+            Guid.Parse(storedModel.ModificationId!),
             ModificationStatus.ResponseWithSponsor
         );
 
