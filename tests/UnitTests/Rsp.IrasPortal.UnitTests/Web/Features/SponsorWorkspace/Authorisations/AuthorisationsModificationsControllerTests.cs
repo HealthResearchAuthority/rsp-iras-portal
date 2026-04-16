@@ -1635,6 +1635,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
         // Arrange
         var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
         authoriseOutcomeViewModel.Outcome = "NotAuthorised";
+        authoriseOutcomeViewModel.Status = "With sponsor";
         Mocker.GetMock<IFeatureManager>()
             .Setup(f => f.IsEnabledAsync(FeatureFlags.NotAuthorisedReason))
             .ReturnsAsync(true);
