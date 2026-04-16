@@ -230,7 +230,7 @@ public static class RoleStatusPermissions
                     DocumentStatus.Withdrawn,
                     DocumentStatus.Superseded,
                     DocumentStatus.ResponseWithReviewBody,
-                    DocumentStatus.ResponseWithSponsor
+                    DocumentStatus.ResponseWithSponsor,
                     DocumentStatus.RequestForInformation
                 }
             },
@@ -245,7 +245,7 @@ public static class RoleStatusPermissions
                     DocumentStatus.NotApproved,
                     DocumentStatus.Withdrawn,
                     DocumentStatus.Superseded,
-                     DocumentStatus.ResponseWithReviewBody,
+                    DocumentStatus.ResponseWithReviewBody,
                     DocumentStatus.ResponseWithSponsor
                 }
             },
