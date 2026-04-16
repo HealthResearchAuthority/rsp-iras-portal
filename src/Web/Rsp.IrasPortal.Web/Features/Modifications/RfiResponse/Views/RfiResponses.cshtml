@@ -1,4 +1,5 @@
 ﻿@using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models
+@using Rsp.Portal.Application.Constants
 @model RfiDetailsViewModel
 @{
     ViewBag.Title = "Request for further information";
@@ -68,41 +69,41 @@
                               class="govuk-textarea govuk-js-character-count"
                               rows="5"
                               aria-describedby="RfiResponses_@(i)_-info">
-                        </textarea>
+                            </textarea>
                     <div id="RfiResponses_@(i)_-info" class="govuk-hint govuk-character-count__message"></div>
                 </div>
             </div>
         </div>
         <hr />
     }
-
-    <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
-    @if (Model?.ProjectOverviewDocumentViewModel?.Documents is null || !Model.ProjectOverviewDocumentViewModel.Documents.Any())
-    {
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <h2 class="govuk-heading-m">Supporting documents</h2>
-                <p class="govuk-body">
-                    If any of the changes you're making involve an update to any project documents, make sure you add a copy of the original and updated documents.
-                </p>
+    <feature name="@FeatureFlags.RequestForInformation">
+        <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+        @if (Model?.ProjectOverviewDocumentViewModel?.Documents is null || !Model.ProjectOverviewDocumentViewModel.Documents.Any())
+        {
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-two-thirds">
+                    <h2 class="govuk-heading-m">Supporting documents</h2>
+                    <p class="govuk-body">
+                        If any of the changes you're making involve an update to any project documents, make sure you add a copy of the original and updated documents.
+                    </p>
+                </div>
             </div>
-        </div>
-        <div class="govuk-button-group">
+            <div class="govuk-button-group">
+                <form method="get">
+                    @{
+                        ViewBag.Style = "govuk-button govuk-button--secondary";
+                    }
+                    <partial name="_SubmitButton" model="@("pmc:projectdocument", "Add documents", new Dictionary<string, string> { })" />
+                </form>
+            </div>
+        }
+        else
+        {
             <form method="get">
-                @{
-                    ViewBag.Style = "govuk-button govuk-button--secondary";
-                }
-                <partial name="_SubmitButton" model="@("pmc:projectdocument", "Add documents", new Dictionary<string, string> { })" />
+                <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
             </form>
-        </div>
-    }
-    else
-    {
-        <form method="get">
-            <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
-        </form>
-    }
-
+        }
+    </feature>
     <div class="save-buttons">
         <button type="submit" class="govuk-button" data-module="govuk-button">
             Save and continue
