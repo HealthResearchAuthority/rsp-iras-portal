@@ -54,6 +54,13 @@ public static class WorkspaceRolesMatrix
         [Workspaces.Approvals] =
         [
             Roles.TeamManager, Roles.StudyWideReviewer, Roles.WorkflowCoordinator, Roles.SystemAdministrator
+        ],
+
+        // Roles allowed in the "MemberManagement" workspace:
+        // - Team managers, Member Management and admins
+        [Workspaces.MemberManagement] =
+        [
+            Roles.TeamManager, Roles.MemberManagement, Roles.SystemAdministrator
         ]
     };
 

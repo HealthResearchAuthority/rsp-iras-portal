@@ -235,6 +235,7 @@ public class UsersController(
     public async Task<IActionResult> ConfirmUserSubmission(UserViewModel model)
     {
         ViewBag.Mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
+        TempData[TempDataKeys.ShowEditLink] = true;
 
         ValidateUserViewModel(model);
 

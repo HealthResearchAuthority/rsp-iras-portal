@@ -9,4 +9,8 @@ public static class Roles
     public const string TeamManager = "team_manager";
     public const string WorkflowCoordinator = "workflow_co-ordinator";
     public const string OrganisationAdministrator = "organisation_administrator";
+    public const string Administrator = "administrator";
+    public const string MemberManagement = "member_management";
+    public const string ResearchEthicsCommitteeManager = "research_ethics_committee_manager";
+    public const string Reviewer = "reviewer";
 }

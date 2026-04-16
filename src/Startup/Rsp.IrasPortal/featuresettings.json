@@ -276,6 +276,24 @@
                     }
                 }
             ]
+        },
+        "Rec.MemberManagement": {
+            "EnabledFor": [
+                {
+                    "Name": "Microsoft.Targeting",
+                    "Parameters": {
+                        "Audience": {
+                            "Users": [],
+                            "Groups": [],
+                            "DefaultRolloutPercentage": 100,
+                            "Exclusion": {
+                                "Users": [],
+                                "Groups": []
+                            }
+                        }
+                    }
+                }
+            ]
         }
     }
 }

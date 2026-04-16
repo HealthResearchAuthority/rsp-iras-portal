@@ -69,4 +69,7 @@ public static class FeatureFlags
     public const string ChangeOfSponsorOrganisation = "Modifications.ChangeOfSponsorOrganisation";
     // Enable user notifications area
     public const string UserNotifications = "System.UserNotifications";
+
+    // Enable Rec Member Management 
+    public const string RecMemberManagement = "Rec.MemberManagement";
 }
