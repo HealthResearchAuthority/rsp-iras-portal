@@ -128,8 +128,13 @@ public static class RolePermissions
                 Approvals.ProjectRecords_Search,
                 Approvals.ModificationRecords_Search,
                 Approvals.Modifications_Assign,
-                Approvals.Modifications_Reassign
-            }
+                Approvals.Modifications_Reassign,
+
+                // Member Management Workspace
+                MemberManagement.Workspace_Access,
+                MemberManagement.ResearchEthicsCommittees_Access,
+                MemberManagement.ResearchEthicsCommittees_Search,
+}
         },
         {
             Roles.StudyWideReviewer, new List<string>
@@ -187,6 +192,15 @@ public static class RolePermissions
                 Sponsor.MyOrganisations_Projects,
                 Sponsor.MyOrganisations_Users,
                 Sponsor.MyOrganisations_Audit
+            }
+        },
+        {
+            Roles.MemberManagement, new List<string>
+            {
+                // Member Management Workspace
+                MemberManagement.Workspace_Access,
+                MemberManagement.ResearchEthicsCommittees_Access,
+                MemberManagement.ResearchEthicsCommittees_Search,
             }
         },
     };

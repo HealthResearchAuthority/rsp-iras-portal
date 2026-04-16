@@ -292,6 +292,18 @@ public static class Permissions
         /// allows seeing the workspace on the dashboard
         /// </summary>
         public const string Workspace_Access = "membermanagement.workspace.access";
+
+        /// <summary>
+        /// allows accessing research ethics committees
+        /// </summary>
+        public const string ResearchEthicsCommittees_Access = "membermanagement.researchethicscommittees.access";
+        /// <summary>
+        /// allows searching research ethics committees
+        /// </summary>
+        public const string ResearchEthicsCommittees_Search = "membermanagement.researchethicscommittees.search";
+
+
+
     }
 
     // CAT Workspace Permissions
