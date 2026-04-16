@@ -13,6 +13,7 @@ public struct ModificationStatus
     public const string RequestForInformation = "Request for further information";
     public const string Withdrawn = "Withdrawn";
     public const string ResponseWithSponsor = "Response with sponsor";
+    public const string ResponseWithReviewBody = "Response with review body";
 
     // BACKSTAGE VALUES
     public const string Received = "Received";
@@ -27,13 +28,16 @@ public struct ModificationStatus
         WithReviewBody,
         Approved,
         NotApproved,
-        NotAuthorised
+        NotAuthorised,
+        ResponseWithSponsor,
+        ResponseWithReviewBody
     ];
 
     public static readonly List<string> InTransactionStatus = [
         InDraft,
         WithSponsor,
         RequestRevisions,
-        ReviseAndAuthorise
+        ReviseAndAuthorise,
+        ResponseWithSponsor
    ];
 }

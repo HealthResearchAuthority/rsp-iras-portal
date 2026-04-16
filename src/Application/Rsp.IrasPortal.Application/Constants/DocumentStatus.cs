@@ -20,5 +20,7 @@ public struct DocumentStatus
     public const string ReviewInProgress = "Review in progress";
     public const string RequestRevisions = "Request revision";
     public const string ReviseAndAuthorise = "Sponsor revises modification";
+    public const string ResponseWithSponsor = "Response with sponsor";
+    public const string ResponseWithReviewBody = "Response with review body";
     public const string RequestForInformation = "Request for further information";
 }
