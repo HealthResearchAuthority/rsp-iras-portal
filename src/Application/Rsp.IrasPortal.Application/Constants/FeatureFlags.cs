@@ -67,9 +67,13 @@ public static class FeatureFlags
 
     // Allows changing sponsor organisation via modification journey
     public const string ChangeOfSponsorOrganisation = "Modifications.ChangeOfSponsorOrganisation";
+
     // Enable user notifications area
     public const string UserNotifications = "System.UserNotifications";
 
-    // Enable Rec Member Management 
+    // Enable Rec Member Management
     public const string RecMemberManagement = "Rec.MemberManagement";
+
+    // Allows searching / adding / removing collaborators to the project
+    public const string TeamRoles = "Project.TeamRoles";
 }

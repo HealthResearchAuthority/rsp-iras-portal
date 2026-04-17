@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.FeatureManagement;
+using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Web.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -277,14 +278,30 @@ public class ProjectOverviewController
         {
             return result;
         }
+
         var projectOverviewModel = okResult.Value as ProjectOverviewModel;
 
-        var projectTeamResult = await GetProjectTeamResult(projectOverviewModel!);
-        if (projectTeamResult is not OkObjectResult projectTeamOkResult)
+        ProjectTeamViewModel? projectTeamModel;
+
+        if (await featureManager.IsEnabledAsync(FeatureFlags.TeamRoles))
         {
-            return projectTeamResult;
+            var projectTeamResult = await GetProjectTeamResult(projectOverviewModel!);
+
+            if (projectTeamResult is not OkObjectResult projectTeamOkResult)
+            {
+                return projectTeamResult;
+            }
+
+            projectTeamModel = projectTeamOkResult.Value as ProjectTeamViewModel;
         }
-        var projectTeamModel = projectTeamOkResult.Value as ProjectTeamViewModel;
+        else
+        {
+            projectTeamModel = new ProjectTeamViewModel
+            {
+                ProjectOverviewModel = projectOverviewModel!,
+                Collaborators = []
+            };
+        }
 
         projectTeamModel!.Pagination = new PaginationViewModel(pageNumber, pageSize, projectTeamModel.Collaborators.Count)
         {
@@ -639,6 +656,7 @@ public class ProjectOverviewController
     }
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Update)]
+    [FeatureGate(FeatureFlags.TeamRoles)]
     public async Task<IActionResult> AddCollaborator(string projectRecordId)
     {
         var result = await GetProjectOverviewResult(projectRecordId!, null);
@@ -657,6 +675,7 @@ public class ProjectOverviewController
     }
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Update)]
+    [FeatureGate(FeatureFlags.TeamRoles)]
     public async Task<IActionResult> SearchCollaborator(ProjectTeamViewModel model)
     {
         var result = await GetProjectOverviewResult(model.ProjectOverviewModel.ProjectRecordId!, null);
