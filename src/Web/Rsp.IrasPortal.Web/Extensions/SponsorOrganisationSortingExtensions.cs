@@ -46,9 +46,9 @@ public static class SponsorOrganisationSortingExtensions
                     .ThenBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase),
 
             "isactive" => desc
-                ? items.OrderByDescending(x => x.IsActive)
+                ? items.OrderBy(x => x.IsActive)
                     .ThenBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase)
-                : items.OrderBy(x => x.IsActive)
+                : items.OrderByDescending(x => x.IsActive)
                     .ThenBy(x => x.SponsorOrganisationName, StringComparer.OrdinalIgnoreCase),
 
             _ => desc
