@@ -158,7 +158,10 @@
 	</div>
 
 	<partial name="_Footer" />
-
+    <form id="download-selection-form"
+          method="get"
+          action="@Url.RouteUrl("pmc:downloaddocumentsselectionaszip")">
+    </form>
 	<script type="module" src="~/js/govuk-frontend.min.js"></script>
 	<script type="module">
 		import { initAll } from '/js//govuk-frontend.min.js';
