@@ -1635,6 +1635,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
         // Arrange
         var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
         authoriseOutcomeViewModel.Outcome = "NotAuthorised";
+        authoriseOutcomeViewModel.Status = "With sponsor";
         Mocker.GetMock<IFeatureManager>()
             .Setup(f => f.IsEnabledAsync(FeatureFlags.NotAuthorisedReason))
             .ReturnsAsync(true);
@@ -2722,6 +2723,154 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
         var viewResult = result.ShouldBeOfType<ViewResult>();
 
         viewResult.ViewName.ShouldBe("NoChangesToSubmit");
+    }
+
+    [Fact]
+    public async Task CheckAndAuthorise_SponsorAuthorisationFlag_Enabled_Update_Status_To_ResponseWithReviewBody()
+    {
+        // Arrange
+        var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
+        authoriseOutcomeViewModel.Outcome = "Authorised";
+        authoriseOutcomeViewModel.ReviewType = "Review required";
+        authoriseOutcomeViewModel.Status = "Response with sponsor";
+
+        Mocker.GetMock<IFeatureManager>()
+          .Setup(f => f.IsEnabledAsync(FeatureFlags.SponsorAuthorisation))
+          .ReturnsAsync(true);
+        Mocker
+            .GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsForProject(It.IsAny<string>(), It.IsAny<ModificationSearchRequest>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = null
+            });
+        Mocker.GetMock<IApplicationsService>()
+          .Setup(s => s.UpdateProjectRecordStatus(It.IsAny<string>(), It.IsAny<string>()))
+          .ReturnsAsync(new ServiceResponse
+          {
+              StatusCode = HttpStatusCode.OK,
+          });
+
+        // Act
+        var result = await Sut.CheckAndAuthorise(authoriseOutcomeViewModel);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.Confirmation));
+    }
+
+    [Fact]
+    public async Task CheckAndAuthorise_SponsorAuthorisationFlag_NotEnabled_Update_Status_To_WithReviewBody()
+    {
+        // Arrange
+        var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
+        authoriseOutcomeViewModel.Outcome = "Authorised";
+        authoriseOutcomeViewModel.ReviewType = "Review required";
+        authoriseOutcomeViewModel.Status = "With sponsor";
+
+        Mocker.GetMock<IFeatureManager>()
+          .Setup(f => f.IsEnabledAsync(FeatureFlags.SponsorAuthorisation))
+          .ReturnsAsync(false);
+        Mocker
+            .GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsForProject(It.IsAny<string>(), It.IsAny<ModificationSearchRequest>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = null
+            });
+        Mocker.GetMock<IApplicationsService>()
+          .Setup(s => s.UpdateProjectRecordStatus(It.IsAny<string>(), It.IsAny<string>()))
+          .ReturnsAsync(new ServiceResponse
+          {
+              StatusCode = HttpStatusCode.OK,
+          });
+
+        // Act
+        var result = await Sut.CheckAndAuthorise(authoriseOutcomeViewModel);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.Confirmation));
+    }
+
+    [Fact]
+    public async Task CheckAndAuthorise_NotAuthorisedReasonFlag_Should_Return_View_NotAuthorised()
+    {
+        // Arrange
+        var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
+        authoriseOutcomeViewModel.Outcome = "NotAuthorised";
+        authoriseOutcomeViewModel.Status = "With sponsor";
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.NotAuthorisedReason))
+            .ReturnsAsync(true);
+        // Act
+        var result = await Sut.CheckAndAuthorise(authoriseOutcomeViewModel);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.ModificationNotAuthorised));
+    }
+
+    [Fact]
+    public async Task CheckAndAuthorise_SponsorAuthorisationFlag_Enabled_Rfi_Notauthorised_Should_Return_View_NotAuthorised()
+    {
+        // Arrange
+        var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
+        authoriseOutcomeViewModel.Outcome = "NotAuthorised";
+        authoriseOutcomeViewModel.Status = "Response with sponsor";
+
+        Mocker.GetMock<IFeatureManager>()
+         .Setup(f => f.IsEnabledAsync(FeatureFlags.SponsorAuthorisation))
+         .ReturnsAsync(true);
+
+        // Act
+        var result = await Sut.CheckAndAuthorise(authoriseOutcomeViewModel);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.ModificationNotAuthorised));
+    }
+
+    [Fact]
+    public async Task Returns_View_CanSubmitToReviewBody_When_Status_ResponseWithReviewBody()
+    {
+        // Arrange
+        var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
+        authoriseOutcomeViewModel.Status = ModificationStatus.ResponseWithReviewBody;
+        authoriseOutcomeViewModel.Outcome = "Authorised";
+        authoriseOutcomeViewModel.ReviewType = "Review required";
+        Mocker
+            .GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationsForProject(It.IsAny<string>(), It.IsAny<ModificationSearchRequest>(),
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<GetModificationsResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new GetModificationsResponse
+                {
+                    TotalCount = 1,
+                    Modifications =
+                    [
+                        new ModificationsDto
+                        {
+                            Id = Guid.NewGuid().ToString(), ModificationId = "MOD1", ModificationType = "Type",
+                            ReviewType = "Review", Category = "A", Status = ModificationStatus.ResponseWithReviewBody
+                        }
+                    ]
+                }
+            });
+
+        // Act
+        var result = await Sut.CheckAndAuthorise(authoriseOutcomeViewModel);
+
+        // Assert
+        var viewResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("CanSubmitToReviewBody", viewResult.ActionName);
+        result.ShouldBeOfType<RedirectToActionResult>();
     }
 
     public SponsorUserAuthorisationResult Authorised(Guid gid)

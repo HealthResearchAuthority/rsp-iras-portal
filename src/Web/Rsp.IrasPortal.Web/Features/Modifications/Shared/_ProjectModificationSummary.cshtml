@@ -89,7 +89,9 @@
                                ModificationStatus.Approved,
                                ModificationStatus.NotApproved,
                                ModificationStatus.NotAuthorised,
-                               ModificationStatus.Withdrawn })"
+                               ModificationStatus.Withdrawn,
+                               ModificationStatus.ResponseWithSponsor,
+                               ModificationStatus.ResponseWithReviewBody})"
                     status-mode="Show">
             @if (modificationBaseModel.Status is not null && !string.IsNullOrWhiteSpace(modificationBaseModel.DateCreated))
             {
@@ -125,7 +127,7 @@
                     <dt class="govuk-summary-list__key">Date sponsor submitted</dt>
                     <dd class="govuk-summary-list__value">@modificationBaseModel.DateSponsorSubmittedOutcome</dd>
                 </div>
-            }            
+            }
         </authorized>
     </feature>
 
@@ -144,6 +146,8 @@
                         ModificationStatus.NotApproved => "govuk-tag--red",
                         ModificationStatus.NotAuthorised => "govuk-tag--red",
                         ModificationStatus.Withdrawn => "govuk-tag--red",
+                        ModificationStatus.ResponseWithSponsor => "govuk-tag--red",
+                        ModificationStatus.ResponseWithReviewBody => "govuk-tag--green",
                         _ => "govuk-tag--blue"
                     };
                 }
@@ -164,7 +168,7 @@
             </authorized>
         }
 
-        <feature name="@FeatureFlags.NotAuthorisedReason">
+        <feature name="@FeatureFlags.NotAuthorisedReason,@FeatureFlags.SponsorAuthorisation" requirement="Any">
             <authorized role-in="@(new []{Roles.Applicant, Roles.Sponsor, Roles.OrganisationAdministrator})"
                         status-for="@modificationBaseModel.Status"
                         status-is="@ModificationStatus.NotAuthorised">

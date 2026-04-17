@@ -1,7 +1,6 @@
 ﻿@using Rsp.Portal.Application.Constants
 @model Rsp.Portal.Web.Features.Modifications.Models.ModificationDetailsViewModel
 
-
 @{
     var isBackStageUser =
         User.IsInRole(Roles.SystemAdministrator)
@@ -20,12 +19,10 @@
         baseRouteParams[kv.Key] = kv.Value.ToString();
     }
 
-
     var isOutcomeValid = Model.Status is
         ModificationStatus.Approved or
         ModificationStatus.NotApproved or
         ModificationStatus.NotAuthorised;
-
 
     var isCommentVisible = isBackStageUser && !string.IsNullOrWhiteSpace(Model?.ReviewerComments) && isOutcomeValid;
 
@@ -49,11 +46,12 @@
 
     string defaultTab =
         queryDocuments == ModificationOverview.Documents ? ModificationOverview.Documents :
+        Model?.Status == ModificationStatus.ResponseWithSponsor ? ModificationOverview.RequestForFurtherInformation :
         isNotOnlyApplicant ? ModificationOverview.SponsorDetails : ModificationOverview.ModificationDetails;
 
     // set active tab id
     var allowedTabs = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-    {
+{
         ModificationOverview.SponsorDetails,
         ModificationOverview.ModificationDetails,
         ModificationOverview.Documents,

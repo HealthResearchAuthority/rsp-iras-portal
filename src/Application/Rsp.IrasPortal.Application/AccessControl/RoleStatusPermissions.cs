@@ -109,7 +109,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.NotApproved,
                     ModificationStatus.RequestForInformation,
                     ModificationStatus.Withdrawn,
-                    ModificationStatus.ResponseWithSponsor
+                    ModificationStatus.ResponseWithSponsor,
+                    ModificationStatus.ResponseWithReviewBody
                 }
             },
             {
@@ -123,7 +124,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.NotApproved,
                     ModificationStatus.RequestForInformation,
                     ModificationStatus.Withdrawn,
-                    ModificationStatus.ResponseWithSponsor
+                    ModificationStatus.ResponseWithSponsor,
+                    ModificationStatus.ResponseWithReviewBody
                 }
             },
             {
@@ -137,7 +139,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.NotApproved,
                     ModificationStatus.RequestForInformation,
                     ModificationStatus.Withdrawn,
-                    ModificationStatus.ResponseWithSponsor
+                    ModificationStatus.ResponseWithSponsor,
+                    ModificationStatus.ResponseWithReviewBody
                 }
             },
             {
@@ -226,6 +229,8 @@ public static class RoleStatusPermissions
                     DocumentStatus.NotApproved,
                     DocumentStatus.Withdrawn,
                     DocumentStatus.Superseded,
+                    DocumentStatus.ResponseWithReviewBody,
+                    DocumentStatus.ResponseWithSponsor,
                     DocumentStatus.RequestForInformation
                 }
             },
@@ -239,7 +244,9 @@ public static class RoleStatusPermissions
                     DocumentStatus.NotAuthorised,
                     DocumentStatus.NotApproved,
                     DocumentStatus.Withdrawn,
-                    DocumentStatus.Superseded
+                    DocumentStatus.Superseded,
+                    DocumentStatus.ResponseWithReviewBody,
+                    DocumentStatus.ResponseWithSponsor
                 }
             },
             {
@@ -252,7 +259,9 @@ public static class RoleStatusPermissions
                     DocumentStatus.NotAuthorised,
                     DocumentStatus.NotApproved,
                     DocumentStatus.Withdrawn,
-                    DocumentStatus.Superseded
+                    DocumentStatus.Superseded,
+                    DocumentStatus.ResponseWithReviewBody,
+                    DocumentStatus.ResponseWithSponsor
                 }
             },
             {

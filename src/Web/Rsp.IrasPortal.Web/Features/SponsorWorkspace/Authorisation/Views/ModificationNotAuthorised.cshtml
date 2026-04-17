@@ -13,7 +13,20 @@
 
     var title = pageContent.GetValueOrDefault("SponsorWorkspace.ModificationNotAuthorised.Title", null);
     var body = pageContent.GetValueOrDefault("SponsorWorkspace.ModificationNotAuthorised.Description", null);
-
+    var RfiTitle = pageContent.GetValueOrDefault("SponsorWorkspace.ModificationNotAuthorised.RfiTitle", null);
+    var RfiDescription = pageContent.GetValueOrDefault("SponsorWorkspace.ModificationNotAuthorised.RfiDescription", null);
+    string heading;
+    string messageText;
+    if (Model.Status == ModificationStatus.ResponseWithSponsor)
+    {
+        heading = RfiTitle.Value;
+        messageText = RfiDescription.Value;
+    }
+    else
+    {
+        heading = title.Value;
+        messageText = body.Value;
+    }
 }
 
 @section BackNavigation {
@@ -30,7 +43,7 @@
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         <h1 class="govuk-heading-l">
-            @Html.Raw(title?.Value)
+            @Html.Raw(heading)
         </h1>
         <partial name="~/Features/Modifications/Shared/_ProjectModificationSummary.cshtml"
                  model="Model"
@@ -41,7 +54,7 @@
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
             <div id="reason-not-authorising-label">
-                @Html.Raw(body?.Value)
+                @Html.Raw(messageText)
             </div>
 
             <div class="govuk-form-group govuk-character-count"
@@ -79,6 +92,7 @@
             <input type="hidden" name="ModificationIdentifier" value="@Model.ModificationIdentifier" />
             <input type="hidden" name="Outcome" value="@Model.Outcome" />
             <input type="hidden" name="RtsId" value="@Model.RtsId" />
+            <input type="hidden" name="Status" value="@Model.Status" />
 
             <button type="submit" class="govuk-button" data-module="govuk-button">
                 Confirm as not authorised

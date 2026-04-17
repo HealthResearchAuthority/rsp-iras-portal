@@ -12,6 +12,20 @@
     var title = pageContent.GetValueOrDefault("SponsorWorkspace.ConfirmationModificationNotAuthorised.Title", null);
     var headline = pageContent.GetValueOrDefault("SponsorWorkspace.ConfirmationModificationNotAuthorised.Headline", null);
     var body = pageContent.GetValueOrDefault("SponsorWorkspace.ConfirmationModificationNotAuthorised.Description", null);
+    var RfiTitle = pageContent.GetValueOrDefault("SponsorWorkspace.ConfirmationModificationNotAuthorised.RfiTitle", null);
+    var RfiDescription = pageContent.GetValueOrDefault("SponsorWorkspace.ConfirmationModificationNotAuthorised.RfiDescription", null);
+    string heading;
+    string messageText;
+    if (Model.Status == ModificationStatus.ResponseWithSponsor)
+    {
+        heading = RfiTitle?.Value;
+        messageText = RfiDescription?.Value;
+    }
+    else
+    {
+        heading = title?.Value;
+        messageText = body?.Value;
+    }
 }
 
 <div class="govuk-width-container">
@@ -19,7 +33,7 @@
         <div class="govuk-grid-column-two-thirds">
             <div class="govuk-panel govuk-panel--confirmation">
                 <h1 class="govuk-panel__title">
-                    @Html.Raw(title?.Value)
+                    @Html.Raw(heading)
                 </h1>
             </div>
 
@@ -30,7 +44,7 @@
             </h2>
 
             <p class="govuk-body">
-                @Html.Raw(body?.Value)
+                @Html.Raw(messageText)
             </p>
         </div>
     </div>

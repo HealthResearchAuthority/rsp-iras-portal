@@ -71,6 +71,10 @@ public static class FeatureFlags
     // Enable user notifications area
     public const string UserNotifications = "System.UserNotifications";
 
+    //This enables the RFI flow for sponsor to authorise modification
+    public const string SponsorAuthorisation = "Modifications.RequestForInformation.SponsorAuthorisation";
+
+    // Enable Rec Member Management 
     // Enable Rec Member Management
     public const string RecMemberManagement = "Rec.MemberManagement";
 

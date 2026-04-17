@@ -399,7 +399,7 @@ public class AuthorisationsModificationsController
                 //call modification service and check if any modificatios are in reviewbody status
                 var modificationsResponse = await projectModificationsService.GetModificationsForProject(model.ProjectRecordId, new ModificationSearchRequest());
                 if (modificationsResponse.Content?.Modifications?
-                        .Any(m => m.Status == ModificationStatus.WithReviewBody) == true)
+                        .Any(m => m.Status is ModificationStatus.WithReviewBody or ModificationStatus.ResponseWithReviewBody) == true)
                 {
                     return RedirectToAction(nameof(CanSubmitToReviewBody), model);
                 }
@@ -414,12 +414,19 @@ public class AuthorisationsModificationsController
                 switch (reviewType)
                 {
                     case "Review required":
-                        await projectModificationsService.UpdateModificationStatus
-                        (
-                            model.ProjectRecordId,
-                            Guid.Parse(model.ModificationId),
-                            ModificationStatus.WithReviewBody
-                        );
+                        var isSponsorAuthorisationEnabled =
+                            await featureManager.IsEnabledAsync(FeatureFlags.SponsorAuthorisation);
+
+                        var status =
+                            isSponsorAuthorisationEnabled && model.Status == ModificationStatus.ResponseWithSponsor
+                                ? ModificationStatus.ResponseWithReviewBody
+                                : ModificationStatus.WithReviewBody;
+
+                        await projectModificationsService.UpdateModificationStatus(
+                                   model.ProjectRecordId,
+                                   Guid.Parse(model.ModificationId),
+                                   status
+                               );
                         break;
 
                     default:
@@ -456,7 +463,8 @@ public class AuthorisationsModificationsController
                 });
 
             case "NotAuthorised":
-                if (await featureManager.IsEnabledAsync(FeatureFlags.NotAuthorisedReason))
+                if ((await featureManager.IsEnabledAsync(FeatureFlags.NotAuthorisedReason) && model.Status == ModificationStatus.WithSponsor) ||
+                   (await featureManager.IsEnabledAsync(FeatureFlags.SponsorAuthorisation) && model.Status == ModificationStatus.ResponseWithSponsor))
                 {
                     return RedirectToAction(nameof(ModificationNotAuthorised), model);
                 }
@@ -801,7 +809,7 @@ public class AuthorisationsModificationsController
     }
 
     [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
-    [FeatureGate(FeatureFlags.NotAuthorisedReason)]
+    [FeatureGate(RequirementType.Any, FeatureFlags.NotAuthorisedReason, FeatureFlags.SponsorAuthorisation)]
     [HttpGet]
     public async Task<IActionResult> ModificationNotAuthorised(AuthoriseModificationsOutcomeViewModel model)
     {
@@ -809,7 +817,7 @@ public class AuthorisationsModificationsController
     }
 
     [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
-    [FeatureGate(FeatureFlags.NotAuthorisedReason)]
+    [FeatureGate(RequirementType.Any, FeatureFlags.NotAuthorisedReason, FeatureFlags.SponsorAuthorisation)]
     [CmsContentAction(nameof(ModificationNotAuthorised))]
     [HttpPost]
     public async Task<IActionResult> SaveModificationReasonNotApproved(AuthoriseModificationsOutcomeViewModel model)
@@ -843,7 +851,7 @@ public class AuthorisationsModificationsController
     /// </summary>
     /// <returns></returns>
     [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
-    [FeatureGate(FeatureFlags.NotAuthorisedReason)]
+    [FeatureGate(RequirementType.Any, FeatureFlags.NotAuthorisedReason, FeatureFlags.SponsorAuthorisation)]
     [CmsContentAction(nameof(ConfirmationModificationNotAuthorised))]
     [HttpGet]
     public IActionResult ConfirmationModificationNotAuthorised(AuthoriseModificationsOutcomeViewModel model)

@@ -516,7 +516,7 @@ public class ReviewAllChangesController
     }
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Withdraw)]
-    [FeatureGate(FeatureFlags.WithdrawModification)]
+    [FeatureGate(RequirementType.Any, FeatureFlags.WithdrawModification, FeatureFlags.RequestForInformation)]
     [HttpGet]
     public IActionResult WithdrawModification()
     {
@@ -531,7 +531,7 @@ public class ReviewAllChangesController
     }
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Withdraw)]
-    [FeatureGate(FeatureFlags.WithdrawModification)]
+    [FeatureGate(RequirementType.Any, FeatureFlags.WithdrawModification, FeatureFlags.RequestForInformation)]
     [HttpPost]
     public async Task<IActionResult> ConfirmWithdrawModification(string projectRecordId, Guid projectModificationId)
     {
