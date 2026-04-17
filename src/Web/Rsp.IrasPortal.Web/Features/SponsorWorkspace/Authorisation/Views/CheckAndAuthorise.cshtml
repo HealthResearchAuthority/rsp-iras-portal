@@ -309,7 +309,7 @@
                                for="@option.Value">
                             @option.Label
                         </label>
-                        <feature name="@FeatureFlags.NotAuthorisedReason,@FeatureFlags.SponsorAuthorisation" requirement="Any">
+                        <feature name="@FeatureFlags.SponsorAuthorisation">
                             <authorized role-in="@(new []{Roles.Sponsor, Roles.OrganisationAdministrator})"
                                         status-for="@Model.Status"
                                         status-is="@ModificationStatus.ResponseWithSponsor">
