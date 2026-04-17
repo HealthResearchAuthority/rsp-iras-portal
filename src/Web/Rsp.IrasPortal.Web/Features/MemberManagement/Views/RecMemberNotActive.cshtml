@@ -1,0 +1,59 @@
+﻿@using Rsp.IrasPortal.Web.Features.MemberManagement.Models
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model string;
+
+@{
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
+
+	var headline = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.Title", null);
+	var body = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.Body", null);
+	var searchTitle = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.SearchTitle", null);
+}
+
+@section BackNavigation {
+	<partial name="_BackNavigation" model="@("recUserManagement:searchRecMember", "Back", new Dictionary<string, string> { { "RecId", Model } })" />
+}
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+		<h1 class="govuk-heading-l">Research ethics committee member profile is disabled</h1>
+		<div>
+
+			<p>
+				There isn't a member account registered to the email address you entered, so you can't add it to this research ethics committee.
+			</p>
+
+			<p>
+				You can try again. Make sure you double-check the spelling when entering the email address.
+			</p>
+			<p>
+				You should also check with the member to confirm you are using the correct email address. You need to add them using the same email address they use to log into the system.
+			</p>
+
+			<p>To get help, contact the support team. </p>
+
+			<br /><br />
+			To get help, contact the support team. 
+			<br /><br />
+			<strong>Online</strong>
+			<br />
+			Visit the <a class="govuk-link" href="#">HRA support site</a>
+			<br /><br />
+			<strong>Email</strong>
+			<br />
+			<a class="govuk-link" href="mailto:service.desk@hra.nhs.uk">service.desk@hra.nhs.uk</a>
+			<br /><br />
+			<strong>Phone</strong>
+			<br />
+			020 7104 8260
+			<br />
+			Monday to Friday, 9am to 5pm
+		</div>
+	</div>
+</div>
