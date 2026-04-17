@@ -1,0 +1,237 @@
+﻿@using Rsp.Gds.Component.Models
+@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Web.Features.MemberManagement.Models
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model RecMemberViewModel
+
+@{
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
+
+	var headline = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.Title", null);
+	var body = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.Body", null);
+	var searchTitle = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.SearchTitle", null);
+
+	var committeeError = ViewData.ModelState.ContainsKey(nameof(Model.CommitteeRole)) && ViewData.ModelState[nameof(Model.CommitteeRole)]?.Errors.Count > 0;
+	var committeeMessage = committeeError ? ViewData.ModelState[nameof(Model.CommitteeRole)]?.Errors.FirstOrDefault()?.ErrorMessage : null;
+
+	var designationError = ViewData.ModelState.ContainsKey(nameof(Model.Designation)) && ViewData.ModelState[nameof(Model.Designation)]?.Errors.Count > 0;
+	var designationMessage = designationError ? ViewData.ModelState[nameof(Model.Designation)]?.Errors.FirstOrDefault()?.ErrorMessage : null;
+
+	var order = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+			{
+				["RecTelephoneNumber"] = 0,
+				["CommitteeRole"] = 1,
+				["Designation"] = 2,
+			};
+}
+
+@section BackNavigation {
+	@if (Model.IsEditMode)
+	{
+		<partial name="_BackNavigation" model="@("recUserManagement:CheckRecMember", "Back", new Dictionary<string, string> { { "RecId", Model.RecId.ToString() }, {"UserId", Model.UserId} })" />
+	}
+	else
+	{
+		<partial name="_BackNavigation" model="@("recUserManagement:searchRecMember", "Back", new Dictionary<string, string> { { "RecId", Model.RecId.ToString() } })" />
+	}
+
+}
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-full">
+		<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+
+		@if (Model.IsEditMode)
+		{
+			<h1 class="govuk-heading-l govuk-grid-column-two-thirds">Edit research ethics committee member record</h1>
+		}
+		else
+		{
+			<div class="govuk-caption-l govuk-grid-column-two-thirds">
+				@Model.RecName
+			</div>
+			<h1 class="govuk-heading-l">Add member details</h1>
+			<p>Check this information is correct before adding member to @Model.RecName</p>
+		}
+
+	</div>
+	<form method="post" id="submit-user-form">
+		<div class="govuk-grid-column-full">
+			<table class="govuk-table">
+				<thead>
+					<tr>
+						<th></th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Title</b>
+						</td>
+						<td class="govuk-table__cell">
+							@Model.Title
+							<input type="hidden" asp-for="Title" name="Title" value="@Model.Title" />
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>First name</b>
+						</td>
+						<td class="govuk-table__cell">
+							@Model.FirstName
+							<input type="hidden" asp-for="FirstName" name="FirstName" value="@Model.FirstName" />
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Last name</b>
+						</td>
+						<td class="govuk-table__cell">
+							@Model.LastName
+							<input type="hidden" asp-for="LastName" name="LastName" value="@Model.LastName" />
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Email address</b>
+						</td>
+						<td class="govuk-table__cell">
+							@Model.EmailAddress
+							<input type="hidden" asp-for="EmailAddress" name="EmailAddress" value="@Model.EmailAddress" />
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Organisation</b>
+						</td>
+						<td class="govuk-table__cell">
+							@Model.Organisation
+							<input type="hidden" asp-for="Organisation" name="Organisation" value="@Model.Organisation" />
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Job title</b>
+						</td>
+						<td class="govuk-table__cell">
+							@Model.JobTitle
+							<input type="hidden" asp-for="JobTitle" name="JobTitle" value="@Model.JobTitle" />
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="govuk-grid-column-two-thirds rec-member-form">
+			<rsp-gds-input asp-for="RecTelephoneNumber" label-text="Telephone number (optional)" input-type="tel" width-class="govuk-!-width-two-thirds" />
+
+			<div class="govuk-form-group @(committeeError ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="CommitteeRole">
+					Committee role
+				</label>
+				@if (committeeError)
+				{
+					<span class="govuk-error-message">@committeeMessage</span>
+				}
+				<select asp-for="CommitteeRole" class="govuk-select govuk-!-width-two-thirds">
+					<option value="">Select a comittee role</option>
+					@foreach (var item in AddRecMemberFields.CommitteeRoles)
+					{
+						<option value="@item">@item</option>
+					}
+				</select>
+			</div>
+
+			<div class="govuk-form-group @(designationError ? "govuk-form-group--error" : "")">
+				<label class="govuk-label" for="Designation">
+					Designation
+				</label>
+				@if (designationError)
+				{
+					<span class="govuk-error-message">@designationMessage</span>
+				}
+				<select asp-for="Designation" class="govuk-select govuk-!-width-two-thirds">
+					<option value="">Select a designation</option>
+					@foreach (var item in AddRecMemberFields.Desginations)
+					{
+						<option value="@item">@item</option>
+					}
+				</select>
+			</div>
+
+			@if (Model.IsEditMode)
+			{
+				<div class="govuk-form-group">
+					<fieldset class="govuk-fieldset">
+						<label class="govuk-label" for="MemberLeftOrganisation">
+							Has this member left this research ethics committee?
+						</label>
+						<div class="govuk-radios govuk-radios--inline" data-module="govuk-radios">
+							<div class="govuk-radios__item">
+								<input class="govuk-radios__input" id="memberLeftOrganisation" name="MemberLeftOrganisation" type="radio" value="true" @((Model.MemberLeftOrganisation) ? "checked" : "")>
+								<label class="govuk-label govuk-radios__label" for="memberLeftOrganisation">
+									Yes
+								</label>
+							</div>
+							<div class="govuk-radios__item">
+								<input class="govuk-radios__input" id="memberLeftOrganisation-2" name="MemberLeftOrganisation" type="radio" value="false" @((!Model.MemberLeftOrganisation) ? "checked" : "")>
+								<label class="govuk-label govuk-radios__label" for="memberLeftOrganisation-2">
+									No
+								</label>
+							</div>
+						</div>
+					</fieldset>
+				</div>
+
+				<div class="govuk-form-group conditional-field">
+					<fieldset class="govuk-fieldset">
+						<rsp-gds-date-input asp-for="DateTimeLeft"
+											day-name="DateTimeLeftDay"
+											day-value="@Model.DateTimeLeftDay"
+											month-name="DateTimeLeftMonth"
+											month-value="@Model.DateTimeLeftMonth"
+											year-name="DateTimeLeftYear"
+											year-value="@Model.DateTimeLeftYear"
+											label-text="Date left this research ethics committee"
+											hint-html=""
+											error-key="DateTimeLeft"
+											id="DateTimeLeft"
+											label-html-class="font-weight-none" />
+					</fieldset>
+				</div>
+			}
+
+			<input type="hidden" asp-for="RecId" name="RecId" value="@Model.RecId" />
+			<input type="hidden" asp-for="RecName" name="RecName" value="@Model.RecName" />
+			<input type="hidden" asp-for="UserId" name="UserId" value="@Model.UserId" />
+			<input type="hidden" asp-for="IsEditMode" name="IsEditMode" value="@Model.IsEditMode" />
+
+			@if (Model.IsEditMode)
+			{
+				<partial name="_SubmitButton" model="@("recUserManagement:AddRecMember", "Save", new Dictionary<string, string>())" />
+			}
+			else
+			{
+				<partial name="_SubmitButton" model="@("recUserManagement:CheckRecMember", "Save", new Dictionary<string, string>())" />
+			}
+
+		</div>
+
+	</form>
+</div>
+
+@section FooterResources {
+	<script src="~/lib/jquery/dist/jquery.js"></script>
+	<script src="~/js/manageRecMembers.js"></script>
+}
