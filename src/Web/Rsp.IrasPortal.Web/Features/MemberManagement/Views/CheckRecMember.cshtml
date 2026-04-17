@@ -258,10 +258,10 @@
 				</tbody>
 			</table>
 
-			<input type="hidden" readonly name="UserId" value="@Model.UserId" />
-			<input type="hidden" readonly name="RecId" value="@Model.RecId" />
-			<input type="hidden" readonly name="IsEditMode" value="@Model.IsEditMode" />
-			<input type="hidden" readonly name="MemberLeftOrganisation" value="@Model.MemberLeftOrganisation" />
+			<input type="hidden" asp-for="UserId" readonly name="UserId" value="@Model.UserId" />
+			<input type="hidden" asp-for="RecId" readonly name="RecId" value="@Model.RecId" />
+			<input type="hidden" asp-for="IsEditMode" readonly name="IsEditMode" value="@Model.IsEditMode" />
+			<input type="hidden" asp-for="MemberLeftOrganisation" readonly name="MemberLeftOrganisation" value="@Model.MemberLeftOrganisation" />
 
 			@if (!edit)
 			{

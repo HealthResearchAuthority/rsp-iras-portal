@@ -14,10 +14,12 @@ public class RecMemberViewModel
     public string? RecTelephoneNumber { get; set; }
     public string? CommitteeRole { get; set; }
     public string? Designation { get; set; }
-    public bool MemberLeftOrganisation { get; set; }
+
+    public bool MemberLeftOrganisation { get; set; } = false;
     public Guid RecId { get; set; }
+
     public string RecName { get; set; } = null!;
-    public bool IsEditMode { get; set; }
+    public bool IsEditMode { get; set; } = false;
     public DateTime? LastUpdated { get; set; }
     public DateTime? DateTimeLeft => DateTimeExtensions.ParseDateValidation(DateTimeLeftDay, DateTimeLeftMonth, DateTimeLeftYear);
 

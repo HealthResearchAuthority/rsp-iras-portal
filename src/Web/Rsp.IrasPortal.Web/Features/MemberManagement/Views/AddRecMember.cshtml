@@ -44,16 +44,16 @@
 }
 
 <div class="govuk-grid-row">
-	<div class="govuk-grid-column-full">
+	<div class="govuk-grid-column-full govuk-grid-column-two-thirds">
 		<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
 		@if (Model.IsEditMode)
 		{
-			<h1 class="govuk-heading-l govuk-grid-column-two-thirds">Edit research ethics committee member record</h1>
+			<h1 class="govuk-heading-l">Edit research ethics committee member record</h1>
 		}
 		else
 		{
-			<div class="govuk-caption-l govuk-grid-column-two-thirds">
+			<div class="govuk-caption-l">
 				@Model.RecName
 			</div>
 			<h1 class="govuk-heading-l">Add member details</h1>
