@@ -25,5 +25,10 @@ public class RecMemberModelValidator : AbstractValidator<RecMemberViewModel>
             .WithMessage(TelephoneMaxCharactersErrorMessage)
             .Matches(@"^\+?\d+$")
             .WithMessage(TelephoneNumberFormatErrorMessage);
+
+        RuleFor(x => x.DateTimeLeft)
+            .LessThanOrEqualTo(DateTime.Today)
+            .WithMessage("The date the member left this committee must be today or in the past")
+            .When(x => x.MemberLeftOrganisation);
     }
 }
