@@ -61,3 +61,74 @@ else
         }
     </div>
 </div>
+
+@{
+	var organisationsWithAnswers = Model.ParticipatingOrganisations?
+		.Select(o => new
+		{
+			Organisation = o,
+			AnsweredQuestions = o.Questions?
+				.Select(q => new
+				{
+					Question = q,
+					DisplayText = q.GetDisplayText()
+				})
+				.Where(x => !string.IsNullOrWhiteSpace(x.DisplayText))
+				.ToList()
+		})
+		.Where(x => x.AnsweredQuestions?.Any() == true)
+		.ToList();
+}
+
+@if (organisationsWithAnswers?.Any() == true)
+{
+	<div class="govuk-grid-row">
+        <div class="govuk-width-container govuk-!-margin-top-4">
+
+            <h2 class="govuk-heading-m">Participating organisations</h2>
+
+            @foreach (var item in organisationsWithAnswers)
+            {
+                var organisation = item.Organisation;
+                var answeredQuestions = item.AnsweredQuestions;
+
+                <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">
+                            Participating organisation
+                        </dt>
+                        <dd class="govuk-summary-list__value">
+                            @organisation.OrganisationName
+                            @if (!string.IsNullOrWhiteSpace(organisation.OrganisationAddress))
+                            {
+                                <br />
+                                @organisation.OrganisationAddress
+                            }
+                        </dd>
+                    </div>
+
+                    <!-- Answered questions only -->
+                    @foreach (var q in answeredQuestions)
+                    {
+                        if (q.Question.AnswerText != null)
+                        {
+                            var questionText = string.IsNullOrWhiteSpace(q.Question.ShortQuestionText)
+                                ? q.Question.QuestionText
+                                : q.Question.ShortQuestionText;
+
+                            <div class="govuk-summary-list__row">
+                                <dt class="govuk-summary-list__key">@questionText</dt>
+                                <dd class="govuk-summary-list__value">
+                                    @Html.Raw(q.DisplayText)
+                                </dd>
+                            </div>
+                        }
+                    }
+                </dl>
+            }
+
+        </div>
+        <!-- Will only show for 10 or more -->
+        <partial name="_Pagination" model="@Model.Pagination" />
+    </div>
+}
