@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using System.Security.Claims;
+using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,12 +12,14 @@ using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.UnitTests;
+using Claim = System.Security.Claims.Claim;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.MemberManagement.RecMemberManagementControllerTests;
 
 public class CheckRecMemberTests : TestServiceBase<RecMemberManagementController>
 {
     private readonly DefaultHttpContext _http;
+    private readonly Guid LoggedInUserId = Guid.NewGuid();
 
     public CheckRecMemberTests()
     {
@@ -26,12 +29,23 @@ public class CheckRecMemberTests : TestServiceBase<RecMemberManagementController
         Sut.ControllerContext = new ControllerContext { HttpContext = _http };
     }
 
+    private void SetUser(Guid userId)
+    {
+        _http.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(CustomClaimTypes.UserId, userId.ToString())
+        }));
+    }
+
     [Theory, AutoData]
     public async Task CheckRecMember_Returns_For_HappyPath_View(Guid recId,
        ReviewBodyDto reviewBody,
        AddRecMemberViewModel viewModel,
        Guid userId)
     {
+        SetUser(LoggedInUserId);
+        SetUserResponse(LoggedInUserId);
+
         var userEmail = "user@example.com";
         var user = new UserResponse
         {
@@ -56,6 +70,7 @@ public class CheckRecMemberTests : TestServiceBase<RecMemberManagementController
         viewModel.RecName = reviewBody.RegulatoryBodyName;
 
         reviewBody.Id = recId;
+        reviewBody.Countries = new List<string> { "United Kingdom" };
         reviewBody.Users = new List<ReviewBodyUserDto>
         {
             new ReviewBodyUserDto
@@ -111,8 +126,12 @@ public class CheckRecMemberTests : TestServiceBase<RecMemberManagementController
         Guid userId,
         ReviewBodyDto reviewBody)
     {
+        SetUser(LoggedInUserId);
+        SetUserResponse(LoggedInUserId);
+
         var userEmail = "user@example.com";
         reviewBody.Id = recId;
+        reviewBody.Countries = new List<string> { "United Kingdom" };
         reviewBody.Users = new List<ReviewBodyUserDto>
         {
             new ReviewBodyUserDto
@@ -161,7 +180,11 @@ public class CheckRecMemberTests : TestServiceBase<RecMemberManagementController
         Guid userId,
         ReviewBodyDto reviewBody)
     {
+        SetUser(LoggedInUserId);
+        SetUserResponse(LoggedInUserId);
+
         reviewBody.Id = recId;
+        reviewBody.Countries = new List<string> { "United Kingdom" };
         reviewBody.Users = new List<ReviewBodyUserDto>();
         var reviewBodyResponse = new ServiceResponse<ReviewBodyDto>
         {
@@ -258,5 +281,37 @@ public class CheckRecMemberTests : TestServiceBase<RecMemberManagementController
         m.ShouldBeEquivalentTo(model);
         Sut.ModelState.ErrorCount.ShouldBe(1);
         Sut.ModelState["Error"].Errors[0].ErrorMessage.ShouldBe("Error");
+    }
+
+    // arrange logged in user response
+    private void SetUserResponse(Guid loggedInUser)
+    {
+        var user = new UserResponse
+        {
+            User = new User(loggedInUser.ToString(),
+                            "azure-ad-12345",
+                            "Mr",
+                            "Test",
+                            "Test",
+                            "some@email.com",
+                            "Software Developer",
+                            "orgName", // IMPORTANT: match org if your action filters by org
+                            "+44 7700 900123",
+                            "United Kingdom",
+                            IrasUserStatus.Active,
+                            DateTime.UtcNow,
+                            DateTime.UtcNow.AddDays(-2),
+                            DateTime.UtcNow)
+        };
+
+        var userResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = user
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(loggedInUser.ToString(), null, null))
+            .ReturnsAsync(userResponse);
     }
 }

@@ -13,9 +13,8 @@
 		? pageContentData
 		: new Dictionary<string, MixedContentPageItem?>();
 
-	var headline = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.Title", null);
-	var body = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.Body", null);
-	var searchTitle = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.SearchTitle", null);
+	var headline = pageContent.GetValueOrDefault("MemberManagement.AddMember.CheckMemberDetails.Title", null);
+	var body = pageContent.GetValueOrDefault("MemberManagement.AddMember.CheckMemberDetails.Body", null);
 
 	var committeeError = ViewData.ModelState.ContainsKey(nameof(Model.CommitteeRole)) && ViewData.ModelState[nameof(Model.CommitteeRole)]?.Errors.Count > 0;
 	var committeeMessage = committeeError ? ViewData.ModelState[nameof(Model.CommitteeRole)]?.Errors.FirstOrDefault()?.ErrorMessage : null;
@@ -34,11 +33,11 @@
 @section BackNavigation {
 	@if (Model.IsEditMode)
 	{
-		<partial name="_BackNavigation" model="@("recUserManagement:CheckRecMember", "Back", new Dictionary<string, string> { { "RecId", Model.RecId.ToString() }, {"UserId", Model.UserId} })" />
+		<partial name="_BackNavigation" model="@("mm:CheckRecMember", "Back", new Dictionary<string, string> { { "RecId", Model.RecId.ToString() }, {"UserId", Model.UserId} })" />
 	}
 	else
 	{
-		<partial name="_BackNavigation" model="@("recUserManagement:searchRecMember", "Back", new Dictionary<string, string> { { "RecId", Model.RecId.ToString() } })" />
+		<partial name="_BackNavigation" model="@("mm:searchRecMember", "Back", new Dictionary<string, string> { { "RecId", Model.RecId.ToString() } })" />
 	}
 
 }
@@ -56,8 +55,8 @@
 			<div class="govuk-caption-l">
 				@Model.RecName
 			</div>
-			<h1 class="govuk-heading-l">Add member details</h1>
-			<p>Check this information is correct before adding member to @Model.RecName</p>
+			<h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
+			<p>@Html.Raw(body?.Value) @Model.RecName</p>
 		}
 
 	</div>
@@ -219,11 +218,11 @@
 
 			@if (Model.IsEditMode)
 			{
-				<partial name="_SubmitButton" model="@("recUserManagement:AddRecMember", "Save", new Dictionary<string, string>())" />
+				<partial name="_SubmitButton" model="@("mm:AddRecMember", "Save", new Dictionary<string, string>())" />
 			}
 			else
 			{
-				<partial name="_SubmitButton" model="@("recUserManagement:CheckRecMember", "Save", new Dictionary<string, string>())" />
+				<partial name="_SubmitButton" model="@("mm:CheckRecMember", "Save", new Dictionary<string, string>())" />
 			}
 
 		</div>

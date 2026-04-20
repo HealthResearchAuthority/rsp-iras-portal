@@ -11,9 +11,8 @@
 		? pageContentData
 		: new Dictionary<string, MixedContentPageItem?>();
 
-	var headline = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.Title", null);
-	var body = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.Body", null);
-	var searchTitle = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.SearchTitle", null);
+	var headline = pageContent.GetValueOrDefault("MemberManagement.AddMember.SearchMember.Title", null);
+	var body = pageContent.GetValueOrDefault("MemberManagement.AddMember.SearchMember.Body", null);
 }
 
 @section BackNavigation {
@@ -27,7 +26,7 @@
 		<div class="govuk-caption-l">
 			@Model.RecName
 		</div>
-		<h1 class="govuk-heading-l">Add a new member</h1>
+		<h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
 	</div>
 </div>
 
@@ -36,7 +35,7 @@
 		<form method="post" class="govuk-form-group">
 
 			<p>
-				Search for a member to assign them to this committee.
+				@Html.Raw(body?.Value)
 			</p>
 			<br />
 			<div class="govuk-form-group">
@@ -63,7 +62,7 @@
 			<input type="hidden" readonly name="RecName" value="@Model.RecName" />
 
 			<br />
-		</form>		
+		</form>
 	</div>
 
 	@if (Model.Users != null && Model.Users.Any())
@@ -92,7 +91,7 @@
 								   asp-route-userId="@user.Id">
 									Add member
 								</a>
-								
+
 							</td>
 						</tr>
 					}

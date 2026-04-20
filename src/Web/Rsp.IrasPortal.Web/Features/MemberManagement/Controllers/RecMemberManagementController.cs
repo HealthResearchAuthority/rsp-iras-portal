@@ -5,6 +5,7 @@ using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Web.Features.MemberManagement.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Domain.Identity;
@@ -13,8 +14,8 @@ using Rsp.Portal.Web.Extensions;
 
 namespace Rsp.IrasPortal.Web.Features.MemberManagement.Controllers;
 
-[Authorize(Policy = Workspaces.MemberManagement)]
-[Route("recMemberManagement/[action]", Name = "mm:[action]")]
+[Authorize(Policy = Permissions.MemberManagement.ResearchEthicsCommittees_ManageMembers)]
+[Route("membermanagement/[action]", Name = "mm:[action]")]
 [FeatureGate(FeatureFlags.RecMemberManagement)]
 public class RecMemberManagementController(
     IReviewBodyService reviewBodyService,
@@ -33,7 +34,13 @@ public class RecMemberManagementController(
             || reviewBodyResponse.Content == null)
         {
             // If the review body does not exist, return a 404 not found response
-            return NotFound();
+            return this.ServiceError(reviewBodyResponse);
+        }
+
+        if (!await UserHasAccess(reviewBodyResponse.Content))
+        {
+            // if user does not have access to the review body, return 403 forbidden
+            return Forbid();
         }
 
         var viewModel = new AddRecMemberViewModel
@@ -113,6 +120,7 @@ public class RecMemberManagementController(
     }
 
     [HttpPost]
+    [CmsContentAction(nameof(AddRecMember))]
     public IActionResult EditNewRecMember(RecMemberViewModel model)
     {
         return View("AddRecMember", model);
@@ -128,6 +136,12 @@ public class RecMemberManagementController(
         {
             // If the review body does not exist, throw error
             return this.ServiceError(reviewBodyResponse);
+        }
+
+        if (!await UserHasAccess(reviewBodyResponse.Content))
+        {
+            // if user does not have access to the review body, return 403 forbidden
+            return Forbid();
         }
 
         var recUser = reviewBodyResponse.Content?.Users?.FirstOrDefault(u => u.UserId == userId);
@@ -182,6 +196,12 @@ public class RecMemberManagementController(
             return this.ServiceError(reviewBodyResponse);
         }
 
+        if (!await UserHasAccess(reviewBodyResponse.Content))
+        {
+            // if user does not have access to the review body, return 403 forbidden
+            return Forbid();
+        }
+
         var recUser = reviewBodyResponse.Content.Users?.FirstOrDefault(u => u.UserId == userId);
 
         if (recUser == null)
@@ -221,6 +241,12 @@ public class RecMemberManagementController(
             || recResponse.Content == null)
         {
             return this.ServiceError(recResponse);
+        }
+
+        if (!await UserHasAccess(recResponse.Content))
+        {
+            // if user does not have access to the review body, return 403 forbidden
+            return Forbid();
         }
 
         var userObject = userProfileResponse.Content.User;
@@ -270,6 +296,7 @@ public class RecMemberManagementController(
 
         if (model.IsEditMode)
         {
+            // this is editing an existing user so update them
             reviewBodyUserDto.DateTimeLastUpdated = DateTime.UtcNow;
             var updateUserResponse = await reviewBodyService.UpdateReviewBodyUser(reviewBodyUserDto);
 
@@ -284,6 +311,41 @@ public class RecMemberManagementController(
         else
         {
             // this is a new user so add them
+
+            // check if they already exist in rec
+            var reviewBodyResponse = await reviewBodyService.GetReviewBodyById(model.RecId);
+
+            if (!reviewBodyResponse.IsSuccessStatusCode ||
+                reviewBodyResponse.Content == null)
+            {
+                return this.ServiceError(reviewBodyResponse);
+            }
+
+            var userExists = reviewBodyResponse.Content.Users?.Any(u => u.Email == model.EmailAddress);
+
+            if (userExists.GetValueOrDefault(false))
+            {
+                // user already in REC so redirect to error page
+                return RedirectToAction(nameof(MemberExistsInRec), routeValues: new { recId = model.RecId.ToString() });
+            }
+
+            var userResponse = await userService.GetUser(null, model.EmailAddress);
+
+            if (!userResponse.IsSuccessStatusCode ||
+                userResponse.Content == null)
+            {
+                return this.ServiceError(userResponse);
+            }
+
+            var isUserEnabled = userResponse.Content.User?.Status == IrasUserStatus.Active;
+
+            if (!isUserEnabled)
+            {
+                // user is found but not active, redirect to error page
+                return RedirectToAction(nameof(RecMemberNotActive), routeValues: new { recId = model.RecId.ToString() });
+            }
+
+            // add user is good to be added to REC
             reviewBodyUserDto.DateAdded = DateTime.UtcNow;
             var addUserToRec = await reviewBodyService.AddUserToReviewBody(reviewBodyUserDto);
 
@@ -321,7 +383,7 @@ public class RecMemberManagementController(
         {
             RecId = rec.Id,
             UserId = userDetails.Id!,
-            Title = userDetails?.Title,
+            Title = userDetails.Title,
             FirstName = userDetails?.GivenName,
             LastName = userDetails?.FamilyName,
             EmailAddress = userDetails?.Email,
@@ -340,5 +402,35 @@ public class RecMemberManagementController(
         };
 
         return model;
+    }
+
+    private async Task<bool> UserHasAccess(ReviewBodyDto rec)
+    {
+        var userId = User?.FindFirst(CustomClaimTypes.UserId)?.Value;
+        var userDetails = await userService.GetUser(userId, null);
+
+        // if logged in user  cannot be found or is not Active
+        // deny access
+        if (!userDetails.IsSuccessStatusCode ||
+            userDetails.Content == null ||
+            userDetails.Content.User.Status != IrasUserStatus.Active)
+        {
+            return false;
+        }
+
+        var userCountry = userDetails.Content?.User?.Country?.Split(',');
+        var recCountry = rec.Countries;
+
+        var belongsToRec = userCountry?
+            .Intersect(recCountry ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase)
+            .Any() == true;
+
+        // if user does not belong to the rec country then deny access
+        if (!belongsToRec)
+        {
+            return false;
+        }
+
+        return true;
     }
 }
