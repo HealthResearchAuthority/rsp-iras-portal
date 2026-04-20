@@ -473,21 +473,12 @@ public class ProjectOverviewController
             }
 
             // Flatten both sets
-            var addedParticipatingOrganisations = addedOrganisations
+            var addedOnlyParticipatingOrganisations = addedOrganisations
                 .SelectMany(r => r.Content ?? [])
-                .ToList();
-
-            var earlyClosureParticipatingOrganisations = earlyClosureOrganisations
-                .SelectMany(r => r.Content ?? [])
-                .ToList();
-
-            // Exclude anything that is also in early closure
-            var earlyClosureOrganisationIds = earlyClosureParticipatingOrganisations
-                .Select(x => x.OrganisationId)
-                .ToHashSet();
-
-            var addedOnlyParticipatingOrganisations = addedParticipatingOrganisations
-                .Where(x => !earlyClosureOrganisationIds.Contains(x.OrganisationId))
+                .ExceptBy(
+                    earlyClosureOrganisations.SelectMany(r => r.Content ?? [])
+                        .Select(x => x.OrganisationId),
+                    x => x.OrganisationId)
                 .ToList();
 
             if (addedOnlyParticipatingOrganisations.Any())
