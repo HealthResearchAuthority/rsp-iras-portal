@@ -6,15 +6,15 @@ using Rsp.IrasPortal.Web.Features.MemberManagement.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 
 namespace Rsp.IrasPortal.Web.Features.MemberManagement.Controllers;
 
-//TODO add proper role for authorisation
-[Authorize]
-[Route("recUserManagement/[action]", Name = "recUserManagement:[action]")]
+[Authorize(Policy = Workspaces.MemberManagement)]
+[Route("recMemberManagement/[action]", Name = "mm:[action]")]
 [FeatureGate(FeatureFlags.RecMemberManagement)]
 public class RecMemberManagementController(
     IReviewBodyService reviewBodyService,

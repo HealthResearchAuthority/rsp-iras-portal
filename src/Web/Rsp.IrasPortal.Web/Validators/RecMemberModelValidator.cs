@@ -9,6 +9,7 @@ public class RecMemberModelValidator : AbstractValidator<RecMemberViewModel>
     private const string DesignationMandatoryErrorMessage = "Select a designation";
     private const string TelephoneNumberFormatErrorMessage = "Enter a telephone number, like 01632 960 001, 07700 900 982 or +44 808 157 0192";
     private const string TelephoneMaxCharactersErrorMessage = "Telephone must be 13 digits or less";
+    private const string DateLeftInPastErrorMessage = "The date the member left this committee must be today or in the past";
 
     public RecMemberModelValidator()
     {
@@ -28,7 +29,7 @@ public class RecMemberModelValidator : AbstractValidator<RecMemberViewModel>
 
         RuleFor(x => x.DateTimeLeft)
             .LessThanOrEqualTo(DateTime.Today)
-            .WithMessage("The date the member left this committee must be today or in the past")
+            .WithMessage(DateLeftInPastErrorMessage)
             .When(x => x.MemberLeftOrganisation);
     }
 }
