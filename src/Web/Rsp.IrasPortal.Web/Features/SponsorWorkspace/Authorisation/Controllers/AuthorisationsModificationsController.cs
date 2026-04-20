@@ -198,6 +198,7 @@ public class AuthorisationsModificationsController
         {
             return null;
         }
+        // Store the modification details in TempData for later use
 
         // Load sponsor details Q&A
         var sponsorDetailsQuestionsResponse =
@@ -271,6 +272,15 @@ public class AuthorisationsModificationsController
         authoriseOutcomeViewModel.ShortTitle = shortTitle;
         authoriseOutcomeViewModel.ProjectRecordId = projectRecordId;
         authoriseOutcomeViewModel.RtsId = rtsId;
+
+        //For PDF download data population
+        var reviewOutcomeModel = new ReviewOutcomeViewModel
+        {
+            ModificationDetails = modification,
+        };
+
+        TempData[TempDataKeys.ProjectModification.ProjectModificationsDetails] =
+            JsonSerializer.Serialize(reviewOutcomeModel);
 
         return authoriseOutcomeViewModel;
     }
