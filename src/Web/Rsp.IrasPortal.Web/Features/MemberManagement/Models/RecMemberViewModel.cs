@@ -6,9 +6,9 @@ public class RecMemberViewModel
 {
     public string UserId { get; set; } = null!;
     public string? Title { get; set; }
-    public string FirstName { get; set; } = null!;
-    public string LastName { get; set; } = null!;
-    public string EmailAddress { get; set; } = null!;
+    public string? FirstName { get; set; } = null!;
+    public string? LastName { get; set; } = null!;
+    public string? EmailAddress { get; set; } = null!;
     public string? Organisation { get; set; }
     public string? JobTitle { get; set; }
     public string? RecTelephoneNumber { get; set; }

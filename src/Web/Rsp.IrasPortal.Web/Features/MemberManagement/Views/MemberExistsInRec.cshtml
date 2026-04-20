@@ -11,9 +11,9 @@
 		? pageContentData
 		: new Dictionary<string, MixedContentPageItem?>();
 
-	var headline = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.Title", null);
-	var body = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.Body", null);
-	var searchTitle = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.SearchTitle", null);
+	var headline = pageContent.GetValueOrDefault("MemberManagement.AddMember.MemberInRec.Title", null);
+	var body = pageContent.GetValueOrDefault("MemberManagement.AddMember.MemberInRec.Body", null);
+	var searchLabel = pageContent.GetValueOrDefault("MemberManagement.AddMember.MemberInRec.ButtonLabel", null);
 }
 
 @section BackNavigation {
@@ -22,30 +22,10 @@
 
 <div class="govuk-grid-row">
 	<div class="govuk-grid-column-two-thirds">
-		<h1 class="govuk-heading-l">Member is already assigned to this research ethics committee</h1>
+		<h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
 		<div>
-			<p>This member is already added to this research ethics committee.</p>
-
-			<p>If you need to change the research ethics committee assigned to this member, you can do so by going to their user profile.</p>
-
-			<p>To get help, contact the support team. </p>
-
-			<br /><br />
-			To get help, contact the support team. 
-			<br /><br />
-			<strong>Online</strong>
-			<br />
-			Visit the <a class="govuk-link" href="#">HRA support site</a>
-			<br /><br />
-			<strong>Email</strong>
-			<br />
-			<a class="govuk-link" href="mailto:service.desk@hra.nhs.uk">service.desk@hra.nhs.uk</a>
-			<br /><br />
-			<strong>Phone</strong>
-			<br />
-			020 7104 8260
-			<br />
-			Monday to Friday, 9am to 5pm
+			@Html.Raw(body?.Value)
 		</div>
+		<a href="#" class="govuk-button">@Html.Raw(searchLabel?.Value)</a>
 	</div>
 </div>

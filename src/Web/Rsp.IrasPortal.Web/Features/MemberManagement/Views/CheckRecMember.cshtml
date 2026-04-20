@@ -16,22 +16,15 @@
 		? pageContentData
 		: new Dictionary<string, MixedContentPageItem?>();
 
-	var headline = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.Title", null);
-	var body = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.Body", null);
-	var searchTitle = pageContent.GetValueOrDefault("SponsorWorkspace.MyOrganisationUsersAddUser.SearchTitle", null);
-
-	var committeeError = ViewData.ModelState.ContainsKey(nameof(Model.CommitteeRole)) && ViewData.ModelState[nameof(Model.CommitteeRole)]?.Errors.Count > 0;
-	var committeeMessage = committeeError ? ViewData.ModelState[nameof(Model.CommitteeRole)]?.Errors.FirstOrDefault()?.ErrorMessage : null;
-
-	var designationError = ViewData.ModelState.ContainsKey(nameof(Model.Designation)) && ViewData.ModelState[nameof(Model.Designation)]?.Errors.Count > 0;
-	var designationMessage = designationError ? ViewData.ModelState[nameof(Model.Designation)]?.Errors.FirstOrDefault()?.ErrorMessage : null;
+	var headline = pageContent.GetValueOrDefault("MemberManagement.AddMember.ConfirmMemberDetails.Title", null);
+	var body = pageContent.GetValueOrDefault("MemberManagement.AddMember.ConfirmMemberDetails.Body", null);
 
 }
 
 @if (edit)
 {
 	@section BackNavigation {
-	<partial name="_BackNavigation" model="@("TODO", "Back", new Dictionary<string, string> { { "RecId", Model.RecId.ToString() } })" />
+	<partial name="_BackNavigation" model="@("TODO", "Back", new Dictionary<string, string> { { "RecId", Model.RecId.ToString() }})" />
 	}
 }
 
@@ -66,8 +59,8 @@
 			}
 			else
 			{
-				<h1 class="govuk-heading-l">Check and add member</h1>
-				<p>Check this information is correct before adding member to @Model.RecName</p>
+				<h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
+				<p>@Html.Raw(body?.Value) @Model.RecName</p>
 			}
 		</div>
 

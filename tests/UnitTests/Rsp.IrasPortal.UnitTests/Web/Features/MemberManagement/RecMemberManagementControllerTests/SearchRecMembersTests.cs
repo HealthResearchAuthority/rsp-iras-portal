@@ -1,6 +1,9 @@
-﻿using FluentValidation;
+﻿using System.Security.Claims;
+using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Web.Features.MemberManagement.Controllers;
 using Rsp.IrasPortal.Web.Features.MemberManagement.Models;
 using Rsp.Portal.Application.Constants;
@@ -9,16 +12,39 @@ using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.UnitTests;
+using Claim = System.Security.Claims.Claim;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.MemberManagement.RecMemberManagementControllerTests;
 
 public class SearchRecMembersTests : TestServiceBase<RecMemberManagementController>
 {
+    private readonly DefaultHttpContext _http;
+    private readonly Guid LoggedInUserId = Guid.NewGuid();
+
+    public SearchRecMembersTests()
+    {
+        var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
+        Sut.TempData = tempData;
+        _http = new DefaultHttpContext { Session = new InMemorySession() };
+        Sut.ControllerContext = new ControllerContext { HttpContext = _http };
+    }
+
+    private void SetUser(Guid userId)
+    {
+        _http.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(CustomClaimTypes.UserId, userId.ToString())
+        }));
+    }
+
     [Theory, AutoData]
     public async Task SearchRecMember_Returns_View(Guid recId, ReviewBodyDto reviewBody)
     {
-        reviewBody.Id = recId;
+        SetUser(LoggedInUserId);
+        SetUserResponse(LoggedInUserId);
 
+        reviewBody.Id = recId;
+        reviewBody.Countries = new List<string> { "United Kingdom" };
         // arrange
         var reviewBodyResponse = new ServiceResponse<ReviewBodyDto>
         {
@@ -60,7 +86,8 @@ public class SearchRecMembersTests : TestServiceBase<RecMemberManagementControll
         var result = await Sut.SearchRecMember(recId);
 
         // assert
-        result.ShouldBeOfType<NotFoundResult>();
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
         Mocker.GetMock<IReviewBodyService>()
             .Verify(s => s.GetReviewBodyById(recId), Times.Once);
     }
@@ -355,5 +382,37 @@ public class SearchRecMembersTests : TestServiceBase<RecMemberManagementControll
         viewResult.ViewName.ShouldBe("RecMemberNotActive");
         viewResult.Model.ShouldBeOfType<string>();
         viewResult.Model.ShouldBe(recId);
+    }
+
+    // arrange logged in user response
+    private void SetUserResponse(Guid loggedInUser)
+    {
+        var user = new UserResponse
+        {
+            User = new User(loggedInUser.ToString(),
+                            "azure-ad-12345",
+                            "Mr",
+                            "Test",
+                            "Test",
+                            "some@email.com",
+                            "Software Developer",
+                            "orgName", // IMPORTANT: match org if your action filters by org
+                            "+44 7700 900123",
+                            "United Kingdom",
+                            IrasUserStatus.Active,
+                            DateTime.UtcNow,
+                            DateTime.UtcNow.AddDays(-2),
+                            DateTime.UtcNow)
+        };
+
+        var userResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = user
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(loggedInUser.ToString(), null, null))
+            .ReturnsAsync(userResponse);
     }
 }
