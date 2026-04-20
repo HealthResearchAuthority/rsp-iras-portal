@@ -55,7 +55,7 @@
 
 			@if (!edit)
 			{
-				<button asp-route="recUserManagement:EditNewRecMember" class="govuk-back-link-button" type="submit">Back</button>
+				<button asp-route="mm:EditNewRecMember" class="govuk-back-link-button" type="submit">Back</button>
 			}
 
 			<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
@@ -265,7 +265,7 @@
 
 			@if (!edit)
 			{
-				<partial name="_SubmitButton" model="@("recUserManagement:AddRecMember", "Add member", new Dictionary<string, string>())" />
+				<partial name="_SubmitButton" model="@("mm:AddRecMember", "Add member", new Dictionary<string, string>())" />
 			}
 
 		</div>
@@ -279,14 +279,14 @@
 
 		if (edit)
 		{
-			<a class="govuk-link" asp-route="recUserManagement:EditRecMember" asp-route-userId="@Model.UserId"
+			<a class="govuk-link" asp-route="mm:EditRecMember" asp-route-userId="@Model.UserId"
 			   asp-route-recId="@Model.RecId">
 				Change<span class="govuk-visually-hidden"> @fieldName</span>
 			</a>
 		}
 		else
 		{
-			<button class="govuk-link-button" type="submit" asp-route="recUserManagement:EditNewRecMember">
+			<button class="govuk-link-button" type="submit" asp-route="mm:EditNewRecMember">
 				Change<span class="govuk-visually-hidden"> @fieldName</span>
 			</button>
 		}
