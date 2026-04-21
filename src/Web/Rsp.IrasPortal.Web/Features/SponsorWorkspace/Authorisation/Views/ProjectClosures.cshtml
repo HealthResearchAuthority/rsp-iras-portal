@@ -44,12 +44,12 @@
     <div class="govuk-grid-column-full">
 
         <partial name="_ValidationSummary" model="(ViewData.ModelState, errorSummaryTitle)" />
-        <h2 class="govuk-heading-l" id="title">
+        <h1 class="govuk-heading-l" id="title">
             @Html.Raw(headline?.Value)
             @(Model.SponsorOrgansationCount > 1 
                 ? $" for {Model.SponsorOrganisationName}" 
                 : string.Empty)
-        </h2>
+        </h1>
 
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
