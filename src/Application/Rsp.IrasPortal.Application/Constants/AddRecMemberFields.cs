@@ -4,7 +4,7 @@ public static class AddRecMemberFields
 {
     public static readonly List<string> CommitteeRoles =
    [
-       "Alternate vide chair",
+       "Alternate vice chair",
         "Member",
         "Vice chair",
         "Chair"
