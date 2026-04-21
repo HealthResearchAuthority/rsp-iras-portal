@@ -62,6 +62,10 @@ else
     </div>
 </div>
 
+
+
+<feature name="@FeatureFlags.ParticipatingOrganisations">
+
 @{
 	var organisationsWithAnswers = Model.ParticipatingOrganisations?
 		.Select(o => new
@@ -132,3 +136,5 @@ else
         <partial name="_Pagination" model="@Model.Pagination" />
     </div>
 }
+
+								</feature>

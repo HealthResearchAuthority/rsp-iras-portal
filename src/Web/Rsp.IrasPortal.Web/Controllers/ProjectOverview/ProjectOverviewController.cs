@@ -444,7 +444,7 @@ public class ProjectOverviewController
         // Build requests to fetch already organisations so they can be included in view
         var organisationDetailsViewModels = new List<OrganisationDetailsViewModel>();
 
-        if (specificViewName == "ResearchLocations")
+        if (specificViewName == "ResearchLocations" && await featureManager.IsEnabledAsync(FeatureFlags.ParticipatingOrganisations))
         {
             var addNewOrgsTasks = new List<Task<ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>>>
             {
