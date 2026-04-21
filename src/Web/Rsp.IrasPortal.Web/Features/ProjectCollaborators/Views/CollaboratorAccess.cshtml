@@ -1,0 +1,87 @@
+﻿@using System
+@using System.Collections.Generic
+@using Rsp.IrasPortal.Web.Features.ProjectCollaborators.Models
+@using Rsp.Portal.Application.Constants
+@model CollaboratorViewModel
+
+@{
+    var isViewSelected = string.Equals(Model.ProjectAccessLevel, "View", StringComparison.OrdinalIgnoreCase);
+    var isEditSelected = string.Equals(Model.ProjectAccessLevel, "Edit", StringComparison.OrdinalIgnoreCase);
+
+    var backNavigationModel = ("pov:projectteam", "Back", new Dictionary<string, string> { { "projectRecordId", Model.ProjectRecordId! } });
+
+    ViewBag.Title = "Change collaborator access";
+}
+
+@section BackNavigation {
+    <partial name="_BackNavigation" model="backNavigationModel" />
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+    </div>
+</div>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Select access for @Model.Email</h1>
+        <p class="govuk-body">Select the type of access this collaborator will have to the project</p>
+
+        <form method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
+            <input type="hidden" name="Id" value="@Model.Id" />
+            <input type="hidden" name="UserId" value="@Model.UserId" />
+
+            <div class="govuk-form-group" error-class-for="ProjectAccessLevel">
+                <fieldset class="govuk-fieldset" aria-describedby="project-access-hint">
+                    <legend class="govuk-fieldset__legend govuk-visually-hidden">
+                        Select collaborator access
+                    </legend>
+
+                    <div id="project-access-hint" class="govuk-visually-hidden">
+                        Choose whether the collaborator can view or edit the project
+                    </div>
+
+                    @Html.ValidationMessage("ProjectAccessLevel", new { @class = "govuk-error-message" })
+
+                    <div class="govuk-radios" data-module="govuk-radios">
+                        <div class="govuk-radios__item">
+                            <input class="govuk-radios__input"
+                                   id="project-access-view"
+                                   name="ProjectAccessLevel"
+                                   type="radio"
+                                   value="View"
+                                   checked="@(isViewSelected ? "checked" : null)" />
+                            <label class="govuk-label govuk-radios__label" for="project-access-view">
+                                View project
+                            </label>
+                        </div>
+
+                        <div class="govuk-radios__item">
+                            <input class="govuk-radios__input"
+                                   id="project-access-edit"
+                                   name="ProjectAccessLevel"
+                                   type="radio"
+                                   value="Edit"
+                                   checked="@(isEditSelected ? "checked" : null)" />
+
+                            <label class="govuk-label govuk-radios__label" for="project-access-edit">
+                                Edit project
+                            </label>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            @{
+                var routeName = Model.Id is null ? "col:savecollaborator" : "col:updatecollaboratoraccess";
+            }
+
+            <button asp-route="@routeName" type="submit" class="govuk-button" data-module="govuk-button">
+                Save and continue
+            </button>
+        </form>
+    </div>
+</div>

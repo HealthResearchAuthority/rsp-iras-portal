@@ -2,6 +2,7 @@
 @using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Domain.AccessControl
 @using Rsp.Portal.Web.Features.Modifications.Models
 @using Rsp.Portal.Web.Helpers
 @model ModificationDetailsViewModel
@@ -189,17 +190,22 @@
                                             @ModificationStatusHelper.ToDocumentUploadUiStatus(modification.Status)
                                         </strong>
                                     </td>
-                                    @if (
-                                                                    Model.Status is ModificationStatus.InDraft
-                                                                    || Model.Status is ModificationStatus.RequestRevisions
-                                                                    || Model.Status is ModificationStatus.RequestForInformation
-                                                                    || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise)
-                                                                    )
+                                    @if
+                                    (
+                                        Model.Status is ModificationStatus.InDraft ||
+                                        Model.Status is ModificationStatus.RequestRevisions ||
+                                        Model.Status is ModificationStatus.RequestForInformation ||
+                                        (
+                                            isRevisionBySponsor &&
+                                            Model.Status is ModificationStatus.ReviseAndAuthorise
+                                        )
+                                    )
                                     {
                                         <td class="govuk-table__cell">
                                             @if (!isFailed && !isTracked)
                                             {
-                                                <a asp-route="pmc:continuetodetails"
+                                                <a permissions="@([Permissions.MyResearch.ProjectDocuments_Update, Permissions.Sponsor.Modifications_Authorise])"
+                                                   asp-route="pmc:continuetodetails"
                                                    asp-route-documentId="@modification.Id"
                                                    asp-route-reviewAllChanges="true"
                                                    class="govuk-link">
@@ -207,7 +213,9 @@
                                                 </a>
                                                 <feature name="@FeatureFlags.RequestForInformation">
                                                     <br />
-                                                    <a asp-route="pmc:confirmdeletedocument"
+
+                                                    <a permissions="@([Permissions.MyResearch.ProjectDocuments_Delete, Permissions.Sponsor.Modifications_Authorise])"
+                                                        asp-route="pmc:confirmdeletedocument"
                                                        asp-route-id="@modification.Id"
                                                        asp-route-backRoute="toaddpage"
                                                        class="govuk-link">
@@ -237,7 +245,8 @@
                                                         The selected file contains a virus
                                                     </p>
 
-                                                    <a asp-route="pmc:confirmdeletedocument"
+                                                    <a permissions="@([Permissions.MyResearch.ProjectDocuments_Delete, Permissions.Sponsor.Modifications_Authorise])"
+                                                        asp-route="pmc:confirmdeletedocument"
                                                        asp-route-id="@modification.Id"
                                                        asp-route-backRoute="toaddpage"
                                                        class="govuk-button govuk-button--warning govuk-!-margin-bottom-0">
@@ -259,7 +268,8 @@
 </div>
 
 <div status-for="Status" status-in="@([ModificationStatus.InDraft,ModificationStatus.RequestRevisions,ModificationStatus.RequestForInformation] )" class="govuk-button-group">
-    <a href="@Url.RouteUrl("pmc:projectdocument")"
+    <a permission="@Permissions.MyResearch.Modifications_Update"
+        href="@Url.RouteUrl("pmc:projectdocument")"
        class="govuk-button govuk-button--secondary">
         Add documents
     </a>

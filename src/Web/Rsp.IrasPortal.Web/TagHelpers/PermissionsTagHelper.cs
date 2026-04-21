@@ -1,9 +1,12 @@
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.Extensions;
+using AppPermissions = Rsp.Portal.Domain.AccessControl.Permissions;
 
 namespace Rsp.Portal.Web.TagHelpers;
 
@@ -58,8 +61,8 @@ public class PermissionsTagHelper : TagHelper
 
     // ------------------------------- Permission attributes: Html attribute names for permission
     // based checks -------------------------------
-
     private const string PermissionAttributeName = "permission";
+
     private const string PermissionsAttributeName = "permissions";
     private const string PermissionModeAttributeName = "permission-mode";
 
@@ -300,16 +303,22 @@ public class PermissionsTagHelper : TagHelper
         if (Permission != null)
         {
             // Single permission check
-            return User.HasPermission(Permission);
+            var hasPermission = User.HasPermission(Permission);
+
+            // Implement logic to check collaborator permissions based on ProjectRecordId
+            return hasPermission && EvaluateCollaboratorAccess();
         }
 
         // Evaluate collection according to configured logic (Any/All).
-        return PermissionEvaluationLogic switch
+        var hasPermissions = PermissionEvaluationLogic switch
         {
             PermissionMode.Any => Permissions!.Any(User.HasPermission),
             PermissionMode.All => Permissions!.All(User.HasPermission),
             _ => false
         };
+
+        // Implement logic to check collaborator permissions based on ProjectRecordId
+        return hasPermissions && EvaluateCollaboratorAccess(Permissions!);
     }
 
     // ------------------------------- Role logic -------------------------------
@@ -355,5 +364,84 @@ public class PermissionsTagHelper : TagHelper
 
         // Delegate to extension method which encapsulates business rules for status access.
         return User.CanAccessRecordStatus(StatusEntity, StatusFor.Model.ToString()!);
+    }
+
+    /// <summary>
+    /// Evaluates collaborator access for edit permissions.
+    /// If the permission being evaluated is an edit access permission,
+    /// checks the user's collaborator access level for the current project and
+    /// returns true if it is "Edit".
+    /// For non-edit permissions, collaborator access does not apply and the method returns true.
+    /// This ensures that users with edit collaborator access are granted the necessary permissions for editing,
+    /// while other permissions are evaluated based on their assigned roles/permissions without being affected by collaborator access levels.
+    /// </summary>
+    public bool EvaluateCollaboratorAccess()
+    {
+        // if permission being evaluated is not an edit access permission
+        // collaborator permissions do not apply, as it will inherit permissions from the role
+        if (!AppPermissions.EditAccessPermissions.Contains(Permission!))
+        {
+            return true;
+        }
+
+        // check for edit access
+        return GetCollaboratorAccess() == "Edit";
+    }
+
+    public bool EvaluateCollaboratorAccess(IEnumerable<string> permissions)
+    {
+        // if permission being evaluated is not an edit access permission
+        // collaborator permissions do not apply, as it will inherit permissions from the role
+        if (!AppPermissions.EditAccessPermissions.Any(p => permissions.Contains(p)))
+        {
+            return true;
+        }
+
+        // check for edit access
+        return GetCollaboratorAccess() == "Edit";
+    }
+
+    private List<CollaboratorProjectResponse> GetCollaboratorProjects()
+    {
+        // Retrieve the user's collaborator projects from session
+        var projects = ViewContext.HttpContext.Session.GetString(SessionKeys.CollaboratorProjects);
+
+        // If there are no projects in session, return an empty list
+        if (string.IsNullOrWhiteSpace(projects))
+        {
+            return [];
+        }
+
+        // Deserialize the collaborator projects and find the matching project
+        var collaboratorProjects = JsonSerializer.Deserialize<List<CollaboratorProjectResponse>>(projects);
+
+        return collaboratorProjects ?? [];
+    }
+
+    private string GetCollaboratorAccess()
+    {
+        var status = ViewContext.TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string;
+
+        // sponsor cannot be a collaborator, so if the modification is in "Sponsor revises modification" status,
+        // grant the sponsor "Edit" access
+        if (status is ModificationStatus.ReviseAndAuthorise)
+        {
+            return "Edit";
+        }
+
+        // check for edit access
+        var collaboratorProjects = GetCollaboratorProjects();
+
+        if (ViewContext.TempData.Peek(TempDataKeys.ProjectRecordId) is not string projectRecordId)
+        {
+            return "None";
+        }
+
+        var collaboratorAccess = collaboratorProjects?
+            .FirstOrDefault(p => p.ProjectRecordId == projectRecordId)?
+            .ProjectAccessLevel;
+
+        // return collaborator access level
+        return collaboratorAccess ?? "None";
     }
 }

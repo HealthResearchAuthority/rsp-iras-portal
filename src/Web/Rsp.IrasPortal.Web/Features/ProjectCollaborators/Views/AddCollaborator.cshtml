@@ -1,0 +1,101 @@
+﻿@using Rsp.IrasPortal.Web.Features.ProjectCollaborators.Models
+@using Rsp.IrasPortal.Web.Models
+@using Rsp.Portal.Application.Constants
+
+@model SearchCollaboratorViewModel
+@{
+    ViewBag.Title = "Add collaborator";
+
+    var projectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string;
+}
+
+<partial name="_BackNavigation" model="@("pov:projectteam", "Back", new Dictionary<string, string>() { { "projectRecordId", Model.ProjectRecordId } })" />
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+    </div>
+</div>
+
+@if (Model.InvalidUser is true)
+{
+    <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                Important
+            </h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">
+                @Model.InvalidUserMessage
+            </p>
+        </div>
+    </div>
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Add collaborator for @projectTitle</h1>
+
+        <h2 class="govuk-heading-m">Search email</h2>
+        <p class="govuk-body">Search using the full email address the collaborator uses to log in to their Plan and manage health and care research account</p>
+
+        <form asp-route="col:searchcollaborator">
+            <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
+            <div class="govuk-form-group" error-class-for="Email">
+
+                @Html.ValidationMessage("Email", new { @class = "govuk-error-message" })
+
+                <div class="govuk-input__wrapper">
+
+                    <span id="search-collaborator-label" class="govuk-visually-hidden">Search for a collaborator by email</span>
+                    <input asp-for="Email" class="govuk-input" type="text" aria-labelledby="search-collaborator-label" />
+                    <button class="govuk-button govuk-button--secondary mb-0" style="margin-left:10px" type="submit">
+                        Search
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        @if (Model.CollaboratorFound is true && Model.InvalidUser is not true)
+        {
+            <h2 class="govuk-heading-m">@Model.Email</h2>
+            <p class="govuk-body">Save and continue to select access level.</p>
+            <form method="post" asp-route="col:selectcollaboratoraccess">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
+                <input type="hidden" name="Email" value="@Model.Email" />
+                <input type="hidden" name="UserId" value="@Model.UserId" />
+                <button class="govuk-button govuk-button-primary" type="submit">Save and continue</button>
+            </form>
+        }
+
+        @if (Model.CollaboratorFound is not null and false)
+        {
+            <h2 class="govuk-heading-m">User account doesn't exist</h2>
+            <p class="govuk-body">
+                There isn't a user account registered to the email address you entered, so you can't add them to this project as a collaborator.
+                <br /><br />
+                You can try again. Make sure you double-check the spelling when entering the email address.
+                <br /><br />
+                You should also check with the user to confirm you are using the correct email address. You need to add them using the same email address they use to log into this service. If they don't have an account for this service yet, they will need to set one up before you can add them as a collaborator.
+                <br /><br />
+                To get help, contact the support team. 
+                <br /><br />
+                <strong>Online</strong>
+                <br />
+                Visit the <a class="govuk-link" href="#">HRA support site</a>
+                <br /><br />
+                <strong>Email</strong>
+                <br />
+                <a class="govuk-link" href="mailto:service.desk@hra.nhs.uk">service.desk@hra.nhs.uk</a>
+                <br /><br />
+                <strong>Phone</strong>
+                <br />
+                020 7104 8260
+                <br />
+                Monday to Friday, 9am to 5pm
+            </p>
+        }
+    </div>
+</div>

@@ -1,9 +1,11 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Configuration;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Infrastructure.Claims;
@@ -17,12 +19,14 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
 {
     private readonly Mock<IHttpContextAccessor> _httpContextAccessor;
     private readonly Mock<IUserManagementService> _userManagementService;
+    private readonly Mock<IProjectCollaboratorService> _projectCollaboratorService;
     private readonly Mock<IOptionsSnapshot<AppSettings>> _appSettings;
 
     public TransformAsyncTests()
     {
         _httpContextAccessor = Mocker.GetMock<IHttpContextAccessor>();
         _userManagementService = Mocker.GetMock<IUserManagementService>();
+        _projectCollaboratorService = Mocker.GetMock<IProjectCollaboratorService>();
         _appSettings = Mocker.GetMock<IOptionsSnapshot<AppSettings>>();
 
         // Mock AppSettings
@@ -31,6 +35,15 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
             .Returns(new AppSettings
             {
                 AuthSettings = new AuthSettings { ClientId = "test-client-id" }
+            });
+
+        // Mock ProjectCollaboratorService to return empty response by default
+        _projectCollaboratorService
+            .Setup(x => x.GetCollaboratorProjects(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<CollaboratorProjectResponse>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = []
             });
     }
 
@@ -551,5 +564,360 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
 
         // Assert
         result.Claims.ShouldContain(c => c.Type == ClaimTypes.Role && c.Value == Roles.Applicant);
+    }
+
+    [Theory, AutoData]
+    public async Task TransformAsync_Should_Store_CollaboratorProjects_In_Session_When_Not_Cached(
+        string email,
+        string identityProviderId,
+        User user)
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.NameIdentifier, identityProviderId)
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+
+        var httpContext = new DefaultHttpContext()
+        {
+            Session = new FakeSession(),
+        };
+
+        _httpContextAccessor
+            .Setup(x => x.HttpContext)
+            .Returns(httpContext);
+
+        var userResponse = new UserResponse
+        {
+            Roles = [],
+            User = user with { Status = IrasUserStatus.Active }
+        };
+
+        var apiResponse = ApiResponseFactory.Success(userResponse);
+        var serviceResponse = apiResponse.ToServiceResponse();
+
+        _userManagementService
+            .Setup(x => x.GetUser(null, null, identityProviderId))
+            .ReturnsAsync(serviceResponse);
+
+        var collaboratorProjects = new[]
+        {
+            new CollaboratorProjectResponse { ProjectRecordId = "project-1", ProjectAccessLevel = "Lead" },
+            new CollaboratorProjectResponse { ProjectRecordId = "project-2", ProjectAccessLevel = "Collaborator" }
+        };
+
+        _projectCollaboratorService
+            .Setup(x => x.GetCollaboratorProjects(It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<CollaboratorProjectResponse>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = collaboratorProjects
+            });
+
+        // Act
+        var result = await Sut.TransformAsync(principal);
+
+        // Assert
+        var storedProjects = httpContext.Session.GetString(SessionKeys.CollaboratorProjects);
+        storedProjects.ShouldNotBeNull();
+
+        _projectCollaboratorService.Verify(x => x.GetCollaboratorProjects(It.IsAny<string>()), Times.Once);
+    }
+
+    [Theory, AutoData]
+    public async Task TransformAsync_Should_Not_Call_ProjectCollaboratorService_When_Projects_Already_In_Session(
+        string email,
+        string identityProviderId,
+        User user)
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.NameIdentifier, identityProviderId)
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+
+        var httpContext = new DefaultHttpContext()
+        {
+            Session = new FakeSession(),
+        };
+
+        // Pre-populate session with collaborator projects
+        httpContext.Session.SetString(SessionKeys.CollaboratorProjects, "[]");
+
+        _httpContextAccessor
+            .Setup(x => x.HttpContext)
+            .Returns(httpContext);
+
+        var userResponse = new UserResponse
+        {
+            Roles = [],
+            User = user with { Status = IrasUserStatus.Active }
+        };
+
+        var apiResponse = ApiResponseFactory.Success(userResponse);
+        var serviceResponse = apiResponse.ToServiceResponse();
+
+        _userManagementService
+            .Setup(x => x.GetUser(null, null, identityProviderId))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.TransformAsync(principal);
+
+        // Assert - ProjectCollaboratorService should not be called
+        _projectCollaboratorService.Verify(x => x.GetCollaboratorProjects(It.IsAny<string>()), Times.Never);
+    }
+
+    [Theory, AutoData]
+    public async Task TransformAsync_Should_Add_UserContext_Items_When_UserManagementService_Returns_Success(
+        string email,
+        string firstName,
+        string lastName,
+        string identityProviderId,
+        User user)
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.NameIdentifier, identityProviderId),
+            new(ClaimTypes.GivenName, firstName),
+            new(ClaimTypes.Surname, lastName)
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+
+        var httpContext = new DefaultHttpContext()
+        {
+            Session = new FakeSession(),
+        };
+
+        _httpContextAccessor
+            .Setup(x => x.HttpContext)
+            .Returns(httpContext);
+
+        var userResponse = new UserResponse
+        {
+            Roles = [],
+            User = user with { Status = IrasUserStatus.Active }
+        };
+
+        var apiResponse = ApiResponseFactory.Success(userResponse);
+        var serviceResponse = apiResponse.ToServiceResponse();
+
+        _userManagementService
+            .Setup(x => x.GetUser(null, null, identityProviderId))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.TransformAsync(principal);
+
+        // Assert
+        httpContext.Items.ShouldContainKey(ContextItemKeys.UserId);
+        httpContext.Items.ShouldContainKey(ContextItemKeys.Email);
+        httpContext.Items.ShouldContainKey(ContextItemKeys.FirstName);
+        httpContext.Items.ShouldContainKey(ContextItemKeys.LastName);
+        httpContext.Items.ShouldContainKey(ContextItemKeys.LastLogin);
+
+        httpContext.Items[ContextItemKeys.UserId].ShouldBe(user.Id);
+        httpContext.Items[ContextItemKeys.Email].ShouldBe(email);
+        httpContext.Items[ContextItemKeys.FirstName].ShouldBe(firstName);
+        httpContext.Items[ContextItemKeys.LastName].ShouldBe(lastName);
+    }
+
+    [Theory, AutoData]
+    public async Task TransformAsync_Should_Add_UserId_Claim_When_UserManagementService_Returns_Success(
+        string email,
+        string identityProviderId,
+        User user)
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.NameIdentifier, identityProviderId)
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+
+        var httpContext = new DefaultHttpContext()
+        {
+            Session = new FakeSession(),
+        };
+
+        _httpContextAccessor
+            .Setup(x => x.HttpContext)
+            .Returns(httpContext);
+
+        var userResponse = new UserResponse
+        {
+            Roles = [],
+            User = user with { Status = IrasUserStatus.Active }
+        };
+
+        var apiResponse = ApiResponseFactory.Success(userResponse);
+        var serviceResponse = apiResponse.ToServiceResponse();
+
+        _userManagementService
+            .Setup(x => x.GetUser(null, null, identityProviderId))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.TransformAsync(principal);
+
+        // Assert
+        result.Claims.ShouldContain(c =>
+            c.Type == CustomClaimTypes.UserId &&
+            c.Value == user.Id);
+    }
+
+    [Theory, AutoData]
+    public async Task TransformAsync_Should_Not_Store_CollaboratorProjects_When_Service_Returns_Error(
+        string email,
+        string identityProviderId,
+        User user)
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.NameIdentifier, identityProviderId)
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+
+        var httpContext = new DefaultHttpContext()
+        {
+            Session = new FakeSession(),
+        };
+
+        _httpContextAccessor
+            .Setup(x => x.HttpContext)
+            .Returns(httpContext);
+
+        var userResponse = new UserResponse
+        {
+            Roles = [],
+            User = user with { Status = IrasUserStatus.Active }
+        };
+
+        var apiResponse = ApiResponseFactory.Success(userResponse);
+        var serviceResponse = apiResponse.ToServiceResponse();
+
+        _userManagementService
+            .Setup(x => x.GetUser(null, null, identityProviderId))
+            .ReturnsAsync(serviceResponse);
+
+        _projectCollaboratorService
+            .Setup(x => x.GetCollaboratorProjects(user.Id))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<CollaboratorProjectResponse>>
+            {
+                StatusCode = HttpStatusCode.InternalServerError,
+                Content = null
+            });
+
+        // Act
+        var result = await Sut.TransformAsync(principal);
+
+        // Assert
+        var storedProjects = httpContext.Session.GetString(SessionKeys.CollaboratorProjects);
+        storedProjects.ShouldBeNull();
+    }
+
+    [Theory, AutoData]
+    public async Task TransformAsync_Should_Add_Default_Portal_Role_For_All_Users_With_Email(
+        string email,
+        string identityProviderId)
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.NameIdentifier, identityProviderId)
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+
+        var httpContext = new DefaultHttpContext()
+        {
+            Session = new FakeSession(),
+        };
+
+        httpContext.Request.QueryString = new QueryString("?requireProfileCreation=1");
+
+        _httpContextAccessor
+            .Setup(x => x.HttpContext)
+            .Returns(httpContext);
+
+        var notFoundApiResponse = new ApiResponse<UserResponse>(new HttpResponseMessage(HttpStatusCode.NotFound), null, new RefitSettings());
+        var notFoundServiceResponse = notFoundApiResponse.ToServiceResponse();
+
+        _userManagementService
+            .Setup(x => x.GetUser(It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()))
+            .ReturnsAsync(notFoundServiceResponse);
+
+        // Act
+        var result = await Sut.TransformAsync(principal);
+
+        // Assert
+        result.Claims.ShouldContain(c =>
+            c.Type == ClaimTypes.Role &&
+            c.Value == "iras_portal_user");
+    }
+
+    [Theory, AutoData]
+    public async Task TransformAsync_Should_Add_Roles_When_User_Is_Active(
+        string email,
+        string identityProviderId,
+        List<string> roles,
+        User user)
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Email, email),
+            new(ClaimTypes.NameIdentifier, identityProviderId)
+        };
+
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
+
+        var httpContext = new DefaultHttpContext()
+        {
+            Session = new FakeSession(),
+        };
+
+        _httpContextAccessor
+            .Setup(x => x.HttpContext)
+            .Returns(httpContext);
+
+        var userResponse = new UserResponse
+        {
+            Roles = roles,
+            User = user with { Status = IrasUserStatus.Active }
+        };
+
+        var apiResponse = ApiResponseFactory.Success(userResponse);
+        var serviceResponse = apiResponse.ToServiceResponse();
+
+        _userManagementService
+            .Setup(x => x.GetUser(null, null, identityProviderId))
+            .ReturnsAsync(serviceResponse);
+
+        // Act
+        var result = await Sut.TransformAsync(principal);
+
+        // Assert
+        foreach (var role in roles)
+        {
+            result.Claims.ShouldContain(c =>
+                c.Type == ClaimTypes.Role &&
+                c.Value == role);
+        }
     }
 }

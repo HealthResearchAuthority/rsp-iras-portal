@@ -8,5 +8,4 @@ public class ProjectTeamViewModel
     public List<Collaborator> Collaborators { get; set; } = [];
     public PaginationViewModel? Pagination { get; set; }
     public ProjectOverviewModel ProjectOverviewModel { get; set; } = null!;
-    public string? Search { get; set; }
 }

@@ -4,6 +4,7 @@
 @using Rsp.IrasPortal.Web.Features.Modifications.ParticipatingOrganisations.Models
 @using Rsp.Portal.Application.Constants
 @using System.Globalization
+@using Rsp.Portal.Domain.AccessControl
 @model IEnumerable<OrganisationDetailsViewModel>
 @inject IFeatureManager featureManager
 @{
@@ -69,7 +70,8 @@
         @if (!reviewAllChanges && showLinks)
         {
             <div class="govuk-summary-list__actions">
-                <a asp-route="porgs:removeparticipatingorganisation"
+                <a permissions="@([Permissions.MyResearch.Modifications_Update, Permissions.Sponsor.Modifications_Authorise])"
+                   asp-route="porgs:removeparticipatingorganisation"
                    asp-route-organisationId="@(model.Id)"
                    asp-route-organisationName="@(model.OrganisationName)"
                    class="govuk-link">Remove</a>
@@ -108,7 +110,7 @@
                     {
                         if (!reviewAllChanges && showLinks)
                         {
-                            <a class="govuk-link" href="@Url.RouteUrl("pod:participatingorganisationdetails", new { organisationId = model.Id, organisationName = model.OrganisationName, reviewAnswers = true })">
+                            <a permissions="@([Permissions.MyResearch.Modifications_Update, Permissions.Sponsor.Modifications_Authorise])" class="govuk-link" href="@Url.RouteUrl("pod:participatingorganisationdetails", new { organisationId = model.Id, organisationName = model.OrganisationName, reviewAnswers = true })">
                                 @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
                             </a>
                         }
@@ -122,7 +124,7 @@
                 <div class="govuk-summary-list__actions">
                     @if (!question.IsMissingAnswer() && (!reviewAllChanges && showLinks))
                     {
-                        <a class="govuk-link" href="@Url.RouteUrl("pod:participatingorganisationdetails", new { organisationId = model.Id, organisationName = model.OrganisationName, reviewAnswers = true })">
+                        <a permissions="@([Permissions.MyResearch.Modifications_Update, Permissions.Sponsor.Modifications_Authorise])" class="govuk-link" href="@Url.RouteUrl("pod:participatingorganisationdetails", new { organisationId = model.Id, organisationName = model.OrganisationName, reviewAnswers = true })">
                             @question.GetActionText()<span class="govuk-visually-hidden"> @questionText</span>
                         </a>
                     }
