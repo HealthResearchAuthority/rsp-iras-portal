@@ -194,13 +194,23 @@ public interface IProjectModificationsServiceClient
     public Task<IApiResponse> RemoveModificationChange(Guid modificationChangeId);
 
     /// <summary>
+    /// Updates a project modification status by its unique identifier.[This is legacy implementation - that is overriden by new version including revision comments table]
+    /// </summary>
+    /// <param name="projectRecordId">The unique identifier of the project record.</param>
+    /// <param name="modificationId">The unique identifier of the project modification.</param>
+    /// <returns>An asynchronous operation that returns the requested project modification change.</returns>
+    [Patch("/projectmodifications/legacystatus")]
+    [Obsolete("Use UpdateModificationStatus instead", false)]
+    public Task<IApiResponse> LegacyUpdateModificationStatus(string projectRecordId, Guid modificationId, string status, string? revisionDescription = null, string? reasonNotApproved = null, string? applicantRevisionResponse = null);
+
+    /// <summary>
     /// Updates a project modification status by its unique identifier.
     /// </summary>
     /// <param name="projectRecordId">The unique identifier of the project record.</param>
     /// <param name="modificationId">The unique identifier of the project modification.</param>
     /// <returns>An asynchronous operation that returns the requested project modification change.</returns>
     [Patch("/projectmodifications/status")]
-    public Task<IApiResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId, string status, string? revisionDescription = null, string? reasonNotApproved = null, string? applicantRevisionResponse = null);
+    public Task<IApiResponse> UpdateModificationStatus([Body] UpdateModificationStatusRequest request);
 
     /// <summary>
     /// Deletes one or more modification documents associated with a project modification change.

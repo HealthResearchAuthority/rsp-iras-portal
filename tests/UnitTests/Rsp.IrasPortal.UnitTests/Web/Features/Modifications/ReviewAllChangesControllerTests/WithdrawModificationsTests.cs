@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.UnitTests;
@@ -93,12 +94,7 @@ public class WithdrawModificationsTests : TestServiceBase<ReviewAllChangesContro
         };
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(
-                It.IsAny<string>(),
-                It.IsAny<Guid>(),
-                It.IsAny<string>(),
-                It.IsAny<string?>(),
-                It.IsAny<string?>(), It.IsAny<string?>()))
+            .Setup(s => s.UpdateModificationStatus(It.IsAny<UpdateModificationStatusRequest>()))
             .ReturnsAsync(response);
 
         // Act

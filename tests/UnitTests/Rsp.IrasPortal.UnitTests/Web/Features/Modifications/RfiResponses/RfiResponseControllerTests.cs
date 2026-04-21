@@ -86,6 +86,82 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     }
 
     [Theory, AutoData]
+    public async Task RfiDetails_Returns_View_And_Pads_RfiResponses_When_Fewer_Than_Reasons(
+    string projectId,
+    Guid modificationId,
+    ProjectModificationResponse modificationResponse,
+    IrasApplicationResponse projectRecordResponse,
+    ProjectModificationReviewResponse rfiResponse,
+    ModificationRfiResponseResponse rfiResponseResponse)
+    {
+        // Arrange
+        var ctx = new DefaultHttpContext();
+        Sut.ControllerContext = new() { HttpContext = ctx };
+        Sut.TempData = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>());
+
+        modificationResponse.Status = ModificationStatus.RequestForInformation;
+
+        rfiResponse.RequestForInformationReasons = new List<string>
+        {
+            "",
+            "",
+            ""
+        };
+
+        rfiResponseResponse.RfiResponses = new List<RfiResponsesDTO>
+        {
+            new() { InitialResponse = { "existing response" } }
+        };
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModification(projectId, modificationId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = modificationResponse
+            });
+
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(s => s.GetProjectRecord(projectId))
+            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = projectRecordResponse
+            });
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses(projectId, modificationId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = rfiResponse
+            });
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationRfiResponses(projectId, modificationId))
+            .ReturnsAsync(new ServiceResponse<ModificationRfiResponseResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = rfiResponseResponse
+            });
+
+        // Act
+        var result = await Sut.RfiDetails(projectId, modificationId);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeAssignableTo<RfiDetailsViewModel>();
+
+        model.RfiReasons.Count.ShouldBe(3);
+        model.RfiResponses.Count.ShouldBe(3);
+
+        model.RfiResponses
+            .Skip(1)
+            .All(r => r.InitialResponse.Single() == string.Empty)
+            .ShouldBeTrue();
+    }
+
+    [Theory, AutoData]
     public async Task RfiDetails_Returns_Forbidden_When_Modification_Not_In_RFI(
        string projectId,
        Guid modificationId,
@@ -168,7 +244,17 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     {
         model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1", "Reason 2"];
-        model.RfiResponses = ["Response 1", ""];
+        model.RfiResponses = new List<RfiResponsesDTO>
+        {
+            new RfiResponsesDTO
+            {
+                InitialResponse = ["Response 1"]
+            },
+            new RfiResponsesDTO
+            {
+                InitialResponse = [""]
+            }
+        };
 
         SetupTempData(model);
 
@@ -188,7 +274,13 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     {
         model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiResponses = new List<RfiResponsesDTO>
+        {
+            new RfiResponsesDTO
+            {
+                InitialResponse = ["Response 1"]
+            },
+        };
 
         SetupTempData(model);
         Mocker.GetMock<IProjectModificationsService>()
@@ -208,7 +300,13 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     {
         model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiResponses = new List<RfiResponsesDTO>
+        {
+            new RfiResponsesDTO
+            {
+                InitialResponse = ["Response 1"]
+            },
+        };
 
         SetupTempData(model);
         Mocker.GetMock<IProjectModificationsService>()
@@ -230,7 +328,13 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     {
         model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiResponses = new List<RfiResponsesDTO>
+        {
+            new RfiResponsesDTO
+            {
+                InitialResponse = ["Response 1"]
+            },
+        };
         SetupTempData(model);
 
         Mocker.GetMock<IProjectModificationsService>()
@@ -269,13 +373,22 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     {
         model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
 
         SetupTempData(model);
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), null, null, null))
-            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.InternalServerError });
+            .Setup(s => s.UpdateModificationStatus(
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ReasonNotApproved == null &&
+                    r.Response == null &&
+                    r.Role == null &&
+                    r.ResponseOrigin == null
+                )))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.InternalServerError
+            });
 
         var result = await Sut.RfiSubmitResponses();
         result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe(500);
@@ -290,12 +403,22 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     {
         model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
 
         SetupTempData(model);
+
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), null, null, null))
-            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+            .Setup(s => s.UpdateModificationStatus(
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ReasonNotApproved == null &&
+                    r.Response == null &&
+                    r.Role == null &&
+                    r.ResponseOrigin == null
+                )))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.OK
+            });
 
         var result = await Sut.RfiSubmitResponses();
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -316,7 +439,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
 
         model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
 
         SetupTempData(model);
         // modification

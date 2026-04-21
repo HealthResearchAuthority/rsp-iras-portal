@@ -274,6 +274,14 @@ public class ProjectModificationsService(
         return apiResponse.ToServiceResponse();
     }
 
+    [Obsolete("Use UpdateModificationStatus instead", false)]
+    public async Task<ServiceResponse> LegacyUpdateModificationStatus(string projectRecordId, Guid modificationId, string status, string? revisionDescription = null, string? reasonNotApproved = null, string? applicantRevisionResponse = null)
+    {
+        var apiResponse = await projectModificationsServiceClient.LegacyUpdateModificationStatus(projectRecordId, modificationId, status, revisionDescription, reasonNotApproved, applicantRevisionResponse);
+
+        return apiResponse.ToServiceResponse();
+    }
+
     /// <summary>
     /// Updates the status of an existing project modification by its unique identifier.
     /// </summary>
@@ -285,10 +293,9 @@ public class ProjectModificationsService(
     /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
     /// that reflects the success or failure of the update operation.
     /// </returns>
-
-    public async Task<ServiceResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId, string status, string? revisionDescription = null, string? reasonNotApproved = null, string? applicantRevisionResponse = null)
+    public async Task<ServiceResponse> UpdateModificationStatus(UpdateModificationStatusRequest request)
     {
-        var apiResponse = await projectModificationsServiceClient.UpdateModificationStatus(projectRecordId, modificationId, status, revisionDescription, reasonNotApproved, applicantRevisionResponse);
+        var apiResponse = await projectModificationsServiceClient.UpdateModificationStatus(request);
 
         return apiResponse.ToServiceResponse();
     }
@@ -515,7 +522,6 @@ public class ProjectModificationsService(
         var apiResponse = await projectModificationsServiceClient.GetModificationsChangesForProject(projectRecordId);
         return apiResponse.ToServiceResponse();
     }
-
 
     /// <summary>
     /// Deletes one or more project modification documents based on the provided request data.

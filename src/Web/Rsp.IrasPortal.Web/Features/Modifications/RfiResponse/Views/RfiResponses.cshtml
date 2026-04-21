@@ -59,18 +59,22 @@
         </div>
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-one-third">
-                <label class="govuk-label" for="RfiResponses_@(i)_">
+                <label class="govuk-label" for="RfiResponses_@(i)__InitialResponse_0_">
                     Response to reason @(i + 1)
                 </label>
             </div>
             <div class="govuk-grid-column-two-thirds">
                 <div class="govuk-form-group govuk-character-count mb-0" data-module="govuk-character-count" data-maxlength="300">
-                    <textarea asp-for="RfiResponses[i]"
+                    <textarea asp-for="RfiResponses[i].InitialResponse[0]"
                               class="govuk-textarea govuk-js-character-count"
                               rows="5"
-                              aria-describedby="RfiResponses_@(i)_-info">
-                                        </textarea>
-                    <div id="RfiResponses_@(i)_-info" class="govuk-hint govuk-character-count__message"></div>
+                              aria-describedby="RfiResponses_@(i)_InitialResponse_0-info">
+                    </textarea>
+
+                    <div id="RfiResponses_@(i)_InitialResponse_0-info"
+                         class="govuk-hint govuk-character-count__message">
+                    </div>
+
                 </div>
             </div>
         </div>
