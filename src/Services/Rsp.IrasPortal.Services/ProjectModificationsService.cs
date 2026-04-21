@@ -577,30 +577,54 @@ public class ProjectModificationsService(
 
     private async Task<string> ReplaceOrganisationTokens(string description)
     {
-        Regex organisationTokenRegex = new(@"\[\[RTS:([\d,]+)\]\]", RegexOptions.Compiled);
-
         if (string.IsNullOrWhiteSpace(description))
         {
             return description;
         }
 
-        foreach (Match match in organisationTokenRegex.Matches(description))
+        const string startToken = "[[RTS:";
+        const string endToken = "]]";
+
+        var result = description;
+
+        int startIndex = result.IndexOf(startToken, StringComparison.Ordinal);
+
+        while (startIndex != -1)
         {
-            var ids = match.Groups[1].Value
+            var endIndex = result.IndexOf(endToken, startIndex, StringComparison.Ordinal);
+
+            if (endIndex == -1)
+            {
+                break; // malformed token, stop processing
+            }
+
+            var fullToken = result.Substring(startIndex, endIndex - startIndex + endToken.Length);
+
+            var idSection = result.Substring(
+                startIndex + startToken.Length,
+                endIndex - (startIndex + startToken.Length));
+
+            var ids = idSection
                 .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             var names = await Task.WhenAll(ids.Select(async id =>
             {
                 var res = await rtsService.GetOrganisation(id);
+
                 return res is { IsSuccessStatusCode: true, Content: not null } &&
                        !string.IsNullOrWhiteSpace(res.Content.Name)
                     ? res.Content.Name
                     : id;
             }));
 
-            description = description.Replace(match.Value, string.Join(", ", names));
+            var replacement = string.Join(", ", names);
+
+            result = result.Replace(fullToken, replacement);
+
+            // move to next token
+            startIndex = result.IndexOf(startToken, startIndex + replacement.Length, StringComparison.Ordinal);
         }
 
-        return description;
+        return result;
     }
 }
