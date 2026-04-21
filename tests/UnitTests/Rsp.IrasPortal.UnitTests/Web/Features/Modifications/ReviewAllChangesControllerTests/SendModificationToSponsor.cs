@@ -45,8 +45,8 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
             .ReturnsAsync(true);
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()))
-            .ReturnsAsync(response);
+             .Setup(s => s.UpdateModificationStatus(It.IsAny<UpdateModificationStatusRequest>()))
+             .ReturnsAsync(response);
 
         Mocker.GetMock<IRespondentService>()
             .Setup(s => s.GetModificationAnswers(It.IsAny<Guid>(), It.IsAny<string>(), CategoryId))
@@ -76,7 +76,13 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
 
         // Verify
         Mocker.GetMock<IProjectModificationsService>()
-            .Verify(s => s.UpdateModificationStatus(projectRecordId, projectModificationId, ModificationStatus.WithSponsor, It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()), Times.Once);
+            .Verify(s => s.UpdateModificationStatus(
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ProjectRecordId == projectRecordId &&
+                    r.ModificationId == projectModificationId &&
+                    r.Status == ModificationStatus.WithSponsor
+                )),
+                Times.Once);
     }
 
     [Theory, AutoData]
@@ -101,7 +107,7 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
             .ReturnsAsync(true);
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()))
+            .Setup(s => s.UpdateModificationStatus(It.IsAny<UpdateModificationStatusRequest>()))
             .ReturnsAsync(response);
 
         Mocker.GetMock<IRespondentService>()
@@ -469,11 +475,15 @@ public class SendModificationToSponsor : TestServiceBase<ReviewAllChangesControl
         // Assert
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.UpdateModificationStatus(
-                model.ProjectRecordId,
-                Guid.Parse(model.ModificationId),
-                ModificationStatus.RequestRevisions,
-                 It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()))
-            .ReturnsAsync(new ServiceResponse { StatusCode = System.Net.HttpStatusCode.OK });
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ProjectRecordId == model.ProjectRecordId &&
+                    r.ModificationId == Guid.Parse(model.ModificationId) &&
+                    r.Status == ModificationStatus.RequestRevisions
+                )))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = System.Net.HttpStatusCode.OK
+            });
 
         var redirectResult = Assert.IsType<RedirectToRouteResult>(result);
         Assert.Equal("pov:postapproval", redirectResult.RouteName);

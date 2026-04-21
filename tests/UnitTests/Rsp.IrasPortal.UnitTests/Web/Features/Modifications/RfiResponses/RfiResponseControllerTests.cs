@@ -378,8 +378,17 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         SetupTempData(model);
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), null, null, null, null))
-            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.InternalServerError });
+            .Setup(s => s.UpdateModificationStatus(
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ReasonNotApproved == null &&
+                    r.Response == null &&
+                    r.Role == null &&
+                    r.ResponseOrigin == null
+                )))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.InternalServerError
+            });
 
         var result = await Sut.RfiSubmitResponses();
         result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe(500);
@@ -397,9 +406,19 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         model.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
 
         SetupTempData(model);
+
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), null, null, null, null))
-            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+            .Setup(s => s.UpdateModificationStatus(
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ReasonNotApproved == null &&
+                    r.Response == null &&
+                    r.Role == null &&
+                    r.ResponseOrigin == null
+                )))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.OK
+            });
 
         var result = await Sut.RfiSubmitResponses();
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();

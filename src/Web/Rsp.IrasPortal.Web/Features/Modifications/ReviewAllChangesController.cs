@@ -429,12 +429,14 @@ public class ReviewAllChangesController
 
         var newStatus = storedModel.ReviewOutcome;
 
-        var updateResponse = await projectModificationsService.UpdateModificationStatus
-        (
-            storedModel.ModificationDetails.ProjectRecordId,
-            Guid.Parse(modificationId!),
-            newStatus!
-        );
+        var request = new UpdateModificationStatusRequest
+        {
+            ProjectRecordId = storedModel.ModificationDetails.ProjectRecordId,
+            ModificationId = Guid.Parse(modificationId!),
+            Status = newStatus!
+        };
+
+        var updateResponse = await projectModificationsService.UpdateModificationStatus(request);
 
         if (!updateResponse.IsSuccessStatusCode)
         {
@@ -504,16 +506,17 @@ public class ReviewAllChangesController
 
         if (rfiFeatureFlagEnabled)
         {
-            updateResponse = await projectModificationsService.UpdateModificationStatus
-                (
-                    projectRecordId,
-                    projectModificationId,
-                    ModificationStatus.WithSponsor,
-                    null,
-                    applicantRevisionResponse,
-                    ResponseRoles.Applicant,
-                    ResponseOrigin.RequestRevisions
-                );
+            updateResponse = await projectModificationsService.UpdateModificationStatus(
+                new UpdateModificationStatusRequest
+                {
+                    ProjectRecordId = projectRecordId,
+                    ModificationId = projectModificationId,
+                    Status = ModificationStatus.WithSponsor,
+                    ReasonNotApproved = null,
+                    Response = applicantRevisionResponse,
+                    Role = ResponseRoles.Applicant,
+                    ResponseOrigin = ResponseOrigin.RequestRevisions
+                });
         }
         else
         {
@@ -577,12 +580,13 @@ public class ReviewAllChangesController
         TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
         TempData[TempDataKeys.ProjectModification.ProjectModificationId] = projectModificationId;
 
-        var updateResponse = await projectModificationsService.UpdateModificationStatus
-        (
-            projectRecordId,
-            projectModificationId,
-            ModificationStatus.Withdrawn
-        );
+        var updateResponse = await projectModificationsService.UpdateModificationStatus(
+            new UpdateModificationStatusRequest
+            {
+                ProjectRecordId = projectRecordId,
+                ModificationId = projectModificationId,
+                Status = ModificationStatus.Withdrawn
+            });
 
         if (!updateResponse.IsSuccessStatusCode)
         {
@@ -731,16 +735,17 @@ public class ReviewAllChangesController
             var rfiFeatureFlagEnabled = await featureManager.IsEnabledAsync(FeatureFlags.RequestForInformation);
             if (rfiFeatureFlagEnabled)
             {
-                await projectModificationsService.UpdateModificationStatus
-                    (
-                        model.ProjectRecordId,
-                        Guid.Parse(model.ModificationId),
-                        ModificationStatus.RequestRevisions,
-                        model.ReasonNotApproved,
-                        model.ApplicantRevisionResponse,
-                        ResponseRoles.Applicant,
-                        ResponseOrigin.RequestRevisions
-                    );
+                await projectModificationsService.UpdateModificationStatus(
+                    new UpdateModificationStatusRequest
+                    {
+                        ProjectRecordId = model.ProjectRecordId,
+                        ModificationId = Guid.Parse(model.ModificationId),
+                        Status = ModificationStatus.RequestRevisions,
+                        ReasonNotApproved = model.ReasonNotApproved,
+                        Response = model.ApplicantRevisionResponse,
+                        Role = ResponseRoles.Applicant,
+                        ResponseOrigin = ResponseOrigin.RequestRevisions
+                    });
             }
             else
             {

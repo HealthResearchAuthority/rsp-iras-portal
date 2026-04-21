@@ -436,19 +436,22 @@ public class AuthorisationsModificationsController
                                 : ModificationStatus.WithReviewBody;
 
                         await projectModificationsService.UpdateModificationStatus(
-                                   model.ProjectRecordId,
-                                   Guid.Parse(model.ModificationId),
-                                   status
-                               );
+                            new UpdateModificationStatusRequest
+                            {
+                                ProjectRecordId = model.ProjectRecordId,
+                                ModificationId = Guid.Parse(model.ModificationId),
+                                Status = status
+                            });
                         break;
 
                     default:
-                        await projectModificationsService.UpdateModificationStatus
-                        (
-                            model.ProjectRecordId,
-                            Guid.Parse(model.ModificationId),
-                            ModificationStatus.Approved
-                        );
+                        await projectModificationsService.UpdateModificationStatus(
+                            new UpdateModificationStatusRequest
+                            {
+                                ProjectRecordId = model.ProjectRecordId,
+                                ModificationId = Guid.Parse(model.ModificationId),
+                                Status = ModificationStatus.Approved
+                            });
                         break;
                 }
 
@@ -461,12 +464,13 @@ public class AuthorisationsModificationsController
 
                 if (rfiFeatureFlagEnabled)
                 {
-                    await projectModificationsService.UpdateModificationStatus
-                        (
-                            model.ProjectRecordId,
-                            Guid.Parse(model.ModificationId),
-                            ModificationStatus.ReviseAndAuthorise
-                        );
+                    await projectModificationsService.UpdateModificationStatus(
+                        new UpdateModificationStatusRequest
+                        {
+                            ProjectRecordId = model.ProjectRecordId,
+                            ModificationId = Guid.Parse(model.ModificationId),
+                            Status = ModificationStatus.ReviseAndAuthorise
+                        });
                 }
                 else
                 {
@@ -499,13 +503,14 @@ public class AuthorisationsModificationsController
                 {
                     if (rfiFeatureFlagEnabled)
                     {
-                        await projectModificationsService.UpdateModificationStatus
-                            (
-                                model.ProjectRecordId,
-                                Guid.Parse(model.ModificationId),
-                                ModificationStatus.NotAuthorised,
-                                model.ReasonNotApproved
-                            );
+                        await projectModificationsService.UpdateModificationStatus(
+                            new UpdateModificationStatusRequest
+                            {
+                                ProjectRecordId = model.ProjectRecordId,
+                                ModificationId = Guid.Parse(model.ModificationId),
+                                Status = ModificationStatus.NotAuthorised,
+                                ReasonNotApproved = model.ReasonNotApproved
+                            });
                     }
                     else
                     {
@@ -644,16 +649,17 @@ public class AuthorisationsModificationsController
 
         if (rfiFeatureFlagEnabled)
         {
-            await projectModificationsService.UpdateModificationStatus
-                (
-                    model.ProjectRecordId,
-                    Guid.Parse(model.ModificationId),
-                    ModificationStatus.RequestRevisions,
-                    null,
-                    model.RevisionDescription,
-                    ResponseRoles.Sponsor,
-                    ResponseOrigin.RequestRevisions
-                );
+            await projectModificationsService.UpdateModificationStatus(
+                new UpdateModificationStatusRequest
+                {
+                    ProjectRecordId = model.ProjectRecordId,
+                    ModificationId = Guid.Parse(model.ModificationId),
+                    Status = ModificationStatus.RequestRevisions,
+                    ReasonNotApproved = null,
+                    Response = model.RevisionDescription,
+                    Role = ResponseRoles.Sponsor,
+                    ResponseOrigin = ResponseOrigin.RequestRevisions
+                });
         }
         else
         {
@@ -710,16 +716,17 @@ public class AuthorisationsModificationsController
         {
             if (rfiFeatureFlagEnabled)
             {
-                await projectModificationsService.UpdateModificationStatus
-                    (
-                        model.ProjectRecordId,
-                        Guid.Parse(model.ModificationId),
-                        ModificationStatus.ReviseAndAuthorise,
-                        null,
-                        model.RevisionDescription,
-                        ResponseRoles.Sponsor,
-                        ResponseOrigin.ReviseAndAuthorise
-                    );
+                await projectModificationsService.UpdateModificationStatus(
+                    new UpdateModificationStatusRequest
+                    {
+                        ProjectRecordId = model.ProjectRecordId,
+                        ModificationId = Guid.Parse(model.ModificationId),
+                        Status = ModificationStatus.ReviseAndAuthorise,
+                        ReasonNotApproved = null,
+                        Response = model.RevisionDescription,
+                        Role = ResponseRoles.Sponsor,
+                        ResponseOrigin = ResponseOrigin.ReviseAndAuthorise
+                    });
             }
             else
             {
@@ -796,44 +803,47 @@ public class AuthorisationsModificationsController
             if (modificationsResponse.Content?.Modifications?
                 .Any(m => m.Status == ModificationStatus.WithReviewBody) == true)
             {
-                await projectModificationsService.UpdateModificationStatus
-                    (
-                        model.ProjectRecordId,
-                        Guid.Parse(model.ModificationId),
-                        ModificationStatus.ReviseAndAuthorise,
-                        null,
-                        model.RevisionDescription,
-                        ResponseRoles.Sponsor,
-                        ResponseOrigin.ReviseAndAuthorise
-                    );
+                await projectModificationsService.UpdateModificationStatus(
+                    new UpdateModificationStatusRequest
+                    {
+                        ProjectRecordId = model.ProjectRecordId,
+                        ModificationId = Guid.Parse(model.ModificationId),
+                        Status = ModificationStatus.ReviseAndAuthorise,
+                        ReasonNotApproved = null,
+                        Response = model.RevisionDescription,
+                        Role = ResponseRoles.Sponsor,
+                        ResponseOrigin = ResponseOrigin.ReviseAndAuthorise
+                    });
                 return RedirectToAction(nameof(CanSubmitToReviewBody), model);
             }
             switch (reviewType)
             {
                 case "Review required":
-                    await projectModificationsService.UpdateModificationStatus
-                    (
-                        model.ProjectRecordId,
-                        Guid.Parse(model.ModificationId),
-                        ModificationStatus.WithReviewBody,
-                        null,
-                        model.RevisionDescription,
-                        ResponseRoles.Sponsor,
-                        ResponseOrigin.ReviseAndAuthorise
-                    );
+                    await projectModificationsService.UpdateModificationStatus(
+                        new UpdateModificationStatusRequest
+                        {
+                            ProjectRecordId = model.ProjectRecordId,
+                            ModificationId = Guid.Parse(model.ModificationId),
+                            Status = ModificationStatus.WithReviewBody,
+                            ReasonNotApproved = null,
+                            Response = model.RevisionDescription,
+                            Role = ResponseRoles.Sponsor,
+                            ResponseOrigin = ResponseOrigin.ReviseAndAuthorise
+                        });
                     break;
 
                 default:
-                    await projectModificationsService.UpdateModificationStatus
-                    (
-                        model.ProjectRecordId,
-                        Guid.Parse(model.ModificationId),
-                        ModificationStatus.Approved,
-                        null,
-                        model.RevisionDescription,
-                        ResponseRoles.Sponsor,
-                        ResponseOrigin.ReviseAndAuthorise
-                    );
+                    await projectModificationsService.UpdateModificationStatus(
+                        new UpdateModificationStatusRequest
+                        {
+                            ProjectRecordId = model.ProjectRecordId,
+                            ModificationId = Guid.Parse(model.ModificationId),
+                            Status = ModificationStatus.Approved,
+                            ReasonNotApproved = null,
+                            Response = model.RevisionDescription,
+                            Role = ResponseRoles.Sponsor,
+                            ResponseOrigin = ResponseOrigin.ReviseAndAuthorise
+                        });
                     break;
             }
         }
@@ -965,13 +975,14 @@ public class AuthorisationsModificationsController
 
         if (rfiFeatureFlagEnabled)
         {
-            await projectModificationsService.UpdateModificationStatus
-                (
-                    model.ProjectRecordId,
-                    Guid.Parse(model.ModificationId),
-                    ModificationStatus.NotAuthorised,
-                    model.ReasonNotApproved
-                );
+            await projectModificationsService.UpdateModificationStatus(
+                new UpdateModificationStatusRequest
+                {
+                    ProjectRecordId = model.ProjectRecordId,
+                    ModificationId = Guid.Parse(model.ModificationId),
+                    Status = ModificationStatus.NotAuthorised,
+                    ReasonNotApproved = model.ReasonNotApproved
+                });
         }
         else
         {
