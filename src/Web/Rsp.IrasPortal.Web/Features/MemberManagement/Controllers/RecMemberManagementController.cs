@@ -406,6 +406,14 @@ public class RecMemberManagementController(
 
     private async Task<bool> UserHasAccess(ReviewBodyDto rec)
     {
+        var isAdmin = User.IsInRole(Roles.SystemAdministrator);
+
+        if (isAdmin)
+        {
+            // if user is an admin, allow access
+            return true;
+        }
+
         var userId = User?.FindFirst(CustomClaimTypes.UserId)?.Value;
         var userDetails = await userService.GetUser(userId, null);
 

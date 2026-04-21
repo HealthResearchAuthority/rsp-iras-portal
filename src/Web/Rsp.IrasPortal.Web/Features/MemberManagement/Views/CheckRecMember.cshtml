@@ -23,8 +23,13 @@
 
 @if (edit)
 {
-	@section BackNavigation {
-	<partial name="_BackNavigation" model="@("TODO", "Back", new Dictionary<string, string> { { "RecId", Model.RecId.ToString() }})" />
+	@section Breadcrumb {
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+		{
+			("Member management", Url.RouteUrl("mm:membermanagement")),
+			("Research ethics committees", Url.RouteUrl("mm:researchethicscommittees")),
+			($"Research ethics committee profile: {Model.RecName}", "/")
+		})
 	}
 }
 
@@ -124,11 +129,11 @@
 
 					<tr class="govuk-table__row">
 						<td class="govuk-table__cell">
-							<b>Organisation</b>
+							<b>Job title</b>
 						</td>
 						<td class="govuk-table__cell govuk-!-width-two-thirds">
-							@Model.Organisation
-							<input type="hidden" asp-for="Organisation" name="Organisation" value="@Model.Organisation" />
+							@Model.JobTitle
+							<input type="hidden" asp-for="JobTitle" name="JobTitle" value="@Model.JobTitle" />
 						</td>
 						<td class="govuk-table__cell">
 						</td>
@@ -136,11 +141,11 @@
 
 					<tr class="govuk-table__row">
 						<td class="govuk-table__cell">
-							<b>Job title</b>
+							<b>Organisation</b>
 						</td>
 						<td class="govuk-table__cell govuk-!-width-two-thirds">
-							@Model.JobTitle
-							<input type="hidden" asp-for="JobTitle" name="JobTitle" value="@Model.JobTitle" />
+							@Model.Organisation
+							<input type="hidden" asp-for="Organisation" name="Organisation" value="@Model.Organisation" />
 						</td>
 						<td class="govuk-table__cell">
 						</td>
@@ -205,23 +210,32 @@
 
 					@if (Model.IsEditMode)
 					{
-						if (Model.MemberLeftOrganisation)
-						{
-							<tr class="govuk-table__row">
-								<td class="govuk-table__cell">
-									<b>Date left this research ethics committee </b>
-								</td>
-								<td class="govuk-table__cell govuk-!-width-two-thirds">
+						<tr class="govuk-table__row">
+							<td class="govuk-table__cell">
+								<b>Date left this research ethics committee </b>
+							</td>
+							<td class="govuk-table__cell govuk-!-width-two-thirds">
+								@if (Model.DateTimeLeft.HasValue)
+								{
 									@Model.DateTimeLeft?.ToString("dd MMM yyyy")
-									<input type="hidden" asp-for="DateTimeLeft " name="DateTimeLeft" value="@Model.DateTimeLeft" />
-								</td>
-								<td class="govuk-table__cell">
-									@{
-										await RenderEditLink("Date left");
-									}
-								</td>
-							</tr>
-						}
+								}
+								else
+								{
+									<a class="govuk-link" asp-route="mm:EditRecMember" asp-route-userId="@Model.UserId"
+									   asp-route-recId="@Model.RecId">
+										Select a date left
+									</a>
+								}
+
+								<input type="hidden" asp-for="DateTimeLeft " name="DateTimeLeft" value="@Model.DateTimeLeft" />
+							</td>
+							<td class="govuk-table__cell">
+								@if (Model.DateTimeLeft.HasValue)
+								{
+									await RenderEditLink("Date left");
+								}
+							</td>
+						</tr>
 
 						<tr class="govuk-table__row">
 							<td class="govuk-table__cell">
