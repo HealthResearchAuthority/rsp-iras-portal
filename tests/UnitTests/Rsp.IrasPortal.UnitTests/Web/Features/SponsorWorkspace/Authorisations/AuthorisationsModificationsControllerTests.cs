@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.FeatureManagement;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.UnitTests.Web.Features.SponsorWorkspace.Authorisations;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -464,34 +466,60 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
         var viewModel = SetupAuthoriseOutcomeViewModel();
         Sut.ModelState.AddModelError("Outcome", "required");
 
+
         Mocker.GetMock<IFeatureManager>()
             .Setup(f => f.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
             .ReturnsAsync(true);
 
+
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.RequestForInformation))
+            .ReturnsAsync(true);
+
         Mocker.GetMock<ISponsorUserAuthorisationService>()
-           .Setup(a => a.AuthoriseWithOrganisationContextAsync(
-                       It.IsAny<Controller>(),
-                       It.IsAny<Guid>(),
-                       It.IsAny<ClaimsPrincipal>(),
-                       It.IsAny<string>()))
-                   .ReturnsAsync(SponsorUserAuthorisationResult.Ok(Guid.NewGuid()));
+            .Setup(a => a.AuthoriseWithOrganisationContextAsync(
+                It.IsAny<Controller>(),
+                It.IsAny<Guid>(),
+                It.IsAny<ClaimsPrincipal>(),
+                It.IsAny<string>()))
+            .ReturnsAsync(SponsorUserAuthorisationResult.Ok(Guid.NewGuid()));
 
         Mocker.GetMock<ISponsorOrganisationService>()
             .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new SponsorOrganisationUserDto { Id = Guid.NewGuid(), IsAuthoriser = true }
+                Content = new SponsorOrganisationUserDto
+                {
+                    Id = Guid.NewGuid(),
+                    IsAuthoriser = true
+                }
             });
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationReviewResponses(viewModel.ProjectRecordId, viewModel.ProjectModificationId))
+            .Setup(s => s.GetModificationReviewResponses(
+                viewModel.ProjectRecordId,
+                viewModel.ProjectModificationId))
             .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = new ProjectModificationReviewResponse
                 {
-                    RevisionDescription = "test revision"
+                    ModificationRevisionResponses =
+                    [
+                        new ModificationRevisionResponse
+                        {
+                            Id = Guid.NewGuid(),
+                            ProjectModificationId = viewModel.ProjectModificationId,
+                            Response = "Sponsor revision",
+                            Role = ResponseRoles.Sponsor,
+                            ResponseOrigin = ResponseOrigin.RequestRevisions,
+                            CreatedDateTime = DateTime.UtcNow,
+                            CreatedBy = "user",
+                            UpdatedDateTime = DateTime.UtcNow,
+                            UpdatedBy = "user"
+                        }
+                    ]
                 }
             });
 

@@ -387,7 +387,22 @@ public class AuthorisationsModificationsController
                     return this.ServiceError(reviewResponse);
                 }
 
-                ViewBag.RevisionSent = !string.IsNullOrWhiteSpace(reviewResponse.Content!.RevisionDescription);
+                var isRfiEnabled = await featureManager.IsEnabledAsync(FeatureFlags.RequestForInformation);
+
+                if (!isRfiEnabled)
+                {
+                    // legacy behaviour
+                    ViewBag.RevisionSent =
+                        !string.IsNullOrWhiteSpace(reviewResponse.Content!.RevisionDescription);
+                }
+                else
+                {
+                    ViewBag.RevisionSent =
+                        reviewResponse.Content!.ModificationRevisionResponses
+                            .Any(r =>
+                                r.Role == ResponseRoles.Sponsor &&
+                                r.ResponseOrigin == ResponseOrigin.RequestRevisions);
+                }
             }
 
             // Preserve the posted Outcome so the radios keep the selection
