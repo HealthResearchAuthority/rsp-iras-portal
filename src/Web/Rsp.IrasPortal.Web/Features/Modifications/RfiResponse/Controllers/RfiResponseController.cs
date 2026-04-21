@@ -211,12 +211,13 @@ public class RfiResponseController(
         var storedModelJson = TempData.Peek(TempDataKeys.RfiDetails)!.ToString()!;
         var storedModel = JsonSerializer.Deserialize<RfiDetailsViewModel>(storedModelJson)!;
 
-        var updateStatusResponse = await projectModificationsService.UpdateModificationStatus
-        (
-            storedModel.ProjectRecordId!,
-            Guid.Parse(storedModel.ModificationId!),
-            ModificationStatus.ResponseWithSponsor
-        );
+        var updateStatusResponse = await projectModificationsService.UpdateModificationStatus(
+            new UpdateModificationStatusRequest
+            {
+                ProjectRecordId = storedModel.ProjectRecordId!,
+                ModificationId = Guid.Parse(storedModel.ModificationId!),
+                Status = ModificationStatus.ResponseWithSponsor
+            });
 
         if (!updateStatusResponse.IsSuccessStatusCode)
         {

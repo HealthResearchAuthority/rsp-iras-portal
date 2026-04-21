@@ -293,9 +293,9 @@ public class ProjectModificationsService(
     /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
     /// that reflects the success or failure of the update operation.
     /// </returns>
-    public async Task<ServiceResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId, string status, string? reasonNotApproved = null, string? response = null, string? role = null, string? responseOrigin = null)
+    public async Task<ServiceResponse> UpdateModificationStatus(UpdateModificationStatusRequest request)
     {
-        var apiResponse = await projectModificationsServiceClient.UpdateModificationStatus(projectRecordId, modificationId, status, reasonNotApproved, response, role, responseOrigin);
+        var apiResponse = await projectModificationsServiceClient.UpdateModificationStatus(request);
 
         return apiResponse.ToServiceResponse();
     }

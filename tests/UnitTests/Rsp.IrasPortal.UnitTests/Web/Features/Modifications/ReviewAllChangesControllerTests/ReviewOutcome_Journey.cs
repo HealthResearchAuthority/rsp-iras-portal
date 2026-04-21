@@ -560,8 +560,11 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
             .ReturnsAsync(new ServiceResponse<object> { StatusCode = HttpStatusCode.OK });
 
         _modificationService
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()))
-            .ReturnsAsync(new ServiceResponse<object> { StatusCode = HttpStatusCode.BadRequest });
+             .Setup(s => s.UpdateModificationStatus(It.IsAny<UpdateModificationStatusRequest>()))
+             .ReturnsAsync(new ServiceResponse<object>
+             {
+                 StatusCode = HttpStatusCode.BadRequest
+             });
 
         // Act
         var result = await Sut.SubmitReviewOutcome();
@@ -588,8 +591,11 @@ public class ReviewOutcome_Journey : TestServiceBase<ReviewAllChangesController>
             .ReturnsAsync(new ServiceResponse<object> { StatusCode = HttpStatusCode.OK });
 
         _modificationService
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()))
-            .ReturnsAsync(new ServiceResponse<object> { StatusCode = HttpStatusCode.OK });
+            .Setup(s => s.UpdateModificationStatus(It.IsAny<UpdateModificationStatusRequest>()))
+            .ReturnsAsync(new ServiceResponse<object>
+            {
+                StatusCode = HttpStatusCode.OK
+            });
 
         // Act
         var result = await Sut.SubmitReviewOutcome();
