@@ -357,7 +357,7 @@ public class ReviewAllChangesController
             return View(storedModel);
         }
 
-        if (!saveForLater && model.RequestForInformationReasons.Any(r => r.Length > 300))
+        if (!saveForLater && model.RequestForInformationReasons.Any(r => r != null && r.Length > 300))
         {
             return View(storedModel);
         }
