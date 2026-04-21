@@ -39,11 +39,10 @@
 	{
 		<partial name="_BackNavigation" model="@("mm:searchRecMember", "Back", new Dictionary<string, string> { { "RecId", Model.RecId.ToString() } })" />
 	}
-
 }
 
 <div class="govuk-grid-row">
-	<div class="govuk-grid-column-full govuk-grid-column-two-thirds">
+	<div class="govuk-grid-column-two-thirds">
 		<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
 
 		@if (Model.IsEditMode)
@@ -133,6 +132,7 @@
 			</table>
 		</div>
 		<div class="govuk-grid-column-two-thirds rec-member-form">
+			<h2 class="govuk-heading-m">Further details</h2>
 			<rsp-gds-input asp-for="RecTelephoneNumber" label-text="Telephone number (optional)" input-type="tel" width-class="govuk-!-width-two-thirds" />
 
 			<div class="govuk-form-group @(committeeError ? "govuk-form-group--error" : "")">
