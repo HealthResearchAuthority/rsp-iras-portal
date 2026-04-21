@@ -209,7 +209,20 @@ public interface IProjectModificationsService : IInterceptable
     /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
     /// that reflects the success or failure of the update operation.
     /// </returns>
-    Task<ServiceResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId, string status, string? revisionDescription = null, string? reasonNotApproved = null, string? applicantRevisionResponse = null);
+    Task<ServiceResponse> LegacyUpdateModificationStatus(string projectRecordId, Guid modificationId, string status, string? revisionDescription = null, string? reasonNotApproved = null, string? applicantRevisionResponse = null);
+
+    /// <summary>
+    /// Updates the status of an existing project modification by its unique identifier.
+    /// </summary>
+    /// <param name="projectRecordId">
+    /// The unique identifier of the project record to which the modification belongs.
+    /// </param>
+    /// <param name="modificationId">The unique identifier of the project modification to update.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
+    /// that reflects the success or failure of the update operation.
+    /// </returns>
+    Task<ServiceResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId, string status, string? reasonNotApproved = null, string? response = null, string? role = null, string? responseOrigin = null);
 
     /// <summary>
     /// Updates an existing project modification.

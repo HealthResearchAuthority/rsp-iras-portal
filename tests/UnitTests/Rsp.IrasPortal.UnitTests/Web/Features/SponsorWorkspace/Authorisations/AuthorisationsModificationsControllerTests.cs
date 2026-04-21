@@ -783,7 +783,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                 modificationId,
                 ModificationStatus.ReviseAndAuthorise,
                 string.Empty,
-                null, null))
+                null, null, null))
             .ReturnsAsync(new ServiceResponse { StatusCode = System.Net.HttpStatusCode.OK });
 
         var result = await Sut.CheckAndAuthorise(viewModel);
@@ -1062,7 +1062,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                     vm.ProjectRecordId,
                     Guid.Parse(vm.ModificationId),
                     ModificationStatus.RequestRevisions,
-                    vm.RevisionDescription, vm.ReasonNotApproved, vm.ApplicantRevisionResponse),
+                    It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()),
             Times.Once);
 
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
@@ -1231,6 +1231,10 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                     TotalCount = 0
                 }
             });
+
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.RequestForInformation))
+            .ReturnsAsync(true);
 
         Mocker
             .GetMock<IRespondentService>()
@@ -1929,7 +1933,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                     vm.ProjectRecordId,
                     Guid.Parse(vm.ModificationId),
                     ModificationStatus.NotAuthorised,
-                    vm.RevisionDescription, vm.ReasonNotApproved, vm.ApplicantRevisionResponse),
+                    It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()),
             Times.Once);
 
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
@@ -1949,6 +1953,11 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
             .Setup(f => f.IsEnabledAsync(FeatureFlags.NotAuthorisedReason))
             .ReturnsAsync(false);
         var projectModService = Mocker.GetMock<IProjectModificationsService>();
+
+        Mocker.GetMock<IFeatureManager>()
+             .Setup(f => f.IsEnabledAsync(FeatureFlags.RequestForInformation))
+             .ReturnsAsync(true);
+
         // Act
         var result = await Sut.CheckAndAuthorise(authoriseOutcomeViewModel);
 
@@ -1960,7 +1969,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                     vm.ProjectRecordId,
                     Guid.Parse(vm.ModificationId),
                     ModificationStatus.NotAuthorised,
-                    vm.RevisionDescription, vm.ReasonNotApproved, vm.ApplicantRevisionResponse),
+                    It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()),
             Times.Once);
     }
 
@@ -2004,7 +2013,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                 Guid.Parse(model.ModificationId),
                 ModificationStatus.ReviseAndAuthorise,
                 model.RevisionDescription,
-                null, null))
+                null, null, It.IsAny<string?>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         var result = await Sut.AuthoriseRevision(model, isSaveForLater: true);
@@ -2051,7 +2060,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                 Guid.Parse(model.ModificationId),
                 ModificationStatus.ReviseAndAuthorise,
                 model.RevisionDescription,
-                null, null))
+                null, null, It.IsAny<string?>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         var result = await Sut.AuthoriseRevision(model, false);
@@ -2092,7 +2101,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                 Guid.Parse(model.ModificationId),
                 ModificationStatus.WithReviewBody,
                 model.RevisionDescription,
-                null, null))
+                null, null, It.IsAny<string?>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         var result = await Sut.AuthoriseRevision(model, false);
@@ -2245,7 +2254,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                 Guid.Parse(model.ModificationId),
                 ModificationStatus.Approved,
                 model.RevisionDescription,
-                null, null))
+                null, null, It.IsAny<string?>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         var result = await Sut.AuthoriseRevision(model, false);
@@ -2300,7 +2309,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                 Guid.Parse(model.ModificationId),
                 ModificationStatus.WithReviewBody,
                 model.RevisionDescription,
-                null, null))
+                null, null, It.IsAny<string?>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         Mocker.GetMock<IApplicationsService>()
@@ -2398,7 +2407,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                 Guid.Parse(model.ModificationId),
                 ModificationStatus.WithReviewBody,
                 model.RevisionDescription,
-                null, null))
+                null, null, It.IsAny<string?>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         Mocker.GetMock<IApplicationsService>()
@@ -2457,7 +2466,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                 Guid.Parse(model.ModificationId),
                 ModificationStatus.WithReviewBody,
                 model.RevisionDescription,
-                null, null))
+                null, null, It.IsAny<string?>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         Mocker.GetMock<IApplicationsService>()
@@ -2516,7 +2525,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                 Guid.Parse(model.ModificationId),
                 ModificationStatus.WithReviewBody,
                 model.RevisionDescription,
-                null, null))
+                null, null, It.IsAny<string?>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         Mocker.GetMock<IApplicationsService>()
@@ -2573,7 +2582,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                 Guid.Parse(model.ModificationId),
                 ModificationStatus.WithReviewBody,
                 model.RevisionDescription,
-                null, null))
+                null, null, It.IsAny<string?>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         Mocker.GetMock<IApplicationsService>()

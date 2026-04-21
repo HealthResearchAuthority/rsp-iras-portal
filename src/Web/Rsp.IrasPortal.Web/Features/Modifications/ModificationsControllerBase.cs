@@ -2,6 +2,7 @@ using System.Net;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
@@ -78,6 +79,48 @@ public abstract class ModificationsControllerBase
 
         TempData[TempDataKeys.ProjectModification.ProjectModificationStatus] = modification.Status;
 
+        var rfiFeatureFlagEnabled = await featureManager.IsEnabledAsync(FeatureFlags.RequestForInformation);
+        string? revisionDescription; string? applicantRevisionResponse;
+
+        if (rfiFeatureFlagEnabled)
+        {
+            // If there is ReviseAndAuthorise response revisionDescription holds latest revise and authorise response
+            // Otherwise revisionDescription represents request revisions response.
+            revisionDescription = null;
+
+            var sponsorResponses = modification?.ModificationRevisionResponses
+                .Where(r => r.Role == ResponseRoles.Sponsor);
+
+            var reviseAndAuthorise = sponsorResponses?
+                .Where(r => r.ResponseOrigin == ResponseOrigin.ReviseAndAuthorise)
+                .OrderByDescending(r => r.CreatedDateTime)
+                .FirstOrDefault();
+
+            if (reviseAndAuthorise != null)
+            {
+                revisionDescription = reviseAndAuthorise.Response;
+            }
+            else if (modification?.Status != ModificationStatus.ReviseAndAuthorise)
+            {
+                revisionDescription = sponsorResponses?
+                    .Where(r => r.ResponseOrigin == ResponseOrigin.RequestRevisions)
+                    .OrderByDescending(r => r.CreatedDateTime)
+                    .FirstOrDefault()?.Response;
+            }
+
+            applicantRevisionResponse = modification?.ModificationRevisionResponses
+                .Where(r =>
+                    r.Role == ResponseRoles.Applicant &&
+                    r.ResponseOrigin == ResponseOrigin.RequestRevisions)
+                .OrderByDescending(r => r.CreatedDateTime)
+                .FirstOrDefault()?.Response;
+        }
+        else
+        {
+            revisionDescription = modification?.RevisionDescription;
+            applicantRevisionResponse = modification?.ApplicantRevisionResponse;
+        }
+
         // Build the base view model with project metadata
         return (null, new ModificationDetailsViewModel
         {
@@ -94,10 +137,11 @@ public abstract class ModificationsControllerBase
             DateSponsorSubmittedOutcome = DateHelper.ConvertDateToString(modification.DateSponsorSubmittedOutcome),
             ReasonNotApproved = modification?.ReasonNotApproved ?? string.Empty,
             ReviewerComments = modification?.ReviewerComments,
-            RevisionDescription = modification?.RevisionDescription,
+            RevisionDescription = revisionDescription,
             RequestForInformationReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? [],
             RequestForInformationResponses = modificationRfiResponsesResponse.Content?.RfiResponses ?? [],
-            ApplicantRevisionResponse = modification?.ApplicantRevisionResponse,
+            ApplicantRevisionResponse = applicantRevisionResponse,
+            ModificationRevisionResponses = modification?.ModificationRevisionResponses ?? [],
             HasBeenDuplicated = modification.HasBeenDuplicated
         });
     }

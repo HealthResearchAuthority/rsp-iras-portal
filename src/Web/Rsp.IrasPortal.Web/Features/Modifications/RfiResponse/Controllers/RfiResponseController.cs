@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Web.Areas.Admin.Models;
@@ -73,10 +75,12 @@ public class RfiResponseController(
         model.ModificationId = modificationId.ToString();
         model.Status = modification.Content.Status;
 
-        if (model.RfiResponses.Count < model.RfiReasons.Count)
+        while (model.RfiResponses.Count < model.RfiReasons.Count)
         {
-            // pre-populate the RFI responses list with empty strings to match the count of RFI reasons
-            model.RfiResponses.AddRange(Enumerable.Repeat(string.Empty, model.RfiReasons.Count - model.RfiResponses.Count));
+            var rfiResponse = new RfiResponsesDTO();
+            // pre-populate the RFI responses list with empty string to match the count of RFI reasons
+            rfiResponse.InitialResponse.Add(string.Empty);
+            model.RfiResponses.Add(rfiResponse);
         }
 
         TempData[TempDataKeys.RfiDetails] = JsonSerializer.Serialize(model);
@@ -143,9 +147,13 @@ public class RfiResponseController(
         var storedModelJson = TempData.Peek(TempDataKeys.RfiDetails)!.ToString()!;
         var storedModel = JsonSerializer.Deserialize<RfiDetailsViewModel>(storedModelJson)!;
 
-        storedModel.RfiResponses = model.RfiResponses.ConvertAll(r => r ?? string.Empty);
+        var responses = model.RfiResponses
+                .Select(r => r.InitialResponse.FirstOrDefault() ?? string.Empty)
+                .ToList();
 
-        if (!saveForLater && storedModel.RfiResponses.Any(string.IsNullOrEmpty))
+        storedModel.RfiResponses = model.RfiResponses;
+
+        if (!saveForLater && responses.Any(string.IsNullOrWhiteSpace))
         {
             ModelState.AddModelError(string.Empty, "You have not provided a reason. Enter the reason for requesting further information from the applicant before you continue.");
             return View(storedModel);
@@ -155,7 +163,9 @@ public class RfiResponseController(
             new ModificationRfiResponseRequest()
             {
                 ProjectModificationId = Guid.Parse(storedModel.ModificationId!),
-                Responses = [.. storedModel.RfiResponses],
+                Responses = responses,
+                Role = ResponseRoles.Applicant,
+                ResponseOrigin = ResponseOrigin.InitialResponse
             }
         );
 

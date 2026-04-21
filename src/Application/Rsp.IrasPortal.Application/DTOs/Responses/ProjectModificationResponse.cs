@@ -1,4 +1,6 @@
-﻿namespace Rsp.Portal.Application.DTOs.Responses;
+﻿using Rsp.IrasPortal.Application.DTOs.Responses;
+
+namespace Rsp.Portal.Application.DTOs.Responses;
 
 /// <summary>
 /// Represents the response data for a project modification, including identifiers, status, and audit information.
@@ -39,11 +41,6 @@ public record ProjectModificationResponse
     /// The reviewer comments.
     /// </summary>
     public string? ReviewerComments { get; set; } = null!;
-
-    /// <summary>
-    /// The revision description.
-    /// </summary>
-    public string? RevisionDescription { get; set; } = null;
 
     /// <summary>
     /// The user ID of the person who created the modification.
@@ -111,7 +108,17 @@ public record ProjectModificationResponse
     public string? ApplicantRevisionResponse { get; set; } = null;
 
     /// <summary>
+    /// The revision description.
+    /// </summary>
+    public string? RevisionDescription { get; set; } = null;
+
+    /// <summary>
     /// Gets or sets whether the modification has been duplicated
     /// </summary>
     public bool HasBeenDuplicated { get; set; }
+
+    /// <summary>
+    /// Gets or sets modification responses
+    /// </summary>
+    public ICollection<ModificationRevisionResponse> ModificationRevisionResponses { get; set; } = [];
 }
