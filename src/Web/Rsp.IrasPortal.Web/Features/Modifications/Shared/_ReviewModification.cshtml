@@ -97,9 +97,12 @@
                 </div>
             </div>
             <div class="govuk-grid-column-two-thirds">
-                <div class="govuk-body">
-                    @Model.RevisionDescription
-                </div>
+                @if (!string.IsNullOrWhiteSpace(ViewBag.RevisionDescriptionTitle)) // TODO its temp workaround, before ticket for multiple revisions is made.
+                {
+                    <div class="govuk-body">
+                        @Model.RevisionDescription
+                    </div>
+                }                
             </div>
         }
     </div>
@@ -117,9 +120,12 @@
                 </div>
             </div>
             <div class="govuk-grid-column-two-thirds">
-                <div class="govuk-body">
-                    @Model.ApplicantRevisionResponse
-                </div>
+                @if (!string.IsNullOrWhiteSpace(ViewBag.RequestRevisionTitle)) // TODO its temp workaround, before ticket for multiple revisions is made.
+                {
+                    <div class="govuk-body">
+                        @Model.ApplicantRevisionResponse
+                    </div>
+                }
             </div>
         }
     </div>
