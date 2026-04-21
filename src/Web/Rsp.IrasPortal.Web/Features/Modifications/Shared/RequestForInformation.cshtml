@@ -25,8 +25,14 @@
                         <dt class="govuk-summary-list__key">
                             Response @(i + 1)
                         </dt>
-                        <dd class="govuk-summary-list__value">
-                            @(Model.RequestForInformationResponses.ElementAtOrDefault(i))
+                        <dd class="govuk-summary-list__value">                            
+                            @{
+                                var response = Model.RequestForInformationResponses
+                                .ElementAtOrDefault(i)?
+                                .InitialResponse
+                                .FirstOrDefault();
+                            }
+                            @response
                         </dd>
                     </div>
                 </dl>

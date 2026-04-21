@@ -1,4 +1,7 @@
-﻿namespace Rsp.Portal.Web.Models;
+﻿using Rsp.IrasPortal.Application.DTOs.Responses;
+using Rsp.Portal.Application.DTOs.Responses;
+
+namespace Rsp.Portal.Web.Models;
 
 /// <summary>
 /// Base view model for project modification-related pages.
@@ -55,8 +58,6 @@ public class BaseProjectModificationViewModel
 
     public string? ReviewerComments { get; set; }
 
-    public string? RevisionDescription { get; set; }
-
     /// <summary>
     /// Gets or sets the list of reasons for requesting additional information from the applicant.
     /// </summary>
@@ -65,7 +66,7 @@ public class BaseProjectModificationViewModel
     /// <summary>
     /// Gets or sets the list of responses provided by the applicant in response to the request for additional information.
     /// </summary>
-    public List<string> RequestForInformationResponses { get; set; } = [];
+    public List<RfiResponsesDTO> RequestForInformationResponses { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the created date of the Modification
@@ -88,6 +89,10 @@ public class BaseProjectModificationViewModel
     /// Thia holds the revision response by the applicant
     /// </summary>
     public string? ApplicantRevisionResponse { get; set; }
+
+    public string? RevisionDescription { get; set; }
+
+    public ICollection<ModificationRevisionResponse> ModificationRevisionResponses { get; set; } = [];
 
     /// <summary>
     /// Gets or sets whether the modification has been duplicated

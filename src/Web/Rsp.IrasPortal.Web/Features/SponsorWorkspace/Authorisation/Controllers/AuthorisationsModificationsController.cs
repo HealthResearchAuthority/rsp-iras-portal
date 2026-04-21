@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -399,6 +400,8 @@ public class AuthorisationsModificationsController
             return View(hydrated);
         }
 
+        var rfiFeatureFlagEnabled = await featureManager.IsEnabledAsync(FeatureFlags.RequestForInformation);
+
         switch (model.Outcome)
         {
             case "Authorised":
@@ -455,13 +458,27 @@ public class AuthorisationsModificationsController
                 return RedirectToAction(nameof(RequestRevisions), model);
 
             case "ReviseAndAuthorise":
-                await projectModificationsService.UpdateModificationStatus
+
+                if (rfiFeatureFlagEnabled)
+                {
+                    await projectModificationsService.UpdateModificationStatus
+                        (
+                            model.ProjectRecordId,
+                            Guid.Parse(model.ModificationId),
+                            ModificationStatus.ReviseAndAuthorise
+                        );
+                }
+                else
+                {
+                    await projectModificationsService.LegacyUpdateModificationStatus
                         (
                             model.ProjectRecordId,
                             Guid.Parse(model.ModificationId),
                             ModificationStatus.ReviseAndAuthorise,
                             string.Empty
                         );
+                }
+
                 return RedirectToRoute("pmc:ModificationDetails", new
                 {
                     projectRecordId = model.ProjectRecordId,
@@ -480,14 +497,27 @@ public class AuthorisationsModificationsController
                 }
                 else
                 {
-                    await projectModificationsService.UpdateModificationStatus
-                  (
-                      model.ProjectRecordId,
-                      Guid.Parse(model.ModificationId),
-                      ModificationStatus.NotAuthorised,
-                      model.RevisionDescription,
-                      model.ReasonNotApproved
-                  );
+                    if (rfiFeatureFlagEnabled)
+                    {
+                        await projectModificationsService.UpdateModificationStatus
+                            (
+                                model.ProjectRecordId,
+                                Guid.Parse(model.ModificationId),
+                                ModificationStatus.NotAuthorised,
+                                model.ReasonNotApproved
+                            );
+                    }
+                    else
+                    {
+                        await projectModificationsService.LegacyUpdateModificationStatus
+                            (
+                                model.ProjectRecordId,
+                                Guid.Parse(model.ModificationId),
+                                ModificationStatus.NotAuthorised,
+                                model.RevisionDescription,
+                                model.ReasonNotApproved
+                            );
+                    }
                 }
 
                 break;
@@ -610,13 +640,31 @@ public class AuthorisationsModificationsController
             }
         }
 
-        await projectModificationsService.UpdateModificationStatus
+        var rfiFeatureFlagEnabled = await featureManager.IsEnabledAsync(FeatureFlags.RequestForInformation);
+
+        if (rfiFeatureFlagEnabled)
+        {
+            await projectModificationsService.UpdateModificationStatus
+                (
+                    model.ProjectRecordId,
+                    Guid.Parse(model.ModificationId),
+                    ModificationStatus.RequestRevisions,
+                    null,
+                    model.RevisionDescription,
+                    ResponseRoles.Sponsor,
+                    ResponseOrigin.RequestRevisions
+                );
+        }
+        else
+        {
+            await projectModificationsService.LegacyUpdateModificationStatus
                 (
                     model.ProjectRecordId,
                     Guid.Parse(model.ModificationId),
                     ModificationStatus.RequestRevisions,
                     model.RevisionDescription
                 );
+        }
 
         return RedirectToAction(nameof(Confirmation), model);
     }
@@ -656,15 +704,33 @@ public class AuthorisationsModificationsController
             }
         }
 
+        var rfiFeatureFlagEnabled = await featureManager.IsEnabledAsync(FeatureFlags.RequestForInformation);
+
         if (isSaveForLater)
         {
-            await projectModificationsService.UpdateModificationStatus
-                (
-                    model.ProjectRecordId,
-                    Guid.Parse(model.ModificationId),
-                    ModificationStatus.ReviseAndAuthorise,
-                    model.RevisionDescription
-                );
+            if (rfiFeatureFlagEnabled)
+            {
+                await projectModificationsService.UpdateModificationStatus
+                    (
+                        model.ProjectRecordId,
+                        Guid.Parse(model.ModificationId),
+                        ModificationStatus.ReviseAndAuthorise,
+                        null,
+                        model.RevisionDescription,
+                        ResponseRoles.Sponsor,
+                        ResponseOrigin.ReviseAndAuthorise
+                    );
+            }
+            else
+            {
+                await projectModificationsService.LegacyUpdateModificationStatus
+                    (
+                        model.ProjectRecordId,
+                        Guid.Parse(model.ModificationId),
+                        ModificationStatus.ReviseAndAuthorise,
+                        model.RevisionDescription
+                    );
+            }
 
             TempData[TempDataKeys.ShowNotificationBanner] = true;
             return RedirectToAction(nameof(Modifications), new { sponsorOrganisationUserId = model.SponsorOrganisationUserId, rtsId = model.RtsId });
@@ -724,39 +790,89 @@ public class AuthorisationsModificationsController
                     : model.ReviewType;
         //call modification service and check if any modifications are in reviewbody status
         var modificationsResponse = await projectModificationsService.GetModificationsForProject(model.ProjectRecordId, new ModificationSearchRequest());
-        if (modificationsResponse.Content?.Modifications?
-                .Any(m => m.Status == ModificationStatus.WithReviewBody) == true)
-        {
-            await projectModificationsService.UpdateModificationStatus
-                (
-                    model.ProjectRecordId,
-                    Guid.Parse(model.ModificationId),
-                    ModificationStatus.ReviseAndAuthorise,
-                    model.RevisionDescription
-                );
-            return RedirectToAction(nameof(CanSubmitToReviewBody), model);
-        }
-        switch (reviewType)
-        {
-            case "Review required":
-                await projectModificationsService.UpdateModificationStatus
-                (
-                    model.ProjectRecordId,
-                    Guid.Parse(model.ModificationId),
-                    ModificationStatus.WithReviewBody,
-                    model.RevisionDescription
-                );
-                break;
 
-            default:
+        if (rfiFeatureFlagEnabled)
+        {
+            if (modificationsResponse.Content?.Modifications?
+                .Any(m => m.Status == ModificationStatus.WithReviewBody) == true)
+            {
                 await projectModificationsService.UpdateModificationStatus
-                (
-                    model.ProjectRecordId,
-                    Guid.Parse(model.ModificationId),
-                    ModificationStatus.Approved,
-                    model.RevisionDescription
-                );
-                break;
+                    (
+                        model.ProjectRecordId,
+                        Guid.Parse(model.ModificationId),
+                        ModificationStatus.ReviseAndAuthorise,
+                        null,
+                        model.RevisionDescription,
+                        ResponseRoles.Sponsor,
+                        ResponseOrigin.ReviseAndAuthorise
+                    );
+                return RedirectToAction(nameof(CanSubmitToReviewBody), model);
+            }
+            switch (reviewType)
+            {
+                case "Review required":
+                    await projectModificationsService.UpdateModificationStatus
+                    (
+                        model.ProjectRecordId,
+                        Guid.Parse(model.ModificationId),
+                        ModificationStatus.WithReviewBody,
+                        null,
+                        model.RevisionDescription,
+                        ResponseRoles.Sponsor,
+                        ResponseOrigin.ReviseAndAuthorise
+                    );
+                    break;
+
+                default:
+                    await projectModificationsService.UpdateModificationStatus
+                    (
+                        model.ProjectRecordId,
+                        Guid.Parse(model.ModificationId),
+                        ModificationStatus.Approved,
+                        null,
+                        model.RevisionDescription,
+                        ResponseRoles.Sponsor,
+                        ResponseOrigin.ReviseAndAuthorise
+                    );
+                    break;
+            }
+        }
+        else
+        {
+            if (modificationsResponse.Content?.Modifications?
+                .Any(m => m.Status == ModificationStatus.WithReviewBody) == true)
+            {
+                await projectModificationsService.LegacyUpdateModificationStatus
+                    (
+                        model.ProjectRecordId,
+                        Guid.Parse(model.ModificationId),
+                        ModificationStatus.ReviseAndAuthorise,
+                        model.RevisionDescription
+                    );
+                return RedirectToAction(nameof(CanSubmitToReviewBody), model);
+            }
+            switch (reviewType)
+            {
+                case "Review required":
+                    await projectModificationsService.LegacyUpdateModificationStatus
+                    (
+                        model.ProjectRecordId,
+                        Guid.Parse(model.ModificationId),
+                        ModificationStatus.WithReviewBody,
+                        model.RevisionDescription
+                    );
+                    break;
+
+                default:
+                    await projectModificationsService.LegacyUpdateModificationStatus
+                    (
+                        model.ProjectRecordId,
+                        Guid.Parse(model.ModificationId),
+                        ModificationStatus.Approved,
+                        model.RevisionDescription
+                    );
+                    break;
+            }
         }
 
         //Temporary project halt and restart of project
@@ -845,14 +961,30 @@ public class AuthorisationsModificationsController
             return await ValidateRequest(model);
         }
 
-        await projectModificationsService.UpdateModificationStatus
-               (
-                   model.ProjectRecordId,
-                   Guid.Parse(model.ModificationId),
-                   ModificationStatus.NotAuthorised,
-                   model.RevisionDescription,
-                   model.ReasonNotApproved
-               );
+        var rfiFeatureFlagEnabled = await featureManager.IsEnabledAsync(FeatureFlags.RequestForInformation);
+
+        if (rfiFeatureFlagEnabled)
+        {
+            await projectModificationsService.UpdateModificationStatus
+                (
+                    model.ProjectRecordId,
+                    Guid.Parse(model.ModificationId),
+                    ModificationStatus.NotAuthorised,
+                    model.ReasonNotApproved
+                );
+        }
+        else
+        {
+            await projectModificationsService.LegacyUpdateModificationStatus
+                (
+                    model.ProjectRecordId,
+                    Guid.Parse(model.ModificationId),
+                    ModificationStatus.NotAuthorised,
+                    model.RevisionDescription,
+                    model.ReasonNotApproved
+                );
+        }
+
         return RedirectToAction(nameof(ConfirmationModificationNotAuthorised), model);
     }
 

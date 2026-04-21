@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -495,13 +496,44 @@ public class ReviewAllChangesController
             return View("SponsorReference", viewModel);
         }
 
-        // PASS ALL CHECKS → CONTINUE WORKFLOW
-        return await HandleModificationStatusUpdate(
-            projectRecordId,
-            projectModificationId,
-            ModificationStatus.WithSponsor,
-            applicantRevisionResponse,
-            onSuccess: () => View("ModificationSentToSponsor"));
+        TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
+        TempData[TempDataKeys.ProjectModification.ProjectModificationId] = projectModificationId;
+
+        var rfiFeatureFlagEnabled = await featureManager.IsEnabledAsync(FeatureFlags.RequestForInformation);
+        ServiceResponse? updateResponse;
+
+        if (rfiFeatureFlagEnabled)
+        {
+            updateResponse = await projectModificationsService.UpdateModificationStatus
+                (
+                    projectRecordId,
+                    projectModificationId,
+                    ModificationStatus.WithSponsor,
+                    null,
+                    applicantRevisionResponse,
+                    ResponseRoles.Applicant,
+                    ResponseOrigin.RequestRevisions
+                );
+        }
+        else
+        {
+            updateResponse = await projectModificationsService.LegacyUpdateModificationStatus
+                (
+                    projectRecordId,
+                    projectModificationId,
+                    ModificationStatus.WithSponsor,
+                    null,
+                    null,
+                    applicantRevisionResponse
+                );
+        }
+
+        if (!updateResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(updateResponse);
+        }
+
+        return View("ModificationSentToSponsor");
     }
 
     /// <summary>
@@ -542,12 +574,22 @@ public class ReviewAllChangesController
             return this.ServiceError(_reviewOutcomeNotFoundError);
         }
 
-        return await HandleModificationStatusUpdate(
+        TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
+        TempData[TempDataKeys.ProjectModification.ProjectModificationId] = projectModificationId;
+
+        var updateResponse = await projectModificationsService.UpdateModificationStatus
+        (
             projectRecordId,
             projectModificationId,
-            ModificationStatus.Withdrawn,
-            string.Empty,
-            onSuccess: () => View(model));
+            ModificationStatus.Withdrawn
+        );
+
+        if (!updateResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(updateResponse);
+        }
+
+        return View(model);
     }
 
     public async Task<IActionResult> DownloadModificationPdfFromHtml()
@@ -686,15 +728,32 @@ public class ReviewAllChangesController
 
         if (isSaveForLater)
         {
-            await projectModificationsService.UpdateModificationStatus
-                (
-                    model.ProjectRecordId,
-                    Guid.Parse(model.ModificationId),
-                    ModificationStatus.RequestRevisions,
-                    model.RevisionDescription,
-                    model.ReasonNotApproved,
-                    model.ApplicantRevisionResponse
-                );
+            var rfiFeatureFlagEnabled = await featureManager.IsEnabledAsync(FeatureFlags.RequestForInformation);
+            if (rfiFeatureFlagEnabled)
+            {
+                await projectModificationsService.UpdateModificationStatus
+                    (
+                        model.ProjectRecordId,
+                        Guid.Parse(model.ModificationId),
+                        ModificationStatus.RequestRevisions,
+                        model.ReasonNotApproved,
+                        model.ApplicantRevisionResponse,
+                        ResponseRoles.Applicant,
+                        ResponseOrigin.RequestRevisions
+                    );
+            }
+            else
+            {
+                await projectModificationsService.LegacyUpdateModificationStatus
+                    (
+                        model.ProjectRecordId,
+                        Guid.Parse(model.ModificationId),
+                        ModificationStatus.RequestRevisions,
+                        model.RevisionDescription,
+                        model.ReasonNotApproved,
+                        model.ApplicantRevisionResponse
+                    );
+            }
             TempData[TempDataKeys.ShowNotificationBanner] = true;
             TempData[TempDataKeys.RequestRevisionDescription] = model.ApplicantRevisionResponse;
             return RedirectToRoute("pov:postapproval", new { projectRecordId = model.ProjectRecordId });
@@ -706,34 +765,6 @@ public class ReviewAllChangesController
             projectModificationId = Guid.Parse(model.ModificationId),
             applicantRevisionResponse = model.ApplicantRevisionResponse
         });
-    }
-
-    private async Task<IActionResult> HandleModificationStatusUpdate(
-        string projectRecordId,
-        Guid projectModificationId,
-        string newStatus,
-        string applicantRevisionResponse,
-        Func<IActionResult> onSuccess)
-    {
-        TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
-        TempData[TempDataKeys.ProjectModification.ProjectModificationId] = projectModificationId;
-
-        var updateResponse = await projectModificationsService.UpdateModificationStatus
-        (
-            projectRecordId,
-            projectModificationId,
-            newStatus,
-            null,
-            null,
-            applicantRevisionResponse
-        );
-
-        if (!updateResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(updateResponse);
-        }
-
-        return onSuccess();
     }
 
     private ReviewOutcomeViewModel? GetFromTempData()

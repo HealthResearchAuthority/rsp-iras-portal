@@ -168,7 +168,17 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     {
         model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1", "Reason 2"];
-        model.RfiResponses = ["Response 1", ""];
+        model.RfiResponses = new List<RfiResponsesDTO>
+        {
+            new RfiResponsesDTO
+            {
+                InitialResponse = ["Response 1"]
+            },
+            new RfiResponsesDTO
+            {
+                InitialResponse = [""]
+            }
+        };
 
         SetupTempData(model);
 
@@ -188,7 +198,13 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     {
         model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiResponses = new List<RfiResponsesDTO>
+        {
+            new RfiResponsesDTO
+            {
+                InitialResponse = ["Response 1"]
+            },
+        };
 
         SetupTempData(model);
         Mocker.GetMock<IProjectModificationsService>()
@@ -208,7 +224,13 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     {
         model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiResponses = new List<RfiResponsesDTO>
+        {
+            new RfiResponsesDTO
+            {
+                InitialResponse = ["Response 1"]
+            },
+        };
 
         SetupTempData(model);
         Mocker.GetMock<IProjectModificationsService>()
@@ -230,7 +252,13 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     {
         model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiResponses = new List<RfiResponsesDTO>
+        {
+            new RfiResponsesDTO
+            {
+                InitialResponse = ["Response 1"]
+            },
+        };
         SetupTempData(model);
 
         Mocker.GetMock<IProjectModificationsService>()
@@ -269,12 +297,12 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     {
         model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
 
         SetupTempData(model);
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), null, null, null))
+            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), null, null, null, null))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.InternalServerError });
 
         var result = await Sut.RfiSubmitResponses();
@@ -290,11 +318,11 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     {
         model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
 
         SetupTempData(model);
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), null, null, null))
+            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), null, null, null, null))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         var result = await Sut.RfiSubmitResponses();
@@ -316,7 +344,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
 
         model.ModificationId = modificationId.ToString();
         model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
 
         SetupTempData(model);
         // modification
