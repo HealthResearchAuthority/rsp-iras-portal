@@ -1495,6 +1495,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
             ModificationId = projectModificationId.ToString(),
             ProjectRecordId = projectRecordId
         };
+        Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationsDetails] = modification;
 
         TypeAdapterConfig<ModificationDetailsViewModel, AuthoriseModificationsOutcomeViewModel>
             .NewConfig()
@@ -2871,6 +2872,44 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
         var viewResult = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal("CanSubmitToReviewBody", viewResult.ActionName);
         result.ShouldBeOfType<RedirectToActionResult>();
+    }
+
+    [Fact]
+    public async Task CheckAndAuthorise_Set_TempDataView_For_PDF_Download()
+    {
+        var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
+        authoriseOutcomeViewModel.Status = ModificationStatus.WithSponsor;
+
+        Mocker.GetMock<IFeatureManager>()
+     .Setup(f => f.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+     .ReturnsAsync(true);
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses("PR1", _sponsorOrganisationUserId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationReviewResponse
+                {
+                    RevisionDescription = "abc"
+                }
+            });
+
+        var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
+        sponsorOrganisationService
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new SponsorOrganisationUserDto { Id = Guid.NewGuid() }
+            });
+
+        var result = await Sut.CheckAndAuthorise("PR1", "IRAS", "Short",
+            _sponsorOrganisationUserId, _sponsorOrganisationUserId, "123");
+
+        result.ShouldBeOfType<ViewResult>();
+        var view = result.ShouldBeOfType<ViewResult>();
+        view.ViewData["RevisionSent"].ShouldBe(true);
     }
 
     public SponsorUserAuthorisationResult Authorised(Guid gid)

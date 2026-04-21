@@ -1,4 +1,6 @@
-﻿using Rsp.Portal.Application.DTOs.Responses;
+﻿using Rsp.IrasPortal.Web.Features.Modifications.ParticipatingOrganisations.Models;
+using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Web.Areas.Admin.Models;
 
 namespace Rsp.Portal.Web.Models;
 
@@ -66,4 +68,14 @@ public class ProjectOverviewModel
     /// Gets or sets the Id of the user who created the project.
     /// </summary>
     public string? CreatedBy { get; set; }
+
+    /// <summary>
+    /// Gets Participating Organisations associated with the project.
+    /// </summary>
+    public IEnumerable<OrganisationDetailsViewModel> ParticipatingOrganisations { get; set; } = [];
+
+    /// <summary>
+    /// Gets Participating Organisations Pagination
+    /// </summary>
+    public PaginationViewModel? Pagination { get; set; }
 }
