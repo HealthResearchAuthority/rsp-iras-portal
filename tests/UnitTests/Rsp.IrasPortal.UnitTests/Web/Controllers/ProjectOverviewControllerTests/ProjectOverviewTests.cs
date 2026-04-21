@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.FeatureManagement;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Web.Models;
 using Rsp.Portal.Application.Constants;
@@ -957,6 +958,10 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
                 }
             });
 
+        Mocker.GetMock<Microsoft.FeatureManagement.IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.ParticipatingOrganisations))
+            .ReturnsAsync(true);
+
         // Act
         var result = await Sut.ResearchLocations(projectRecordId, "", 1, 10);
 
@@ -1041,9 +1046,15 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         var cmsQuestionsetService = Mocker.GetMock<ICmsQuestionsetService>();
         var rtsService = Mocker.GetMock<IRtsService>();
 
+        Mocker.GetMock<Microsoft.FeatureManagement.IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.ParticipatingOrganisations))
+            .ReturnsAsync(true);
+
         var org1 = new ParticipatingOrganisationDto { Id = Guid.NewGuid(), OrganisationId = "ORG-1" };
         var org2 = new ParticipatingOrganisationDto { Id = Guid.NewGuid(), OrganisationId = "ORG-2" };
         var org3 = new ParticipatingOrganisationDto { Id = Guid.NewGuid(), OrganisationId = "ORG-3" };
+
+        
 
         respondentService
             .Setup(s => s.GetModificationParticipatingOrganisationsBySpecificArea(projectRecordId, SpecificAreasOfChange.AddNewSites))
