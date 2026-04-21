@@ -24,6 +24,21 @@
 }
 
 @{
+    var operationMessage = TempData[TempDataKeys.ProjectCollaborators.OperationMessage] as string;
+
+    if (operationMessage != null)
+    {
+        var notificationModel = new NotificationBannerModel
+        {
+            Title = "Success",
+            Heading = operationMessage
+        };
+
+        <partial name="_NotificationBanner" model="notificationModel" />
+    }
+}
+
+@{
     var errorSummaryTitle = "There is a problem";
 	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
 
