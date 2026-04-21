@@ -84,8 +84,16 @@ public abstract class ModificationsControllerBase
 
         if (rfiFeatureFlagEnabled)
         {
-            // If there is ReviseAndAuthorise response revisionDescription holds latest revise and authorise response
-            // Otherwise revisionDescription represents request revisions response.
+            // When RequestForInformation (RFI) is enabled we stop using legacy single
+            // RevisionDescription/ApplicantRevisionResponse properties directly.
+            //
+            // HOWEVER: to preserve backward behaviour for now, we still expose
+            // "revisionDescription" as a single aggregated value.
+            //
+            // The ability to display full response history (multiple revisions)
+            // will be implemented in a separate ticket - for some views, most views requires
+            // only latest values - so that this properties may remain part of base modification object.
+
             revisionDescription = null;
 
             var sponsorResponses = modification?.ModificationRevisionResponses
@@ -98,10 +106,15 @@ public abstract class ModificationsControllerBase
 
             if (reviseAndAuthorise != null)
             {
+                // If a ReviseAndAuthorise response exists, use it as the revision description
+                // This mimics the previous behaviour where RevisionDescription was overwritten
+                // with the latest sponsor response.
                 revisionDescription = reviseAndAuthorise.Response;
             }
             else if (modification?.Status != ModificationStatus.ReviseAndAuthorise)
             {
+                // Otherwise, and only if the modification is NOT currently in
+                // ReviseAndAuthorise status, fall back to the latest RequestRevisions response.
                 revisionDescription = sponsorResponses?
                     .Where(r => r.ResponseOrigin == ResponseOrigin.RequestRevisions)
                     .OrderByDescending(r => r.CreatedDateTime)
@@ -117,6 +130,9 @@ public abstract class ModificationsControllerBase
         }
         else
         {
+            // Legacy behaviour when RFI feature flag is disabled:
+            // use single-value properties as they were before introducing
+            // ModificationRevisionResponses.
             revisionDescription = modification?.RevisionDescription;
             applicantRevisionResponse = modification?.ApplicantRevisionResponse;
         }

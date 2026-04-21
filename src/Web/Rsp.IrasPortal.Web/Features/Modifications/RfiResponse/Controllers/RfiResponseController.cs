@@ -77,9 +77,16 @@ public class RfiResponseController(
 
         while (model.RfiResponses.Count < model.RfiReasons.Count)
         {
+            // We now use a response object instead of a single string because:
+            // - each RFI reason can have multiple responses (1:N relationship)
+            // - responses can belong to different stages (see ResponseOrigin constant)
+            // used in SaveModificationRfiResponses method
             var rfiResponse = new RfiResponsesDTO();
-            // pre-populate the RFI responses list with empty string to match the count of RFI reasons
+
+            // Pre-populate InitialResponse with an empty value to preserve
+            // existing binding behaviour (previously this was a single string).
             rfiResponse.InitialResponse.Add(string.Empty);
+
             model.RfiResponses.Add(rfiResponse);
         }
 
