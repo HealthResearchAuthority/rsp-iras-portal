@@ -1279,3 +1279,9 @@ button.govuk-pagination__item--current {
 .adjust-govuk-link-color a:visited {
     color: #4C2C92;
 }
+
+.rec-member-form {
+    .govuk-label, .govuk-fieldset__legend {
+        font-weight: 100 !important;
+    }
+}

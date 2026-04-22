@@ -134,6 +134,7 @@ public static class RolePermissions
                 MemberManagement.Workspace_Access,
                 MemberManagement.ResearchEthicsCommittees_Access,
                 MemberManagement.ResearchEthicsCommittees_Search,
+                MemberManagement.ResearchEthicsCommittees_ManageMembers
 }
         },
         {
@@ -201,6 +202,7 @@ public static class RolePermissions
                 MemberManagement.Workspace_Access,
                 MemberManagement.ResearchEthicsCommittees_Access,
                 MemberManagement.ResearchEthicsCommittees_Search,
+                MemberManagement.ResearchEthicsCommittees_ManageMembers
             }
         },
     };

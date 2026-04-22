@@ -1,9 +1,9 @@
-﻿using Rsp.Portal.Application.Constants;
+﻿using Rsp.Logging.Interceptors;
+using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
-using Rsp.Logging.Interceptors;
 
 namespace Rsp.Portal.Application.Services;
 
@@ -30,6 +30,8 @@ public interface IReviewBodyService : IInterceptable
     Task<ServiceResponse> EnableReviewBody(Guid id);
 
     Task<ServiceResponse<ReviewBodyUserDto>> AddUserToReviewBody(ReviewBodyUserDto reviewBodyUser);
+
+    Task<ServiceResponse<ReviewBodyUserDto>> UpdateReviewBodyUser(ReviewBodyUserDto reviewBodyUser);
 
     Task<ServiceResponse<ReviewBodyUserDto>> RemoveUserFromReviewBody(Guid reviewBodyId, Guid userId);
 
