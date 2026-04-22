@@ -15,6 +15,7 @@ using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.UnitTests;
+using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.RfiResponses;
@@ -79,10 +80,10 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         var result = await Sut.RfiDetails(projectId, modificationId);
 
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        var model = viewResult.Model.ShouldBeAssignableTo<RfiDetailsViewModel>();
+        var model = viewResult.Model.ShouldBeAssignableTo<ModificationDetailsViewModel>();
         model.IrasId.ShouldBe(projectRecordResponse.IrasId.ToString());
         model.ModificationId.ShouldBe(modificationId.ToString());
-        model.RfiReasons.Count.ShouldBe(rfiResponse.RequestForInformationReasons.Count);
+        model.RfiModel.RfiReasons.Count.ShouldBe(rfiResponse.RequestForInformationReasons.Count);
     }
 
     [Theory, AutoData]
@@ -220,7 +221,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     [Theory, AutoData]
     public async Task RfiResponses_GET_Returns_View_With_Model
     (
-        RfiDetailsViewModel tempDataModel,
+        ModificationDetailsViewModel tempDataModel,
         Guid modificationId
     )
     {
@@ -238,13 +239,13 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     [Theory, AutoData]
     public async Task RfiResponses_POST_Returns_View_With_Error_When_Reason_Missing
     (
-        RfiDetailsViewModel model,
+        ModificationDetailsViewModel model,
         Guid modificationId
     )
     {
         model.ModificationId = modificationId.ToString();
-        model.RfiReasons = ["Reason 1", "Reason 2"];
-        model.RfiResponses = new List<RfiResponsesDTO>
+        model.RfiModel.RfiReasons = ["Reason 1", "Reason 2"];
+        model.RfiModel.RfiResponses = new List<RfiResponsesDTO>
         {
             new RfiResponsesDTO
             {
@@ -268,13 +269,13 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     [Theory, AutoData]
     public async Task RfiResponses_POST_Returns_Service_Error_When_Service_Fails
     (
-        RfiDetailsViewModel model,
+        ModificationDetailsViewModel model,
         Guid modificationId
     )
     {
         model.ModificationId = modificationId.ToString();
-        model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = new List<RfiResponsesDTO>
+        model.RfiModel.RfiReasons = ["Reason 1"];
+        model.RfiModel.RfiResponses = new List<RfiResponsesDTO>
         {
             new RfiResponsesDTO
             {
@@ -294,13 +295,13 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     [Theory, AutoData]
     public async Task RfiResponses_POST_Saves_And_Redirects_When_SaveForLater_Is_True
     (
-        RfiDetailsViewModel model,
+        ModificationDetailsViewModel model,
         Guid modificationId
     )
     {
         model.ModificationId = modificationId.ToString();
-        model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = new List<RfiResponsesDTO>
+        model.RfiModel.RfiReasons = ["Reason 1"];
+        model.RfiModel.RfiResponses = new List<RfiResponsesDTO>
         {
             new RfiResponsesDTO
             {
@@ -322,13 +323,13 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     [Theory, AutoData]
     public async Task RfiResponses_POST_Saves_And_Continues_When_SaveForLater_Is_False
     (
-        RfiDetailsViewModel model,
+        ModificationDetailsViewModel model,
         Guid modificationId
     )
     {
         model.ModificationId = modificationId.ToString();
-        model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = new List<RfiResponsesDTO>
+        model.RfiModel.RfiReasons = ["Reason 1"];
+        model.RfiModel.RfiResponses = new List<RfiResponsesDTO>
         {
             new RfiResponsesDTO
             {
@@ -350,7 +351,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     [Theory, AutoData]
     public void RfiCheckAndSubmitResponses_GET_Returns_View_With_Model
     (
-        RfiDetailsViewModel tempDataModel,
+        ModificationDetailsViewModel tempDataModel,
         Guid modificationId
     )
     {
@@ -367,13 +368,13 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     [Theory, AutoData]
     public async Task RfiCheckAndSubmitResponses_POST_Returns_Service_Error_When_Service_Fails
     (
-        RfiDetailsViewModel model,
+        ModificationDetailsViewModel model,
         Guid modificationId
     )
     {
         model.ModificationId = modificationId.ToString();
-        model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
+        model.RfiModel.RfiReasons = ["Reason 1"];
+        model.RfiModel.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
 
         SetupTempData(model);
 
@@ -397,13 +398,13 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     [Theory, AutoData]
     public async Task RfiCheckAndSubmitResponses_POST_Submits_And_Redirects_When_Service_Succeeds
     (
-        RfiDetailsViewModel model,
+        ModificationDetailsViewModel model,
         Guid modificationId
     )
     {
         model.ModificationId = modificationId.ToString();
-        model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
+        model.RfiModel.RfiReasons = ["Reason 1"];
+        model.RfiModel.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
 
         SetupTempData(model);
 
@@ -429,7 +430,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     [Theory, AutoData]
     public async Task Returns_View_With_Changes_And_SponsorDetails
     (
-        RfiDetailsViewModel model,
+        ModificationDetailsViewModel model,
         Guid modificationId
     )
     {
@@ -438,8 +439,8 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         var changeId = Guid.NewGuid();
 
         model.ModificationId = modificationId.ToString();
-        model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
+        model.RfiModel.RfiReasons = ["Reason 1"];
+        model.RfiModel.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
 
         SetupTempData(model);
         // modification
@@ -631,11 +632,11 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
-        model = view.Model.ShouldBeOfType<RfiDetailsViewModel>();
+        model = view.Model.ShouldBeOfType<ModificationDetailsViewModel>();
         model.ModificationChanges.Count.ShouldBe(3);
     }
 
-    private void SetupTempData(RfiDetailsViewModel model)
+    private void SetupTempData(ModificationDetailsViewModel model)
     {
         var ctx = new DefaultHttpContext();
         Sut.ControllerContext = new() { HttpContext = ctx };
