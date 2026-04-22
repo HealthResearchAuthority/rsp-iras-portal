@@ -24,7 +24,8 @@ public class ProjectRecordController
 (
     IApplicationsService applicationsService,
     IRespondentService respondentService,
-    ICmsQuestionSetServiceClient cmsService
+    ICmsQuestionSetServiceClient cmsService,
+    IReviewBodyService reviewBodyService
 ) : ProjectRecordControllerBase(respondentService)
 {
     [ExcludeFromCodeCoverage]
@@ -138,6 +139,25 @@ public class ProjectRecordController
 
         projectRecordViewModel.SectionId = section.Id;
 
+        var activeReviewBodies = await reviewBodyService.GetAllActiveReviewBodies();
+
+        if (activeReviewBodies.IsSuccessStatusCode &&
+            activeReviewBodies.Content?.ReviewBodies != null &&
+            projectRecord.RecID.HasValue)
+        {
+            var recId = projectRecord.RecID.Value;
+
+            var reviewBody = activeReviewBodies.Content.ReviewBodies
+                .FirstOrDefault(rb =>
+                    string.Equals(rb.ReviewBodyType, "Research ethics committee", StringComparison.OrdinalIgnoreCase) &&
+                    rb.ResearchEthicsCommitteeId == recId);
+
+            if (reviewBody != null)
+            {
+                projectRecordViewModel.ReviewBody = reviewBody;
+            }
+        }
+
         return View(projectRecordViewModel);
     }
 
@@ -177,7 +197,8 @@ public class ProjectRecordController
             UserId = userId,
             IrasId = model.IrasId,
             LeadNation = model.LeadNation,
-            IsNHSHSCOrganisation = model.IsNHSHSCOrganisation
+            IsNHSHSCOrganisation = model.IsNHSHSCOrganisation,
+            RegulatoryBodyId = model.ReviewBody?.Id
         };
 
         // Call the service to create the new application

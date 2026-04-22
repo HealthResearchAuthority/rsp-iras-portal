@@ -59,4 +59,5 @@ public record IrasApplicationRequest
     /// Is NHS / HSC Organisation
     /// </summary>
     public bool IsNHSHSCOrganisation { get; set; }
+    public Guid? RegulatoryBodyId { get; set; }
 }

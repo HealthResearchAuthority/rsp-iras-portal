@@ -8,6 +8,7 @@ public class ReviewBodyDto
     public List<string> Countries { get; set; } = [];
     public string? Description { get; set; }
     public string? ReviewBodyType { get; set; }
+    public int? ResearchEthicsCommitteeId { get; set; }
     public bool IsActive { get; set; } = true;
     public string CreatedBy { get; set; } = null!;
     public string? UpdatedBy { get; set; }

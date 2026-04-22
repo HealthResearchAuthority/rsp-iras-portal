@@ -90,7 +90,8 @@ public class ProjectRecordControllerTests : TestServiceBase<ProjectRecordControl
             IRASID = 1234,
             ShortProjectTitle = "Short",
             LongProjectTitle = "Long",
-            LeadNation = leadNation
+            LeadNation = leadNation,
+            RecID = 1,
         };
 
         Sut.TempData[TempDataKeys.ProjectRecord] = JsonSerializer.Serialize(record);
@@ -107,6 +108,23 @@ public class ProjectRecordControllerTests : TestServiceBase<ProjectRecordControl
             .GetMock<ICmsQuestionSetServiceClient>()
             .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(ApiResponseFactory.Success(cmsResponse));
+
+        Mocker
+            .GetMock<IReviewBodyService>()
+            .Setup(s => s.GetAllActiveReviewBodies(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<AllReviewBodiesResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new AllReviewBodiesResponse
+                {
+                    ReviewBodies = [
+                        new() { Id = Guid.NewGuid(), RegulatoryBodyName = "England", ReviewBodyType = "Research ethics committee", ResearchEthicsCommitteeId = 1 },
+                        new() { Id = Guid.NewGuid(), RegulatoryBodyName = "Northern Ireland", ReviewBodyType = "Research ethics committee" },
+                        new() { Id = Guid.NewGuid(), RegulatoryBodyName = "Scotland", ReviewBodyType = "Research ethics committee" },
+                        new() { Id = Guid.NewGuid(), RegulatoryBodyName = "Wales", ReviewBodyType = "Research ethics committee" }
+                    ]
+                }
+            });
 
         // Act
         await Sut.ProjectRecord("section-1");
@@ -154,6 +172,23 @@ public class ProjectRecordControllerTests : TestServiceBase<ProjectRecordControl
             .GetMock<ICmsQuestionSetServiceClient>()
             .Setup(s => s.GetQuestionSet(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(ApiResponseFactory.Success(cmsResponse));
+
+        Mocker
+            .GetMock<IReviewBodyService>()
+            .Setup(s => s.GetAllActiveReviewBodies(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<AllReviewBodiesResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new AllReviewBodiesResponse
+                {
+                    ReviewBodies = [
+                        new() { Id = Guid.NewGuid(), RegulatoryBodyName = "England", ReviewBodyType = "Research ethics committee", ResearchEthicsCommitteeId = 1 },
+                        new() { Id = Guid.NewGuid(), RegulatoryBodyName = "Northern Ireland", ReviewBodyType = "Research ethics committee" },
+                        new() { Id = Guid.NewGuid(), RegulatoryBodyName = "Scotland", ReviewBodyType = "Research ethics committee" },
+                        new() { Id = Guid.NewGuid(), RegulatoryBodyName = "Wales", ReviewBodyType = "Research ethics committee" }
+                    ]
+                }
+            });
 
         // Act
         var result = await Sut.ProjectRecord("sec-1");
