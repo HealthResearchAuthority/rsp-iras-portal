@@ -57,7 +57,13 @@
                             Response to reason @(i + 1)
                         </dt>
                         <dd class="govuk-summary-list__value">
-                            @(Model.RfiResponses.ElementAtOrDefault(i) ?? "No response provided")
+                            @{
+                                var response = Model.RfiResponses
+                                    .ElementAtOrDefault(i)?
+                                    .InitialResponse
+                                    .FirstOrDefault();
+                            }
+                            @(string.IsNullOrWhiteSpace(response) ? "No response provided" : response)
                         </dd>
                         <dd class="govuk-summary-list__actions">
                             <a class="govuk-link" asp-route="rfi:rfiresponses">Change<span class="govuk-visually-hidden"> response</span></a>

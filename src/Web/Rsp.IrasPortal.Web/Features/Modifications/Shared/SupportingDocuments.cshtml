@@ -205,14 +205,16 @@
                                                    class="govuk-link">
                                                     Change details
                                                 </a>
-                                                <br />
-                                                <a asp-route="pmc:confirmdeletedocument"
-                                                   asp-route-id="@modification.Id"
-                                                   asp-route-backRoute="toaddpage"
-                                                   class="govuk-link">
-                                                    Remove
-                                                    <span class="govuk-visually-hidden"> @modification.FileName</span>
-                                                </a>
+                                                <feature name="@FeatureFlags.RequestForInformation">
+                                                    <br />
+                                                    <a asp-route="pmc:confirmdeletedocument"
+                                                       asp-route-id="@modification.Id"
+                                                       asp-route-backRoute="toaddpage"
+                                                       class="govuk-link">
+                                                        Remove
+                                                        <span class="govuk-visually-hidden"> @modification.FileName</span>
+                                                    </a>
+                                                </feature>
                                             }
                                         </td>
                                     }

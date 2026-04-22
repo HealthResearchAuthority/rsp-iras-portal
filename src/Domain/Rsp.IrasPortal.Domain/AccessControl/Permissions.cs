@@ -297,13 +297,13 @@ public static class Permissions
         /// allows accessing research ethics committees
         /// </summary>
         public const string ResearchEthicsCommittees_Access = "membermanagement.researchethicscommittees.access";
+
         /// <summary>
         /// allows searching research ethics committees
         /// </summary>
         public const string ResearchEthicsCommittees_Search = "membermanagement.researchethicscommittees.search";
 
-
-
+        public const string ResearchEthicsCommittees_ManageMembers = "membermanagement.researchethicscommittees.managemembers";
     }
 
     // CAT Workspace Permissions

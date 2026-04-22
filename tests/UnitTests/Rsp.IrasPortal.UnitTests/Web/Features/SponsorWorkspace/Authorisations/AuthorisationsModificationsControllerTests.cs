@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.FeatureManagement;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.IrasPortal.UnitTests.Web.Features.SponsorWorkspace.Authorisations;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -464,34 +466,60 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
         var viewModel = SetupAuthoriseOutcomeViewModel();
         Sut.ModelState.AddModelError("Outcome", "required");
 
+
         Mocker.GetMock<IFeatureManager>()
             .Setup(f => f.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
             .ReturnsAsync(true);
 
+
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.RequestForInformation))
+            .ReturnsAsync(true);
+
         Mocker.GetMock<ISponsorUserAuthorisationService>()
-           .Setup(a => a.AuthoriseWithOrganisationContextAsync(
-                       It.IsAny<Controller>(),
-                       It.IsAny<Guid>(),
-                       It.IsAny<ClaimsPrincipal>(),
-                       It.IsAny<string>()))
-                   .ReturnsAsync(SponsorUserAuthorisationResult.Ok(Guid.NewGuid()));
+            .Setup(a => a.AuthoriseWithOrganisationContextAsync(
+                It.IsAny<Controller>(),
+                It.IsAny<Guid>(),
+                It.IsAny<ClaimsPrincipal>(),
+                It.IsAny<string>()))
+            .ReturnsAsync(SponsorUserAuthorisationResult.Ok(Guid.NewGuid()));
 
         Mocker.GetMock<ISponsorOrganisationService>()
             .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
             .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new SponsorOrganisationUserDto { Id = Guid.NewGuid(), IsAuthoriser = true }
+                Content = new SponsorOrganisationUserDto
+                {
+                    Id = Guid.NewGuid(),
+                    IsAuthoriser = true
+                }
             });
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationReviewResponses(viewModel.ProjectRecordId, viewModel.ProjectModificationId))
+            .Setup(s => s.GetModificationReviewResponses(
+                viewModel.ProjectRecordId,
+                viewModel.ProjectModificationId))
             .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = new ProjectModificationReviewResponse
                 {
-                    RevisionDescription = "test revision"
+                    ModificationRevisionResponses =
+                    [
+                        new ModificationRevisionResponse
+                        {
+                            Id = Guid.NewGuid(),
+                            ProjectModificationId = viewModel.ProjectModificationId,
+                            Response = "Sponsor revision",
+                            Role = ResponseRoles.Sponsor,
+                            ResponseOrigin = ResponseOrigin.RequestRevisions,
+                            CreatedDateTime = DateTime.UtcNow,
+                            CreatedBy = "user",
+                            UpdatedDateTime = DateTime.UtcNow,
+                            UpdatedBy = "user"
+                        }
+                    ]
                 }
             });
 
@@ -779,12 +807,19 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
 
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.UpdateModificationStatus(
-                projectRecordId,
-                modificationId,
-                ModificationStatus.ReviseAndAuthorise,
-                string.Empty,
-                null, null))
-            .ReturnsAsync(new ServiceResponse { StatusCode = System.Net.HttpStatusCode.OK });
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ProjectRecordId == projectRecordId &&
+                    r.ModificationId == modificationId &&
+                    r.Status == ModificationStatus.ReviseAndAuthorise &&
+                    r.ReasonNotApproved == string.Empty &&
+                    r.Response == null &&
+                    r.Role == null &&
+                    r.ResponseOrigin == null
+                )))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = System.Net.HttpStatusCode.OK
+            });
 
         var result = await Sut.CheckAndAuthorise(viewModel);
 
@@ -1058,11 +1093,12 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
         var result = await Sut.SendRequestRevisions(vm);
 
         projectModService.Verify(s =>
-                s.UpdateModificationStatus(
-                    vm.ProjectRecordId,
-                    Guid.Parse(vm.ModificationId),
-                    ModificationStatus.RequestRevisions,
-                    vm.RevisionDescription, vm.ReasonNotApproved, vm.ApplicantRevisionResponse),
+            s.UpdateModificationStatus(
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ProjectRecordId == vm.ProjectRecordId &&
+                    r.ModificationId == Guid.Parse(vm.ModificationId) &&
+                    r.Status == ModificationStatus.RequestRevisions
+                )),
             Times.Once);
 
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
@@ -1231,6 +1267,10 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                     TotalCount = 0
                 }
             });
+
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.RequestForInformation))
+            .ReturnsAsync(true);
 
         Mocker
             .GetMock<IRespondentService>()
@@ -1495,6 +1535,7 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
             ModificationId = projectModificationId.ToString(),
             ProjectRecordId = projectRecordId
         };
+        Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationsDetails] = modification;
 
         TypeAdapterConfig<ModificationDetailsViewModel, AuthoriseModificationsOutcomeViewModel>
             .NewConfig()
@@ -1925,12 +1966,13 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
         var result = await Sut.SaveModificationReasonNotApproved(vm);
 
         projectModService.Verify(s =>
-                s.UpdateModificationStatus(
-                    vm.ProjectRecordId,
-                    Guid.Parse(vm.ModificationId),
-                    ModificationStatus.NotAuthorised,
-                    vm.RevisionDescription, vm.ReasonNotApproved, vm.ApplicantRevisionResponse),
-            Times.Once);
+             s.UpdateModificationStatus(
+                 It.Is<UpdateModificationStatusRequest>(r =>
+                     r.ProjectRecordId == vm.ProjectRecordId &&
+                     r.ModificationId == Guid.Parse(vm.ModificationId) &&
+                     r.Status == ModificationStatus.NotAuthorised
+                 )),
+             Times.Once);
 
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
         redirect.ActionName.ShouldBe(
@@ -1949,6 +1991,11 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
             .Setup(f => f.IsEnabledAsync(FeatureFlags.NotAuthorisedReason))
             .ReturnsAsync(false);
         var projectModService = Mocker.GetMock<IProjectModificationsService>();
+
+        Mocker.GetMock<IFeatureManager>()
+             .Setup(f => f.IsEnabledAsync(FeatureFlags.RequestForInformation))
+             .ReturnsAsync(true);
+
         // Act
         var result = await Sut.CheckAndAuthorise(authoriseOutcomeViewModel);
 
@@ -1956,11 +2003,12 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
         var redirect = result.ShouldBeOfType<RedirectToActionResult>();
         redirect.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.Confirmation));
         projectModService.Verify(s =>
-                s.UpdateModificationStatus(
-                    vm.ProjectRecordId,
-                    Guid.Parse(vm.ModificationId),
-                    ModificationStatus.NotAuthorised,
-                    vm.RevisionDescription, vm.ReasonNotApproved, vm.ApplicantRevisionResponse),
+            s.UpdateModificationStatus(
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ProjectRecordId == vm.ProjectRecordId &&
+                    r.ModificationId == Guid.Parse(vm.ModificationId) &&
+                    r.Status == ModificationStatus.NotAuthorised
+                )),
             Times.Once);
     }
 
@@ -2000,12 +2048,18 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
 
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.UpdateModificationStatus(
-                model.ProjectRecordId,
-                Guid.Parse(model.ModificationId),
-                ModificationStatus.ReviseAndAuthorise,
-                model.RevisionDescription,
-                null, null))
-            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ProjectRecordId == model.ProjectRecordId &&
+                    r.ModificationId == Guid.Parse(model.ModificationId) &&
+                    r.Status == ModificationStatus.ReviseAndAuthorise &&
+                    r.ReasonNotApproved == model.RevisionDescription &&
+                    r.Response == null &&
+                    r.Role == null
+                )))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.OK
+            });
 
         var result = await Sut.AuthoriseRevision(model, isSaveForLater: true);
 
@@ -2047,12 +2101,16 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
 
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.UpdateModificationStatus(
-                model.ProjectRecordId,
-                Guid.Parse(model.ModificationId),
-                ModificationStatus.ReviseAndAuthorise,
-                model.RevisionDescription,
-                null, null))
-            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ProjectRecordId == model.ProjectRecordId &&
+                    r.ModificationId == Guid.Parse(model.ModificationId) &&
+                    r.Status == ModificationStatus.ReviseAndAuthorise &&
+                    r.ReasonNotApproved == model.RevisionDescription
+                )))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.OK
+            });
 
         var result = await Sut.AuthoriseRevision(model, false);
 
@@ -2088,12 +2146,16 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
 
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.UpdateModificationStatus(
-                model.ProjectRecordId,
-                Guid.Parse(model.ModificationId),
-                ModificationStatus.WithReviewBody,
-                model.RevisionDescription,
-                null, null))
-            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ProjectRecordId == model.ProjectRecordId &&
+                    r.ModificationId == Guid.Parse(model.ModificationId) &&
+                    r.Status == ModificationStatus.WithReviewBody &&
+                    r.ReasonNotApproved == model.RevisionDescription
+                )))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.OK
+            });
 
         var result = await Sut.AuthoriseRevision(model, false);
 
@@ -2241,12 +2303,16 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
 
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.UpdateModificationStatus(
-                model.ProjectRecordId,
-                Guid.Parse(model.ModificationId),
-                ModificationStatus.Approved,
-                model.RevisionDescription,
-                null, null))
-            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ProjectRecordId == model.ProjectRecordId &&
+                    r.ModificationId == Guid.Parse(model.ModificationId) &&
+                    r.Status == ModificationStatus.Approved &&
+                    r.ReasonNotApproved == model.RevisionDescription
+                )))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.OK
+            });
 
         var result = await Sut.AuthoriseRevision(model, false);
 
@@ -2294,21 +2360,29 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                 StatusCode = HttpStatusCode.OK,
                 Content = null
             });
+
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.UpdateModificationStatus(
-                model.ProjectRecordId,
-                Guid.Parse(model.ModificationId),
-                ModificationStatus.WithReviewBody,
-                model.RevisionDescription,
-                null, null))
-            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ProjectRecordId == model.ProjectRecordId &&
+                    r.ModificationId == Guid.Parse(model.ModificationId) &&
+                    r.Status == ModificationStatus.WithReviewBody &&
+                    r.ReasonNotApproved == model.RevisionDescription &&
+                    r.Response == null &&
+                    r.Role == null
+                // ResponseOrigin intentionally not constrained (was It.IsAny<string?>())
+                )))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.OK
+            });
 
         Mocker.GetMock<IApplicationsService>()
-    .Setup(s => s.UpdateProjectRecordStatus(
-        model.ProjectRecordId,
-        ProjectRecordStatus.ProjectHalt
-        ))
-    .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+            .Setup(s => s.UpdateProjectRecordStatus(
+                model.ProjectRecordId,
+                ProjectRecordStatus.ProjectHalt
+                ))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
         //Act
         var result = await Sut.AuthoriseRevision(model, false);
@@ -2394,12 +2468,16 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
             });
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.UpdateModificationStatus(
-                model.ProjectRecordId,
-                Guid.Parse(model.ModificationId),
-                ModificationStatus.WithReviewBody,
-                model.RevisionDescription,
-                null, null))
-            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ProjectRecordId == model.ProjectRecordId &&
+                    r.ModificationId == Guid.Parse(model.ModificationId) &&
+                    r.Status == ModificationStatus.WithReviewBody &&
+                    r.ReasonNotApproved == model.RevisionDescription
+                )))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.OK
+            });
 
         Mocker.GetMock<IApplicationsService>()
     .Setup(s => s.UpdateProjectRecordStatus(
@@ -2451,14 +2529,20 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                 StatusCode = HttpStatusCode.OK,
                 Content = null
             });
+
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(
-                model.ProjectRecordId,
-                Guid.Parse(model.ModificationId),
-                ModificationStatus.WithReviewBody,
-                model.RevisionDescription,
-                null, null))
-            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+         .Setup(s => s.UpdateModificationStatus(
+             It.Is<UpdateModificationStatusRequest>(r =>
+                 r.ProjectRecordId == model.ProjectRecordId &&
+                 r.ModificationId == Guid.Parse(model.ModificationId) &&
+                 r.Status == ModificationStatus.WithReviewBody &&
+                 r.ReasonNotApproved == model.RevisionDescription
+             )
+         ))
+         .ReturnsAsync(new ServiceResponse
+         {
+             StatusCode = HttpStatusCode.OK
+         });
 
         Mocker.GetMock<IApplicationsService>()
     .Setup(s => s.UpdateProjectRecordStatus(
@@ -2511,13 +2595,19 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                 Content = null
             });
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(
-                model.ProjectRecordId,
-                Guid.Parse(model.ModificationId),
-                ModificationStatus.WithReviewBody,
-                model.RevisionDescription,
-                null, null))
-            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+             .Setup(s => s.UpdateModificationStatus(
+                 It.Is<UpdateModificationStatusRequest>(r =>
+                     r.ProjectRecordId == model.ProjectRecordId &&
+                     r.ModificationId == Guid.Parse(model.ModificationId) &&
+                     r.Status == ModificationStatus.WithReviewBody &&
+                     r.ReasonNotApproved == model.RevisionDescription &&
+                     r.Response == null &&
+                     r.Role == null
+                 )))
+             .ReturnsAsync(new ServiceResponse
+             {
+                 StatusCode = HttpStatusCode.OK
+             });
 
         Mocker.GetMock<IApplicationsService>()
     .Setup(s => s.UpdateProjectRecordStatus(
@@ -2568,13 +2658,19 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                 Content = null
             });
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(
-                model.ProjectRecordId,
-                Guid.Parse(model.ModificationId),
-                ModificationStatus.WithReviewBody,
-                model.RevisionDescription,
-                null, null))
-            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+        .Setup(s => s.UpdateModificationStatus(
+            It.Is<UpdateModificationStatusRequest>(r =>
+                r.ProjectRecordId == model.ProjectRecordId &&
+                r.ModificationId == Guid.Parse(model.ModificationId) &&
+                r.Status == ModificationStatus.WithReviewBody &&
+                r.ReasonNotApproved == model.RevisionDescription &&
+                r.Response == null &&
+                r.Role == null
+            )))
+        .ReturnsAsync(new ServiceResponse
+        {
+            StatusCode = HttpStatusCode.OK
+        });
 
         Mocker.GetMock<IApplicationsService>()
     .Setup(s => s.UpdateProjectRecordStatus(
@@ -2871,6 +2967,44 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
         var viewResult = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal("CanSubmitToReviewBody", viewResult.ActionName);
         result.ShouldBeOfType<RedirectToActionResult>();
+    }
+
+    [Fact]
+    public async Task CheckAndAuthorise_Set_TempDataView_For_PDF_Download()
+    {
+        var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
+        authoriseOutcomeViewModel.Status = ModificationStatus.WithSponsor;
+
+        Mocker.GetMock<IFeatureManager>()
+     .Setup(f => f.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+     .ReturnsAsync(true);
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses("PR1", _sponsorOrganisationUserId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationReviewResponse
+                {
+                    RevisionDescription = "abc"
+                }
+            });
+
+        var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
+        sponsorOrganisationService
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new SponsorOrganisationUserDto { Id = Guid.NewGuid() }
+            });
+
+        var result = await Sut.CheckAndAuthorise("PR1", "IRAS", "Short",
+            _sponsorOrganisationUserId, _sponsorOrganisationUserId, "123");
+
+        result.ShouldBeOfType<ViewResult>();
+        var view = result.ShouldBeOfType<ViewResult>();
+        view.ViewData["RevisionSent"].ShouldBe(true);
     }
 
     public SponsorUserAuthorisationResult Authorised(Guid gid)
