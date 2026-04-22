@@ -1,4 +1,5 @@
-﻿using Rsp.IrasPortal.Application.DTOs.Responses;
+﻿using System.Text.RegularExpressions;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -16,7 +17,8 @@ namespace Rsp.Portal.Services;
 /// and mapping responses.
 /// </summary>
 public class ProjectModificationsService(
-    IProjectModificationsServiceClient projectModificationsServiceClient
+    IProjectModificationsServiceClient projectModificationsServiceClient,
+    IRtsService rtsService
 ) : IProjectModificationsService
 {
     /// <summary>
@@ -274,6 +276,14 @@ public class ProjectModificationsService(
         return apiResponse.ToServiceResponse();
     }
 
+    [Obsolete("Use UpdateModificationStatus instead", false)]
+    public async Task<ServiceResponse> LegacyUpdateModificationStatus(string projectRecordId, Guid modificationId, string status, string? revisionDescription = null, string? reasonNotApproved = null, string? applicantRevisionResponse = null)
+    {
+        var apiResponse = await projectModificationsServiceClient.LegacyUpdateModificationStatus(projectRecordId, modificationId, status, revisionDescription, reasonNotApproved, applicantRevisionResponse);
+
+        return apiResponse.ToServiceResponse();
+    }
+
     /// <summary>
     /// Updates the status of an existing project modification by its unique identifier.
     /// </summary>
@@ -285,10 +295,9 @@ public class ProjectModificationsService(
     /// A task representing the asynchronous operation, containing a <see cref="ServiceResponse"/>
     /// that reflects the success or failure of the update operation.
     /// </returns>
-
-    public async Task<ServiceResponse> UpdateModificationStatus(string projectRecordId, Guid modificationId, string status, string? revisionDescription = null, string? reasonNotApproved = null, string? applicantRevisionResponse = null)
+    public async Task<ServiceResponse> UpdateModificationStatus(UpdateModificationStatusRequest request)
     {
-        var apiResponse = await projectModificationsServiceClient.UpdateModificationStatus(projectRecordId, modificationId, status, revisionDescription, reasonNotApproved, applicantRevisionResponse);
+        var apiResponse = await projectModificationsServiceClient.UpdateModificationStatus(request);
 
         return apiResponse.ToServiceResponse();
     }
@@ -333,7 +342,37 @@ public class ProjectModificationsService(
         Guid modificationId)
     {
         var apiResponse = await projectModificationsServiceClient.GetModificationAuditTrail(modificationId);
-        return apiResponse.ToServiceResponse();
+        var response = apiResponse.ToServiceResponse();
+
+        if (!response.IsSuccessStatusCode || response.Content?.Items is null)
+        {
+            return response;
+        }
+
+        var updatedItems = new List<ProjectModificationAuditTrailDto>();
+
+        foreach (var item in response.Content.Items)
+        {
+            if (string.IsNullOrWhiteSpace(item.Description))
+            {
+                updatedItems.Add(item);
+                continue;
+            }
+
+            var updatedDescription = await ReplaceOrganisationTokens(item.Description);
+
+            updatedItems.Add(item with
+            {
+                Description = updatedDescription
+            });
+        }
+
+        response.Content = response.Content with
+        {
+            Items = updatedItems
+        };
+
+        return response;
     }
 
     public async Task<ServiceResponse> UpdateModificationChange(
@@ -481,11 +520,11 @@ public class ProjectModificationsService(
 
     public async Task<ServiceResponse<ProjectDocumentsAuditTrailResponse>> GetProjectDocumentsAuditTrail
     (
-       string projectRecordId,
-       int pageNumber,
-       int pageSize,
-       string sortField,
-       string sortDirection
+        string projectRecordId,
+        int pageNumber,
+        int pageSize,
+        string sortField,
+        string sortDirection
     )
     {
         var apiResponse = await projectModificationsServiceClient.GetProjectDocumentsAuditTrail
@@ -516,7 +555,6 @@ public class ProjectModificationsService(
         return apiResponse.ToServiceResponse();
     }
 
-
     /// <summary>
     /// Deletes one or more project modification documents based on the provided request data.
     /// </summary>
@@ -535,5 +573,58 @@ public class ProjectModificationsService(
             await projectModificationsServiceClient.DeleteDocumentAnswers(documentAnswersRequest);
 
         return apiResponse.ToServiceResponse();
+    }
+
+    private async Task<string> ReplaceOrganisationTokens(string description)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            return description;
+        }
+
+        const string startToken = "[[RTS:";
+        const string endToken = "]]";
+
+        var result = description;
+
+        int startIndex = result.IndexOf(startToken, StringComparison.Ordinal);
+
+        while (startIndex != -1)
+        {
+            var endIndex = result.IndexOf(endToken, startIndex, StringComparison.Ordinal);
+
+            if (endIndex == -1)
+            {
+                break; // malformed token, stop processing
+            }
+
+            var fullToken = result.Substring(startIndex, endIndex - startIndex + endToken.Length);
+
+            var idSection = result.Substring(
+                startIndex + startToken.Length,
+                endIndex - (startIndex + startToken.Length));
+
+            var ids = idSection
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            var names = await Task.WhenAll(ids.Select(async id =>
+            {
+                var res = await rtsService.GetOrganisation(id);
+
+                return res is { IsSuccessStatusCode: true, Content: not null } &&
+                       !string.IsNullOrWhiteSpace(res.Content.Name)
+                    ? res.Content.Name
+                    : id;
+            }));
+
+            var replacement = string.Join(", ", names);
+
+            result = result.Replace(fullToken, replacement);
+
+            // move to next token
+            startIndex = result.IndexOf(startToken, startIndex + replacement.Length, StringComparison.Ordinal);
+        }
+
+        return result;
     }
 }

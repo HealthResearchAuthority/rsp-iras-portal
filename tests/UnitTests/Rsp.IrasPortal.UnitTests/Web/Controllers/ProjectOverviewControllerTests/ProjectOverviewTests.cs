@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.FeatureManagement;
+using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Web.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -779,20 +781,46 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
     }
 
     [Fact]
-    public async Task ResearchLocations_ReturnsViewResult_WithResearchLocationData()
+    public async Task ResearchLocations_ReturnsViewResult_WithDedupedParticipatingOrganisationData_AndPagination()
     {
         // Arrange
         var projectRecordId = "123";
-        var httpContext = CreateHttpContextWithSession(); // CHANGED
+        var httpContext = CreateHttpContextWithSession();
         var tempDataProvider = new Mock<ITempDataProvider>();
         var tempData = CreateTempData(tempDataProvider, httpContext);
 
         var answers = new List<RespondentAnswerDto>
+    {
+        new()
         {
-            new() { QuestionId = QuestionIds.ParticipatingNations, Answers = new List<string> { QuestionAnswersOptionsIds.England, QuestionAnswersOptionsIds.Scotland } },
-            new() { QuestionId = QuestionIds.NhsOrHscOrganisations, SelectedOption = QuestionAnswersOptionsIds.Yes },
-            new() { QuestionId = QuestionIds.LeadNation, SelectedOption = QuestionAnswersOptionsIds.Wales }
-        };
+            QuestionId = QuestionIds.ParticipatingNations,
+            Answers = new List<string>
+            {
+                QuestionAnswersOptionsIds.England,
+                QuestionAnswersOptionsIds.Scotland
+            }
+        },
+        new()
+        {
+            QuestionId = QuestionIds.NhsOrHscOrganisations,
+            SelectedOption = QuestionAnswersOptionsIds.Yes
+        },
+        new()
+        {
+            QuestionId = QuestionIds.LeadNation,
+            SelectedOption = QuestionAnswersOptionsIds.Wales
+        },
+        new()
+        {
+            QuestionId = QuestionIds.ShortProjectTitle,
+            AnswerText = "Test project"
+        },
+        new()
+        {
+            QuestionId = QuestionIds.ProjectPlannedEndDate,
+            AnswerText = "2026-12-31"
+        }
+    };
 
         SetupProjectRecord(projectRecordId);
         SetupRespondentAnswers(projectRecordId, answers);
@@ -800,8 +828,142 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         SetupCMSService("ResearchLocations", "Research locations");
         SetupModificationChangesForProjectRecord(projectRecordId);
 
+        var respondentService = Mocker.GetMock<IRespondentService>();
+        var cmsQuestionsetService = Mocker.GetMock<ICmsQuestionsetService>();
+        var rtsService = Mocker.GetMock<IRtsService>();
+
+        var addedOrg1Id = Guid.NewGuid();
+        var addedOrg2Id = Guid.NewGuid();
+        var earlyClosureOrgId = Guid.NewGuid();
+
+        var addedOrg1 = new ParticipatingOrganisationDto
+        {
+            Id = addedOrg1Id,
+            OrganisationId = "ORG-1"
+        };
+
+        var addedOrg2 = new ParticipatingOrganisationDto
+        {
+            Id = addedOrg2Id,
+            OrganisationId = "ORG-2"
+        };
+
+        var earlyClosureOrg = new ParticipatingOrganisationDto
+        {
+            Id = earlyClosureOrgId,
+            OrganisationId = "ORG-2"
+        };
+
+        respondentService
+            .Setup(s => s.GetModificationParticipatingOrganisationsBySpecificArea(
+                projectRecordId,
+                SpecificAreasOfChange.AddNewSites))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new[] { addedOrg1 }
+            });
+
+        respondentService
+            .Setup(s => s.GetModificationParticipatingOrganisationsBySpecificArea(
+                projectRecordId,
+                SpecificAreasOfChange.AddNewPics))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new[] { addedOrg2 }
+            });
+
+        respondentService
+            .Setup(s => s.GetModificationParticipatingOrganisationsBySpecificArea(
+                projectRecordId,
+                SpecificAreasOfChange.EarlyClosureSites))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new[] { earlyClosureOrg }
+            });
+
+        respondentService
+            .Setup(s => s.GetModificationParticipatingOrganisationsBySpecificArea(
+                projectRecordId,
+                SpecificAreasOfChange.EarlyClosuresPics))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = Array.Empty<ParticipatingOrganisationDto>()
+            });
+
+        respondentService
+            .Setup(s => s.GetModificationParticipatingOrganisationAnswers(addedOrg1Id))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ParticipatingOrganisationAnswerDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = Array.Empty<ParticipatingOrganisationAnswerDto>()
+            });
+
+        cmsQuestionsetService
+            .Setup(s => s.GetModificationQuestionSet(It.IsAny<string>(), null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    ActiveFrom = DateTime.UtcNow,
+                    ActiveTo = DateTime.UtcNow.AddYears(1),
+                    Id = "organisation-details",
+                    Version = "1.0",
+                    Sections = new List<SectionModel>
+                    {
+                    new()
+                    {
+                        Id = "S1",
+                        Questions = new List<QuestionModel>
+                        {
+                            new()
+                            {
+                                Id = "Q1",
+                                QuestionId = "OrganisationQuestion1",
+                                Name = "Organisation question 1",
+                                ShortName = "Organisation question 1",
+                                ShowAnswerOn = "ResearchLocations",
+                                SectionGroup = "Organisation details",
+                                SectionSequence = 1,
+                                SequenceInSectionGroup = 1,
+                                Sequence = 1,
+                                Version = "1.0",
+                                AnswerDataType = "Text",
+                                Conformance = "Optional",
+                                ShowOriginalAnswer = false,
+                                Answers = [],
+                                ValidationRules = new List<RuleModel>()
+                            }
+                        }
+                    }
+                    }
+                }
+            });
+
+        rtsService
+            .Setup(s => s.GetOrganisation("ORG-1"))
+            .ReturnsAsync(new ServiceResponse<OrganisationDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new OrganisationDto()
+                {
+                    Name = "Organisation 1",
+                    Address = "Address 1",
+                    CountryName = "England",
+                    Type = "NHS"
+                }
+            });
+
+        Mocker.GetMock<Microsoft.FeatureManagement.IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.ParticipatingOrganisations))
+            .ReturnsAsync(true);
+
         // Act
-        var result = await Sut.ResearchLocations(projectRecordId, "");
+        var result = await Sut.ResearchLocations(projectRecordId, "", 1, 10);
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
@@ -810,8 +972,204 @@ public class ProjectOverviewTests : TestServiceBase<ProjectOverviewController>
         model.SectionGroupQuestions.ShouldNotBeNull();
         model.SectionGroupQuestions.ShouldBeOfType<List<SectionGroupWithQuestionsViewModel>>();
         model.SectionGroupQuestions.ShouldNotBeEmpty();
+
+        model.ParticipatingOrganisations.ShouldNotBeNull();
+        model.ParticipatingOrganisations.Count().ShouldBe(1);
+
+        var organisation = model.ParticipatingOrganisations.Single();
+        organisation.Id.ShouldBe(addedOrg1Id);
+        organisation.OrganisationId.ShouldBe(addedOrg1Id.ToString());
+        organisation.OrganisationName.ShouldBe("Organisation 1");
+        organisation.OrganisationAddress.ShouldBe("Address 1");
+        organisation.OrganisationCountryName.ShouldBe("England");
+        organisation.OrganisationType.ShouldBe("NHS");
+        organisation.ReviewAnswers.ShouldBeTrue();
+        organisation.Questions.ShouldNotBeNull();
+
+        model.Pagination.ShouldNotBeNull();
+        model.Pagination.PageNumber.ShouldBe(1);
+        model.Pagination.PageSize.ShouldBe(10);
+        model.Pagination.TotalCount.ShouldBe(1);
+
+        model.Pagination.AdditionalParameters.ShouldContainKey("projectRecordId");
+        model.Pagination.AdditionalParameters["projectRecordId"].ShouldBe(projectRecordId);
+
+        model.Pagination.AdditionalParameters.ShouldContainKey("specificViewName");
+        model.Pagination.AdditionalParameters["specificViewName"].ShouldBe("ResearchLocations");
+
+        respondentService.Verify(s => s.GetModificationParticipatingOrganisationsBySpecificArea(
+            projectRecordId,
+            SpecificAreasOfChange.AddNewSites), Times.Once);
+
+        respondentService.Verify(s => s.GetModificationParticipatingOrganisationsBySpecificArea(
+            projectRecordId,
+            SpecificAreasOfChange.AddNewPics), Times.Once);
+
+        respondentService.Verify(s => s.GetModificationParticipatingOrganisationsBySpecificArea(
+            projectRecordId,
+            SpecificAreasOfChange.EarlyClosureSites), Times.Once);
+
+        respondentService.Verify(s => s.GetModificationParticipatingOrganisationsBySpecificArea(
+            projectRecordId,
+            SpecificAreasOfChange.EarlyClosuresPics), Times.Once);
+
+        respondentService.Verify(s => s.GetModificationParticipatingOrganisationAnswers(addedOrg1Id), Times.Once);
+        respondentService.Verify(s => s.GetModificationParticipatingOrganisationAnswers(addedOrg2Id), Times.Never);
+
+        rtsService.Verify(s => s.GetOrganisation("ORG-1"), Times.Once);
+        rtsService.Verify(s => s.GetOrganisation("ORG-2"), Times.Never);
     }
 
+
+    [Fact]
+    public async Task ResearchLocations_ReturnsPagedParticipatingOrganisations()
+    {
+        // Arrange
+        var projectRecordId = "123";
+        var httpContext = CreateHttpContextWithSession();
+        var tempDataProvider = new Mock<ITempDataProvider>();
+        var tempData = CreateTempData(tempDataProvider, httpContext);
+
+        var answers = new List<RespondentAnswerDto>
+    {
+        new() { QuestionId = QuestionIds.ShortProjectTitle, AnswerText = "Test project" },
+        new() { QuestionId = QuestionIds.ProjectPlannedEndDate, AnswerText = "2026-12-31" }
+    };
+
+        SetupProjectRecord(projectRecordId);
+        SetupRespondentAnswers(projectRecordId, answers);
+        SetupControllerContext(httpContext, tempData);
+        SetupCMSService("ResearchLocations", "Research locations");
+        SetupModificationChangesForProjectRecord(projectRecordId);
+
+        var respondentService = Mocker.GetMock<IRespondentService>();
+        var cmsQuestionsetService = Mocker.GetMock<ICmsQuestionsetService>();
+        var rtsService = Mocker.GetMock<IRtsService>();
+
+        Mocker.GetMock<Microsoft.FeatureManagement.IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.ParticipatingOrganisations))
+            .ReturnsAsync(true);
+
+        var org1 = new ParticipatingOrganisationDto { Id = Guid.NewGuid(), OrganisationId = "ORG-1" };
+        var org2 = new ParticipatingOrganisationDto { Id = Guid.NewGuid(), OrganisationId = "ORG-2" };
+        var org3 = new ParticipatingOrganisationDto { Id = Guid.NewGuid(), OrganisationId = "ORG-3" };
+
+        
+
+        respondentService
+            .Setup(s => s.GetModificationParticipatingOrganisationsBySpecificArea(projectRecordId, SpecificAreasOfChange.AddNewSites))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new[] { org1, org2, org3 }
+            });
+
+        respondentService
+            .Setup(s => s.GetModificationParticipatingOrganisationsBySpecificArea(projectRecordId, SpecificAreasOfChange.AddNewPics))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = Array.Empty<ParticipatingOrganisationDto>()
+            });
+
+        respondentService
+            .Setup(s => s.GetModificationParticipatingOrganisationsBySpecificArea(projectRecordId, SpecificAreasOfChange.EarlyClosureSites))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = Array.Empty<ParticipatingOrganisationDto>()
+            });
+
+        respondentService
+            .Setup(s => s.GetModificationParticipatingOrganisationsBySpecificArea(projectRecordId, SpecificAreasOfChange.EarlyClosuresPics))
+            .ReturnsAsync(new ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = Array.Empty<ParticipatingOrganisationDto>()
+            });
+
+        foreach (var org in new[] { org1, org2, org3 })
+        {
+            respondentService
+                .Setup(s => s.GetModificationParticipatingOrganisationAnswers(org.Id))
+                .ReturnsAsync(new ServiceResponse<IEnumerable<ParticipatingOrganisationAnswerDto>>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = Array.Empty<ParticipatingOrganisationAnswerDto>()
+                });
+
+            rtsService
+                .Setup(s => s.GetOrganisation(org.OrganisationId))
+                .ReturnsAsync(new ServiceResponse<OrganisationDto>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new OrganisationDto
+                    {
+                        Name = $"Organisation {org.OrganisationId}",
+                        Address = $"Address {org.OrganisationId}",
+                        CountryName = "England",
+                        Type = "NHS"
+                    }
+                });
+        }
+
+        cmsQuestionsetService
+            .Setup(s => s.GetModificationQuestionSet(It.IsAny<string>(), null))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new CmsQuestionSetResponse
+                {
+                    ActiveFrom = DateTime.UtcNow,
+                    ActiveTo = DateTime.UtcNow.AddYears(1),
+                    Id = "organisation-details",
+                    Version = "1.0",
+                    Sections = new List<SectionModel>
+                    {
+                    new()
+                    {
+                        Id = "S1",
+                        Questions = new List<QuestionModel>
+                        {
+                            new()
+                            {
+                                Id = "Q1",
+                                QuestionId = "OrganisationQuestion1",
+                                Name = "Organisation question 1",
+                                ShortName = "Organisation question 1",
+                                ShowAnswerOn = "ResearchLocations",
+                                SectionGroup = "Organisation details",
+                                SectionSequence = 1,
+                                SequenceInSectionGroup = 1,
+                                Sequence = 1,
+                                Version = "1.0",
+                                AnswerDataType = "Text",
+                                Conformance = "Optional",
+                                ShowOriginalAnswer = false,
+                                Answers = [],
+                                ValidationRules = new List<RuleModel>()
+                            }
+                        }
+                    }
+                    }
+                }
+            });
+
+        // Act
+        var result = await Sut.ResearchLocations(projectRecordId, "", 2, 1);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeOfType<ProjectOverviewModel>();
+
+        model.ParticipatingOrganisations.ShouldNotBeNull();
+        model.ParticipatingOrganisations.Count().ShouldBe(1);
+        model.ParticipatingOrganisations.First().OrganisationName.ShouldBe("Organisation ORG-2");
+
+        model.Pagination.PageNumber.ShouldBe(2);
+        model.Pagination.PageSize.ShouldBe(1);
+        model.Pagination.TotalCount.ShouldBe(3);
+    }
     [Fact]
     public async Task PostApproval_ReturnsViewResult_WithExpectedModel()
     {

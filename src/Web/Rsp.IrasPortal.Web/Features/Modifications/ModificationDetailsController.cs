@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -284,18 +285,36 @@ public class ModificationDetailsController
             });
         }
 
+        var rfiFeatureFlagEnabled = await featureManager.IsEnabledAsync(FeatureFlags.RequestForInformation);
+        string? revisionDescription;
+
+        if (rfiFeatureFlagEnabled)
+        {
+            revisionDescription = modification.Content.ModificationRevisionResponses
+                .Where(r =>
+                    r.Role == ResponseRoles.Sponsor &&
+                    r.ResponseOrigin == ResponseOrigin.RequestRevisions)
+                .OrderByDescending(r => r.CreatedDateTime)
+                .FirstOrDefault()?.Response;
+        }
+        else
+        {
+            revisionDescription = modification.Content.RevisionDescription;
+        }
+
         var model = new ModificationDetailsViewModel
         {
             IrasId = irasId,
             ShortTitle = shortTitle,
             DateSponsorSubmittedOutcome = DateHelper.ConvertDateToString(modification.Content.DateSponsorSubmittedOutcome),
-            RevisionDescription = modification.Content.RevisionDescription,
+            RevisionDescription = revisionDescription,
             ProjectRecordId = projectRecordId,
             ModificationId = projectModificationId.ToString(),
             Status = modification.Content.Status,
             ModificationIdentifier = modification.Content.ModificationIdentifier
         };
-        TempData[TempDataKeys.RevisionDescription] = modification.Content.RevisionDescription;
+
+        TempData[TempDataKeys.RevisionDescription] = revisionDescription;
         return View("MakeRevisonByApplicant", model);
     }
 }

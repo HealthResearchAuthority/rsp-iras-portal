@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
+using Rsp.IrasPortal.Application.DTOs;
+using Rsp.IrasPortal.Web.Features.Modifications.ParticipatingOrganisations.Models;
 using Rsp.IrasPortal.Web.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -40,6 +42,7 @@ public class ProjectOverviewController
 {
     private readonly IRespondentService _respondentService = respondentService;
     private const string DocumentDetailsSection = "pdm-document-metadata";
+    private const string OrganisationDetailsSection = "pom-participating-organisation-details";
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Read)]
     [Route("/projectoverview", Name = "pov:index")]
@@ -314,9 +317,10 @@ public class ProjectOverviewController
     }
 
     [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Read)]
-    public async Task<IActionResult> ResearchLocations(string projectRecordId, string? backRoute)
+    public async Task<IActionResult> ResearchLocations(string projectRecordId, string? backRoute, int pageNumber = 1,
+        int pageSize = 10)
     {
-        var result = await GetProjectOverviewResult(projectRecordId!, backRoute, nameof(ResearchLocations));
+        var result = await GetProjectOverviewResult(projectRecordId!, backRoute, nameof(ResearchLocations),pageNumber,pageSize);
         if (result is not OkObjectResult okResult)
         {
             return result;
@@ -330,12 +334,16 @@ public class ProjectOverviewController
     /// Fetches the project record and respondent answers, populates TempData with key details.
     /// </summary>
     /// <param name="projectRecordId">The unique identifier for the project record.</param>
+    /// /// <param name="specificViewName"></param>
+    /// <param name="pageNumber"></param>
+    /// <param name="pageSize"></param>
     /// <returns>
     /// A <see cref="Task<IActionResult?>"/> that has null value for successful run
     /// or an error details if the project record or answers are not found or a service error occurs.
     /// </returns>
     [NonAction]
-    public async Task<IActionResult> GetProjectOverview(string projectRecordId, string? specificViewName = null)
+    public async Task<IActionResult> GetProjectOverview(string projectRecordId, string? specificViewName = null, int pageNumber = 1 ,
+        int pageSize = 10)
     {
         // Retrieve the project record by its ID
         var projectRecordResponse = await applicationService.GetProjectRecord(projectRecordId);
@@ -433,6 +441,112 @@ public class ProjectOverviewController
         TempData[TempDataKeys.ShortProjectTitle] = titleAnswer ?? string.Empty;
         TempData[TempDataKeys.PlannedProjectEndDate] = DateHelper.ConvertDateToString(endDateAnswer);
 
+        // Build requests to fetch already organisations so they can be included in view
+        var organisationDetailsViewModels = new List<OrganisationDetailsViewModel>();
+
+        if (specificViewName == "ResearchLocations" && await featureManager.IsEnabledAsync(FeatureFlags.ParticipatingOrganisations))
+        {
+            var addNewOrgsTasks = new List<Task<ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>>>
+            {
+                respondentService.GetModificationParticipatingOrganisationsBySpecificArea(projectRecordId, SpecificAreasOfChange.AddNewSites),
+                respondentService.GetModificationParticipatingOrganisationsBySpecificArea(projectRecordId, SpecificAreasOfChange.AddNewPics)
+            };
+
+            var addedOrganisations = await Task.WhenAll(addNewOrgsTasks);
+
+            if (addedOrganisations.Any(r => !r.IsSuccessStatusCode))
+            {
+                return this.ServiceError(addedOrganisations.First(r => !r.IsSuccessStatusCode));
+            }
+
+            var earlyClosureOrgsTasks = new List<Task<ServiceResponse<IEnumerable<ParticipatingOrganisationDto>>>>
+            {
+                respondentService.GetModificationParticipatingOrganisationsBySpecificArea(projectRecordId, SpecificAreasOfChange.EarlyClosureSites),
+                respondentService.GetModificationParticipatingOrganisationsBySpecificArea(projectRecordId, SpecificAreasOfChange.EarlyClosuresPics)
+            };
+
+            var earlyClosureOrganisations = await Task.WhenAll(earlyClosureOrgsTasks);
+
+            if (earlyClosureOrganisations.Any(r => !r.IsSuccessStatusCode))
+            {
+                return this.ServiceError(earlyClosureOrganisations.First(r => !r.IsSuccessStatusCode));
+            }
+
+            // Flatten both sets
+            var addedOnlyParticipatingOrganisations = addedOrganisations
+                .SelectMany(r => r.Content ?? [])
+                .ExceptBy(
+                    earlyClosureOrganisations.SelectMany(r => r.Content ?? [])
+                        .Select(x => x.OrganisationId),
+                    x => x.OrganisationId)
+                .ToList();
+
+            if (addedOnlyParticipatingOrganisations.Any())
+            {
+                // Retrieve the CMS question set for the organisation details section
+                additionalQuestionsResponse = await cmsQuestionsetService.GetModificationQuestionSet(OrganisationDetailsSection);
+
+                var questionIndex = 0;
+
+                foreach (var participatingOrganisationDto in addedOnlyParticipatingOrganisations)
+                {
+                    var organisationResponse = await rtsService.GetOrganisation(participatingOrganisationDto.OrganisationId);
+
+                    var organisation = organisationResponse?.StatusCode == HttpStatusCode.OK
+                        ? organisationResponse.Content
+                        : null;
+
+                    if (organisation == null)
+                    {
+                        continue; // Skip if organisation details cannot be retrieved
+                    }
+
+                    // Fetch existing answers for this organisation
+                    var answersResponse = await respondentService.GetModificationParticipatingOrganisationAnswers(participatingOrganisationDto.Id);
+                    var participatingOrganisationAnswers = answersResponse?.StatusCode == HttpStatusCode.OK
+                        ? answersResponse.Content ?? []
+                        : [];
+
+                    var cmsQuestions = QuestionsetHelpers.BuildQuestionnaireViewModel(additionalQuestionsResponse.Content!);
+
+                    // Map orgs and questions into a view model
+                    var vm = new OrganisationDetailsViewModel
+                    {
+                        Id = participatingOrganisationDto.Id,
+                        OrganisationId = participatingOrganisationDto.Id.ToString(),
+                        OrganisationName = organisation.Name,
+                        OrganisationAddress = organisation.Address,
+                        OrganisationCountryName = organisation.CountryName,
+                        OrganisationType = organisation.Type,
+                        ReviewAnswers = true,
+
+                        Questions = cmsQuestions.Questions.ConvertAll
+                        (
+                            cmsQ => QuestionsetHelpers.MapQuestionWithAnswers
+                            (
+                                cmsQ,
+                                participatingOrganisationAnswers,
+                                questionIndex++,
+                                a => a.QuestionId,
+                                a => a.Id,
+                                a => a.AnswerText,
+                                a => a.SelectedOption
+                            )
+                        )
+                    };
+
+                    organisationDetailsViewModels.Add(vm);
+                }
+            }
+        }
+
+        var totalOrganisationCount = organisationDetailsViewModels.Count;
+
+        var pagedOrganisationDetailsViewModels = organisationDetailsViewModels
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
         var model = new ProjectOverviewModel
         {
             ProjectTitle = titleAnswer ?? string.Empty,
@@ -445,6 +559,15 @@ public class ProjectOverviewController
             SectionGroupQuestions = sectionGroupQuestions,
             AuditTrails = auditTrailsRecords,
             CreatedBy = projectRecord.CreatedBy,
+            ParticipatingOrganisations = pagedOrganisationDetailsViewModels,
+            Pagination = new PaginationViewModel(pageNumber, pageSize, totalOrganisationCount)
+            {
+                AdditionalParameters = new Dictionary<string, string>()
+                {
+                    { "projectRecordId", projectRecordId },
+                    { "specificViewName", specificViewName }
+                }
+            }
         };
 
         return Ok(model);
@@ -779,11 +902,12 @@ public class ProjectOverviewController
         }
     }
 
-    private async Task<IActionResult> GetProjectOverviewResult(string projectRecordId, string? backRoute, string? specificViewName = null)
+    private async Task<IActionResult> GetProjectOverviewResult(string projectRecordId, string? backRoute, string? specificViewName = null , int? pageNumber = 1,
+    int? pageSize = 10)
     {
         SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
 
-        var response = await GetProjectOverview(projectRecordId, specificViewName);
+        var response = await GetProjectOverview(projectRecordId, specificViewName, pageNumber.Value ,pageSize.Value);
 
         // if status code is not a successful status code
         if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||

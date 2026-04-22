@@ -5,6 +5,7 @@ using FluentValidation.Results;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -29,7 +30,8 @@ public class UsersController(
     IValidator<UserViewModel> validator,
     IValidator<UserSearchModel> searchValidator,
     IReviewBodyService reviewBodyService,
-    ISponsorOrganisationService sponsorOrganisationService) : Controller
+    ISponsorOrganisationService sponsorOrganisationService,
+    IFeatureManager featureManager) : Controller
 {
     private const string Error = nameof(Error);
     private const string EditUserView = nameof(EditUserView);
@@ -837,7 +839,16 @@ public class UsersController(
 
         if (availableRoles.IsSuccessStatusCode && availableRoles.Content?.Roles != null)
         {
-            return availableRoles.Content.Roles.OrderBy(x => x.Name).ToList();
+            var roles = availableRoles.Content.Roles.OrderBy(x => x.Name).ToList();
+
+            if (!await featureManager.IsEnabledAsync(FeatureFlags.RecMemberManagement))
+            {
+                roles.RemoveAll(role =>
+                    role.Name is Roles.MemberManagement or Roles.ResearchEthicsCommitteeManager or Roles.Reviewer or Roles.Administrator
+                );
+            }
+
+            return roles;
         }
 
         return [];
