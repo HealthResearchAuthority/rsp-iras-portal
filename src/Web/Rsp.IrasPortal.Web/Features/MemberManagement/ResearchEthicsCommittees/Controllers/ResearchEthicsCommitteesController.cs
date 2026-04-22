@@ -1,12 +1,14 @@
 ﻿using System.Text.Json;
+using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
+using Rsp.IrasPortal.Web.Features.MemberManagement.ResearchEthicsCommittees.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.Filters;
+using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Models;
-using Rsp.Portal.Web.Features.SponsorWorkspace.MyOrganisations.Models;
 
 namespace Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Controllers;
 
@@ -16,7 +18,9 @@ namespace Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Cont
 [Authorize(Policy = Workspaces.MemberManagement)]
 [Route("membermanagement/[action]", Name = "mm:[action]")]
 [FeatureGate(FeatureFlags.RecMemberManagement)]
-public class ResearchEthicsCommitteesController : Controller
+public class ResearchEthicsCommitteesController(
+    IReviewBodyService reviewBodyService
+    ) : Controller
 {
     [Authorize(Policy = Permissions.MemberManagement.ResearchEthicsCommittees_Search)]
     [HttpGet]
@@ -28,10 +32,8 @@ public class ResearchEthicsCommitteesController : Controller
     {
         var model = new MemberManagementResearchEthicsCommitteesViewModel();
 
-
         return View(model);
     }
-
 
     [Route("/sponsorworkspace/searchresearchethicscommittees", Name = "mm:searchresearchethicscommittees")]
     [HttpPost]
@@ -53,5 +55,19 @@ public class ResearchEthicsCommitteesController : Controller
         });
 
         return Task.FromResult(result);
+    }
+
+    /// <summary>
+    ///     Displays a Research ethics committee profile
+    /// </summary>
+    [Authorize(Policy = Permissions.MemberManagement.ResearchEthicsCommittees_Access)]
+    [HttpGet]
+    public async Task<IActionResult> ResearchEthicsCommitteesProfile(Guid id)
+    {
+        var reviewBody = await reviewBodyService.GetReviewBodyById(id);
+
+        var model = reviewBody.Content.Adapt<MemberManagementResearchEthicsCommitteesProfileViewModel>();
+
+        return View(model);
     }
 }
