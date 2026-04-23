@@ -2,6 +2,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
 using Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Controllers;
 using Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Models;
 
@@ -13,8 +17,46 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
 
     public ResearchEthicsCommitteesControllerTests()
     {
-        _http = new DefaultHttpContext { Session = new InMemorySession() };
-        Sut.ControllerContext = new ControllerContext { HttpContext = _http };
+        _http = new DefaultHttpContext
+        {
+            Session = new InMemorySession()
+        };
+
+        _http.Items[ContextItemKeys.UserId] = "user-123";
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = _http
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(x => x.GetUser("user-123", null))
+            .ReturnsAsync(new ServiceResponse<UserDto>
+            {
+                Content = new UserDto
+                {
+                    User = new UserModel
+                    {
+                        Country = "England,Scotland"
+                    }
+                }
+            });
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(x => x.GetAllReviewBodies(
+                It.IsAny<ReviewBodySearchRequest>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string?>(),
+                It.IsAny<string?>()))
+            .ReturnsAsync(new ServiceResponse<PaginatedReviewBodiesResponse>
+            {
+                Content = new PaginatedReviewBodiesResponse
+                {
+                    TotalCount = 0,
+                    ReviewBodies = new List<ReviewBodyDto>()
+                }
+            });
     }
 
     [Fact]
@@ -25,11 +67,18 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
 
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        viewResult.Model.ShouldBeOfType<MemberManagementResearchEthicsCommitteesViewModel>();
+        var model = viewResult.Model.ShouldBeOfType<MemberManagementResearchEthicsCommitteesViewModel>();
+
+        model.ShouldNotBeNull();
+        model.Search.ShouldNotBeNull();
+
+        var sessionValue = _http.Session.GetString(SessionKeys.MemberManagementResearchEthicsCommitteesSearch);
+        sessionValue.ShouldNotBeNull();
     }
 
-    [Theory, AutoData]
-    public async Task SearchMyOrganisations_ShouldStoreSearchModelInSession_AndRedirectToResearchEthicsCommittees(
+    [Theory]
+    [AutoData]
+    public async Task ApplyFilters_ShouldReturnView_AndStoreSearchModelInSession(
         MemberManagementResearchEthicsCommitteesViewModel model,
         string sortField,
         string sortDirection)
@@ -37,25 +86,32 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
         // Arrange
         model.Search ??= new MemberManagementResearchEthicsCommitteesSearchModel();
 
+        _http.Request.Method = HttpMethods.Post;
+
         // Act
-        var result = await Sut.SearchMyOrganisations(model, sortField, sortDirection);
+        var result = await Sut.ApplyFilters(model, sortField, sortDirection);
 
         // Assert
-        var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
-        redirectResult.ActionName.ShouldBe(nameof(ResearchEthicsCommitteesController.ResearchEthicsCommittees));
-        redirectResult.RouteValues!["sortField"].ShouldBe(sortField);
-        redirectResult.RouteValues["sortDirection"].ShouldBe(sortDirection);
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var viewModel = viewResult.Model.ShouldBeOfType<MemberManagementResearchEthicsCommitteesViewModel>();
+
+        viewModel.Search.ShouldBeEquivalentTo(model.Search);
+        viewModel.Pagination.ShouldNotBeNull();
+        viewModel.Pagination.RouteName.ShouldBe("mm:researchethicscommittees");
+        viewModel.Pagination.SortField.ShouldBe(sortField);
+        viewModel.Pagination.SortDirection.ShouldBe(sortDirection);
 
         var sessionValue = _http.Session.GetString(SessionKeys.MemberManagementResearchEthicsCommitteesSearch);
         sessionValue.ShouldNotBeNull();
 
-        var storedModel = JsonSerializer.Deserialize<MemberManagementResearchEthicsCommitteesSearchModel>(sessionValue!);
+        var storedModel =
+            JsonSerializer.Deserialize<MemberManagementResearchEthicsCommitteesSearchModel>(sessionValue!);
         storedModel.ShouldNotBeNull();
         storedModel.ShouldBeEquivalentTo(model.Search);
     }
 
     [Fact]
-    public async Task SearchMyOrganisations_ShouldStoreEmptySearchModelInSession_WhenSearchIsNull()
+    public async Task ApplyFilters_ShouldStoreEmptySearchModelInSession_WhenSearchIsNull()
     {
         // Arrange
         var model = new MemberManagementResearchEthicsCommitteesViewModel
@@ -63,20 +119,79 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
             Search = null
         };
 
+        _http.Request.Method = HttpMethods.Post;
+
         // Act
-        var result = await Sut.SearchMyOrganisations(model);
+        var result = await Sut.ApplyFilters(model);
 
         // Assert
-        var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
-        redirectResult.ActionName.ShouldBe(nameof(ResearchEthicsCommitteesController.ResearchEthicsCommittees));
-        redirectResult.RouteValues!["sortField"].ShouldBe("ResearchEthicsCommitteeName");
-        redirectResult.RouteValues["sortDirection"].ShouldBe("asc");
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var viewModel = viewResult.Model.ShouldBeOfType<MemberManagementResearchEthicsCommitteesViewModel>();
+
+        viewModel.Search.ShouldNotBeNull();
+        viewModel.Pagination.ShouldNotBeNull();
+        viewModel.Pagination.RouteName.ShouldBe("mm:researchethicscommittees");
+        viewModel.Pagination.SortField.ShouldBe(nameof(ReviewBodyDto.RegulatoryBodyName));
+        viewModel.Pagination.SortDirection.ShouldBe(SortDirections.Ascending);
 
         var sessionValue = _http.Session.GetString(SessionKeys.MemberManagementResearchEthicsCommitteesSearch);
         sessionValue.ShouldNotBeNull();
 
-        var storedModel = JsonSerializer.Deserialize<MemberManagementResearchEthicsCommitteesSearchModel>(sessionValue!);
+        var storedModel =
+            JsonSerializer.Deserialize<MemberManagementResearchEthicsCommitteesSearchModel>(sessionValue!);
         storedModel.ShouldNotBeNull();
         storedModel.ShouldBeOfType<MemberManagementResearchEthicsCommitteesSearchModel>();
+    }
+
+    [Fact]
+    public async Task ResearchEthicsCommittees_ShouldRestoreSearchFromSession_OnGet()
+    {
+        // Arrange
+        var storedSearch = new MemberManagementResearchEthicsCommitteesSearchModel
+        {
+            SearchTerm = "test search"
+        };
+
+        _http.Request.Method = HttpMethods.Get;
+        _http.Session.SetString(
+            SessionKeys.MemberManagementResearchEthicsCommitteesSearch,
+            JsonSerializer.Serialize(storedSearch));
+
+        // Act
+        var result = await Sut.ResearchEthicsCommittees();
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeOfType<MemberManagementResearchEthicsCommitteesViewModel>();
+
+        model.Search.ShouldNotBeNull();
+        model.Search.SearchTerm.ShouldBe("test search");
+    }
+
+    [Fact]
+    public async Task ApplyFilters_ShouldRestoreSearchFromSession_OnGet()
+    {
+        // Arrange
+        var storedSearch = new MemberManagementResearchEthicsCommitteesSearchModel
+        {
+            SearchTerm = "saved search"
+        };
+
+        _http.Request.Method = HttpMethods.Get;
+        _http.Session.SetString(
+            SessionKeys.MemberManagementResearchEthicsCommitteesSearch,
+            JsonSerializer.Serialize(storedSearch));
+
+        var model = new MemberManagementResearchEthicsCommitteesViewModel();
+
+        // Act
+        var result = await Sut.ApplyFilters(model);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var viewModel = viewResult.Model.ShouldBeOfType<MemberManagementResearchEthicsCommitteesViewModel>();
+
+        viewModel.Search.ShouldNotBeNull();
+        viewModel.Search.SearchTerm.ShouldBe("saved search");
     }
 }
