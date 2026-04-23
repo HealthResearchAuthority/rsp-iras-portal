@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
@@ -76,6 +77,7 @@ public abstract class ModificationsControllerBase
         {
             return (this.ServiceError(modificationRfiResponsesResponse), null);
         }
+        var rfiResponses = new List<RfiResponsesDTO>();
 
         TempData[TempDataKeys.ProjectModification.ProjectModificationStatus] = modification.Status;
 
@@ -154,11 +156,15 @@ public abstract class ModificationsControllerBase
             ReasonNotApproved = modification?.ReasonNotApproved ?? string.Empty,
             ReviewerComments = modification?.ReviewerComments,
             RevisionDescription = revisionDescription,
-            RequestForInformationReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? [],
-            RequestForInformationResponses = modificationRfiResponsesResponse.Content?.RfiResponses ?? [],
+            RfiModel = new RfiDetailsViewModel
+            {
+                RfiReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? [],
+                RfiResponses = modificationRfiResponsesResponse.Content?.RfiResponses ?? []
+            },
             ApplicantRevisionResponse = applicantRevisionResponse,
             ModificationRevisionResponses = modification?.ModificationRevisionResponses ?? [],
-            HasBeenDuplicated = modification.HasBeenDuplicated
+            HasBeenDuplicated = modification.HasBeenDuplicated,
+            DateSubmitted = DateHelper.ConvertDateToString(modification?.SentToRegulatorDate),
         });
     }
 
@@ -328,6 +334,7 @@ public abstract class ModificationsControllerBase
         TempData[TempDataKeys.IrasId] = irasId;
         TempData[TempDataKeys.ProjectModification.DateCreated] = modification.DateCreated;
         TempData[TempDataKeys.ProjectModification.DateSponsorSubmittedOutcome] = modification.DateSponsorSubmittedOutcome;
+        TempData[TempDataKeys.ProjectModification.DateSubmitted] = modification.DateSubmitted;
 
         var (changesResult, initialQuestions, modificationChanges) = await GetModificationChanges(modification);
         if (changesResult is not null)
