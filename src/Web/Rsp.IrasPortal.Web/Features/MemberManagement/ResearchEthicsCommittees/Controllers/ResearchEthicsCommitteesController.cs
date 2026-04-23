@@ -10,7 +10,6 @@ using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Models;
-using Rsp.Portal.Web.Helpers;
 
 namespace Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Controllers;
 

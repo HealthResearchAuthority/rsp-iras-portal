@@ -1,20 +1,68 @@
-﻿using System.Text.Json;
+﻿using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Web.Features.MemberManagement.Models;
+using Rsp.IrasPortal.Web.Features.MemberManagement.ResearchEthicsCommittees.Models;
 using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.Responses;
+using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Controllers;
 using Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Models;
+using Claim = System.Security.Claims.Claim;
 
 namespace Rsp.Portal.UnitTests.Web.Features.MemberManagement.ResearchEthicsCommittees;
 
 public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchEthicsCommitteesController>
 {
     private readonly DefaultHttpContext _http;
+    private readonly Guid LoggedInUserId = Guid.NewGuid();
 
     public ResearchEthicsCommitteesControllerTests()
     {
         _http = new DefaultHttpContext { Session = new InMemorySession() };
         Sut.ControllerContext = new ControllerContext { HttpContext = _http };
+    }
+
+    private void SetUser(Guid userId)
+    {
+        _http.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(CustomClaimTypes.UserId, userId.ToString())
+        }));
+    }
+
+    private void SetUserResponse(Guid loggedInUser)
+    {
+        var user = new UserResponse
+        {
+            User = new User(loggedInUser.ToString(),
+                            "azure-ad-12345",
+                            "Mr",
+                            "Test",
+                            "Test",
+                            "some@email.com",
+                            "Software Developer",
+                            "orgName", // IMPORTANT: match org if your action filters by org
+                            "+44 7700 900123",
+                            "United Kingdom",
+                            IrasUserStatus.Active,
+                            DateTime.UtcNow,
+                            DateTime.UtcNow.AddDays(-2),
+                            DateTime.UtcNow)
+        };
+
+        var userResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = user
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(loggedInUser.ToString(), null, null))
+            .ReturnsAsync(userResponse);
     }
 
     [Fact]
@@ -78,5 +126,79 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
         var storedModel = JsonSerializer.Deserialize<MemberManagementResearchEthicsCommitteesSearchModel>(sessionValue!);
         storedModel.ShouldNotBeNull();
         storedModel.ShouldBeOfType<MemberManagementResearchEthicsCommitteesSearchModel>();
+    }
+
+    [Theory, AutoData]
+    public async Task ResearchEthicsCommitteesProfile_ShouldReturnView_WithModel_WhenUserHasAccess(
+       Guid recId,
+       ReviewBodyDto reviewBody,
+       AddRecMemberViewModel viewModel,
+       Guid userId)
+    {
+        SetUser(LoggedInUserId);
+        SetUserResponse(LoggedInUserId);
+
+        var userEmail = "user@example.com";
+        var user = new UserResponse
+        {
+            User = new User(userId.ToString(),
+                            "azure-ad-12345",
+                            "Mr",
+                            "Test",
+                            "Test",
+                            userEmail,
+                            "Software Developer",
+                            "orgName",
+                            "+44 7700 900123",
+                            "United Kingdom",
+                            IrasUserStatus.Active,
+                            DateTime.UtcNow,
+                            DateTime.UtcNow.AddDays(-2),
+                            DateTime.UtcNow)
+        };
+
+        viewModel.Email = userEmail;
+        viewModel.RecId = recId;
+        viewModel.RecName = reviewBody.RegulatoryBodyName;
+
+        reviewBody.Id = recId;
+        reviewBody.Countries = new List<string> { "United Kingdom" };
+        reviewBody.Users = new List<ReviewBodyUserDto>
+        {
+            new ReviewBodyUserDto
+            {
+                UserId = userId,
+                Id = recId,
+                Email = userEmail
+            }
+        };
+
+        // Arrange
+        var reviewBodyResponse = new ServiceResponse<ReviewBodyDto>
+        {
+            StatusCode = HttpStatusCode.BadGateway,
+            Content = reviewBody
+        };
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(recId))
+            .ReturnsAsync(reviewBodyResponse);
+
+        var userResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = user
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(userId.ToString(), null, null))
+            .ReturnsAsync(userResponse);
+
+        // Act
+        var result = await Sut.ResearchEthicsCommitteesProfile(recId);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        viewResult.Model.ShouldBeOfType<MemberManagementResearchEthicsCommitteesProfileViewModel>();
     }
 }
