@@ -1,11 +1,14 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Moq;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
+using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Controllers;
 using Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Models;
 
@@ -30,15 +33,27 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
         };
 
         Mocker.GetMock<IUserManagementService>()
-            .Setup(x => x.GetUser("user-123", null))
-            .ReturnsAsync(new ServiceResponse<UserDto>
+            .Setup(x => x.GetUser("user-123", null, null))
+            .ReturnsAsync(new ServiceResponse<UserResponse>
             {
-                Content = new UserDto
+                Content = new UserResponse
                 {
-                    User = new UserModel
-                    {
-                        Country = "England,Scotland"
-                    }
+                    User = new User(
+                        "user-123",
+                        null,
+                        null,
+                        "Test",
+                        "User",
+                        "test.user@email.com",
+                        null,
+                        null,
+                        "",
+                        "England,Scotland",
+                        "Active",
+                        DateTime.Now,
+                        DateTime.Now,
+                        DateTime.Now
+                        )
                 }
             });
 
@@ -49,9 +64,9 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
                 It.IsAny<int>(),
                 It.IsAny<string?>(),
                 It.IsAny<string?>()))
-            .ReturnsAsync(new ServiceResponse<PaginatedReviewBodiesResponse>
+            .ReturnsAsync(new ServiceResponse<AllReviewBodiesResponse>
             {
-                Content = new PaginatedReviewBodiesResponse
+                Content = new AllReviewBodiesResponse()
                 {
                     TotalCount = 0,
                     ReviewBodies = new List<ReviewBodyDto>()
