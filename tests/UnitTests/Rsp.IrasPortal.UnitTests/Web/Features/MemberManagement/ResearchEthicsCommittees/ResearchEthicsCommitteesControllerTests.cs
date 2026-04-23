@@ -1,22 +1,28 @@
-﻿using System.Security.Claims;
+﻿using System.Net;
+using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Moq;
 using Rsp.IrasPortal.Web.Features.MemberManagement.Models;
 using Rsp.IrasPortal.Web.Features.MemberManagement.ResearchEthicsCommittees.Models;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Controllers;
 using Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Models;
+using Xunit;
 using Claim = System.Security.Claims.Claim;
 
 namespace Rsp.Portal.UnitTests.Web.Features.MemberManagement.ResearchEthicsCommittees;
 
-public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchEthicsCommitteesController>
+public class ResearchEthicsCommitteesControllerTests
+    : TestServiceBase<ResearchEthicsCommitteesController>
 {
     private readonly DefaultHttpContext _http;
     private readonly Guid LoggedInUserId = Guid.NewGuid();
@@ -35,6 +41,12 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
             HttpContext = _http
         };
 
+        SetupDefaultUser();
+        SetupDefaultReviewBodies();
+    }
+
+    private void SetupDefaultUser()
+    {
         Mocker.GetMock<IUserManagementService>()
             .Setup(x => x.GetUser("user-123", null, null))
             .ReturnsAsync(new ServiceResponse<UserResponse>
@@ -55,50 +67,13 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
                         "Active",
                         DateTime.Now,
                         DateTime.Now,
-                        DateTime.Now
-                        )
+                        DateTime.Now)
                 }
             });
-
-    private void SetUser(Guid userId)
-    {
-        _http.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
-        {
-            new Claim(CustomClaimTypes.UserId, userId.ToString())
-        }));
     }
 
-    private void SetUserResponse(Guid loggedInUser)
+    private void SetupDefaultReviewBodies()
     {
-        var user = new UserResponse
-        {
-            User = new User(loggedInUser.ToString(),
-                            "azure-ad-12345",
-                            "Mr",
-                            "Test",
-                            "Test",
-                            "some@email.com",
-                            "Software Developer",
-                            "orgName", // IMPORTANT: match org if your action filters by org
-                            "+44 7700 900123",
-                            "United Kingdom",
-                            IrasUserStatus.Active,
-                            DateTime.UtcNow,
-                            DateTime.UtcNow.AddDays(-2),
-                            DateTime.UtcNow)
-        };
-
-        var userResponse = new ServiceResponse<UserResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = user
-        };
-
-        Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(loggedInUser.ToString(), null, null))
-            .ReturnsAsync(userResponse);
-    }
-
         Mocker.GetMock<IReviewBodyService>()
             .Setup(x => x.GetAllReviewBodies(
                 It.IsAny<ReviewBodySearchRequest>(),
@@ -108,12 +83,72 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
                 It.IsAny<string?>()))
             .ReturnsAsync(new ServiceResponse<AllReviewBodiesResponse>
             {
-                Content = new AllReviewBodiesResponse()
+                Content = new AllReviewBodiesResponse
                 {
                     TotalCount = 0,
                     ReviewBodies = new List<ReviewBodyDto>()
                 }
             });
+    }
+
+    private void SetUser(Guid userId, params string[] roles)
+    {
+        _http.User = CreateUserPrincipal(userId, roles);
+    }
+
+    private void SetUserResponse(Guid userId)
+    {
+        var userResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = CreateUserResponse(
+                userId,
+                email: "some@email.com",
+                country: "United Kingdom",
+                status: IrasUserStatus.Active)
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(userId.ToString(), null, null))
+            .ReturnsAsync(userResponse);
+    }
+
+    private static ClaimsPrincipal CreateUserPrincipal(Guid userId, params string[] roles)
+    {
+        var claims = new List<Claim>
+        {
+            new(CustomClaimTypes.UserId, userId.ToString())
+        };
+
+        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+        return new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuthType"));
+    }
+
+    private static UserResponse CreateUserResponse(
+        Guid userId,
+        string country = "United Kingdom",
+        string status = IrasUserStatus.Active,
+        string email = "test@test.com")
+    {
+        return new UserResponse
+        {
+            User = new User(
+                userId.ToString(),
+                "aad",
+                "Mr",
+                "Test",
+                "User",
+                email,
+                "Dev",
+                "Org",
+                "123",
+                country,
+                status,
+                DateTime.UtcNow,
+                DateTime.UtcNow,
+                DateTime.UtcNow)
+        };
     }
 
     [Fact]
@@ -163,6 +198,7 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
 
         var storedModel =
             JsonSerializer.Deserialize<MemberManagementResearchEthicsCommitteesSearchModel>(sessionValue!);
+
         storedModel.ShouldNotBeNull();
         storedModel.ShouldBeEquivalentTo(model.Search);
     }
@@ -173,7 +209,10 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
         // Arrange
         var model = new MemberManagementResearchEthicsCommitteesViewModel
         {
-            Search = null
+            Search = new MemberManagementResearchEthicsCommitteesSearchModel()
+            {
+                
+            }
         };
 
         _http.Request.Method = HttpMethods.Post;
@@ -196,6 +235,7 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
 
         var storedModel =
             JsonSerializer.Deserialize<MemberManagementResearchEthicsCommitteesSearchModel>(sessionValue!);
+
         storedModel.ShouldNotBeNull();
         storedModel.ShouldBeOfType<MemberManagementResearchEthicsCommitteesSearchModel>();
     }
@@ -252,34 +292,24 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
         viewModel.Search.SearchTerm.ShouldBe("saved search");
     }
 
-    [Theory, AutoData]
+    [Theory]
+    [AutoData]
     public async Task ResearchEthicsCommitteesProfile_ShouldReturnView_WithModel_WhenUserHasAccess(
-       Guid recId,
-       ReviewBodyDto reviewBody,
-       AddRecMemberViewModel viewModel,
-       Guid userId)
+        Guid recId,
+        ReviewBodyDto reviewBody,
+        AddRecMemberViewModel viewModel,
+        Guid userId)
     {
+        // Arrange
         SetUser(LoggedInUserId);
         SetUserResponse(LoggedInUserId);
 
         var userEmail = "user@example.com";
-        var user = new UserResponse
-        {
-            User = new User(userId.ToString(),
-                            "azure-ad-12345",
-                            "Mr",
-                            "Test",
-                            "Test",
-                            userEmail,
-                            "Software Developer",
-                            "orgName",
-                            "+44 7700 900123",
-                            "United Kingdom",
-                            IrasUserStatus.Active,
-                            DateTime.UtcNow,
-                            DateTime.UtcNow.AddDays(-2),
-                            DateTime.UtcNow)
-        };
+        var targetUser = CreateUserResponse(
+            userId,
+            email: userEmail,
+            country: "United Kingdom",
+            status: IrasUserStatus.Active);
 
         viewModel.Email = userEmail;
         viewModel.RecId = recId;
@@ -289,7 +319,7 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
         reviewBody.Countries = new List<string> { "United Kingdom" };
         reviewBody.Users = new List<ReviewBodyUserDto>
         {
-            new ReviewBodyUserDto
+            new()
             {
                 UserId = userId,
                 Id = recId,
@@ -297,26 +327,21 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
             }
         };
 
-        // Arrange
-        var reviewBodyResponse = new ServiceResponse<ReviewBodyDto>
-        {
-            StatusCode = HttpStatusCode.BadGateway,
-            Content = reviewBody
-        };
-
         Mocker.GetMock<IReviewBodyService>()
             .Setup(s => s.GetReviewBodyById(recId))
-            .ReturnsAsync(reviewBodyResponse);
-
-        var userResponse = new ServiceResponse<UserResponse>
-        {
-            StatusCode = HttpStatusCode.OK,
-            Content = user
-        };
+            .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = reviewBody
+            });
 
         Mocker.GetMock<IUserManagementService>()
             .Setup(s => s.GetUser(userId.ToString(), null, null))
-            .ReturnsAsync(userResponse);
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = targetUser
+            });
 
         // Act
         var result = await Sut.ResearchEthicsCommitteesProfile(recId);
@@ -335,15 +360,7 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
             Countries = new List<string> { "United Kingdom" }
         };
 
-        var claims = new[]
-        {
-        new Claim(ClaimTypes.Role, Roles.SystemAdministrator),
-        new Claim(CustomClaimTypes.UserId, Guid.NewGuid().ToString())
-    };
-
-        var identity = new ClaimsIdentity(claims, "TestAuthType");
-        var user = new ClaimsPrincipal(identity);
-
+        var user = CreateUserPrincipal(Guid.NewGuid(), Roles.SystemAdministrator);
         var userServiceMock = new Mock<IUserManagementService>();
 
         // Act
@@ -352,7 +369,6 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
         // Assert
         result.ShouldBeTrue();
 
-        // userService nie powinien być nawet wywołany
         userServiceMock.Verify(
             x => x.GetUser(It.IsAny<string>(), null, null),
             Times.Never);
@@ -369,40 +385,18 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
             Countries = new List<string> { "United Kingdom" }
         };
 
-        var claims = new[]
-        {
-        new Claim(CustomClaimTypes.UserId, userId.ToString())
-    };
-
-        var identity = new ClaimsIdentity(claims, "TestAuthType");
-        var user = new ClaimsPrincipal(identity);
-
-        var userResponse = new ServiceResponse<UserResponse>
-        {
-            Content = new UserResponse
-            {
-                User = new User(
-                    userId.ToString(),
-                    "aad",
-                    "Mr",
-                    "Test",
-                    "User",
-                    "test@test.com",
-                    "Dev",
-                    "Org",
-                    "123",
-                    "United Kingdom",
-                    IrasUserStatus.Disabled,
-                    DateTime.UtcNow,
-                    DateTime.UtcNow,
-                    DateTime.UtcNow)
-            }
-        };
+        var user = CreateUserPrincipal(userId);
 
         var userServiceMock = new Mock<IUserManagementService>();
         userServiceMock
             .Setup(s => s.GetUser(userId.ToString(), null, null))
-            .ReturnsAsync(userResponse);
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                Content = CreateUserResponse(
+                    userId,
+                    country: "United Kingdom",
+                    status: IrasUserStatus.Disabled)
+            });
 
         // Act
         var result = await MemberManagementHelper.UserHasAccess(rec, user, userServiceMock.Object);
@@ -422,40 +416,18 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
             Countries = new List<string> { "Germany" }
         };
 
-        var claims = new[]
-        {
-        new Claim(CustomClaimTypes.UserId, userId.ToString())
-    };
-
-        var identity = new ClaimsIdentity(claims, "TestAuthType");
-        var user = new ClaimsPrincipal(identity);
-
-        var userResponse = new ServiceResponse<UserResponse>
-        {
-            Content = new UserResponse
-            {
-                User = new User(
-                    userId.ToString(),
-                    "aad",
-                    "Mr",
-                    "Test",
-                    "User",
-                    "test@test.com",
-                    "Dev",
-                    "Org",
-                    "123",
-                    "United Kingdom",
-                    IrasUserStatus.Active,
-                    DateTime.UtcNow,
-                    DateTime.UtcNow,
-                    DateTime.UtcNow)
-            }
-        };
+        var user = CreateUserPrincipal(userId);
 
         var userServiceMock = new Mock<IUserManagementService>();
         userServiceMock
             .Setup(s => s.GetUser(userId.ToString(), null, null))
-            .ReturnsAsync(userResponse);
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                Content = CreateUserResponse(
+                    userId,
+                    country: "United Kingdom",
+                    status: IrasUserStatus.Active)
+            });
 
         // Act
         var result = await MemberManagementHelper.UserHasAccess(rec, user, userServiceMock.Object);
@@ -475,40 +447,18 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
             Countries = new List<string> { "Germany" }
         };
 
-        var claims = new[]
-        {
-        new Claim(CustomClaimTypes.UserId, userId.ToString())
-    };
-
-        var identity = new ClaimsIdentity(claims, "TestAuth");
-        var user = new ClaimsPrincipal(identity);
-
-        var userResponse = new ServiceResponse<UserResponse>
-        {
-            Content = new UserResponse
-            {
-                User = new User(
-                    userId.ToString(),
-                    "aad",
-                    "Mr",
-                    "Test",
-                    "User",
-                    "test@test.com",
-                    "Dev",
-                    "Org",
-                    "123",
-                    "United Kingdom",
-                    IrasUserStatus.Active,
-                    DateTime.UtcNow,
-                    DateTime.UtcNow,
-                    DateTime.UtcNow)
-            }
-        };
+        var user = CreateUserPrincipal(userId);
 
         var userServiceMock = new Mock<IUserManagementService>();
         userServiceMock
             .Setup(s => s.GetUser(userId.ToString(), null, null))
-            .ReturnsAsync(userResponse);
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                Content = CreateUserResponse(
+                    userId,
+                    country: "United Kingdom",
+                    status: IrasUserStatus.Active)
+            });
 
         // Act
         var result = await MemberManagementHelper.UserHasAccess(rec, user, userServiceMock.Object);
