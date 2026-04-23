@@ -39,8 +39,29 @@
     </div>
 </div>
 
-<h2 class="govuk-heading-m">Request for further information</h2>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <a href="#"
+           class="govuk-link govuk-accordion-toggle-link"
+           id="toggleChanges"
+           role="button"
+           aria-expanded="false"
+           aria-controls="modificationChanges">
+            <span class="govuk-accordion-toggle-link__icon" aria-hidden="true"></span>
+            <span class="govuk-accordion-toggle-link__text">
+                Show submitted changes in this modification
+            </span>
+        </a>
+    </div>
+</div>
+<div class="govuk-grid-row">
+    <div id="modificationChanges" class="govuk-grid-column-full">
+        <partial name="ModificationChanges" model="Model" view-data="ViewData" />
+    </div>
+</div>
+<br />
 <form method="post" asp-action="RfiResponses">
+    <h2 class="govuk-heading-m">Request for further information</h2>
 
     <input type="hidden" name="projectModificationId" value="@Model.ModificationId" />
     @for (var i = 0; i < Model.RfiReasons.Count; i++)
@@ -69,12 +90,11 @@
                               class="govuk-textarea govuk-js-character-count"
                               rows="5"
                               aria-describedby="RfiResponses_@(i)_InitialResponse_0-info">
-                    </textarea>
+                        </textarea>
 
                     <div id="RfiResponses_@(i)_InitialResponse_0-info"
                          class="govuk-hint govuk-character-count__message">
                     </div>
-
                 </div>
             </div>
         </div>
@@ -113,3 +133,29 @@
         </button>
     </div>
 </form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const toggle = document.getElementById("toggleChanges");
+        const container = document.getElementById("modificationChanges");
+
+        // hide by default
+        container.style.display = "none";
+
+        toggle.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            const expanded = toggle.getAttribute("aria-expanded") === "true";
+
+            toggle.setAttribute("aria-expanded", !expanded);
+            container.style.display = expanded ? "none" : "block";
+
+            toggle.querySelector(".govuk-accordion-toggle-link__text").textContent =
+                expanded
+                    ? "Show submitted changes in this modification"
+                    : "Hide submitted changes in this modification";
+        });
+
+    });
+</script>

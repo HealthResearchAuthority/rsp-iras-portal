@@ -110,7 +110,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.RequestForInformation,
                     ModificationStatus.Withdrawn,
                     ModificationStatus.ResponseWithSponsor,
-                    ModificationStatus.ResponseWithReviewBody
+                    ModificationStatus.ResponseWithReviewBody,
+                    ModificationStatus.ResponseReviseAndAuthorise
                 }
             },
             {
@@ -125,7 +126,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.RequestForInformation,
                     ModificationStatus.Withdrawn,
                     ModificationStatus.ResponseWithSponsor,
-                    ModificationStatus.ResponseWithReviewBody
+                    ModificationStatus.ResponseWithReviewBody,
+                    ModificationStatus.ResponseReviseAndAuthorise
                 }
             },
             {
@@ -140,7 +142,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.RequestForInformation,
                     ModificationStatus.Withdrawn,
                     ModificationStatus.ResponseWithSponsor,
-                    ModificationStatus.ResponseWithReviewBody
+                    ModificationStatus.ResponseWithReviewBody,
+                    ModificationStatus.ResponseReviseAndAuthorise
                 }
             },
             {
@@ -222,6 +225,7 @@ public static class RoleStatusPermissions
                     DocumentStatus.Complete,
                     DocumentStatus.WithSponsor,
                     DocumentStatus.ReviseAndAuthorise,
+                    DocumentStatus.ResponseReviseAndAuthorise,
                     DocumentStatus.RequestRevisions,
                     DocumentStatus.WithReviewBody,
                     DocumentStatus.Approved,
@@ -239,6 +243,7 @@ public static class RoleStatusPermissions
                 {
                     DocumentStatus.WithSponsor,
                     DocumentStatus.ReviseAndAuthorise,
+                    DocumentStatus.ResponseReviseAndAuthorise,
                     DocumentStatus.WithReviewBody,
                     DocumentStatus.Approved,
                     DocumentStatus.NotAuthorised,
@@ -254,6 +259,7 @@ public static class RoleStatusPermissions
                 {
                     DocumentStatus.WithSponsor,
                     DocumentStatus.ReviseAndAuthorise,
+                    DocumentStatus.ResponseReviseAndAuthorise,
                     DocumentStatus.WithReviewBody,
                     DocumentStatus.Approved,
                     DocumentStatus.NotAuthorised,

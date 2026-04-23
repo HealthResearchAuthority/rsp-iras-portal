@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Web.Attributes;
 using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -96,6 +97,7 @@ public class RfiResponseController(
     }
 
     [HttpGet]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Review)]
     public async Task<IActionResult> RfiResponses
     (
         string projectRecordId,
@@ -149,6 +151,7 @@ public class RfiResponseController(
     }
 
     [HttpPost]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Update)]
     public async Task<IActionResult> RfiResponses(RfiDetailsViewModel model, bool saveForLater = false)
     {
         var storedModelJson = TempData.Peek(TempDataKeys.RfiDetails)!.ToString()!;

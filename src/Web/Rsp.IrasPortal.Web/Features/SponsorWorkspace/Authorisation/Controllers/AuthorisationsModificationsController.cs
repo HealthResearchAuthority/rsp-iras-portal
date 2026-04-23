@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
@@ -11,6 +12,7 @@ using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.Extensions;
 using Rsp.Portal.Application.Filters;
+using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Domain.Enums;
@@ -479,13 +481,7 @@ public class AuthorisationsModificationsController
 
                 if (rfiFeatureFlagEnabled)
                 {
-                    await projectModificationsService.UpdateModificationStatus(
-                        new UpdateModificationStatusRequest
-                        {
-                            ProjectRecordId = model.ProjectRecordId,
-                            ModificationId = Guid.Parse(model.ModificationId),
-                            Status = ModificationStatus.ReviseAndAuthorise
-                        });
+                    return RedirectToAction(nameof(ConfirmReviseAndAuthoriseOutcome), model);
                 }
                 else
                 {
@@ -496,17 +492,17 @@ public class AuthorisationsModificationsController
                             ModificationStatus.ReviseAndAuthorise,
                             string.Empty
                         );
-                }
 
-                return RedirectToRoute("pmc:ModificationDetails", new
-                {
-                    projectRecordId = model.ProjectRecordId,
-                    irasId = model.IrasId,
-                    shortTitle = model.ShortTitle,
-                    projectModificationId = Guid.Parse(model.ModificationId),
-                    sponsorOrganisationUserId = model.SponsorOrganisationUserId,
-                    rtsId = model.RtsId,
-                });
+                    return RedirectToRoute("pmc:ModificationDetails", new
+                    {
+                        projectRecordId = model.ProjectRecordId,
+                        irasId = model.IrasId,
+                        shortTitle = model.ShortTitle,
+                        projectModificationId = Guid.Parse(model.ModificationId),
+                        sponsorOrganisationUserId = model.SponsorOrganisationUserId,
+                        rtsId = model.RtsId,
+                    });
+                }
 
             case "NotAuthorised":
                 if ((await featureManager.IsEnabledAsync(FeatureFlags.NotAuthorisedReason) && model.Status == ModificationStatus.WithSponsor) ||
@@ -1057,6 +1053,85 @@ public class AuthorisationsModificationsController
         else
         {
             return Forbid();
+        }
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [FeatureGate(FeatureFlags.RequestForInformation)]
+    [HttpGet]
+    public async Task<IActionResult> ConfirmReviseAndAuthoriseOutcome(AuthoriseModificationsOutcomeViewModel model)
+    {
+        var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(Guid.Parse(model.SponsorOrganisationUserId), model.RtsId);
+
+        if (!sponsorOrganisationUser.IsSuccessStatusCode)
+        {
+            return this.ServiceError(sponsorOrganisationUser);
+        }
+
+        if (!sponsorOrganisationUser.Content!.IsAuthoriser)
+        {
+            return Forbid();
+        }
+
+        return View(model);
+    }
+
+    [Authorize(Policy = Permissions.Sponsor.Modifications_Authorise)]
+    [FeatureGate(FeatureFlags.RequestForInformation)]
+    [HttpPost]
+    public async Task<IActionResult> SendConfirmReviseAndAuthoriseOutcome(AuthoriseModificationsOutcomeViewModel model)
+    {
+        var modificationResponse = await projectModificationsService.GetModification(model.ProjectRecordId, model.ProjectModificationId);
+
+        if (!modificationResponse.IsSuccessStatusCode)
+        {
+            return this.ServiceError(modificationResponse);
+        }
+
+        switch (modificationResponse.Content?.Status)
+        {
+            case ModificationStatus.WithSponsor:
+                await projectModificationsService.UpdateModificationStatus(
+                        new UpdateModificationStatusRequest
+                        {
+                            ProjectRecordId = model.ProjectRecordId,
+                            ModificationId = Guid.Parse(model.ModificationId),
+                            Status = ModificationStatus.ReviseAndAuthorise
+                        });
+                return RedirectToRoute("pmc:ModificationDetails", new
+                {
+                    projectRecordId = model.ProjectRecordId,
+                    irasId = model.IrasId,
+                    shortTitle = model.ShortTitle,
+                    projectModificationId = Guid.Parse(model.ModificationId),
+                    sponsorOrganisationUserId = model.SponsorOrganisationUserId,
+                    rtsId = model.RtsId,
+                });
+
+            case ModificationStatus.RequestForInformation:
+                await projectModificationsService.UpdateModificationStatus(
+                        new UpdateModificationStatusRequest
+                        {
+                            ProjectRecordId = model.ProjectRecordId,
+                            ModificationId = Guid.Parse(model.ModificationId),
+                            Status = ModificationStatus.ResponseReviseAndAuthorise
+                        });
+                return RedirectToRoute("rfi:RfiResponses", new
+                {
+                    projectRecordId = model.ProjectRecordId,
+                    irasId = model.IrasId,
+                    shortTitle = model.ShortTitle,
+                    projectModificationId = Guid.Parse(model.ModificationId),
+                    sponsorOrganisationUserId = model.SponsorOrganisationUserId,
+                    rtsId = model.RtsId,
+                });
+
+            default:
+                return this.ServiceError(new ServiceResponse
+                {
+                    StatusCode = HttpStatusCode.BadRequest,
+                    Error = $"Wrong modification status, cannot confirm Revise and authorise",
+                });
         }
     }
 }
