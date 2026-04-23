@@ -38,8 +38,8 @@
             </h2>
             <ul class="govuk-summary-card__actions">
                 @if ((showChangeLink == null || showChangeLink.Equals(true)) &&
-                            (Model.Status is ModificationStatus.InDraft || (Model.Status is ModificationStatus.RequestRevisions && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart) ||
-                            (isRevisionBySponsor && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart)))
+                        (Model.Status is ModificationStatus.InDraft || (Model.Status is ModificationStatus.RequestRevisions && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart) ||
+                        (isRevisionBySponsor && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart)))
                 {
                     <li class="govuk-summary-card__action">
                         @{
@@ -65,9 +65,9 @@
                 }
 
                 @if ((showRemoveLink == null || showRemoveLink.Equals(true)) &&
-                            (Model.Status is ModificationStatus.InDraft ||
-                            (Model.Status is ModificationStatus.RequestRevisions && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart) ||
-                            (isRevisionBySponsor && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart)))
+                        (Model.Status is ModificationStatus.InDraft ||
+                        (Model.Status is ModificationStatus.RequestRevisions && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart) ||
+                        (isRevisionBySponsor && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart)))
                 {
                     <li class="govuk-summary-card__action">
                         <a class="govuk-link"
@@ -122,13 +122,13 @@
                     </dd>
                 </div>
                 @if ((Model.ModificationChanges.Any() && showModificationDetails.GetValueOrDefault()) ||
-                            (Model.Status is ModificationStatus.RequestRevisions or ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestForInformation or ModificationStatus.ResponseReviseAndAuthorise))
+                    (Model.Status is ModificationStatus.RequestRevisions or ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestForInformation or ModificationStatus.ResponseReviseAndAuthorise))
                 {
                     @if (change.SpecificAreaOfChangeId is
-                                SpecificAreasOfChange.AddNewPics or
-                                SpecificAreasOfChange.AddNewSites or
-                                SpecificAreasOfChange.EarlyClosureSites or
-                                SpecificAreasOfChange.EarlyClosuresPics)
+                            SpecificAreasOfChange.AddNewPics or
+                            SpecificAreasOfChange.AddNewSites or
+                            SpecificAreasOfChange.EarlyClosureSites or
+                            SpecificAreasOfChange.EarlyClosuresPics)
                     {
 
                         <vc:participating-organisations-review project-record-id="@Model.ProjectRecordId"

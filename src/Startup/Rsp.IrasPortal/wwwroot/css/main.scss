@@ -1280,48 +1280,8 @@ button.govuk-pagination__item--current {
     color: #4C2C92;
 }
 
-.govuk-accordion-toggle-link {
-    text-decoration: none; /* remove underline */
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: #1d70b8;
-}
-
-.govuk-accordion-toggle-link:hover {
-    text-decoration: none; /* GOV.UK behaviour */
-    color: #1d70b8; /* GOV.UK hover blue */
-}
-
-.govuk-accordion-toggle-link:visited {
-    color: #4c2c92; /* GOV.UK visited purple */
-}
-
-.govuk-accordion-toggle-link:focus {
-    outline: 3px solid #ffdd00;
-    outline-offset: 0;
-    background-color: #ffdd00;
-    color: #0b0c0c;
-}
-
-.govuk-accordion-toggle-link__icon {
-    width: 20px;
-    height: 20px;
-    display: inline-block;
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-image: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'>\
-<circle cx='12' cy='12' r='10' fill='white' stroke='%231d70b8' stroke-width='2'/>\
-<path d='M8 10l4 4 4-4' stroke='%231d70b8' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/>\
-</svg>");
-}
-
-.govuk-accordion-toggle-link[aria-expanded='true']
-.govuk-accordion-toggle-link__icon {
-    background-image: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'>\
-<circle cx='12' cy='12' r='10' fill='white' stroke='%231d70b8' stroke-width='2'/>\
-<path d='M8 14l4-4 4 4' stroke='%231d70b8' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/>\
-</svg>");
+.rec-member-form {
+    .govuk-label, .govuk-fieldset__legend {
+        font-weight: 100 !important;
+    }
 }

@@ -1,6 +1,6 @@
-﻿@using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models
-@using Rsp.Portal.Application.Constants
-@model RfiDetailsViewModel
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Web.Features.Modifications.Models
+@model ModificationDetailsViewModel
 @{
     ViewBag.Title = "Request for further information";
 }
@@ -63,8 +63,10 @@
 <form method="post" asp-action="RfiResponses">
     <h2 class="govuk-heading-m">Request for further information</h2>
 
+    <h2 class="govuk-heading-m">Request for further information</h2>
+
     <input type="hidden" name="projectModificationId" value="@Model.ModificationId" />
-    @for (var i = 0; i < Model.RfiReasons.Count; i++)
+    @for (var i = 0; i < Model.RfiModel.RfiReasons.Count; i++)
     {
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-one-third">
@@ -74,7 +76,7 @@
             </div>
             <div class="govuk-grid-column-two-thirds">
                 <p class="govuk-body">
-                    @Model.RfiReasons[i]
+                    @Model.RfiModel.RfiReasons[i]
                 </p>
             </div>
         </div>
@@ -86,7 +88,7 @@
             </div>
             <div class="govuk-grid-column-two-thirds">
                 <div class="govuk-form-group govuk-character-count mb-0" data-module="govuk-character-count" data-maxlength="300">
-                    <textarea asp-for="RfiResponses[i].InitialResponse[0]"
+                    <textarea asp-for="RfiModel.RfiResponses[i].InitialResponse[0]"
                               class="govuk-textarea govuk-js-character-count"
                               rows="5"
                               aria-describedby="RfiResponses_@(i)_InitialResponse_0-info">

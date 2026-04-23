@@ -1,5 +1,4 @@
 ﻿using Rsp.IrasPortal.Application.DTOs.Responses;
-using Rsp.Portal.Application.DTOs.Responses;
 
 namespace Rsp.Portal.Web.Models;
 
@@ -59,16 +58,6 @@ public class BaseProjectModificationViewModel
     public string? ReviewerComments { get; set; }
 
     /// <summary>
-    /// Gets or sets the list of reasons for requesting additional information from the applicant.
-    /// </summary>
-    public List<string> RequestForInformationReasons { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets the list of responses provided by the applicant in response to the request for additional information.
-    /// </summary>
-    public List<RfiResponsesDTO> RequestForInformationResponses { get; set; } = [];
-
-    /// <summary>
     /// Gets or sets the created date of the Modification
     /// </summary>
     public string DateCreated { get; set; } = null!;
@@ -98,4 +87,7 @@ public class BaseProjectModificationViewModel
     /// Gets or sets whether the modification has been duplicated
     /// </summary>
     public bool HasBeenDuplicated { get; set; }
+
+    //This date is a sent to regulator date for RFI flow
+    public string? DateSubmitted { get; set; }
 }
