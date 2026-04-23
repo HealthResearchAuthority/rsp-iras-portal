@@ -96,7 +96,7 @@ public class ResearchEthicsCommitteesController(
         return View(managementResearchEthicsCommitteesViewModel);
     }
 
-    [Route("/membermanagement/searchresearchethicscommittees", Name = "mm:searchresearchethicscommittees")]
+    [Route("/membermanagement/applyfilters", Name = "mm:applyfilters")]
     [HttpPost]
     [HttpGet]
     [CmsContentAction(nameof(ResearchEthicsCommittees))]
