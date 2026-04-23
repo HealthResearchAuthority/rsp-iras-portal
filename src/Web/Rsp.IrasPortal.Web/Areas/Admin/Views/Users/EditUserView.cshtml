@@ -5,116 +5,178 @@
 @inject IFeatureManager featureManager
 
 @{
-    var buttonText = ViewBag.Mode == "edit" ? "Save" : "Continue";
-    var heading = ViewBag.Mode == "edit" ? "Edit user profile record" : "Add a new user profile record";
-    var submitActionName = ViewBag.Mode == "edit" ? "admin:submituser" : "admin:confirmusersubmission";
+	var buttonText = ViewBag.Mode == "edit" ? "Save" : "Continue";
+	var heading = ViewBag.Mode == "edit" ? "Edit user profile record" : "Add a new user profile record";
+	var submitActionName = ViewBag.Mode == "edit" ? "admin:submituser" : "admin:confirmusersubmission";
 
-    ViewBag.Active = "manageUsers";
+	ViewBag.Active = "manageUsers";
 
-    string errorPrefix = ViewData.ModelState.IsValid ? "" : "Error - ";
-    string editTitle = $"{errorPrefix}Edit user profile record - Manage Users - System Administration";
-    string createTitle = $"{errorPrefix}Add a new user profile record - Manage Users - System Administration";
-    ViewBag.Title = ViewBag.Mode == "edit" ? editTitle : createTitle;
+	string errorPrefix = ViewData.ModelState.IsValid ? "" : "Error - ";
+	string editTitle = $"{errorPrefix}Edit user profile record - Manage Users - System Administration";
+	string createTitle = $"{errorPrefix}Add a new user profile record - Manage Users - System Administration";
+	ViewBag.Title = ViewBag.Mode == "edit" ? editTitle : createTitle;
 
-    ViewBag.DefaultOptions = new List<GdsOption>();
+	ViewBag.DefaultOptions = new List<GdsOption>();
 }
 <form method="post">
-    @if (ViewBag.Mode == "edit")
-    {
-        <a asp-route="admin:viewuser" asp-all-route-data="@(new Dictionary<string, string> { { "email", Model.Email }, { "userId", Model.Id! } })" class="govuk-back-link">Back</a>
-    }
-    else
-    {
-        <a asp-route="admin:users" class="govuk-back-link">Back</a>
-    }
+	@if (ViewBag.Mode == "edit")
+	{
+		<a asp-route="admin:viewuser" asp-all-route-data="@(new Dictionary<string, string> { { "email", Model.Email }, { "userId", Model.Id! } })" class="govuk-back-link">Back</a>
+	}
+	else
+	{
+		<a asp-route="admin:users" class="govuk-back-link">Back</a>
+	}
 
-    <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-            <h1 class="govuk-heading-l">@heading</h1>
-            <input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
-            <input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.OriginalEmail ?? string.Empty)" />
-            <input hidden readonly name="Status" asp-for="Status" value="@(Model.Status ?? string.Empty)" />
-            <input hidden readonly name="IdentityProviderId" asp-for="IdentityProviderId" value="@(Model.IdentityProviderId ?? string.Empty)" />
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<h1 class="govuk-heading-l">@heading</h1>
+			<input name="Id" asp-for="Id" value="@(Model.Id ?? string.Empty)" />
+			<input name="OriginalEmail" asp-for="OriginalEmail" value="@(Model.OriginalEmail ?? string.Empty)" />
+			<input hidden readonly name="Status" asp-for="Status" value="@(Model.Status ?? string.Empty)" />
+			<input hidden readonly name="IdentityProviderId" asp-for="IdentityProviderId" value="@(Model.IdentityProviderId ?? string.Empty)" />
 
-            @{
-                var order = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["Title"] = 0,
-                    ["GivenName"] = 1,
-                    ["FamilyName"] = 2,
-                    ["Email"] = 3,
-                    ["Telephone"] = 4,
-                    ["Organisation"] = 5,
-                    ["JobTitle"] = 6,
-                    ["UserRoles"] = 7,
-                    ["Country"] = 8,
-                    ["ReviewBodies"] = 9
-                };
-            }
+			@{
+				var order = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+			{
+				["Title"] = 0,
+				["GivenName"] = 1,
+				["FamilyName"] = 2,
+				["Email"] = 3,
+				["Telephone"] = 4,
+				["Organisation"] = 5,
+				["JobTitle"] = 6,
+				["UserRoles"] = 7,
+				["Country"] = 8,
+				["ReviewBodies"] = 9
+			};
+			}
 
-            <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem", order)" />
+			<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem", order)" />
 
-            <rsp-gds-input asp-for="Title" label-text="Title" width-class="govuk-!-width-one-quarter" />
+			<rsp-gds-input asp-for="Title" label-text="Title" width-class="govuk-!-width-one-quarter" />
 
-            <rsp-gds-input asp-for="GivenName" label-text="First name" width-class="govuk-!-width-one-half" />
+			<rsp-gds-input asp-for="GivenName" label-text="First name" width-class="govuk-!-width-one-half" />
 
-            <rsp-gds-input asp-for="FamilyName" label-text="Last name" width-class="govuk-!-width-one-half" />
+			<rsp-gds-input asp-for="FamilyName" label-text="Last name" width-class="govuk-!-width-one-half" />
 
-            @if (ViewBag.Mode == "edit")
-            {
-                <input hidden readonly name="Email" asp-for="Email" value="@(Model.Email ?? string.Empty)" />
-            }
-            else
-            {
-                <rsp-gds-input asp-for="Email" input-type="email" label-text="Email address" width-class="govuk-!-width-two-thirds" />
-            }
+			@if (ViewBag.Mode == "edit")
+			{
+				<input hidden readonly name="Email" asp-for="Email" value="@(Model.Email ?? string.Empty)" />
+			}
+			else
+			{
+				<rsp-gds-input asp-for="Email" input-type="email" label-text="Email address" width-class="govuk-!-width-two-thirds" />
+			}
 
-            <rsp-gds-input asp-for="Telephone" label-text="Telephone" input-type="tel" width-class="govuk-!-width-two-thirds" />
+			<rsp-gds-input asp-for="Telephone" label-text="Telephone" input-type="tel" width-class="govuk-!-width-two-thirds" />
 
-            <rsp-gds-input asp-for="Organisation" label-text="Organisation" width-class="govuk-!-width-three-quarters" />
+			<rsp-gds-input asp-for="Organisation" label-text="Organisation" width-class="govuk-!-width-three-quarters" />
 
-            <rsp-gds-input asp-for="JobTitle" label-text="Job title" width-class="govuk-!-width-three-quarters" />
+			<rsp-gds-input asp-for="JobTitle" label-text="Job title" width-class="govuk-!-width-three-quarters" />
 
-            <rsp-gds-checkbox-group asp-for="UserRoles"
-                                    label-text="Role"
-                                    item-label-property="DisplayName"
-                                    item-value-property="IsSelected"
-                                    item-hidden-properties="Id,Name"
-                                    readonly-items="organisation_administrator,sponsor"
-                                    readonly-item-property="Name" />
+			<rsp-gds-checkbox-group asp-for="UserRoles"
+									label-text="Role"
+									item-label-property="DisplayName"
+									item-value-property="IsSelected"
+									item-hidden-properties="Id,Name"
+									readonly-items="organisation_administrator,sponsor"
+									readonly-item-property="Name" />
 
-            <rsp-gds-checkbox-group asp-for="Country"
-                                    label-text="Country"
-                                    options="UkCountryNames.Countries"
-                                    label-css-class="role-checkbox"
-                                    conditional-field="true"
-                                    data-role="team manager"
-                                    legend-class="govuk-label govuk-label--s">
-            </rsp-gds-checkbox-group>
+			<rsp-gds-checkbox-group asp-for="Country"
+									label-text="Country"
+									options="UkCountryNames.Countries"
+									label-css-class="role-checkbox"
+									conditional-field="true"
+									data-role="member management,team manager,research ethics committee manager"
+									legend-class="govuk-label govuk-label--s">
+			</rsp-gds-checkbox-group>
 
-            <rsp-gds-checkbox-group asp-for="ReviewBodies"
-                                    label-text="Review body"
-                                    item-label-property="RegulatoryBodyName"
-                                    item-value-property="IsSelected"
-                                    item-hidden-properties="Id,RegulatoryBodyName"
-                                    conditional-field="true"
-                                    class="conditional-field"
-                                    data-role="study-wide reviewer, workflow co-ordinator"
-                                    legend-class="govuk-label govuk-label--s">
-            </rsp-gds-checkbox-group>
+			@if (!await featureManager.IsEnabledAsync(FeatureFlags.RecMemberManagement))
+			{
+				<rsp-gds-checkbox-group asp-for="ReviewBodies"
+										label-text="Review body"
+										item-label-property="RegulatoryBodyName"
+										item-value-property="IsSelected"
+										item-hidden-properties="Id,RegulatoryBodyName"
+										conditional-field="true"
+										class="conditional-field"
+										data-role="study-wide reviewer, workflow co-ordinator,administrator,research ethics committee manager,reviewer"
+										legend-class="govuk-label govuk-label--s">
+				</rsp-gds-checkbox-group>
+			}
+			else
+			{			
+				<div class="select-search conditional-field"
+					 id="reviewbody-select"
+					 data-role="study-wide reviewer,workflow co-ordinator,administrator,research ethics committee manager,reviewer"
+					 data-model-property-name="ReviewBodies">
 
-            <partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
-            @{
-                ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
-            }
-        </div>
-    </div>
+					<label for="reviewBodies" class="select-search__label">
+						Review body
+					</label>
+					<p>Enter the name of the review body and select the correct one from the options that appear. You can add more than one review body.</p>
+
+					<!-- REAL select (fallback) for JS disabled-->
+					<select id="reviewBodies" name="SelectedReviewBodies" multiple class="select-search__native">
+						@foreach (var reviewBody in Model.ReviewBodies)
+						{
+							if (reviewBody.IsSelected)
+							{
+								<option value="@reviewBody.Id.ToString()" selected>@reviewBody.DisplayName</option>
+							}
+							else
+							{
+								<option value="@reviewBody.Id.ToString()">@reviewBody.DisplayName</option>
+							}
+						}
+					</select>
+
+					<!-- Enhanced UI (hidden by default, shown by JS) -->
+					<div class="select-search__enhanced" hidden>
+						<div class="select-search__control">
+							<input type="text" class="select-search__input" placeholder="Select all that apply..." />
+							<div class="select-search__tags"></div>
+						</div>
+
+						<ul class="select-search__dropdown"></ul>
+
+						<!-- Hidden inputs go here -->
+						<div class="select-search__hidden">
+							@foreach (var (item, i) in Model.ReviewBodies.Select((item, index) => (item, index)))
+							{
+								<input type="hidden" name="ReviewBodies[@i].Id" value="@item.Id" />
+								<input type="hidden" name="ReviewBodies[@i].RegulatoryBodyName" value="@item.RegulatoryBodyName" />
+								<input type="hidden"
+									   name="ReviewBodies[@i].IsSelected"
+									   value="@((item.IsSelected) ? "True" : "False")"
+									   data-id="@item.Id" />
+							}
+						</div>
+					</div>
+				</div>				
+			}
+
+			<partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
+			@{
+				ViewBag.Style = "ms-3 govuk-button govuk-button--secondary";
+			}
+		</div>
+	</div>
 </form>
 <!--Use javascript only when progressive enhancement feature is enabled-->
 @if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
 {
-    @section FooterResources {
+	@section FooterResources {
 
-        <script src="~/js/manageUsers.js"></script>
-    }
+	<script src="~/js/manageUsers.js"></script>
+	@* 	<script src="~/js/multi-select-1.js"></script> *@
+	<script src="~/js/multi-select-3.js"></script>
+
+	<script>
+		$(function () {
+			initSelectSearch("#reviewbody-select");
+		});
+	</script>
+	}
 }
