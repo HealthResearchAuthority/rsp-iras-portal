@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Rsp.IrasPortal.Web.Features.MemberManagement.Models;
 using Rsp.IrasPortal.Web.Features.MemberManagement.ResearchEthicsCommittees.Models;
+using Rsp.IrasPortal.Web.Helpers;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.Responses;
@@ -11,6 +12,7 @@ using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Controllers;
 using Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Models;
+using Shouldly;
 using Claim = System.Security.Claims.Claim;
 
 namespace Rsp.Portal.UnitTests.Web.Features.MemberManagement.ResearchEthicsCommittees;
@@ -200,5 +202,143 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
         // Assert
         var viewResult = result.ShouldBeOfType<ViewResult>();
         viewResult.Model.ShouldBeOfType<MemberManagementResearchEthicsCommitteesProfileViewModel>();
+    }
+
+    [Fact]
+    public async Task UserHasAccess_ShouldReturnTrue_WhenUserIsSystemAdministrator()
+    {
+        // Arrange
+        var rec = new ReviewBodyDto
+        {
+            Countries = new List<string> { "United Kingdom" }
+        };
+
+        var claims = new[]
+        {
+        new Claim(ClaimTypes.Role, Roles.SystemAdministrator),
+        new Claim(CustomClaimTypes.UserId, Guid.NewGuid().ToString())
+    };
+
+        var identity = new ClaimsIdentity(claims, "TestAuthType");
+        var user = new ClaimsPrincipal(identity);
+
+        var userServiceMock = new Mock<IUserManagementService>();
+
+        // Act
+        var result = await MemberManagementHelper.UserHasAccess(rec, user, userServiceMock.Object);
+
+        // Assert
+        result.ShouldBeTrue();
+
+        // userService nie powinien być nawet wywołany
+        userServiceMock.Verify(
+            x => x.GetUser(It.IsAny<string>(), null, null),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task UserHasAccess_ShouldReturnFalse_WhenUserIsNotActive()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+
+        var rec = new ReviewBodyDto
+        {
+            Countries = new List<string> { "United Kingdom" }
+        };
+
+        var claims = new[]
+        {
+        new Claim(CustomClaimTypes.UserId, userId.ToString())
+    };
+
+        var identity = new ClaimsIdentity(claims, "TestAuthType");
+        var user = new ClaimsPrincipal(identity);
+
+        var userResponse = new ServiceResponse<UserResponse>
+        {
+            Content = new UserResponse
+            {
+                User = new User(
+                    userId.ToString(),
+                    "aad",
+                    "Mr",
+                    "Test",
+                    "User",
+                    "test@test.com",
+                    "Dev",
+                    "Org",
+                    "123",
+                    "United Kingdom",
+                    IrasUserStatus.Disabled, // 🔴 kluczowe
+                    DateTime.UtcNow,
+                    DateTime.UtcNow,
+                    DateTime.UtcNow)
+            }
+        };
+
+        var userServiceMock = new Mock<IUserManagementService>();
+        userServiceMock
+            .Setup(s => s.GetUser(userId.ToString(), null, null))
+            .ReturnsAsync(userResponse);
+
+        // Act
+        var result = await MemberManagementHelper.UserHasAccess(rec, user, userServiceMock.Object);
+
+        // Assert
+        result.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task UserHasAccess_ShouldReturnFalse_WhenUserDoesNotBelongToRecCountry()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+
+        var rec = new ReviewBodyDto
+        {
+            Countries = new List<string> { "Germany" } // 🔴 inny kraj
+        };
+
+        var claims = new[]
+        {
+        new Claim(CustomClaimTypes.UserId, userId.ToString())
+    };
+
+        var identity = new ClaimsIdentity(claims, "TestAuthType");
+        var user = new ClaimsPrincipal(identity);
+
+        var userResponse = new ServiceResponse<UserResponse>
+        {
+            Content = new UserResponse
+            {
+                User = new User(
+                    userId.ToString(),
+                    "aad",
+                    "Mr",
+                    "Test",
+                    "User",
+                    "test@test.com",
+                    "Dev",
+                    "Org",
+                    "123",
+                    "United Kingdom", // 🇬🇧
+                    IrasUserStatus.Active,
+                    DateTime.UtcNow,
+                    DateTime.UtcNow,
+                    DateTime.UtcNow)
+            }
+        };
+
+        var userServiceMock = new Mock<IUserManagementService>();
+        userServiceMock
+            .Setup(s => s.GetUser(userId.ToString(), null, null))
+            .ReturnsAsync(userResponse);
+
+        // Act
+        var result = await MemberManagementHelper.UserHasAccess(rec, user, userServiceMock.Object);
+
+        // Assert
+        result.ShouldBeFalse();
     }
 }
