@@ -69,8 +69,6 @@ public class ResearchEthicsCommitteesController(
     {
         var reviewBody = await reviewBodyService.GetReviewBodyById(id);
 
-
-
         if (!await MemberManagementHelper.UserHasAccess(reviewBody.Content, User, userService))
         {
             // if user does not have access to the review body, return 403 forbidden
