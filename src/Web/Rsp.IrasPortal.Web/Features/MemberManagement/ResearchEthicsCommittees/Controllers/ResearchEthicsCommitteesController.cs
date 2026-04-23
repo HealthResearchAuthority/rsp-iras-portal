@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Web.Features.MemberManagement.ResearchEthicsCommittees.Models;
+using Rsp.IrasPortal.Web.Helpers;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Models;
+using Rsp.Portal.Web.Helpers;
 
 namespace Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Controllers;
 
@@ -19,7 +21,8 @@ namespace Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Cont
 [Route("membermanagement/[action]", Name = "mm:[action]")]
 [FeatureGate(FeatureFlags.RecMemberManagement)]
 public class ResearchEthicsCommitteesController(
-    IReviewBodyService reviewBodyService
+    IReviewBodyService reviewBodyService,
+    IUserManagementService userService
     ) : Controller
 {
     [Authorize(Policy = Permissions.MemberManagement.ResearchEthicsCommittees_Search)]
@@ -65,6 +68,14 @@ public class ResearchEthicsCommitteesController(
     public async Task<IActionResult> ResearchEthicsCommitteesProfile(Guid id)
     {
         var reviewBody = await reviewBodyService.GetReviewBodyById(id);
+
+
+
+        if (!await MemberManagementHelper.UserHasAccess(reviewBody.Content, User, userService))
+        {
+            // if user does not have access to the review body, return 403 forbidden
+            return Forbid();
+        }
 
         var model = reviewBody.Content.Adapt<MemberManagementResearchEthicsCommitteesProfileViewModel>();
 
