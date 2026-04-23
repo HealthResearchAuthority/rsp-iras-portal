@@ -340,4 +340,57 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
         // Assert
         result.ShouldBeFalse();
     }
+
+    [Fact]
+    public async Task UserHasAccess_ShouldReturnFalse_WhenUserCountryDoesNotMatchRecCountries()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+
+        var rec = new ReviewBodyDto
+        {
+            Countries = new List<string> { "Germany" }
+        };
+
+        var claims = new[]
+        {
+        new Claim(CustomClaimTypes.UserId, userId.ToString())
+    };
+
+        var identity = new ClaimsIdentity(claims, "TestAuth");
+        var user = new ClaimsPrincipal(identity);
+
+        var userResponse = new ServiceResponse<UserResponse>
+        {
+            Content = new UserResponse
+            {
+                User = new User(
+                    userId.ToString(),
+                    "aad",
+                    "Mr",
+                    "Test",
+                    "User",
+                    "test@test.com",
+                    "Dev",
+                    "Org",
+                    "123",
+                    "United Kingdom",
+                    IrasUserStatus.Active,
+                    DateTime.UtcNow,
+                    DateTime.UtcNow,
+                    DateTime.UtcNow)
+            }
+        };
+
+        var userServiceMock = new Mock<IUserManagementService>();
+        userServiceMock
+            .Setup(s => s.GetUser(userId.ToString(), null, null))
+            .ReturnsAsync(userResponse);
+
+        // Act
+        var result = await MemberManagementHelper.UserHasAccess(rec, user, userServiceMock.Object);
+
+        // Assert
+        result.ShouldBeFalse();
+    }
 }
