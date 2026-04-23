@@ -4,6 +4,7 @@ using System.Text.Json;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -25,7 +26,8 @@ public class ProjectRecordController
     IApplicationsService applicationsService,
     IRespondentService respondentService,
     ICmsQuestionSetServiceClient cmsService,
-    IReviewBodyService reviewBodyService
+    IReviewBodyService reviewBodyService,
+    IFeatureManager featureManager
 ) : ProjectRecordControllerBase(respondentService)
 {
     [ExcludeFromCodeCoverage]
@@ -74,6 +76,8 @@ public class ProjectRecordController
     [Route("/[controller]", Name = "prc:projectrecord")]
     public async Task<IActionResult> ProjectRecord(string sectionId)
     {
+        var recMemberEnabled = await featureManager.IsEnabledAsync(FeatureFlags.RecMemberManagement);
+
         // get the validated harp project record request from TempData
         var harpProjectRecord = TempData.Peek(TempDataKeys.ProjectRecord) as string;
 
@@ -139,22 +143,25 @@ public class ProjectRecordController
 
         projectRecordViewModel.SectionId = section.Id;
 
-        var activeReviewBodies = await reviewBodyService.GetAllActiveReviewBodies();
-
-        if (activeReviewBodies.IsSuccessStatusCode &&
-            activeReviewBodies.Content?.ReviewBodies != null &&
-            projectRecord.RecID.HasValue)
+        if (recMemberEnabled)
         {
-            var recId = projectRecord.RecID.Value;
+            var activeReviewBodies = await reviewBodyService.GetAllActiveReviewBodies();
 
-            var reviewBody = activeReviewBodies.Content.ReviewBodies
-                .FirstOrDefault(rb =>
-                    string.Equals(rb.ReviewBodyType, "Research ethics committee", StringComparison.OrdinalIgnoreCase) &&
-                    rb.ResearchEthicsCommitteeId == recId);
-
-            if (reviewBody != null)
+            if (activeReviewBodies.IsSuccessStatusCode &&
+                activeReviewBodies.Content?.ReviewBodies != null &&
+                projectRecord.RecID.HasValue)
             {
-                projectRecordViewModel.ReviewBody = reviewBody;
+                var recId = projectRecord.RecID.Value;
+
+                var reviewBody = activeReviewBodies.Content.ReviewBodies
+                    .FirstOrDefault(rb =>
+                        string.Equals(rb.ReviewBodyType, "Research ethics committee", StringComparison.OrdinalIgnoreCase) &&
+                        rb.ResearchEthicsCommitteeId == recId);
+
+                if (reviewBody != null)
+                {
+                    projectRecordViewModel.ReviewBody = reviewBody;
+                }
             }
         }
 
@@ -165,6 +172,8 @@ public class ProjectRecordController
     [HttpPost]
     public async Task<IActionResult> ConfirmProjectRecord(ProjectRecordViewModel model)
     {
+        var recMemberEnabled = await featureManager.IsEnabledAsync(FeatureFlags.RecMemberManagement);
+
         // Retrieve all existing applications
         var applicationsResponse = await applicationsService.GetApplications();
 
@@ -197,9 +206,13 @@ public class ProjectRecordController
             UserId = userId,
             IrasId = model.IrasId,
             LeadNation = model.LeadNation,
-            IsNHSHSCOrganisation = model.IsNHSHSCOrganisation,
-            RegulatoryBodyId = model.ReviewBody?.Id
+            IsNHSHSCOrganisation = model.IsNHSHSCOrganisation
         };
+
+        if (recMemberEnabled && model.ReviewBody != null)
+        {
+            projectRecordRequest.RegulatoryBodyId = model.ReviewBody.Id;
+        }
 
         // Call the service to create the new application
         var createResponse = await applicationsService.CreateApplication(projectRecordRequest);
