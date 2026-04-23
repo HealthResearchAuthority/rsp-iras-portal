@@ -205,6 +205,16 @@ public static class RolePermissions
                 MemberManagement.ResearchEthicsCommittees_ManageMembers
             }
         },
+        {
+            Roles.ResearchEthicsCommitteeManager, new List<string>
+            {
+                // Member Management Workspace
+                MemberManagement.Workspace_Access,
+                MemberManagement.ResearchEthicsCommittees_Access,
+                MemberManagement.ResearchEthicsCommittees_Search,
+                MemberManagement.ResearchEthicsCommittees_ManageMembers
+            }
+        },
     };
 
     /// <summary>
