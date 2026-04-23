@@ -229,13 +229,13 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
             .Setup(s => s.SaveModificationRfiResponses(It.IsAny<ModificationRfiResponseRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
-        var result = await Sut.RfiResponses(tempDataModel, false);
+        var result = await Sut.SendRfiResponses(tempDataModel, false);
 
         var view = result.ShouldBeOfType<RedirectToActionResult>();
     }
 
     [Theory, AutoData]
-    public async Task RfiResponses_POST_Returns_View_With_Error_When_Reason_Missing
+    public async Task SendRfiResponses_POST_Returns_View_With_Error_When_Reason_Missing
     (
         ModificationDetailsViewModel model,
         Guid modificationId
@@ -257,7 +257,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
 
         SetupTempData(model);
 
-        var result = await Sut.RfiResponses(model);
+        var result = await Sut.SendRfiResponses(model);
 
         var view = result.ShouldBeOfType<RedirectToActionResult>();
         view.ActionName.ShouldBe("RfiResponses");
@@ -265,7 +265,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     }
 
     [Theory, AutoData]
-    public async Task RfiResponses_POST_Returns_Service_Error_When_Service_Fails
+    public async Task SendRfiResponses_POST_Returns_Service_Error_When_Service_Fails
     (
         ModificationDetailsViewModel model,
         Guid modificationId
@@ -286,12 +286,12 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
             .Setup(s => s.SaveModificationRfiResponses(It.IsAny<ModificationRfiResponseRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.InternalServerError });
 
-        var result = await Sut.RfiResponses(model);
+        var result = await Sut.SendRfiResponses(model);
         result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe(500);
     }
 
     [Theory, AutoData]
-    public async Task RfiResponses_POST_Saves_And_Redirects_When_SaveForLater_Is_True
+    public async Task SendRfiResponses_POST_Saves_And_Redirects_When_SaveForLater_Is_True
     (
         ModificationDetailsViewModel model,
         Guid modificationId
@@ -312,14 +312,14 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
             .Setup(s => s.SaveModificationRfiResponses(It.IsAny<ModificationRfiResponseRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
-        var result = await Sut.RfiResponses(model, saveForLater: true);
+        var result = await Sut.SendRfiResponses(model, saveForLater: true);
 
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
         redirectResult.ActionName.ShouldBe("ReviewAllChanges");
     }
 
     [Theory, AutoData]
-    public async Task RfiResponses_POST_Saves_And_Continues_When_SaveForLater_Is_False
+    public async Task SendRfiResponses_POST_Saves_And_Continues_When_SaveForLater_Is_False
     (
         ModificationDetailsViewModel model,
         Guid modificationId
@@ -340,7 +340,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
             .Setup(s => s.SaveModificationRfiResponses(It.IsAny<ModificationRfiResponseRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
 
-        var result = await Sut.RfiResponses(model, saveForLater: false);
+        var result = await Sut.SendRfiResponses(model, saveForLater: false);
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
 
         redirectResult.ActionName.ShouldBe("RfiCheckAndSubmitResponses");

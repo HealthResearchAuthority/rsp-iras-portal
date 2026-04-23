@@ -1,14 +1,18 @@
-﻿using FluentValidation;
+﻿using System.Net;
+using System.Text.Json;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Web.Attributes;
 using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Web.Areas.Admin.Models;
@@ -32,12 +36,14 @@ public class RfiResponseController(
     ISponsorOrganisationService sponsorOrganisationService,
     ISponsorUserAuthorisationService sponsorUserAuthorisationService,
     IValidator<QuestionnaireViewModel> validator,
+    IValidator<RfiResponsesDTO> rfiResponsesValidator,
     IFeatureManager featureManager
     ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
 
     [HttpGet]
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
     public async Task<IActionResult> RfiDetails(string projectId, Guid modificationId)
     {
         var model = new ModificationDetailsViewModel();
@@ -97,6 +103,7 @@ public class RfiResponseController(
     }
 
     [HttpGet]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Read)]
     public async Task<IActionResult> RfiResponses
     (
         string projectRecordId,
@@ -150,65 +157,181 @@ public class RfiResponseController(
         };
         model.ModificationChanges = model!.ModificationChanges.ToList();
 
+        // get back answers user set in SendRfiResponses for validation errors
+        if (TempData.TryGetValue(TempDataKeys.RfiResponses, out var raw))
+        {
+            var responses = raw as string;
+
+            if (!string.IsNullOrWhiteSpace(responses))
+            {
+                model.RfiModel.RfiResponses =
+                    JsonSerializer.Deserialize<List<RfiResponsesDTO>>(responses)
+                    ?? model.RfiModel.RfiResponses;
+            }
+        }
+
         return View(model);
     }
 
     [HttpPost]
-    public async Task<IActionResult> RfiResponses(ModificationDetailsViewModel model, bool saveForLater = false)
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Update)]
+    public async Task<IActionResult> SendRfiResponses(ModificationDetailsViewModel model, bool saveForLater = false)
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(model);
+        viewModel.Status = (viewModel as BaseProjectModificationViewModel).Status;
 
-        var responses = viewModel.RfiModel.RfiResponses
-                .Select(r => r.InitialResponse.FirstOrDefault() ?? string.Empty)
-                .ToList();
-
-        if (!saveForLater && responses.Any(string.IsNullOrWhiteSpace))
+        if (!saveForLater)
         {
-            ModelState.AddModelError(string.Empty, "You have not provided a reason. Enter the reason for requesting further information from the applicant before you continue.");
-            return RedirectToAction(nameof(RfiResponses), new
+            for (int i = 0; i < viewModel.RfiModel.RfiResponses.Count; i++)
             {
-                projectRecordId = viewModel.ProjectRecordId,
-                irasId = viewModel.IrasId,
-                shortTitle = viewModel.ShortTitle,
-                projectModificationId = Guid.Parse(viewModel.ModificationId!),
-            });
+                var response = viewModel.RfiModel.RfiResponses[i];
+
+                var context = new ValidationContext<RfiResponsesDTO>(response);
+                var validationResult = await rfiResponsesValidator.ValidateAsync(context);
+
+                if (!validationResult.IsValid)
+                {
+                    foreach (var error in validationResult.Errors)
+                    {
+                        ModelState.AddModelError(
+                            $"RfiModel.RfiResponses[{i}].{error.PropertyName}",
+                            error.ErrorMessage);
+                    }
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                TempData.Remove(TempDataKeys.ModelState);
+                TempData.TryAdd(
+                    TempDataKeys.ModelState,
+                    ModelState.ToDictionary(),
+                    true);
+
+                // Save responses temporarly to not lost them during redirect to action
+                TempData[TempDataKeys.RfiResponses] =
+                    JsonSerializer.Serialize(viewModel.RfiModel.RfiResponses);
+
+                return RedirectToAction(nameof(RfiResponses), new
+                {
+                    projectRecordId = viewModel.ProjectRecordId,
+                    irasId = viewModel.IrasId,
+                    shortTitle = viewModel.ShortTitle,
+                    projectModificationId = Guid.Parse(viewModel.ModificationId!)
+                });
+            }
         }
 
-        var saveResponsesResponse = await projectModificationsService.SaveModificationRfiResponses(
-            new ModificationRfiResponseRequest()
+        return viewModel.Status switch
+        {
+            ModificationStatus.RequestForInformation =>
+                await HandleRequestForInformation(viewModel, saveForLater),
+
+            ModificationStatus.ReviseAndAuthorise =>
+                await HandleReviseAndAuthorise(viewModel, saveForLater),
+
+            _ => this.ServiceError(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Error = "Unsupported modification status for saving RFI Responses",
+            })
+        };
+    }
+
+    [NonAction]
+    private async Task<IActionResult> HandleRequestForInformation(
+    ModificationDetailsViewModel viewModel,
+    bool saveForLater)
+    {
+        var responses = viewModel.RfiModel.RfiResponses
+            .Select(r => r.InitialResponse.FirstOrDefault() ?? string.Empty)
+            .ToList();
+
+        var result = await projectModificationsService.SaveModificationRfiResponses(
+            new ModificationRfiResponseRequest
             {
                 ProjectModificationId = Guid.Parse(viewModel.ModificationId!),
                 Responses = responses,
                 Role = ResponseRoles.Applicant,
                 ResponseOrigin = ResponseOrigin.InitialResponse
-            }
-        );
+            });
 
-        if (!saveResponsesResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(saveResponsesResponse);
-        }
+        if (!result.IsSuccessStatusCode)
+            return this.ServiceError(result);
 
         if (saveForLater)
         {
-            TempData.Remove(TempDataKeys.RfiDetails);
             return RedirectToAction(
-                "ReviewAllChanges",
-                "ReviewAllChanges",
+             "ReviewAllChanges",
+             "ReviewAllChanges",
+             new
+             {
+                 projectRecordId = viewModel.ProjectRecordId,
+                 irasId = viewModel.IrasId,
+                 shortTitle = viewModel.ShortTitle,
+                 projectModificationId = Guid.Parse(viewModel.ModificationId!)
+             });
+        }
+
+        return RedirectToAction(nameof(RfiCheckAndSubmitResponses));
+    }
+
+    [NonAction]
+    private async Task<IActionResult> HandleReviseAndAuthorise(
+    ModificationDetailsViewModel viewModel,
+    bool saveForLater)
+    {
+        // Applicant – revised response
+        var applicantResponses = viewModel.RfiModel.RfiResponses
+            .Select(r => r.ReviseAndAuthorise.FirstOrDefault() ?? string.Empty)
+            .ToList();
+
+        var applicantResult = await projectModificationsService.SaveModificationRfiResponses(
+            new ModificationRfiResponseRequest
+            {
+                ProjectModificationId = Guid.Parse(viewModel.ModificationId!),
+                Responses = applicantResponses,
+                Role = ResponseRoles.Applicant,
+                ResponseOrigin = ResponseOrigin.ReviseAndAuthorise
+            });
+
+        if (!applicantResult.IsSuccessStatusCode)
+            return this.ServiceError(applicantResult);
+
+        // Sponsor – reasons for revise & authorise
+        var sponsorResponses = viewModel.RfiModel.RfiResponses
+            .Select(r => r.ReasonForReviseAndAuthorise.FirstOrDefault() ?? string.Empty)
+            .ToList();
+
+        var sponsorResult = await projectModificationsService.SaveModificationRfiResponses(
+            new ModificationRfiResponseRequest
+            {
+                ProjectModificationId = Guid.Parse(viewModel.ModificationId!),
+                Responses = sponsorResponses,
+                Role = ResponseRoles.Sponsor,
+                ResponseOrigin = ResponseOrigin.ReviseAndAuthorise
+            });
+
+        if (!sponsorResult.IsSuccessStatusCode)
+            return this.ServiceError(sponsorResult);
+
+        if (saveForLater)
+        {
+            return RedirectToRoute(
+                "sws:modifications",
                 new
                 {
                     projectRecordId = viewModel.ProjectRecordId,
-                    irasId = viewModel.IrasId,
-                    shortTitle = viewModel.ShortTitle,
-                    projectModificationId = Guid.Parse(viewModel.ModificationId!),
-                }
-            );
+                    sponsorOrganisationUserId = viewModel.SponsorOrganisationUserId,
+                    rtsId = viewModel.RtsId
+                });
         }
 
         return RedirectToAction(nameof(RfiCheckAndSubmitResponses));
     }
 
     [HttpGet]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Submit)]
     public async Task<IActionResult> RfiCheckAndSubmitResponses()
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
@@ -233,6 +356,7 @@ public class RfiResponseController(
     }
 
     [HttpPost]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Submit)]
     public async Task<IActionResult> RfiSubmitResponses()
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
@@ -254,6 +378,7 @@ public class RfiResponseController(
     }
 
     [HttpGet]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Read)]
     public IActionResult RfiResponsesConfirmation()
     {
         return View();

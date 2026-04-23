@@ -1108,7 +1108,7 @@ public class AuthorisationsModificationsController
                     rtsId = model.RtsId,
                 });
 
-            case ModificationStatus.RequestForInformation:
+            case ModificationStatus.ResponseWithSponsor:
                 await projectModificationsService.UpdateModificationStatus(
                         new UpdateModificationStatusRequest
                         {
