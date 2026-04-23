@@ -1,4 +1,5 @@
-﻿using Rsp.Portal.Web.Models;
+﻿using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models;
+using Rsp.Portal.Web.Models;
 
 namespace Rsp.Portal.Web.Features.Modifications.Models;
 
@@ -14,7 +15,6 @@ public class ModificationDetailsViewModel : BaseProjectModificationViewModel
     public List<QuestionViewModel> SponsorDetails { get; set; } = [];
     public ProjectOverviewDocumentViewModel ProjectOverviewDocumentViewModel { get; set; } = new();
     public AuditTrailModel? AuditTrailModel { get; set; }
-
     public string? Outcome { get; set; }
 
     public IEnumerable<SupportingDocumentModel> SupportingDocuments =>
@@ -22,4 +22,6 @@ public class ModificationDetailsViewModel : BaseProjectModificationViewModel
                 .SelectMany(mc => mc.SupportingDocuments ?? Enumerable.Empty<SupportingDocumentModel>())
                 .GroupBy(doc => doc.Link)
                 .Select(group => group.First());
+
+    public RfiDetailsViewModel RfiModel { get; set; } = new();
 }

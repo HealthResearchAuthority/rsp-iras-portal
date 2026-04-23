@@ -45,17 +45,19 @@
     // Detect field error for summary styling
     var hasError = ViewData.ModelState.TryGetValue(nameof(Model.Outcome), out var entry) && entry!.Errors.Any();
 
-    var authorisedDescription = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.AuthorisedDescription", null);
-    var notAuthorisedDescription = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.NotAuthorisedDescription", null);
-    var requestRevisionDescription = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.RequestRevisionDescription", null);
-    var reviseAndAuthoriseDescription = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.ReviseAndAuthoriseDescription", null);
+    var isSponsorAuthorisationFlagEnabled = await FeatureManager.IsEnabledAsync(FeatureFlags.SponsorAuthorisation) && Model.Status == ModificationStatus.ResponseWithSponsor;
+    var outcomeDescriptionForRfi = new MixedContentPageItem();
 
     // Radio options for the TagHelper
 
     var outcomeOptions = new List<OutcomeOptions>
 {
-        new() { Value = "Authorised", Label = "Authorised", HintText =  authorisedDescription.Value },
-        new() { Value = "NotAuthorised", Label = "Not authorised", HintText =  notAuthorisedDescription.Value}
+        new() { Value = "Authorised", Label = "Authorised",
+                HintText = isSponsorAuthorisationFlagEnabled ? pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.AuthorisedDescription", null).Value
+                : string.Empty },
+        new() { Value = "NotAuthorised", Label = "Not authorised",
+                HintText = isSponsorAuthorisationFlagEnabled ? pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.NotAuthorisedDescription", null).Value
+                : string.Empty },
     };
 
     if (await FeatureManager.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
@@ -66,7 +68,9 @@
         {
             Value = "ReviseAndAuthorise",
             Label = "Revise and authorise",
-            HintText = reviseAndAuthoriseDescription.Value
+            HintText = isSponsorAuthorisationFlagEnabled ?
+                       pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.ReviseAndAuthoriseDescription", null).Value
+                       : string.Empty
         });
 
         if (ViewBag.RevisionSent == false)
@@ -75,14 +79,17 @@
             {
                 Value = "RequestRevisions",
                 Label = "Request revisions",
-                HintText = requestRevisionDescription.Value
+                HintText = isSponsorAuthorisationFlagEnabled ?
+                           pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.RequestRevisionDescription", null).Value
+                           : string.Empty
             });
         }
     }
-    if (await FeatureManager.IsEnabledAsync(FeatureFlags.SponsorAuthorisation) && Model.Status == ModificationStatus.ResponseWithSponsor)
+    if (isSponsorAuthorisationFlagEnabled)
     {
-        outcome = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.OutcomeDescription", null);
+        outcomeDescriptionForRfi = pageContent.GetValueOrDefault("SponsorWorkspace.CheckAndAuthorise.OutcomeDescription", null);
     }
+
 }
 
 @section Breadcrumb {
@@ -269,7 +276,9 @@
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <h2 class="govuk-heading-m">@Html.Raw(outcomeTitle?.Value)</h2>
-                @Html.Raw(outcome?.Value)
+
+                @Html.Raw(isSponsorAuthorisationFlagEnabled ? outcomeDescriptionForRfi?.Value
+                          : outcome?.Value)
             </div>
         </div>
 

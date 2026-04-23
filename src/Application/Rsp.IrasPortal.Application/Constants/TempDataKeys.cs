@@ -31,6 +31,7 @@ public struct TempDataKeys
         public const string CanCreateNewModification = "td:can_create_new_modifications";
         public const string DateSponsorSubmittedOutcome = "td:date_sponsor_submitted_outcome";
         public const string SelectedParticipatingOrganisations = "td:selected_participating_organisations";
+        public const string DateSubmitted = "td:date_submitted_to_regulator";
     }
 
     public struct ProjectModificationChange
