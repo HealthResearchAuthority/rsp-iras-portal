@@ -126,6 +126,10 @@ public class ProjectRecordControllerTests : TestServiceBase<ProjectRecordControl
                 }
             });
 
+        Mocker.GetMock<Microsoft.FeatureManagement.IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.RecMemberManagement))
+            .ReturnsAsync(true);
+
         // Act
         await Sut.ProjectRecord("section-1");
 
@@ -189,6 +193,10 @@ public class ProjectRecordControllerTests : TestServiceBase<ProjectRecordControl
                     ]
                 }
             });
+
+        Mocker.GetMock<Microsoft.FeatureManagement.IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.RecMemberManagement))
+            .ReturnsAsync(true);
 
         // Act
         var result = await Sut.ProjectRecord("sec-1");
