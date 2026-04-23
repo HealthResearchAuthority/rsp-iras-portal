@@ -33,7 +33,6 @@ $(function () {
     $("input[type='checkbox'][name^='UserRoles']").on('change', toggleConditionalField);
 });
 
-
 function submitFormWithAction(formId, url) {
     let form = document.getElementById(formId);
     form.action = url;

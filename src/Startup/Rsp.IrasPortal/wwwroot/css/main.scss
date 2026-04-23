@@ -1285,3 +1285,134 @@ button.govuk-pagination__item--current {
         font-weight: 100 !important;
     }
 }
+
+// Multi select component START
+
+/* Hide native select only when JS enhances */
+
+.select-search__native {
+    width: 100%;
+}
+
+.select-search__native.enhanced {
+    display: none;
+}
+
+.select-search__enhanced {
+    position: relative;
+}
+
+/* (reuse previous styles for control, tags, dropdown, etc.) */
+
+.select-search__control {
+    display: flex;
+    flex-wrap: wrap;
+    border: 2px solid #0b0c0c;
+    padding: 5px;
+}
+
+.select-search__control:focus-within {
+    outline: 3px solid #ffdd00;
+}
+
+.select-search__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    width: 100%;
+    margin-block-start: 0;
+    border-block-start: none;
+    padding-block-end: 0;
+
+    &:not(:empty) {
+        margin-block-start: 6px;
+        border-block-start: 1px solid #b1b4b6;
+        padding-block-end: 5px;
+    }
+}
+
+.select-search__tag {
+    background: #f3f2f1;
+    padding: 0 0 0 10px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 0 #b1b4b6;
+    margin-top: 10px;
+}
+
+.select-search__tag button {
+    margin-right: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 5px 10px 5px 10px;
+    border-color: #b1b4b6;
+    border-right: 1px solid #b1b4b6;
+    border-left: 1px solid color-mix(in srgb, var(--choices-primary-color, #ffffff) 90%, var(--choices-darken, black));
+    margin-left: 5px;
+}
+
+.select-search__input {
+    display: inline-block;
+    vertical-align: baseline;
+    background-color: var(--choices-bg-color, #ffffff);
+    font-size: var(--choices-font-size-md, 19px);
+    margin-bottom: var(--choices-input-margin-bottom, 5px);
+    border: 0;
+    border-radius: 0;
+    padding: var(--choices-input-padding, 4px 0 4px 2px);
+    width: 100%;
+}
+
+.select-search {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.select-search__label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.select-search__input:focus {
+    outline: 3px solid #ffdd00;
+}
+
+.select-search__dropdown {
+    position: absolute;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 2px solid #0b0c0c;
+    border-top: none;
+    background: #fff;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: none;
+    z-index: 1000;
+}
+
+.select-search__item {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #b1b4b6;
+}
+
+.select-search__item:last-child {
+    border-bottom: none;
+}
+
+.select-search__item:hover,
+.select-search__item.active {
+    background-color: #1d70b8;
+    color: #fff;
+}
+
+.select-search__no-results {
+    padding: 10px;
+}
+
+// Multi select component END
