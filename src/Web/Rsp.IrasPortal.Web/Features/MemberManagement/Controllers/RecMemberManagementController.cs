@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Web.Features.MemberManagement.Models;
+using Rsp.IrasPortal.Web.Helpers;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.Filters;
@@ -37,7 +38,7 @@ public class RecMemberManagementController(
             return this.ServiceError(reviewBodyResponse);
         }
 
-        if (!await UserHasAccess(reviewBodyResponse.Content))
+        if (!await MemberManagementHelper.UserHasAccess(reviewBodyResponse.Content, User, userService))
         {
             // if user does not have access to the review body, return 403 forbidden
             return Forbid();
@@ -138,7 +139,7 @@ public class RecMemberManagementController(
             return this.ServiceError(reviewBodyResponse);
         }
 
-        if (!await UserHasAccess(reviewBodyResponse.Content))
+        if (!await MemberManagementHelper.UserHasAccess(reviewBodyResponse.Content, User, userService))
         {
             // if user does not have access to the review body, return 403 forbidden
             return Forbid();
@@ -196,7 +197,7 @@ public class RecMemberManagementController(
             return this.ServiceError(reviewBodyResponse);
         }
 
-        if (!await UserHasAccess(reviewBodyResponse.Content))
+        if (!await MemberManagementHelper.UserHasAccess(reviewBodyResponse.Content, User, userService))
         {
             // if user does not have access to the review body, return 403 forbidden
             return Forbid();
@@ -243,7 +244,7 @@ public class RecMemberManagementController(
             return this.ServiceError(recResponse);
         }
 
-        if (!await UserHasAccess(recResponse.Content))
+        if (!await MemberManagementHelper.UserHasAccess(recResponse.Content, User, userService))
         {
             // if user does not have access to the review body, return 403 forbidden
             return Forbid();
@@ -402,43 +403,5 @@ public class RecMemberManagementController(
         };
 
         return model;
-    }
-
-    private async Task<bool> UserHasAccess(ReviewBodyDto rec)
-    {
-        var isAdmin = User.IsInRole(Roles.SystemAdministrator);
-
-        if (isAdmin)
-        {
-            // if user is an admin, allow access
-            return true;
-        }
-
-        var userId = User?.FindFirst(CustomClaimTypes.UserId)?.Value;
-        var userDetails = await userService.GetUser(userId, null);
-
-        // if logged in user  cannot be found or is not Active
-        // deny access
-        if (!userDetails.IsSuccessStatusCode ||
-            userDetails.Content == null ||
-            userDetails.Content.User.Status != IrasUserStatus.Active)
-        {
-            return false;
-        }
-
-        var userCountry = userDetails.Content?.User?.Country?.Split(',');
-        var recCountry = rec.Countries;
-
-        var belongsToRec = userCountry?
-            .Intersect(recCountry ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase)
-            .Any() == true;
-
-        // if user does not belong to the rec country then deny access
-        if (!belongsToRec)
-        {
-            return false;
-        }
-
-        return true;
     }
 }
