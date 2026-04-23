@@ -12,7 +12,6 @@ using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Controllers;
 using Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Models;
-using Shouldly;
 using Claim = System.Security.Claims.Claim;
 
 namespace Rsp.Portal.UnitTests.Web.Features.MemberManagement.ResearchEthicsCommittees;
@@ -270,7 +269,7 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
                     "Org",
                     "123",
                     "United Kingdom",
-                    IrasUserStatus.Disabled, // 🔴 kluczowe
+                    IrasUserStatus.Disabled,
                     DateTime.UtcNow,
                     DateTime.UtcNow,
                     DateTime.UtcNow)
@@ -297,7 +296,7 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
 
         var rec = new ReviewBodyDto
         {
-            Countries = new List<string> { "Germany" } // 🔴 inny kraj
+            Countries = new List<string> { "Germany" }
         };
 
         var claims = new[]
@@ -322,7 +321,7 @@ public class ResearchEthicsCommitteesControllerTests : TestServiceBase<ResearchE
                     "Dev",
                     "Org",
                     "123",
-                    "United Kingdom", // 🇬🇧
+                    "United Kingdom",
                     IrasUserStatus.Active,
                     DateTime.UtcNow,
                     DateTime.UtcNow,
