@@ -31,6 +31,8 @@ public class UserViewModel
     public IList<UserRoleViewModel> UserRoles { get; set; } = [];
     public IList<UserReviewBodyViewModel> ReviewBodies { get; set; } = [];
 
+    public IList<string> SelectedReviewBodies { get; set; } = [];
+
     public IList<string>? Country { get; set; } = null;
 
     public DateTime? LastUpdated { get; set; } = null;

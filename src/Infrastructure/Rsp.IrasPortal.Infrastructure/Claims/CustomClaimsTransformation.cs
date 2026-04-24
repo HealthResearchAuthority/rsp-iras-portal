@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -19,6 +20,7 @@ public class CustomClaimsTransformation
     IHttpContextAccessor httpContextAccessor,
     IJwtService jwtService,
     IUserManagementService userManagementService,
+    IProjectCollaboratorService projectCollaboratorService,
     IOptionsSnapshot<AppSettings> appSettings,
     IFeatureManager featureManager
 ) : IClaimsTransformation
@@ -169,6 +171,16 @@ public class CustomClaimsTransformation
 
             // as the claims are now updated, we need to generate a new token
             await UpdateAccessToken(principal);
+
+            // store the projects in the context Items for later access
+            var collaboratorProjectsResponse = await projectCollaboratorService.GetCollaboratorProjects(userId!);
+
+            if (collaboratorProjectsResponse.IsSuccessStatusCode && collaboratorProjectsResponse.Content != null)
+            {
+                var collaboratorProjects = JsonSerializer.Serialize(collaboratorProjectsResponse.Content);
+
+                context.Items.Add(ContextItemKeys.CollaboratorProjects, collaboratorProjects);
+            }
 
             return principal;
         }

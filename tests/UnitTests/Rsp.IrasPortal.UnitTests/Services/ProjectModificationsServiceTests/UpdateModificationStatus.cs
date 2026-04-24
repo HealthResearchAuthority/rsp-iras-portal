@@ -1,4 +1,5 @@
 using Rsp.Portal.Application.Constants;
+using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.ServiceClients;
 using Rsp.Portal.Services;
 using Rsp.Portal.UnitTests.TestHelpers;
@@ -17,11 +18,17 @@ public class UpdateModificationStatus : TestServiceBase<ProjectModificationsServ
 
         Mocker
             .GetMock<IProjectModificationsServiceClient>()
-            .Setup(c => c.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()))
+            .Setup(c => c.UpdateModificationStatus(It.IsAny<UpdateModificationStatusRequest>()))
             .ReturnsAsync(apiResponse);
 
         // Act
-        var result = await Sut.UpdateModificationStatus("PR-1", id, ModificationStatus.InDraft);
+        var result = await Sut.UpdateModificationStatus(
+            new UpdateModificationStatusRequest
+            {
+                ProjectRecordId = "PR-1",
+                ModificationId = id,
+                Status = ModificationStatus.InDraft
+            });
 
         // Assert
         result.IsSuccessStatusCode.ShouldBeTrue();

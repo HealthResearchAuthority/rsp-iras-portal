@@ -1,7 +1,9 @@
-﻿﻿@using Rsp.Portal.Application.Constants
+﻿@using Microsoft.FeatureManagement
+﻿@using Rsp.Portal.Application.Constants
 @using Rsp.Gds.Component.Models
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @using Rsp.Portal.Web.Areas.Admin.Models
+@inject IFeatureManager featureManager
 @model UserSearchViewModel
 
 @{
@@ -22,16 +24,18 @@
 		new { Field = nameof(UserViewModel.CurrentLogin), Label = "Last logged in" }
 	};
 	var tableId = "usersTable";
-    
-    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
-    var pageContent = pageContentData != null
-        ? pageContentData
-        : new Dictionary<string, MixedContentPageItem?>();
 
-    var headline = pageContent.GetValueOrDefault("Admin.Users.Heading", null);
-    var addNewLink = pageContent.GetValueOrDefault("Admin.Users.AddNewLink", null);
-    var searchTitle = pageContent.GetValueOrDefault("Admin.Users.SearchTitle", null);
-    var searchHint = pageContent.GetValueOrDefault("Admin.Users.SearchHintText", null);
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
+
+	var headline = pageContent.GetValueOrDefault("Admin.Users.Heading", null);
+	var addNewLink = pageContent.GetValueOrDefault("Admin.Users.AddNewLink", null);
+	var searchTitle = pageContent.GetValueOrDefault("Admin.Users.SearchTitle", null);
+	var searchHint = pageContent.GetValueOrDefault("Admin.Users.SearchHintText", null);
+
+	var isMemberManagementEnabled = await featureManager.IsEnabledAsync(FeatureFlags.RecMemberManagement);
 }
 
 @section Breadcrumb {
@@ -64,9 +68,22 @@
 	<div class="govuk-grid-column-one-half">
 		<h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
 	</div>
-	<div class="govuk-grid-column-one-half">
-		<a class="govuk-link govuk-body float-right" asp-route="admin:createuser">@Html.Raw(addNewLink?.Value)</a>
-	</div>
+	@if (!isMemberManagementEnabled)
+	{
+		<div class="govuk-grid-column-one-half">
+			<a class="govuk-link govuk-body float-right" asp-route="admin:createuser">@Html.Raw(addNewLink?.Value)</a>
+		</div>
+	}
+	else
+	{
+		<div class="govuk-grid-column-full">
+			<p><b>Add a new user profile</b></p>
+			<p>Add a new user and assign a role to them</p>
+			<p></p>
+			<a asp-route="admin:createuser" class="govuk-button">Add a user</a>
+			<p></p>
+		</div>
+	}
 </div>
 
 <div class="govuk-grid-row">

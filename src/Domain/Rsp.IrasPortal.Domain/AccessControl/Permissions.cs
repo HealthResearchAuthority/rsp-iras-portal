@@ -297,13 +297,12 @@ public static class Permissions
         /// allows accessing research ethics committees
         /// </summary>
         public const string ResearchEthicsCommittees_Access = "membermanagement.researchethicscommittees.access";
+
         /// <summary>
         /// allows searching research ethics committees
         /// </summary>
         public const string ResearchEthicsCommittees_Search = "membermanagement.researchethicscommittees.search";
-
-
-
+        public const string ResearchEthicsCommittees_ManageMembers = "membermanagement.researchethicscommittees.managemembers";
     }
 
     // CAT Workspace Permissions
@@ -341,4 +340,28 @@ public static class Permissions
         /// </summary>
         public const string Workspace_Access = "technicalassurance.workspace.access";
     }
+
+    public static HashSet<string> EditAccessPermissions =>
+    [
+        // Project Record permissions
+        MyResearch.ProjectRecord_Update,
+        MyResearch.ProjectRecord_Delete,
+        MyResearch.ProjectRecord_Close,
+
+        // Modifications permissions
+        MyResearch.Modifications_Create,
+        MyResearch.Modifications_Update,
+        MyResearch.Modifications_Delete,
+        MyResearch.Modifications_Withdraw,
+        MyResearch.Modifications_Submit,
+
+        // Project Documents permissions
+        MyResearch.ProjectDocuments_Upload,
+        MyResearch.ProjectDocuments_Update,
+        MyResearch.ProjectDocuments_Delete,
+
+        // Sponsor actions on modifications
+        Sponsor.Modifications_Authorise,
+        Sponsor.Modifications_Review
+    ];
 }

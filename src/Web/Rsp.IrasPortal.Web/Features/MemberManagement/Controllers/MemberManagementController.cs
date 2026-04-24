@@ -10,13 +10,13 @@ namespace Rsp.Portal.Web.Features.MemberManagement.Controllers;
 ///     Controller responsible for handling Member Management workspace related actions.
 /// </summary>
 [Authorize(Policy = Workspaces.MemberManagement)]
-[Route("[action]", Name = "mm:[action]")]
 [FeatureGate(FeatureFlags.RecMemberManagement)]
+[Route("membermanagement")]
 public class MemberManagementController : Controller
 {
-    [HttpGet]
-    public async Task<IActionResult> MemberManagement()
+    [HttpGet("", Name = "mm:home")]
+    public IActionResult Index()
     {
-        return View();
+        return View("MemberManagement");
     }
 }

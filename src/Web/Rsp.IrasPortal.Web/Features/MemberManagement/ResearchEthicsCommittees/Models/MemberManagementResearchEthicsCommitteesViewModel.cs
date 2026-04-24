@@ -6,6 +6,6 @@ namespace Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Mode
 public class MemberManagementResearchEthicsCommitteesViewModel
 {
     public MemberManagementResearchEthicsCommitteesSearchModel Search { get; set; } = new();
-    public List<ReviewBodyDto> ResearchEthicsCommittees { get; set; } = [];
+    public IEnumerable<ReviewBodyDto> ResearchEthicsCommittees { get; set; } = [];
     public PaginationViewModel? Pagination { get; set; }
 }

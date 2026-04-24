@@ -1,18 +1,21 @@
-﻿using System.Text.Json;
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.Modifications;
+using Rsp.Portal.Web.Features.Modifications.Models;
+using Rsp.Portal.Web.Helpers;
 using Rsp.Portal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Controllers;
@@ -37,7 +40,7 @@ public class RfiResponseController(
     [HttpGet]
     public async Task<IActionResult> RfiDetails(string projectId, Guid modificationId)
     {
-        var model = new RfiDetailsViewModel();
+        var model = new ModificationDetailsViewModel();
 
         // get modification details
         var modification = await projectModificationsService.GetModification(projectId, modificationId);
@@ -66,21 +69,30 @@ public class RfiResponseController(
         model.IrasId = projectRecord.Content!.IrasId.ToString();
         model.ModificationIdentifier = modification.Content.ModificationIdentifier;
         model.ShortTitle = projectRecord.Content.ShortProjectTitle;
-        model.DateSubmitted = modification.Content.SentToRegulatorDate?.ToString("dd MMMM yyyy");
-        model.RfiReasons = rfiReasons.Content == null ? [] : rfiReasons.Content.RequestForInformationReasons;
-        model.RfiResponses = rfiResponses.Content == null ? [] : rfiResponses.Content.RfiResponses;
+        model.RfiModel = new RfiDetailsViewModel
+        {
+            RfiReasons = rfiReasons.Content.RequestForInformationReasons ?? [],
+            RfiResponses = rfiResponses.Content?.RfiResponses ?? [],
+        };
         model.ProjectRecordId = projectId;
         model.ModificationId = modificationId.ToString();
         model.Status = modification.Content.Status;
+        model.DateSubmitted = DateHelper.ConvertDateToString(modification?.Content.SentToRegulatorDate);
 
-        if (model.RfiResponses.Count < model.RfiReasons.Count)
+        while (model.RfiModel.RfiResponses.Count < model.RfiModel.RfiReasons.Count)
         {
-            // pre-populate the RFI responses list with empty strings to match the count of RFI reasons
-            model.RfiResponses.AddRange(Enumerable.Repeat(string.Empty, model.RfiReasons.Count - model.RfiResponses.Count));
+            // We now use a response object instead of a single string because:
+            // - each RFI reason can have multiple responses (1:N relationship)
+            // - responses can belong to different stages (see ResponseOrigin constant)
+            // used in SaveModificationRfiResponses method
+            var rfiResponse = new RfiResponsesDTO();
+
+            // Pre-populate InitialResponse with an empty value to preserve
+            // existing binding behaviour (previously this was a single string).
+            rfiResponse.InitialResponse.Add(string.Empty);
+
+            model.RfiModel.RfiResponses.Add(rfiResponse);
         }
-
-        TempData[TempDataKeys.RfiDetails] = JsonSerializer.Serialize(model);
-
         return View(model);
     }
 
@@ -100,9 +112,12 @@ public class RfiResponseController(
         bool includeSelectiveDownloadError = false
     )
     {
-        var jsonModel = TempData.Peek(TempDataKeys.RfiDetails)!.ToString()!;
-
-        var model = JsonSerializer.Deserialize<RfiDetailsViewModel>(jsonModel)!;
+        // Retrieve all modification changes related to the modification
+        var (result, model) = await PrepareModificationAsync(projectModificationId, irasId, shortTitle, projectRecordId);
+        if (result is not null)
+        {
+            return result;
+        }
 
         // Add modification documents
         var modificationDocumentsResponseResult = await this.GetModificationDocuments(Guid.Parse(model.ModificationId),
@@ -133,29 +148,39 @@ public class RfiResponseController(
                     { "rtsId", rtsId ?? string.Empty }
                 }
         };
+        model.ModificationChanges = model!.ModificationChanges.ToList();
 
         return View(model);
     }
 
     [HttpPost]
-    public async Task<IActionResult> RfiResponses(RfiDetailsViewModel model, bool saveForLater = false)
+    public async Task<IActionResult> RfiResponses(ModificationDetailsViewModel model, bool saveForLater = false)
     {
-        var storedModelJson = TempData.Peek(TempDataKeys.RfiDetails)!.ToString()!;
-        var storedModel = JsonSerializer.Deserialize<RfiDetailsViewModel>(storedModelJson)!;
+        var viewModel = TempData.PopulateBaseProjectModificationProperties(model);
 
-        storedModel.RfiResponses = model.RfiResponses.ConvertAll(r => r ?? string.Empty);
+        var responses = viewModel.RfiModel.RfiResponses
+                .Select(r => r.InitialResponse.FirstOrDefault() ?? string.Empty)
+                .ToList();
 
-        if (!saveForLater && storedModel.RfiResponses.Any(string.IsNullOrEmpty))
+        if (!saveForLater && responses.Any(string.IsNullOrWhiteSpace))
         {
             ModelState.AddModelError(string.Empty, "You have not provided a reason. Enter the reason for requesting further information from the applicant before you continue.");
-            return View(storedModel);
+            return RedirectToAction(nameof(RfiResponses), new
+            {
+                projectRecordId = viewModel.ProjectRecordId,
+                irasId = viewModel.IrasId,
+                shortTitle = viewModel.ShortTitle,
+                projectModificationId = Guid.Parse(viewModel.ModificationId!),
+            });
         }
 
         var saveResponsesResponse = await projectModificationsService.SaveModificationRfiResponses(
             new ModificationRfiResponseRequest()
             {
-                ProjectModificationId = Guid.Parse(storedModel.ModificationId!),
-                Responses = [.. storedModel.RfiResponses],
+                ProjectModificationId = Guid.Parse(viewModel.ModificationId!),
+                Responses = responses,
+                Role = ResponseRoles.Applicant,
+                ResponseOrigin = ResponseOrigin.InitialResponse
             }
         );
 
@@ -172,41 +197,53 @@ public class RfiResponseController(
                 "ReviewAllChanges",
                 new
                 {
-                    projectRecordId = storedModel.ProjectRecordId,
-                    irasId = storedModel.IrasId,
-                    shortTitle = storedModel.ShortTitle,
-                    projectModificationId = Guid.Parse(storedModel.ModificationId!),
+                    projectRecordId = viewModel.ProjectRecordId,
+                    irasId = viewModel.IrasId,
+                    shortTitle = viewModel.ShortTitle,
+                    projectModificationId = Guid.Parse(viewModel.ModificationId!),
                 }
             );
         }
-
-        TempData[TempDataKeys.RfiDetails] = JsonSerializer.Serialize(storedModel);
 
         return RedirectToAction(nameof(RfiCheckAndSubmitResponses));
     }
 
     [HttpGet]
-    public IActionResult RfiCheckAndSubmitResponses()
+    public async Task<IActionResult> RfiCheckAndSubmitResponses()
     {
-        var jsonModel = TempData.Peek(TempDataKeys.RfiDetails)!.ToString()!;
+        var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
+        var rfiReasons = await projectModificationsService.GetModificationReviewResponses(viewModel.ProjectRecordId, Guid.Parse(viewModel.ModificationId));
+        var rfiResponses = await projectModificationsService.GetModificationRfiResponses(viewModel.ProjectRecordId, Guid.Parse(viewModel.ModificationId));
 
-        var model = JsonSerializer.Deserialize<RfiDetailsViewModel>(jsonModel)!;
+        if (!rfiReasons.IsSuccessStatusCode)
+        {
+            this.ServiceError(rfiReasons);
+        }
+        if (!rfiResponses.IsSuccessStatusCode)
+        {
+            this.ServiceError(rfiResponses);
+        }
 
-        return View(model);
+        viewModel.RfiModel = new RfiDetailsViewModel
+        {
+            RfiReasons = rfiReasons?.Content?.RequestForInformationReasons ?? [],
+            RfiResponses = rfiResponses?.Content?.RfiResponses ?? [],
+        };
+        return View(viewModel);
     }
 
     [HttpPost]
     public async Task<IActionResult> RfiSubmitResponses()
     {
-        var storedModelJson = TempData.Peek(TempDataKeys.RfiDetails)!.ToString()!;
-        var storedModel = JsonSerializer.Deserialize<RfiDetailsViewModel>(storedModelJson)!;
+        var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
 
-        var updateStatusResponse = await projectModificationsService.UpdateModificationStatus
-        (
-            storedModel.ProjectRecordId!,
-            Guid.Parse(storedModel.ModificationId!),
-            ModificationStatus.ResponseWithSponsor
-        );
+        var updateStatusResponse = await projectModificationsService.UpdateModificationStatus(
+            new UpdateModificationStatusRequest
+            {
+                ProjectRecordId = viewModel.ProjectRecordId!,
+                ModificationId = Guid.Parse(viewModel.ModificationId!),
+                Status = ModificationStatus.ResponseWithSponsor
+            });
 
         if (!updateStatusResponse.IsSuccessStatusCode)
         {

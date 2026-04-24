@@ -17,4 +17,5 @@ public struct ContextItemKeys
     public const string ProblemDetails = "context:problem_details";
     public const string RequireProfileCompletion = "context:require_profile_completion";
     public const string AccessTokenCookieExpiryDate = "context:access_token_expiry";
+    public const string CollaboratorProjects = "context:collaborator_projects";
 }

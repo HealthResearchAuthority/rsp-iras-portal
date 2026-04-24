@@ -2,7 +2,7 @@
 @model ModificationDetailsViewModel
 
 <h2 class="govuk-heading-m">Request for further information</h2>
-@for (var i = 0; i < Model.RequestForInformationReasons.Count; i++)
+@for (var i = 0; i < Model.RfiModel.RfiReasons.Count; i++)
 {
     <div class="govuk-summary-card">
         <div class="govuk-summary-card__title-wrapper">
@@ -18,7 +18,7 @@
                             Reason @(i + 1)
                         </dt>
                         <dd class="govuk-summary-list__value">
-                            @Model.RequestForInformationReasons[i]
+                            @Model.RfiModel.RfiReasons[i]
                         </dd>
                     </div>
                     <div class="govuk-summary-list__row">
@@ -26,7 +26,13 @@
                             Response @(i + 1)
                         </dt>
                         <dd class="govuk-summary-list__value">
-                            @(Model.RequestForInformationResponses.ElementAtOrDefault(i))
+                            @{
+                                var response = Model.RfiModel.RfiResponses
+                                .ElementAtOrDefault(i)?
+                                .InitialResponse
+                                .FirstOrDefault();
+                            }
+                            @response
                         </dd>
                     </div>
                 </dl>

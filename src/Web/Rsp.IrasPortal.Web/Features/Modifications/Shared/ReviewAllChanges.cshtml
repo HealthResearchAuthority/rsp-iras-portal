@@ -177,7 +177,7 @@ else
     </div>
 </authorized>
 
-<feature name="(@FeatureFlags.WithdrawModification,@FeatureFlags.RequestForInformation)" requirement="Any">
+<feature name="@FeatureFlags.WithdrawModification,@FeatureFlags.RequestForInformation" requirement="Any">
     <authorized permission="@Permissions.MyResearch.Modifications_Withdraw"
                 status-for="Status"
                 status-in="@([ModificationStatus.WithReviewBody,ModificationStatus.ResponseWithReviewBody,ModificationStatus.RequestForInformation])">

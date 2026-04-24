@@ -127,7 +127,7 @@
                     string parentAttributes = conditionalClass != "" ? $"data-parents=\"{string.Join(',', question.Rules.Select(r => r.ParentQuestionId))}\" data-questionid=\"{question.QuestionId}\"" : "";
                     string questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText;
 
-                    @if (!(question.QuestionId == QuestionIds.LeadNation && question.GetDisplayText() == "The study does not involve the NHS"))
+                    @if (!(question.QuestionId == QuestionIds.LeadNation && question.GetDisplayText() == "Enter lead nation"))
                     {
                         <div class="@conditionalClass govuk-summary-list__row" id="@questionKey" @Html.Raw(parentAttributes)>
                             <dt class="govuk-summary-list__key">@questionText</dt>

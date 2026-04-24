@@ -1,11 +1,9 @@
-﻿using System.Text.Json;
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Controllers;
-using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
@@ -15,6 +13,7 @@ using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.UnitTests;
+using Rsp.Portal.Web.Features.Modifications.Models;
 using Rsp.Portal.Web.Models;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.Modifications.RfiResponses;
@@ -79,10 +78,86 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         var result = await Sut.RfiDetails(projectId, modificationId);
 
         var viewResult = result.ShouldBeOfType<ViewResult>();
-        var model = viewResult.Model.ShouldBeAssignableTo<RfiDetailsViewModel>();
+        var model = viewResult.Model.ShouldBeAssignableTo<ModificationDetailsViewModel>();
         model.IrasId.ShouldBe(projectRecordResponse.IrasId.ToString());
         model.ModificationId.ShouldBe(modificationId.ToString());
-        model.RfiReasons.Count.ShouldBe(rfiResponse.RequestForInformationReasons.Count);
+        model.RfiModel.RfiReasons.Count.ShouldBe(rfiResponse.RequestForInformationReasons.Count);
+    }
+
+    [Theory, AutoData]
+    public async Task RfiDetails_Returns_View_And_Pads_RfiResponses_When_Fewer_Than_Reasons(
+    string projectId,
+    Guid modificationId,
+    ProjectModificationResponse modificationResponse,
+    IrasApplicationResponse projectRecordResponse,
+    ProjectModificationReviewResponse rfiResponse,
+    ModificationRfiResponseResponse rfiResponseResponse)
+    {
+        // Arrange
+        var ctx = new DefaultHttpContext();
+        Sut.ControllerContext = new() { HttpContext = ctx };
+        Sut.TempData = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>());
+
+        modificationResponse.Status = ModificationStatus.RequestForInformation;
+
+        rfiResponse.RequestForInformationReasons = new List<string>
+        {
+            "",
+            "",
+            ""
+        };
+
+        rfiResponseResponse.RfiResponses = new List<RfiResponsesDTO>
+        {
+            new() { InitialResponse = { "existing response" } }
+        };
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModification(projectId, modificationId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = modificationResponse
+            });
+
+        Mocker.GetMock<IApplicationsService>()
+            .Setup(s => s.GetProjectRecord(projectId))
+            .ReturnsAsync(new ServiceResponse<IrasApplicationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = projectRecordResponse
+            });
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses(projectId, modificationId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = rfiResponse
+            });
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationRfiResponses(projectId, modificationId))
+            .ReturnsAsync(new ServiceResponse<ModificationRfiResponseResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = rfiResponseResponse
+            });
+
+        // Act
+        var result = await Sut.RfiDetails(projectId, modificationId);
+
+        // Assert
+        var viewResult = result.ShouldBeOfType<ViewResult>();
+        var model = viewResult.Model.ShouldBeAssignableTo<ModificationDetailsViewModel>();
+
+        model.RfiModel.RfiReasons.Count.ShouldBe(3);
+        model.RfiModel.RfiResponses.Count.ShouldBe(3);
+
+        model.RfiModel.RfiResponses
+            .Skip(1)
+            .All(r => r.InitialResponse.Single() == string.Empty)
+            .ShouldBeTrue();
     }
 
     [Theory, AutoData]
@@ -144,7 +219,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     [Theory, AutoData]
     public async Task RfiResponses_GET_Returns_View_With_Model
     (
-        RfiDetailsViewModel tempDataModel,
+        ModificationDetailsViewModel tempDataModel,
         Guid modificationId
     )
     {
@@ -162,33 +237,49 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     [Theory, AutoData]
     public async Task RfiResponses_POST_Returns_View_With_Error_When_Reason_Missing
     (
-        RfiDetailsViewModel model,
+        ModificationDetailsViewModel model,
         Guid modificationId
     )
     {
         model.ModificationId = modificationId.ToString();
-        model.RfiReasons = ["Reason 1", "Reason 2"];
-        model.RfiResponses = ["Response 1", ""];
+        model.RfiModel.RfiReasons = ["Reason 1", "Reason 2"];
+        model.RfiModel.RfiResponses = new List<RfiResponsesDTO>
+        {
+            new RfiResponsesDTO
+            {
+                InitialResponse = ["Response 1"]
+            },
+            new RfiResponsesDTO
+            {
+                InitialResponse = [""]
+            }
+        };
 
         SetupTempData(model);
 
         var result = await Sut.RfiResponses(model);
 
-        var view = result.ShouldBeOfType<ViewResult>();
-        view.Model.ShouldBeAssignableTo<RfiDetailsViewModel>();
+        var view = result.ShouldBeOfType<RedirectToActionResult>();
+        view.ActionName.ShouldBe("RfiResponses");
         Sut.ModelState.IsValid.ShouldBeFalse();
     }
 
     [Theory, AutoData]
     public async Task RfiResponses_POST_Returns_Service_Error_When_Service_Fails
     (
-        RfiDetailsViewModel model,
+        ModificationDetailsViewModel model,
         Guid modificationId
     )
     {
         model.ModificationId = modificationId.ToString();
-        model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiModel.RfiReasons = ["Reason 1"];
+        model.RfiModel.RfiResponses = new List<RfiResponsesDTO>
+        {
+            new RfiResponsesDTO
+            {
+                InitialResponse = ["Response 1"]
+            },
+        };
 
         SetupTempData(model);
         Mocker.GetMock<IProjectModificationsService>()
@@ -202,13 +293,19 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     [Theory, AutoData]
     public async Task RfiResponses_POST_Saves_And_Redirects_When_SaveForLater_Is_True
     (
-        RfiDetailsViewModel model,
+        ModificationDetailsViewModel model,
         Guid modificationId
     )
     {
         model.ModificationId = modificationId.ToString();
-        model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiModel.RfiReasons = ["Reason 1"];
+        model.RfiModel.RfiResponses = new List<RfiResponsesDTO>
+        {
+            new RfiResponsesDTO
+            {
+                InitialResponse = ["Response 1"]
+            },
+        };
 
         SetupTempData(model);
         Mocker.GetMock<IProjectModificationsService>()
@@ -224,13 +321,19 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     [Theory, AutoData]
     public async Task RfiResponses_POST_Saves_And_Continues_When_SaveForLater_Is_False
     (
-        RfiDetailsViewModel model,
+        ModificationDetailsViewModel model,
         Guid modificationId
     )
     {
         model.ModificationId = modificationId.ToString();
-        model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiModel.RfiReasons = ["Reason 1"];
+        model.RfiModel.RfiResponses = new List<RfiResponsesDTO>
+        {
+            new RfiResponsesDTO
+            {
+                InitialResponse = ["Response 1"]
+            },
+        };
         SetupTempData(model);
 
         Mocker.GetMock<IProjectModificationsService>()
@@ -244,38 +347,67 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     }
 
     [Theory, AutoData]
-    public void RfiCheckAndSubmitResponses_GET_Returns_View_With_Model
+    public async Task RfiCheckAndSubmitResponses_GET_Returns_View_With_Model
     (
-        RfiDetailsViewModel tempDataModel,
-        Guid modificationId
+        ModificationDetailsViewModel tempDataModel,
+        Guid modificationId,
+        ModificationRfiResponseResponse rfiResponseResponse,
+        ProjectModificationReviewResponse rfiResponse
     )
     {
         tempDataModel.ModificationId = modificationId.ToString();
-
         SetupTempData(tempDataModel);
+        var modRfiResponse = new ServiceResponse<ProjectModificationReviewResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = rfiResponse
+        };
 
-        var result = Sut.RfiCheckAndSubmitResponses();
+        var modRfiResponsesResponse = new ServiceResponse<ModificationRfiResponseResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = rfiResponseResponse
+        };
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses(tempDataModel.ProjectRecordId, modificationId))
+            .ReturnsAsync(modRfiResponse);
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationRfiResponses(tempDataModel.ProjectRecordId, modificationId))
+            .ReturnsAsync(modRfiResponsesResponse);
+
+        var result = await Sut.RfiCheckAndSubmitResponses();
 
         var view = result.ShouldBeOfType<ViewResult>();
-        view.Model.ShouldBeAssignableTo<RfiDetailsViewModel>();
+        view.Model.ShouldBeAssignableTo<ModificationDetailsViewModel>();
     }
 
     [Theory, AutoData]
     public async Task RfiCheckAndSubmitResponses_POST_Returns_Service_Error_When_Service_Fails
     (
-        RfiDetailsViewModel model,
+        ModificationDetailsViewModel model,
         Guid modificationId
     )
     {
         model.ModificationId = modificationId.ToString();
-        model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiModel.RfiReasons = ["Reason 1"];
+        model.RfiModel.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
 
         SetupTempData(model);
 
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), null, null, null))
-            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.InternalServerError });
+            .Setup(s => s.UpdateModificationStatus(
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ReasonNotApproved == null &&
+                    r.Response == null &&
+                    r.Role == null &&
+                    r.ResponseOrigin == null
+                )))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.InternalServerError
+            });
 
         var result = await Sut.RfiSubmitResponses();
         result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe(500);
@@ -284,18 +416,28 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     [Theory, AutoData]
     public async Task RfiCheckAndSubmitResponses_POST_Submits_And_Redirects_When_Service_Succeeds
     (
-        RfiDetailsViewModel model,
+        ModificationDetailsViewModel model,
         Guid modificationId
     )
     {
         model.ModificationId = modificationId.ToString();
-        model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiModel.RfiReasons = ["Reason 1"];
+        model.RfiModel.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
 
         SetupTempData(model);
+
         Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.UpdateModificationStatus(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), null, null, null))
-            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+            .Setup(s => s.UpdateModificationStatus(
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ReasonNotApproved == null &&
+                    r.Response == null &&
+                    r.Role == null &&
+                    r.ResponseOrigin == null
+                )))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.OK
+            });
 
         var result = await Sut.RfiSubmitResponses();
         var redirectResult = result.ShouldBeOfType<RedirectToActionResult>();
@@ -306,7 +448,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     [Theory, AutoData]
     public async Task Returns_View_With_Changes_And_SponsorDetails
     (
-        RfiDetailsViewModel model,
+        ModificationDetailsViewModel model,
         Guid modificationId
     )
     {
@@ -315,8 +457,8 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         var changeId = Guid.NewGuid();
 
         model.ModificationId = modificationId.ToString();
-        model.RfiReasons = ["Reason 1"];
-        model.RfiResponses = ["Response 1"];
+        model.RfiModel.RfiReasons = ["Reason 1"];
+        model.RfiModel.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
 
         SetupTempData(model);
         // modification
@@ -508,17 +650,20 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
 
         // Assert
         var view = result.ShouldBeOfType<ViewResult>();
-        model = view.Model.ShouldBeOfType<RfiDetailsViewModel>();
-        model.ModificationChanges.Count.ShouldBe(3);
+        model = view.Model.ShouldBeOfType<ModificationDetailsViewModel>();
+        model.ModificationChanges.Count.ShouldBe(1);
     }
 
-    private void SetupTempData(RfiDetailsViewModel model)
+    private void SetupTempData(ModificationDetailsViewModel model)
     {
         var ctx = new DefaultHttpContext();
         Sut.ControllerContext = new() { HttpContext = ctx };
         Sut.TempData = new TempDataDictionary(ctx, Mock.Of<ITempDataProvider>())
         {
-            [TempDataKeys.RfiDetails] = JsonSerializer.Serialize(model)
+            [TempDataKeys.ProjectRecordId] = model.ProjectRecordId,
+            [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.Parse(model.ModificationId),
+            [TempDataKeys.ShortProjectTitle] = model.ShortTitle,
+            [TempDataKeys.IrasId] = model.IrasId.ToString()
         };
     }
 }

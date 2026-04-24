@@ -1,4 +1,6 @@
-﻿namespace Rsp.Portal.Web.Models;
+﻿using Rsp.Portal.Application.DTOs;
+
+namespace Rsp.Portal.Web.Models;
 
 /// <summary>
 /// Represents the basic project details including IrasId, short and full project title.
@@ -44,4 +46,6 @@ public class ProjectRecordViewModel : QuestionnaireViewModel
     /// Is NHS / HSC Organisation selected option
     /// </summary>
     public string IsNHSHSCOrganisationSelectedOption { get; set; }
+
+    public ReviewBodyDto? ReviewBody { get; set; }
 }

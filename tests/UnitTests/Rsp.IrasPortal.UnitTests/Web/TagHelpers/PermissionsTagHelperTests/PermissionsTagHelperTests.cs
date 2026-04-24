@@ -1081,7 +1081,86 @@ public class PermissionsTagHelperTests
         output.Content.IsEmptyOrWhiteSpace.ShouldBeTrue();
     }
 
-    // Helper Methods
+    // Collaborator Access Tests
+
+    [Fact]
+    public void EvaluateCollaboratorAccess_Returns_True_For_Non_Edit_Permission()
+    {
+        var tagHelper = new PermissionsTagHelper
+        {
+            Permission = Permissions.MyResearch.Workspace_Access
+        };
+
+        tagHelper.EvaluateCollaboratorAccess().ShouldBeTrue();
+    }
+
+    [Fact]
+    public void EvaluateCollaboratorAccess_Returns_False_For_Edit_Permission_When_ProjectRecordId_Missing()
+    {
+        var tagHelper = new PermissionsTagHelper
+        {
+            Permission = Permissions.MyResearch.ProjectRecord_Update,
+            ViewContext = CreateViewContext(CreateUser(Roles.Applicant))
+        };
+
+        tagHelper.EvaluateCollaboratorAccess().ShouldBeFalse();
+    }
+
+    [Fact]
+    public void EvaluateCollaboratorAccess_Returns_True_For_Edit_Permission_When_Collaborator_Has_Edit_Access()
+    {
+        var viewContext = CreateViewContext(CreateUser(Roles.Applicant));
+        viewContext.TempData[TempDataKeys.ProjectRecordId] = "project-1";
+        viewContext.HttpContext.Items[ContextItemKeys.CollaboratorProjects] = "[{\"ProjectRecordId\":\"project-1\",\"ProjectAccessLevel\":\"Edit\"}]";
+
+        var tagHelper = new PermissionsTagHelper
+        {
+            Permission = Permissions.MyResearch.ProjectRecord_Update,
+            ViewContext = viewContext
+        };
+
+        tagHelper.EvaluateCollaboratorAccess().ShouldBeTrue();
+    }
+
+    [Fact]
+    public void EvaluateCollaboratorAccess_Collection_Returns_True_When_No_Edit_Permissions_In_List()
+    {
+        var tagHelper = new PermissionsTagHelper
+        {
+            ViewContext = CreateViewContext(CreateUser(Roles.Applicant))
+        };
+
+        tagHelper.EvaluateCollaboratorAccess([Permissions.MyResearch.Workspace_Access]).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void EvaluateCollaboratorAccess_Collection_Returns_True_When_Modification_Is_ReviseAndAuthorise()
+    {
+        var viewContext = CreateViewContext(CreateUser(Roles.Sponsor));
+        viewContext.TempData[TempDataKeys.ProjectModification.ProjectModificationStatus] = ModificationStatus.ReviseAndAuthorise;
+
+        var tagHelper = new PermissionsTagHelper
+        {
+            ViewContext = viewContext
+        };
+
+        tagHelper.EvaluateCollaboratorAccess([Permissions.MyResearch.Modifications_Update]).ShouldBeTrue();
+    }
+
+    private static ViewContext CreateViewContext(ClaimsPrincipal user)
+    {
+        var http = new DefaultHttpContext
+        {
+            User = user,
+            Session = new InMemorySession()
+        };
+
+        return new ViewContext
+        {
+            HttpContext = http,
+            TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
+        };
+    }
 
     private static ClaimsPrincipal CreateUser(params string[] roles)
     {

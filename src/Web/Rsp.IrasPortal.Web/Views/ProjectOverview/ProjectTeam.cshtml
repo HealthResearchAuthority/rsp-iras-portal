@@ -1,5 +1,8 @@
-﻿@using Rsp.IrasPortal.Web.Models
+﻿@using Rsp.IrasPortal.Application.DTOs.Responses
+@using Rsp.IrasPortal.Web.Models
 @using Rsp.Portal.Application.Constants;
+@using Rsp.Portal.Application.Extensions
+@using Rsp.Portal.Domain.AccessControl
 @using Rsp.Portal.Web.Models
 @using System.Text.Json
 @model ProjectTeamViewModel
@@ -20,6 +23,7 @@
 
     var backRouteValues = JsonSerializer.Deserialize<Dictionary<string, string>>
         (tdBackRouteValues != null ? tdBackRouteValues.ToString()! : "{}") ?? new Dictionary<string, string>();
+
 }
 
 @if (routeName is null || routeName.ToLower() == "app:welcome")
@@ -36,6 +40,21 @@ else
 {
     @section BackNavigation {
         <partial name="_BackNavigation" model="@(routeName, "Back", backRouteValues)" />
+    }
+}
+
+@{
+    var operationMessage = TempData[TempDataKeys.ProjectCollaborators.OperationMessage] as string;
+
+    if (operationMessage != null)
+    {
+        var notificationModel = new NotificationBannerModel
+        {
+            Title = "Success",
+            Heading = operationMessage
+        };
+
+        <partial name="_NotificationBanner" model="notificationModel" />
     }
 }
 
@@ -77,10 +96,11 @@ else
                 var tableId = "collaboratorTable";
                 var sortableHeaders = new[]
                 {
-                new { Field = nameof(Collaborator.Email), Label = "Collaborator email" },
-                new { Field = nameof(Collaborator.Access), Label = "Project access" }
-            };
+                    new { Field = nameof(Collaborator.Email), Label = "Collaborator email" },
+                    new { Field = nameof(Collaborator.Access), Label = "Project access" }
+                };
             }
+
             <table class="govuk-table govuk-table-users" id="@tableId">
                 <thead>
                     <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
@@ -104,12 +124,112 @@ else
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var user in Model.Collaborators)
+                    @{
+                        var projects = Context.Items[ContextItemKeys.CollaboratorProjects] as string;
+
+                        var collaboratorProjects = string.IsNullOrWhiteSpace(projects) ?
+                            new List<CollaboratorProjectResponse>() :
+                            JsonSerializer.Deserialize<List<CollaboratorProjectResponse>>(projects) ??
+                            [];
+
+                        var userIsCollaboratorWithEditAccess = User.IsCollaboratorWithEditAccess
+                        (
+                            collaboratorProjects,
+                            Model.ProjectOverviewModel.ProjectRecordId!
+                        );
+
+                        var totalCollaborators = Model.Collaborators.Count;
+                        var totalCollaboratorsWithEditAccess = Model.Collaborators.Count(c => c.Access == "Edit");
+                    }
+
+                    @foreach (var collaborator in Model.Collaborators)
                     {
                         <tr class="govuk-table__row">
-                            <td class="govuk-table__cell">@user.Email</td>
-                            <td class="govuk-table__cell">@user.Access</td>
-                            <td class="govuk-table__cell">Not available</td>
+                            <td class="govuk-table__cell">@collaborator.Email</td>
+                            <td class="govuk-table__cell">@collaborator.Access</td>
+                            <td class="govuk-table__cell">
+
+                                <ul class="govuk-summary-card__actions">
+                                    <!--If there is only one collaborator, no actions are available-->
+                                    @if (totalCollaborators == 1)
+                                    {
+                                        <li class="govuk-summary-card__action">
+                                            Not available
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        var routeParams = new Dictionary<string, string>
+                                        {
+                                            { "id", collaborator.Id.ToString() },
+                                            { "projectAccessLevel", collaborator.Access },
+                                            { "email", collaborator.Email },
+                                            { "userId", collaborator.UserId },
+                                            { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId! },
+                                            { "self", collaborator.Self.ToString() }
+                                        };
+
+                                        var (showChangeLink, showRemoveLink) = userIsCollaboratorWithEditAccess switch
+                                        {
+                                            // current and other users with edit access
+                                            true when totalCollaboratorsWithEditAccess > 1 => (collaborator.Self, collaborator.IsOwner) switch
+                                            {
+                                                (true, true) => (false, false),  // user is current and owner, don't allow links
+                                                (true, false) => (true, true),   // user is current but not owner, allow change / remove
+                                                (false, true) => (false, false), // user is not current but is owner, don't allow links
+                                                (false, false) => (true, true)   // user is not current and not owner, allow links
+                                            },
+                                            
+                                            // current user is only one with edit access
+                                            true when totalCollaboratorsWithEditAccess == 1 => (collaborator.Self, collaborator.IsOwner) switch // 
+                                            {
+                                                (true, true) => (false, false),  // user is current and owner, don't allow links
+                                                (true, false) => (false, false), // user is current but not owner, don't allow links
+                                                (false, true) => (false, false), // user is not current but is owner, don't allow links
+                                                (false, false) => (true, true)   // user is not current and not owner, allow links
+                                            },
+                                            // user doesn't have edit access
+                                            _ => (collaborator.Self, collaborator.IsOwner) switch
+                                            {
+                                                (true, true) => (false, false),  // user is current and owner, don't allow links
+                                                (true, false) => (false, true),  // user is current but not owner, allow remove
+                                                (false, true) => (false, false), // user is not current but is owner, don't allow links
+                                                (false, false) => (false, false) // user is not current and not owner, don't allow links
+                                            }
+                                        };
+
+
+                                        if (showChangeLink)
+                                        {
+                                            <li class="govuk-summary-card__action">
+                                                <a asp-route="col:selectcollaboratoraccess"
+                                                asp-all-route-data="@routeParams"
+                                                class="govuk-link" aria-label="Change access">
+                                                    Change
+                                                </a>
+                                            </li>
+                                        }
+
+                                        if (showRemoveLink)
+                                        {
+                                            <li class="govuk-summary-card__action">
+                                                <a asp-route="col:removecollaborator"
+                                                asp-all-route-data="@routeParams"
+                                                class="govuk-link" aria-label="Remove collaborator">
+                                                    Remove
+                                                </a>
+                                            </li>
+                                        }
+
+                                        if (!showChangeLink && !showRemoveLink)
+                                        {
+                                            <li class="govuk-summary-card__action">
+                                                Not available
+                                            </li>
+                                        }
+                                    }
+                                </ul>
+                            </td>
                         </tr>
                     }
                 </tbody>
@@ -117,10 +237,10 @@ else
         </div>
     </div>
 
-    <a asp-action="AddCollaborator"
+    <a asp-route="col:addcollaborator"
            asp-route-projectRecordId="@Model.ProjectOverviewModel.ProjectRecordId"
            class="govuk-button govuk-button--secondary"
-           role-is="@Roles.Applicant">
+           permission="@Permissions.MyResearch.ProjectRecord_Update">
         Add collaborator
     </a>
 </feature>

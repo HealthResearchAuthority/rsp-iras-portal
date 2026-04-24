@@ -1,4 +1,6 @@
-﻿namespace Rsp.Portal.Web.Models;
+﻿using Rsp.IrasPortal.Application.DTOs.Responses;
+
+namespace Rsp.Portal.Web.Models;
 
 /// <summary>
 /// Base view model for project modification-related pages.
@@ -55,18 +57,6 @@ public class BaseProjectModificationViewModel
 
     public string? ReviewerComments { get; set; }
 
-    public string? RevisionDescription { get; set; }
-
-    /// <summary>
-    /// Gets or sets the list of reasons for requesting additional information from the applicant.
-    /// </summary>
-    public List<string> RequestForInformationReasons { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets the list of responses provided by the applicant in response to the request for additional information.
-    /// </summary>
-    public List<string> RequestForInformationResponses { get; set; } = [];
-
     /// <summary>
     /// Gets or sets the created date of the Modification
     /// </summary>
@@ -89,8 +79,15 @@ public class BaseProjectModificationViewModel
     /// </summary>
     public string? ApplicantRevisionResponse { get; set; }
 
+    public string? RevisionDescription { get; set; }
+
+    public ICollection<ModificationRevisionResponse> ModificationRevisionResponses { get; set; } = [];
+
     /// <summary>
     /// Gets or sets whether the modification has been duplicated
     /// </summary>
     public bool HasBeenDuplicated { get; set; }
+
+    //This date is a sent to regulator date for RFI flow
+    public string? DateSubmitted { get; set; }
 }

@@ -1,0 +1,301 @@
+﻿@using Rsp.Gds.Component.Models
+@using Rsp.IrasPortal.Application.Constants
+@using Rsp.IrasPortal.Web.Features.MemberManagement.Models
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model RecMemberViewModel
+
+@{
+	var edit = Model.IsEditMode;
+
+	ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+
+	var showSuccessMessage = TempData[TempDataKeys.ShowNotificationBanner];
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
+
+	var headline = pageContent.GetValueOrDefault("MemberManagement.AddMember.ConfirmMemberDetails.Title", null);
+	var body = pageContent.GetValueOrDefault("MemberManagement.AddMember.ConfirmMemberDetails.Body", null);
+
+}
+
+@if (edit)
+{
+	@section Breadcrumb {
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+		{
+			("Member management", Url.RouteUrl("mm:home")),
+			("Research ethics committees", Url.RouteUrl("mm:researchethicscommittees")),
+			($"Research ethics committee profile: {Model.RecName}", "/")
+		})
+	}
+}
+
+@if (showSuccessMessage is true)
+{
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-two-thirds">
+			<partial name="_NotificationBanner"
+					 model="@(new NotificationBannerModel
+                        {
+                            Title = "Success",
+                            Heading = "Member profile updated"
+                        })" />
+		</div>
+	</div>
+}
+
+<form method="post" id="submit-user-form">
+	<div class="govuk-grid-row">
+		<div class="govuk-grid-column-full">
+
+			@if (!edit)
+			{
+				<button asp-route="mm:EditNewRecMember" class="govuk-back-link-button" type="submit">Back</button>
+			}
+
+			<partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
+
+			@if (edit)
+			{
+				<h1 class="govuk-heading-l">Member profile: @Model.FirstName @Model.LastName</h1>
+			}
+			else
+			{
+				<h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
+				<p>@Html.Raw(body?.Value) @Model.RecName</p>
+			}
+		</div>
+
+		<div class="govuk-grid-column-full">
+			<table class="govuk-table">
+				<thead>
+					<tr>
+						<th></th>
+						<th class="govuk-!-width-two-thirds"></th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Title</b>
+						</td>
+						<td class="govuk-table__cell govuk-!-width-two-thirds">
+							@Model.Title
+							<input type="hidden" asp-for="Title" name="Title" value="@Model.Title" />
+						</td>
+						<td class="govuk-table__cell">
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>First name</b>
+						</td>
+						<td class="govuk-table__cell govuk-!-width-two-thirds">
+							@Model.FirstName
+							<input type="hidden" asp-for="FirstName" name="FirstName" value="@Model.FirstName" />
+						</td>
+						<td class="govuk-table__cell">
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Last name</b>
+						</td>
+						<td class="govuk-table__cell govuk-!-width-two-thirds">
+							@Model.LastName
+							<input type="hidden" asp-for="LastName" name="LastName" value="@Model.LastName" />
+						</td>
+						<td class="govuk-table__cell">
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Email address</b>
+						</td>
+						<td class="govuk-table__cell govuk-!-width-two-thirds">
+							@Model.EmailAddress
+							<input type="hidden" asp-for="EmailAddress" name="EmailAddress" value="@Model.EmailAddress" />
+						</td>
+						<td class="govuk-table__cell">
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Job title</b>
+						</td>
+						<td class="govuk-table__cell govuk-!-width-two-thirds">
+							@Model.JobTitle
+							<input type="hidden" asp-for="JobTitle" name="JobTitle" value="@Model.JobTitle" />
+						</td>
+						<td class="govuk-table__cell">
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Organisation</b>
+						</td>
+						<td class="govuk-table__cell govuk-!-width-two-thirds">
+							@Model.Organisation
+							<input type="hidden" asp-for="Organisation" name="Organisation" value="@Model.Organisation" />
+						</td>
+						<td class="govuk-table__cell">
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Telephone no</b>
+						</td>
+						<td class="govuk-table__cell govuk-!-width-two-thirds">
+							@Model.RecTelephoneNumber
+							<input type="hidden" asp-for="RecTelephoneNumber" name="RecTelephoneNumber" value="@Model.RecTelephoneNumber" />
+						</td>
+						<td class="govuk-table__cell">
+							@{
+								await RenderEditLink("Committee role");
+							}
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Research ethics committee name</b>
+						</td>
+						<td class="govuk-table__cell govuk-!-width-two-thirds">
+							@Model.RecName
+							<input type="hidden" asp-for="RecName" name="RecName" value="@Model.RecName" />
+						</td>
+						<td class="govuk-table__cell">
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Committee role</b>
+						</td>
+						<td class="govuk-table__cell govuk-!-width-two-thirds">
+							@Model.CommitteeRole
+							<input type="hidden" asp-for="CommitteeRole" name="CommitteeRole" value="@Model.CommitteeRole" />
+						</td>
+						<td class="govuk-table__cell">
+							@{
+								await RenderEditLink("Committee role");
+							}
+						</td>
+					</tr>
+
+					<tr class="govuk-table__row">
+						<td class="govuk-table__cell">
+							<b>Designation </b>
+						</td>
+						<td class="govuk-table__cell govuk-!-width-two-thirds">
+							@Model.Designation
+							<input type="hidden" asp-for="Designation " name="Designation" value="@Model.Designation" />
+						</td>
+						<td class="govuk-table__cell">
+							@{
+								await RenderEditLink("Committee role");
+							}
+						</td>
+					</tr>
+
+					@if (Model.IsEditMode)
+					{
+						<tr class="govuk-table__row">
+							<td class="govuk-table__cell">
+								<b>Date left this research ethics committee </b>
+							</td>
+							<td class="govuk-table__cell govuk-!-width-two-thirds">
+								@if (Model.DateTimeLeft.HasValue)
+								{
+									@Model.DateTimeLeft?.ToString("dd MMM yyyy")
+								}
+								else
+								{
+									<a class="govuk-link" asp-route="mm:EditRecMember" asp-route-userId="@Model.UserId"
+									   asp-route-recId="@Model.RecId">
+										Select a date left
+									</a>
+								}
+
+								<input type="hidden" asp-for="DateTimeLeft " name="DateTimeLeft" value="@Model.DateTimeLeft" />
+							</td>
+							<td class="govuk-table__cell">
+								@if (Model.DateTimeLeft.HasValue)
+								{
+									await RenderEditLink("Date left");
+								}
+							</td>
+						</tr>
+
+						<tr class="govuk-table__row">
+							<td class="govuk-table__cell">
+								<b>Audit </b>
+							</td>
+							<td class="govuk-table__cell govuk-!-width-two-thirds">
+								<a href="#" class="govuk-link">View this user's audit history</a>
+
+							</td>
+							<td class="govuk-table__cell">
+							</td>
+						</tr>
+
+						<tr class="govuk-table__row">
+							<td class="govuk-table__cell">
+								<b>Last updated</b>
+							</td>
+							<td class="govuk-table__cell">
+								@Model.LastUpdated?.ToString("dd MMM yyyy HH:mm")
+								<input type="hidden" asp-for="LastUpdated " name="LastUpdated" value="@Model.LastUpdated" />
+							</td>
+							<td class="govuk-table__cell">
+							</td>
+						</tr>
+					}
+
+				</tbody>
+			</table>
+
+			<input type="hidden" asp-for="UserId" readonly name="UserId" value="@Model.UserId" />
+			<input type="hidden" asp-for="RecId" readonly name="RecId" value="@Model.RecId" />
+			<input type="hidden" asp-for="IsEditMode" readonly name="IsEditMode" value="@Model.IsEditMode" />
+			<input type="hidden" asp-for="MemberLeftOrganisation" readonly name="MemberLeftOrganisation" value="@Model.MemberLeftOrganisation" />
+
+			@if (!edit)
+			{
+				<partial name="_SubmitButton" model="@("mm:AddRecMember", "Add member", new Dictionary<string, string>())" />
+			}
+
+		</div>
+
+	</div>
+</form>
+
+@{
+	async Task RenderEditLink(string fieldName)
+	{
+
+		if (edit)
+		{
+			<a class="govuk-link" asp-route="mm:EditRecMember" asp-route-userId="@Model.UserId"
+			   asp-route-recId="@Model.RecId">
+				Change<span class="govuk-visually-hidden"> @fieldName</span>
+			</a>
+		}
+		else
+		{
+			<button class="govuk-link-button" type="submit" asp-route="mm:EditNewRecMember">
+				Change<span class="govuk-visually-hidden"> @fieldName</span>
+			</button>
+		}
+	}
+}

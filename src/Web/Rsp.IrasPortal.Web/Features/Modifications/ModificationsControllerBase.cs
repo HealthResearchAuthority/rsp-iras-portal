@@ -2,6 +2,8 @@ using System.Net;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
+using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset.Modifications;
@@ -75,8 +77,67 @@ public abstract class ModificationsControllerBase
         {
             return (this.ServiceError(modificationRfiResponsesResponse), null);
         }
+        var rfiResponses = new List<RfiResponsesDTO>();
 
         TempData[TempDataKeys.ProjectModification.ProjectModificationStatus] = modification.Status;
+
+        var rfiFeatureFlagEnabled = await featureManager.IsEnabledAsync(FeatureFlags.RequestForInformation);
+        string? revisionDescription; string? applicantRevisionResponse;
+
+        if (rfiFeatureFlagEnabled)
+        {
+            // When RequestForInformation (RFI) is enabled we stop using legacy single
+            // RevisionDescription/ApplicantRevisionResponse properties directly.
+            //
+            // HOWEVER: to preserve backward behaviour for now, we still expose
+            // "revisionDescription" as a single aggregated value.
+            //
+            // The ability to display full response history (multiple revisions)
+            // will be implemented in a separate ticket - for some views, most views requires
+            // only latest values - so that this properties may remain part of base modification object.
+
+            revisionDescription = null;
+
+            var sponsorResponses = modification?.ModificationRevisionResponses
+                .Where(r => r.Role == ResponseRoles.Sponsor);
+
+            var reviseAndAuthorise = sponsorResponses?
+                .Where(r => r.ResponseOrigin == ResponseOrigin.ReviseAndAuthorise)
+                .OrderByDescending(r => r.CreatedDateTime)
+                .FirstOrDefault();
+
+            if (reviseAndAuthorise != null)
+            {
+                // If a ReviseAndAuthorise response exists, use it as the revision description
+                // This mimics the previous behaviour where RevisionDescription was overwritten
+                // with the latest sponsor response.
+                revisionDescription = reviseAndAuthorise.Response;
+            }
+            else if (modification?.Status != ModificationStatus.ReviseAndAuthorise)
+            {
+                // Otherwise, and only if the modification is NOT currently in
+                // ReviseAndAuthorise status, fall back to the latest RequestRevisions response.
+                revisionDescription = sponsorResponses?
+                    .Where(r => r.ResponseOrigin == ResponseOrigin.RequestRevisions)
+                    .OrderByDescending(r => r.CreatedDateTime)
+                    .FirstOrDefault()?.Response;
+            }
+
+            applicantRevisionResponse = modification?.ModificationRevisionResponses
+                .Where(r =>
+                    r.Role == ResponseRoles.Applicant &&
+                    r.ResponseOrigin == ResponseOrigin.RequestRevisions)
+                .OrderByDescending(r => r.CreatedDateTime)
+                .FirstOrDefault()?.Response;
+        }
+        else
+        {
+            // Legacy behaviour when RFI feature flag is disabled:
+            // use single-value properties as they were before introducing
+            // ModificationRevisionResponses.
+            revisionDescription = modification?.RevisionDescription;
+            applicantRevisionResponse = modification?.ApplicantRevisionResponse;
+        }
 
         // Build the base view model with project metadata
         return (null, new ModificationDetailsViewModel
@@ -94,11 +155,16 @@ public abstract class ModificationsControllerBase
             DateSponsorSubmittedOutcome = DateHelper.ConvertDateToString(modification.DateSponsorSubmittedOutcome),
             ReasonNotApproved = modification?.ReasonNotApproved ?? string.Empty,
             ReviewerComments = modification?.ReviewerComments,
-            RevisionDescription = modification?.RevisionDescription,
-            RequestForInformationReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? [],
-            RequestForInformationResponses = modificationRfiResponsesResponse.Content?.RfiResponses ?? [],
-            ApplicantRevisionResponse = modification?.ApplicantRevisionResponse,
-            HasBeenDuplicated = modification.HasBeenDuplicated
+            RevisionDescription = revisionDescription,
+            RfiModel = new RfiDetailsViewModel
+            {
+                RfiReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? [],
+                RfiResponses = modificationRfiResponsesResponse.Content?.RfiResponses ?? []
+            },
+            ApplicantRevisionResponse = applicantRevisionResponse,
+            ModificationRevisionResponses = modification?.ModificationRevisionResponses ?? [],
+            HasBeenDuplicated = modification.HasBeenDuplicated,
+            DateSubmitted = DateHelper.ConvertDateToString(modification?.SentToRegulatorDate),
         });
     }
 
@@ -268,6 +334,7 @@ public abstract class ModificationsControllerBase
         TempData[TempDataKeys.IrasId] = irasId;
         TempData[TempDataKeys.ProjectModification.DateCreated] = modification.DateCreated;
         TempData[TempDataKeys.ProjectModification.DateSponsorSubmittedOutcome] = modification.DateSponsorSubmittedOutcome;
+        TempData[TempDataKeys.ProjectModification.DateSubmitted] = modification.DateSubmitted;
 
         var (changesResult, initialQuestions, modificationChanges) = await GetModificationChanges(modification);
         if (changesResult is not null)

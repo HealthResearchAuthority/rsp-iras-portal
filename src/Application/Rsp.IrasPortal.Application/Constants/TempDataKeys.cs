@@ -31,6 +31,7 @@ public struct TempDataKeys
         public const string CanCreateNewModification = "td:can_create_new_modifications";
         public const string DateSponsorSubmittedOutcome = "td:date_sponsor_submitted_outcome";
         public const string SelectedParticipatingOrganisations = "td:selected_participating_organisations";
+        public const string DateSubmitted = "td:date_submitted_to_regulator";
     }
 
     public struct ProjectModificationChange
@@ -103,4 +104,9 @@ public struct TempDataKeys
     public const string RequestRevisionDescription = "td:request_revision_description";
     public const string RequestRevisionHeadline = "td:request_revision_headline";
     public const string RfiDetails = "td:rfi_details";
+
+    public struct ProjectCollaborators
+    {
+        public const string OperationMessage = "td:project_collaborator_operation_message";
+    }
 }

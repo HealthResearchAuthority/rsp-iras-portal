@@ -1,5 +1,5 @@
-﻿@using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models
-@model RfiDetailsViewModel
+﻿@using Rsp.Portal.Web.Features.Modifications.Models
+@model ModificationDetailsViewModel
 @{
     ViewBag.Title = "Request for further information";
 }
@@ -14,7 +14,7 @@
             Check the information before you send
         </h1>
         <div class="govuk-body">
-            Make sure the information is correct before you send the response. 
+            Make sure the information is correct before you send the response.
             Once the response is sent to the sponsor, it cannot be changed.
         </div>
         <h2 class="govuk-heading-m">
@@ -42,14 +42,14 @@
                         @Model.ModificationIdentifier
                     </dd>
                 </div>
-                @for (var i = 0; i < Model.RfiReasons.Count; i++)
+                @for (var i = 0; i < Model.RfiModel.RfiReasons.Count; i++)
                 {
                     <div class="govuk-summary-list__row">
                         <dt class="govuk-summary-list__key">
                             Reason @(i + 1)
                         </dt>
                         <dd class="govuk-summary-list__value">
-                            @Model.RfiReasons[i]
+                            @Model.RfiModel.RfiReasons[i]
                         </dd>
                     </div>
                     <div class="govuk-summary-list__row">
@@ -57,7 +57,13 @@
                             Response to reason @(i + 1)
                         </dt>
                         <dd class="govuk-summary-list__value">
-                            @(Model.RfiResponses.ElementAtOrDefault(i) ?? "No response provided")
+                            @{
+                                var response = Model.RfiModel.RfiResponses
+                                    .ElementAtOrDefault(i)?
+                                    .InitialResponse
+                                    .FirstOrDefault();
+                            }
+                            @(string.IsNullOrWhiteSpace(response) ? "No response provided" : response)
                         </dd>
                         <dd class="govuk-summary-list__actions">
                             <a class="govuk-link" asp-route="rfi:rfiresponses">Change<span class="govuk-visually-hidden"> response</span></a>

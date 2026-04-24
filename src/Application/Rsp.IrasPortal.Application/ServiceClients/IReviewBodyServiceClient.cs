@@ -62,6 +62,9 @@ public interface IReviewBodyServiceClient
     [Post("/reviewbody/adduser")]
     public Task<IApiResponse<ReviewBodyUserDto>> AddUserToReviewBody([Body] ReviewBodyUserDto reviewBodyUser);
 
+    [Post("/reviewbody/updateuser")]
+    public Task<IApiResponse<ReviewBodyUserDto>> UpdateReviewBodyUser([Body] ReviewBodyUserDto reviewBodyUser);
+
     [Post("/reviewbody/removeuser")]
     public Task<IApiResponse<ReviewBodyUserDto>> RemoveUserFromReviewBody(Guid reviewBodyId, Guid userId);
 
@@ -75,6 +78,5 @@ public interface IReviewBodyServiceClient
     /// Gets review bodies by Id
     /// </summary>
     [Post("/reviewbody/reviewbodyusersbyids")]
-    public Task<IApiResponse<List<ReviewBodyUserDto>>> GetUserReviewBodiesByIds([Body]  List<Guid> reviewBodyIdsByReviewBodyIds);
-
+    public Task<IApiResponse<List<ReviewBodyUserDto>>> GetUserReviewBodiesByIds([Body] List<Guid> reviewBodyIdsByReviewBodyIds);
 }
