@@ -67,7 +67,8 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
             .WithMessage(ConditionalCountryMandatoryErrorMessage)
             .When(x => x.UserRoles.Any(role =>
                 role.IsSelected &&
-                 string.Equals(role.Name, Roles.TeamManager, StringComparison.OrdinalIgnoreCase)
+                 (string.Equals(role.Name, Roles.TeamManager, StringComparison.OrdinalIgnoreCase) ||
+                 (string.Equals(role.Name, Roles.ResearchEthicsCommitteeManager, StringComparison.OrdinalIgnoreCase)))
             ));
 
         RuleFor(x => x.Country)
@@ -84,7 +85,10 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
             .When(x => x.UserRoles.Any(role =>
                 role.IsSelected &&
                 (string.Equals(role.Name, Roles.StudyWideReviewer, StringComparison.OrdinalIgnoreCase) ||
-                 string.Equals(role.Name, Roles.WorkflowCoordinator, StringComparison.OrdinalIgnoreCase))
+                 string.Equals(role.Name, Roles.WorkflowCoordinator, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(role.Name, Roles.Administrator, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(role.Name, Roles.ResearchEthicsCommitteeManager, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(role.Name, Roles.Reviewer, StringComparison.OrdinalIgnoreCase))
             ));
     }
 }
