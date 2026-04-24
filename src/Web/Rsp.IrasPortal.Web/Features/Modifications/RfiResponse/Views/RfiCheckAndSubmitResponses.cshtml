@@ -1,24 +1,55 @@
-﻿@using Rsp.Portal.Web.Features.Modifications.Models
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Domain.AccessControl
+@using Rsp.Portal.Web.Features.Modifications.Models
 @model ModificationDetailsViewModel
 @{
-    ViewBag.Title = "Request for further information";
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null ?
+        pageContentData :
+        new Dictionary<string, MixedContentPageItem?>();
+
+    var rfiHeader = pageContent.GetValueOrDefault("Modifications.Rfi.RfiCheckAndSubmitResponses.RfiTitle", null);
+    var rfiBody = pageContent.GetValueOrDefault("Modifications.Rfi.RfiCheckAndSubmitResponses.RfiBody", null);
+    var tableHeader = pageContent.GetValueOrDefault("Modifications.Rfi.RfiCheckAndSubmitResponses.TableHeader", null);
+    var reviseAndAuthoriseHeader = pageContent.GetValueOrDefault("Modifications.Rfi.RfiCheckAndSubmitResponses.ReviseAndAuthoriseHeader", null);
+    var reviseAndAuthoriseBody = pageContent.GetValueOrDefault("Modifications.Rfi.RfiCheckAndSubmitResponses.ReviseAndAuthoriseBody", null);
+
+    var (header, body) = Model.Status switch
+    {
+        ModificationStatus.ResponseReviseAndAuthorise
+            => (reviseAndAuthoriseHeader, reviseAndAuthoriseBody),
+
+        _ => (rfiHeader, rfiBody)
+    };
+
+    ViewBag.Title = header?.Value;
+
+    var backRouteValues = new Dictionary<string, string>
+            {
+                ["projectRecordId"] = Model.ProjectRecordId,
+                ["irasId"] = Model.IrasId,
+                ["shortTitle"] = Model.ShortTitle,
+                ["projectModificationId"] = Model.ModificationId,
+                ["sponsorOrganisationUserId"] = Model.SponsorOrganisationUserId,
+                ["rtsId"] = Model.RtsId
+            };
 }
 
 @section BackNavigation {
-    <partial name="_BackNavigation" model="@("rfi:rfiresponses", "Back", new Dictionary<string,string>(){})" />
+    <partial name="_BackNavigation"  model="@("rfi:RfiResponses", "Back", backRouteValues)" /> 
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         <h1 class="govuk-heading-l">
-            Check the information before you send
+            @Html.Raw(header?.Value)
         </h1>
         <div class="govuk-body">
-            Make sure the information is correct before you send the response.
-            Once the response is sent to the sponsor, it cannot be changed.
+            @Html.Raw(body?.Value)
         </div>
         <h2 class="govuk-heading-m">
-            Response to request for further information
+            @Html.Raw(tableHeader?.Value)
         </h2>
     </div>
 </div>
@@ -42,8 +73,10 @@
                         @Model.ModificationIdentifier
                     </dd>
                 </div>
+
                 @for (var i = 0; i < Model.RfiModel.RfiReasons.Count; i++)
                 {
+                    <!-- REASON -->
                     <div class="govuk-summary-list__row">
                         <dt class="govuk-summary-list__key">
                             Reason @(i + 1)
@@ -52,26 +85,100 @@
                             @Model.RfiModel.RfiReasons[i]
                         </dd>
                     </div>
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key">
-                            Response to reason @(i + 1)
-                        </dt>
-                        <dd class="govuk-summary-list__value">
-                            @{
-                                var response = Model.RfiModel.RfiResponses
-                                    .ElementAtOrDefault(i)?
-                                    .InitialResponse
-                                    .FirstOrDefault();
-                            }
-                            @(string.IsNullOrWhiteSpace(response) ? "No response provided" : response)
-                        </dd>
-                        <dd class="govuk-summary-list__actions">
-                            <a class="govuk-link" asp-route="rfi:rfiresponses">Change<span class="govuk-visually-hidden"> response</span></a>
-                        </dd>
-                    </div>
+
+                    <!-- APPLICANT – INITIAL RESPONSE -->
+                    <authorized role-is="@Roles.Applicant"
+                                status-for="@Model.Status"
+                                status-is="@ModificationStatus.RequestForInformation">
+
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">
+                                Response to reason @(i + 1)
+                            </dt>
+                            <dd class="govuk-summary-list__value">
+                                @{
+                                    var response = Model.RfiModel.RfiResponses
+                                        .ElementAtOrDefault(i)?
+                                        .InitialResponse
+                                        .FirstOrDefault();
+                                }
+                                @(string.IsNullOrWhiteSpace(response) ? "No response provided" : response)
+                            </dd>                            
+                        </div>
+                    </authorized>
+
+                    <!-- REVISE AND AUTHORISE -->
+                    <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
+                                status-for="@Model.Status"
+                                status-is="@ModificationStatus.ResponseReviseAndAuthorise">
+
+                        <!-- REVISED RESPONSE -->
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">
+                                Response to reason @(i + 1)
+                            </dt>
+                            <dd class="govuk-summary-list__value">
+                                @{
+                                    var revisedResponse = Model.RfiModel.RfiResponses
+                                        .ElementAtOrDefault(i)?
+                                        .ReviseAndAuthorise
+                                        .FirstOrDefault();
+                                }
+                                @(string.IsNullOrWhiteSpace(revisedResponse)
+                                    ? "No revised response provided"
+                                    : revisedResponse)
+                            </dd>
+                            <dd class="govuk-summary-list__actions">
+                                <a class="govuk-link"
+                                   asp-route="rfi:RfiResponses"
+                                   asp-all-route-data="backRouteValues">
+                                    Change
+                                </a>
+                            </dd>
+                        </div>
+
+                        <!-- REASON FOR REVISED RESPONSE -->
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">
+                                Reason for revised response to reason @(i + 1)
+                            </dt>
+                            <dd class="govuk-summary-list__value">
+                                @{
+                                    var reasonForRevision = Model.RfiModel.RfiResponses
+                                        .ElementAtOrDefault(i)?
+                                        .ReasonForReviseAndAuthorise
+                                        .FirstOrDefault();
+                                }
+                                @(string.IsNullOrWhiteSpace(reasonForRevision)
+                                    ? "No reason for revised response provided"
+                                    : reasonForRevision)
+                            </dd>
+                            <dd class="govuk-summary-list__actions">
+                                <a class="govuk-link"
+                                   asp-route="rfi:RfiResponses"
+                                   asp-all-route-data="backRouteValues">
+                                    Change
+                                </a>
+                            </dd>
+                        </div>
+
+                    </authorized>
                 }
             </dl>
-            <button type="submit" class="govuk-button">Send response to sponsor</button>
+
+            <div status-for="@Model.Status"
+                 status-is="@ModificationStatus.RequestForInformation">
+                <button type="submit" class="govuk-button" data-module="govuk-button">
+                    Send response to sponsor
+                </button>
+            </div>
+
+            <div status-for="@Model.Status"
+                 status-is="@ModificationStatus.ResponseReviseAndAuthorise">
+                <button type="submit" class="govuk-button" data-module="govuk-button">
+                    Authorise and submit
+                </button>
+            </div>            
         </form>
     </div>
 </div>

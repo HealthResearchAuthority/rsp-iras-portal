@@ -28,7 +28,8 @@ public class RfiResponsesDtoValidator : AbstractValidator<RfiResponsesDTO>
                 .NotEmpty()
                 .WithMessage(InitialResponseRequiredMessage)
                 .MaximumLength(MaxCharactersCount)
-                .WithMessage(MaxLengthErrorMessage);
+                .WithMessage(MaxLengthErrorMessage)
+                .OverridePropertyName("InitialResponse_0");
         });
 
         // REVISE AND AUTHORISE
@@ -38,7 +39,8 @@ public class RfiResponsesDtoValidator : AbstractValidator<RfiResponsesDTO>
                 .NotEmpty()
                 .WithMessage(ReviseAndAuthoriseRequiredMessage)
                 .MaximumLength(MaxCharactersCount)
-                .WithMessage(MaxLengthErrorMessage);
+                .WithMessage(MaxLengthErrorMessage)
+                .OverridePropertyName("ReviseAndAuthorise_0");
         });
 
         // REASON FOR REVISE AND AUTHORISE
@@ -48,7 +50,8 @@ public class RfiResponsesDtoValidator : AbstractValidator<RfiResponsesDTO>
                 .NotEmpty()
                 .WithMessage(ReviseAndAuthoriseReasonRequiredMessage)
                 .MaximumLength(MaxCharactersCount)
-                .WithMessage(MaxLengthErrorMessage);
+                .WithMessage(MaxLengthErrorMessage)
+                .OverridePropertyName("ReasonForReviseAndAuthorise_0");
         });
     }
 }

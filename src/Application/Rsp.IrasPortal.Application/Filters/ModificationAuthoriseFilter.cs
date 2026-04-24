@@ -127,7 +127,7 @@ public class ModificationAuthoriseFilter : IAsyncAuthorizationFilter, IAsyncActi
             // 3. Check if modification is in ReviseAndAuthorise state
             var modificationResult = await _projectModificationsService.GetModification(projectRecordId, projectModificationIdGuid);
 
-            if (modificationResult.Content?.Status is not ModificationStatus.ReviseAndAuthorise or ModificationStatus.ResponseReviseAndAuthorise)
+            if (modificationResult.Content?.Status is not (ModificationStatus.ReviseAndAuthorise or ModificationStatus.ResponseReviseAndAuthorise))
             {
                 if (!context.HttpContext.User.HasPermission(_permission))
                 {

@@ -1,21 +1,57 @@
 ﻿@using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models
-@{
-    ViewBag.Title = "Request for further information";
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model BaseProjectModificationViewModel
+@{    
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null ?
+        pageContentData :
+        new Dictionary<string, MixedContentPageItem?>();
+
+    var rfiHeader = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.RfiTitle", null);
+    var rfiBody = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.RfiBody", null);    
+    var reviseAndAuthoriseHeader = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.ReviseAndAuthoriseHeader", null);
+    var reviseAndAuthoriseBody = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.ReviseAndAuthoriseBody", null);
+
+    var (header, body) = Model.Status switch
+    {
+        // After revise and authorise -> status is ResponseWithReviewBody
+        ModificationStatus.ResponseWithReviewBody
+            => (reviseAndAuthoriseHeader, reviseAndAuthoriseBody),
+
+        _ => (rfiHeader, rfiBody)
+    };
+
+    ViewBag.Title = header?.Value;
 }
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         <div class="govuk-panel govuk-panel--confirmation">
             <h1 class="govuk-panel__title">
-                Response sent to sponsor
+                @Html.Raw(header?.Value)
             </h1>
         </div>
         <h2 class="govuk-heading-m">What happens next</h2>
         <p class="govuk-body">
-            The response has been submitted to the sponsor. No further review or approval is needed.
+            @Html.Raw(body?.Value)
         </p>
-        <a class="govuk-button" asp-route="notifications:usernotificationsdashboard">
-            Return to notifications
-        </a>
+
+        <div status-for="@Model.Status"
+             status-is="@ModificationStatus.RequestForInformation">
+            <a class="govuk-button" asp-route="notifications:usernotificationsdashboard">
+                Return to notifications
+            </a>
+        </div>
+
+        <div status-for="@Model.Status"
+             status-is="@ModificationStatus.ResponseReviseAndAuthorise">
+            <a class="govuk-button" asp-route="sws:modifications"
+                asp-route-projectRecordId="@Model.ProjectRecordId" 
+                asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
+                asp-route-rtsId="@Model.RtsId">
+                Return to authorisations
+            </a>
+        </div>        
     </div>
 </div>

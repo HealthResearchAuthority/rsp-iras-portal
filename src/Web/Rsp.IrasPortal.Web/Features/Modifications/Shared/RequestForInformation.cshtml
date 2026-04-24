@@ -4,6 +4,20 @@
 <h2 class="govuk-heading-m">Request for further information</h2>
 @for (var i = 0; i < Model.RfiModel.RfiReasons.Count; i++)
 {
+    var rfiResponse = Model.RfiModel.RfiResponses.ElementAtOrDefault(i);
+
+    var initialResponse = rfiResponse?
+        .InitialResponse?
+        .FirstOrDefault();
+
+    var reviseAndAuthorise = rfiResponse?
+        .ReviseAndAuthorise?
+        .FirstOrDefault();
+
+    var reasonForReviseAndAuthorise = rfiResponse?
+        .ReasonForReviseAndAuthorise?
+        .FirstOrDefault();   
+
     <div class="govuk-summary-card">
         <div class="govuk-summary-card__title-wrapper">
             <h2 class="govuk-summary-card__title">
@@ -20,21 +34,49 @@
                         <dd class="govuk-summary-list__value">
                             @Model.RfiModel.RfiReasons[i]
                         </dd>
-                    </div>
-                    <div class="govuk-summary-list__row">
-                        <dt class="govuk-summary-list__key">
-                            Response @(i + 1)
-                        </dt>
-                        <dd class="govuk-summary-list__value">
-                            @{
-                                var response = Model.RfiModel.RfiResponses
-                                .ElementAtOrDefault(i)?
-                                .InitialResponse
-                                .FirstOrDefault();
-                            }
-                            @response
-                        </dd>
-                    </div>
+                    </div>                    
+
+                    @if (!string.IsNullOrWhiteSpace(reasonForReviseAndAuthorise))
+                    {
+                        <!-- REVISED RESPONSE -->
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">
+                                Response to reason @(i + 1)
+                            </dt>
+                            <dd class="govuk-summary-list__value">
+                                @reviseAndAuthorise
+                            </dd>
+                        </div>
+
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">
+                                Reason for revised response to reason @(i + 1)
+                            </dt>
+                            <dd class="govuk-summary-list__value">
+                                @reasonForReviseAndAuthorise
+                            </dd>
+                        </div>
+                    }
+                    @* else if (!string.IsNullOrWhiteSpace(requestRevisions)) // + diffirentiate after sponsor requested and after applicant responded
+                    {
+                        <!-- REQUEST REVISIONS -->                        
+                    } *@
+                    else
+                    {
+                        <!-- INITIAL RESPONSE (DEFAULT) -->
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">
+                                Response to reason @(i + 1)
+                            </dt>
+                            <dd class="govuk-summary-list__value">
+                                @(string.IsNullOrWhiteSpace(initialResponse)
+                                    ? "No response provided"
+                                    : initialResponse)
+                            </dd>
+                        </div>
+                    }
+
+
                 </dl>
             </div>
         </div>

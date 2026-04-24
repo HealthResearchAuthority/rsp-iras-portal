@@ -101,9 +101,15 @@
 
             <!-- INITIAL RESPONSE -->
             <div class="govuk-grid-row">
-                @{                             
-                    var infoId = $"RfiResponses_{i}_InitialResponse_0-info";
+                @{                    
+                    var initialTextareaId = $"RfiModel_RfiResponses_{i}__InitialResponse_0_";
+                    var infoId = $"{initialTextareaId}-info";
+                    var initialFieldErrors = ViewData.ModelState[initialTextareaId]?.Errors;
+                    var initialHasError = initialFieldErrors?.Count > 0;
+                    var initialErrorMessage = initialHasError ? initialFieldErrors[0].ErrorMessage : string.Empty;
+                    var initialErrorId = $"{initialTextareaId}-error";
                 }
+
                 <div class="govuk-grid-column-one-third">
                     <label class="govuk-label" for="RfiResponses_@(i)__InitialResponse_0__">
                         Response to reason @(i + 1)
@@ -115,10 +121,18 @@
                          data-maxlength="300"
                          error-class-for="RfiModel.RfiResponses[i].InitialResponse[0]">
 
-                        @Html.ValidationMessageFor(model => model.RfiModel.RfiResponses[i].InitialResponse[0], "", new { @class = "govuk-error-message" })
+                        @if (initialHasError)
+                        {
+                            <span id="@initialErrorId"
+                                  class="govuk-error-message">
+                                <span class="govuk-visually-hidden">Error:</span>
+                                @initialErrorMessage
+                            </span>
+                        }
+
                         <textarea asp-for="RfiModel.RfiResponses[i].InitialResponse[0]"                              
                                   class="govuk-textarea govuk-js-character-count"
-                                  rows="5"
+                                  rows="5"                                  
                                   aria-describedby="@infoId">
                                         </textarea>
                         <noscript>
@@ -141,8 +155,13 @@
 
             <!-- REVISED RESPONSE -->
             <div class="govuk-grid-row">
-                @{
-                    var reviseInfoId = $"RfiResponses_{i}_ReviseAndAuthorise_0-info";
+                @{                    
+                    var reviseTextareaId = $"RfiModel_RfiResponses_{i}__ReviseAndAuthorise_0_";
+                    var reviseInfoId = $"{reviseTextareaId}-info";
+                    var reviseFieldErrors = ViewData.ModelState[reviseTextareaId]?.Errors;
+                    var reviseHasError = reviseFieldErrors?.Count > 0;
+                    var reviseErrorMessage = reviseHasError ? reviseFieldErrors[0].ErrorMessage : string.Empty;
+                    var reviseErrorId = $"{reviseTextareaId}-error";
                 }
 
                 <div class="govuk-grid-column-one-third">
@@ -154,18 +173,22 @@
 
                 <div class="govuk-grid-column-two-thirds">
                     <div class="govuk-form-group govuk-character-count"
-                         data-module="govuk-character-count"
+                         data-module="govuk-character-count"  
                          data-maxlength="300"
                          error-class-for="RfiModel.RfiResponses[i].ReviseAndAuthorise[0]">
 
-                        @Html.ValidationMessageFor(
-                            model => model.RfiModel.RfiResponses[i].ReviseAndAuthorise[0],
-                            "",
-                            new { @class = "govuk-error-message" })
+                        @if (reviseHasError)
+                        {
+                            <span id="@reviseErrorId"
+                                  class="govuk-error-message">
+                                <span class="govuk-visually-hidden">Error:</span>
+                                @reviseErrorMessage
+                            </span>
+                        }
 
                         <textarea asp-for="RfiModel.RfiResponses[i].ReviseAndAuthorise[0]"
                                   class="govuk-textarea govuk-js-character-count"
-                                  rows="5"
+                                  rows="5"                                  
                                   aria-describedby="@reviseInfoId">
                         </textarea>
 
@@ -188,8 +211,13 @@
 
             <!-- REASON FOR REVISED RESPONSE -->
             <div class="govuk-grid-row">
-                @{
-                    var reasonInfoId = $"RfiResponses_{i}_ReasonForReviseAndAuthorise_0-info";
+                @{                    
+                    var reasonTextareaId = $"RfiModel_RfiResponses_{i}__ReasonForReviseAndAuthorise_0_";
+                    var reasonInfoId = $"{reasonTextareaId}-info";
+                    var reasonFieldErrors = ViewData.ModelState[reasonTextareaId]?.Errors;
+                    var reasonHasError = reasonFieldErrors?.Count > 0;
+                    var reasonErrorMessage = reasonHasError ? reasonFieldErrors[0].ErrorMessage : string.Empty;
+                    var reasonErrorId = $"{reasonTextareaId}-error";
                 }
 
                 <div class="govuk-grid-column-one-third">
@@ -201,18 +229,22 @@
 
                 <div class="govuk-grid-column-two-thirds">
                     <div class="govuk-form-group govuk-character-count"
-                         data-module="govuk-character-count"
-                         data-maxlength="300"
-                         error-class-for="RfiModel.RfiResponses[i].ReasonForReviseAndAuthorise[0]">
-
-                        @Html.ValidationMessageFor(
-                            model => model.RfiModel.RfiResponses[i].ReasonForReviseAndAuthorise[0],
-                            "",
-                            new { @class = "govuk-error-message" })
+                        data-module="govuk-character-count"   
+                        data-maxlength="300"
+                        error-class-for="RfiModel.RfiResponses[i].ReasonForReviseAndAuthorise[0]">
+                        
+                        @if (reasonHasError)
+                        {
+                            <span id="@reasonErrorId"
+                                  class="govuk-error-message">
+                                <span class="govuk-visually-hidden">Error:</span>
+                                @reasonErrorMessage
+                            </span>
+                        }
 
                         <textarea asp-for="RfiModel.RfiResponses[i].ReasonForReviseAndAuthorise[0]"
                                   class="govuk-textarea govuk-js-character-count"
-                                  rows="5"
+                                  rows="5"                                 
                                   aria-describedby="@reasonInfoId">
                         </textarea>
 
@@ -264,7 +296,7 @@
         <button type="submit" class="govuk-button" data-module="govuk-button">
             Save and continue
         </button>
-        <button asp-route-saveForLater="true" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+        <button asp-action="SendRfiResponses" asp-route-saveForLater="true" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
             Save for later
         </button>
     </div>

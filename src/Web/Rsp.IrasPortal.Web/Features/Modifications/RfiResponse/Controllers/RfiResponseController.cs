@@ -119,6 +119,10 @@ public class RfiResponseController(
         bool includeSelectiveDownloadError = false
     )
     {
+        TempData[TempDataKeys.IrasId] = irasId;
+        TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
+        TempData[TempDataKeys.ShortProjectTitle] = shortTitle;
+
         // Retrieve all modification changes related to the modification
         var (result, model) = await PrepareModificationAsync(projectModificationId, irasId, shortTitle, projectRecordId);
         if (result is not null)
@@ -194,7 +198,7 @@ public class RfiResponseController(
                     foreach (var error in validationResult.Errors)
                     {
                         ModelState.AddModelError(
-                            $"RfiModel.RfiResponses[{i}].{error.PropertyName}",
+                            $"RfiModel_RfiResponses_{i}__{error.PropertyName}_",
                             error.ErrorMessage);
                     }
                 }
@@ -217,7 +221,9 @@ public class RfiResponseController(
                     projectRecordId = viewModel.ProjectRecordId,
                     irasId = viewModel.IrasId,
                     shortTitle = viewModel.ShortTitle,
-                    projectModificationId = Guid.Parse(viewModel.ModificationId!)
+                    projectModificationId = Guid.Parse(viewModel.ModificationId!),
+                    sponsorOrganisationUserId = viewModel.SponsorOrganisationUserId,
+                    rtsId = viewModel.RtsId,
                 });
             }
         }
@@ -227,7 +233,7 @@ public class RfiResponseController(
             ModificationStatus.RequestForInformation =>
                 await HandleRequestForInformation(viewModel, saveForLater),
 
-            ModificationStatus.ReviseAndAuthorise =>
+            ModificationStatus.ResponseReviseAndAuthorise =>
                 await HandleReviseAndAuthorise(viewModel, saveForLater),
 
             _ => this.ServiceError(new ServiceResponse
@@ -335,6 +341,7 @@ public class RfiResponseController(
     public async Task<IActionResult> RfiCheckAndSubmitResponses()
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
+        viewModel.Status = (viewModel as BaseProjectModificationViewModel).Status;
         var rfiReasons = await projectModificationsService.GetModificationReviewResponses(viewModel.ProjectRecordId, Guid.Parse(viewModel.ModificationId));
         var rfiResponses = await projectModificationsService.GetModificationRfiResponses(viewModel.ProjectRecordId, Guid.Parse(viewModel.ModificationId));
 
@@ -360,14 +367,40 @@ public class RfiResponseController(
     public async Task<IActionResult> RfiSubmitResponses()
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
+        viewModel.Status = (viewModel as BaseProjectModificationViewModel).Status;
 
-        var updateStatusResponse = await projectModificationsService.UpdateModificationStatus(
-            new UpdateModificationStatusRequest
-            {
-                ProjectRecordId = viewModel.ProjectRecordId!,
-                ModificationId = Guid.Parse(viewModel.ModificationId!),
-                Status = ModificationStatus.ResponseWithSponsor
-            });
+        ServiceResponse updateStatusResponse;
+
+        switch (viewModel.Status)
+        {
+            case ModificationStatus.RequestForInformation:
+                updateStatusResponse = await projectModificationsService.UpdateModificationStatus(
+                    new UpdateModificationStatusRequest
+                    {
+                        ProjectRecordId = viewModel.ProjectRecordId!,
+                        ModificationId = Guid.Parse(viewModel.ModificationId!),
+                        Status = ModificationStatus.ResponseWithSponsor
+                    });
+                break;
+
+            case ModificationStatus.ResponseReviseAndAuthorise:
+                updateStatusResponse = await projectModificationsService.UpdateModificationStatus(
+                    new UpdateModificationStatusRequest
+                    {
+                        ProjectRecordId = viewModel.ProjectRecordId!,
+                        ModificationId = Guid.Parse(viewModel.ModificationId!),
+                        Status = ModificationStatus.ResponseWithReviewBody
+                    });
+                break;
+
+            default:
+                updateStatusResponse = new ServiceResponse
+                {
+                    StatusCode = HttpStatusCode.BadRequest,
+                    Error = "Unsupported modification status for saving RFI Responses"
+                };
+                break;
+        }
 
         if (!updateStatusResponse.IsSuccessStatusCode)
         {
@@ -381,6 +414,7 @@ public class RfiResponseController(
     [ModificationAuthorise(Permissions.MyResearch.Modifications_Read)]
     public IActionResult RfiResponsesConfirmation()
     {
-        return View();
+        var viewModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
+        return View(viewModel);
     }
 }
