@@ -47,8 +47,6 @@ public class ProjectCollaboratorsController
             return this.ServiceError(response);
         }
 
-        HttpContext.Session.Remove(SessionKeys.CollaboratorProjects);
-
         TempData[TempDataKeys.ProjectCollaborators.OperationMessage] = "Collaborator added";
 
         return RedirectToRoute("pov:projectteam", new
@@ -83,8 +81,6 @@ public class ProjectCollaboratorsController
             return this.ServiceError(response);
         }
 
-        HttpContext.Session.Remove(SessionKeys.CollaboratorProjects);
-
         TempData[TempDataKeys.ProjectCollaborators.OperationMessage] = "Collaborator access changed";
 
         return RedirectToRoute("pov:projectteam", new { model.ProjectRecordId });
@@ -110,8 +106,6 @@ public class ProjectCollaboratorsController
         {
             return this.ServiceError(response);
         }
-
-        HttpContext.Session.Remove(SessionKeys.CollaboratorProjects);
 
         if (model.Self)
         {

@@ -125,7 +125,7 @@ else
                 </thead>
                 <tbody>
                     @{
-                        var projects = Context.Session.GetString(SessionKeys.CollaboratorProjects);
+                        var projects = Context.Items[ContextItemKeys.CollaboratorProjects] as string;
 
                         var collaboratorProjects = string.IsNullOrWhiteSpace(projects) ?
                             new List<CollaboratorProjectResponse>() :

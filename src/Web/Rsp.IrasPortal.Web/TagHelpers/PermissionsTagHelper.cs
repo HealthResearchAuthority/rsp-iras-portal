@@ -403,8 +403,8 @@ public class PermissionsTagHelper : TagHelper
 
     private List<CollaboratorProjectResponse> GetCollaboratorProjects()
     {
-        // Retrieve the user's collaborator projects from session
-        var projects = ViewContext.HttpContext.Session.GetString(SessionKeys.CollaboratorProjects);
+        // Retrieve the user's collaborator projects from context items
+        var projects = ViewContext.HttpContext.Items[ContextItemKeys.CollaboratorProjects] as string;
 
         // If there are no projects in session, return an empty list
         if (string.IsNullOrWhiteSpace(projects))
