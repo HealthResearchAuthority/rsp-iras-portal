@@ -15,7 +15,7 @@
 @section Breadcrumb {
     @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
     {
-        ("Member management", Url.RouteUrl("mm:membermanagement")),
+        ("Member management", Url.RouteUrl("mm:home")),
         ("Research ethics committees", Url.RouteUrl("mm:researchethicscommittees"))}
     )
 }
