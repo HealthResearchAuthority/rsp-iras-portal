@@ -79,4 +79,9 @@ public struct QuestionIds
     /// The option ID for the previous version of document - No.
     /// </summary>
     public const string PreviousVersionOfDocumentNoOption = "OPT0005";
+
+    /// <summary>
+    /// Question Id for the Chief Investigator's email address.
+    /// </summary>
+    public const string ChiefInvestigatorEmail = "IQA0311";
 }

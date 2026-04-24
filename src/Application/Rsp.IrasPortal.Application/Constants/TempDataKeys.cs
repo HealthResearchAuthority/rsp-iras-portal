@@ -104,4 +104,9 @@ public struct TempDataKeys
     public const string RequestRevisionDescription = "td:request_revision_description";
     public const string RequestRevisionHeadline = "td:request_revision_headline";
     public const string RfiDetails = "td:rfi_details";
+
+    public struct ProjectCollaborators
+    {
+        public const string OperationMessage = "td:project_collaborator_operation_message";
+    }
 }
