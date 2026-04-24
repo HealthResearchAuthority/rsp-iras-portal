@@ -17,6 +17,7 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
     private const string FamilyNameMandatoryErrorMessage = "Enter a last name";
     private const string EmailFormatErrorMessage = "Enter an email address in the correct format";
     private const string ConditionalCountryMandatoryErrorMessage = "Select at least one country";
+    private const string ConditionalSingleCountryMandatoryErrorMessage = "Select only one country";
     private const string ConditionalReviewBodyMandatoryErrorMessage = "Select at least one review body";
     private const string EmailMaxCharactersErrorMessage = "Email address must be 254 characters or less";
     private const string EmailMandatoryErrorMessage = "Enter an email address";
@@ -64,7 +65,19 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
         RuleFor(x => x.Country)
             .NotEmpty()
             .WithMessage(ConditionalCountryMandatoryErrorMessage)
-            .When(x => x.UserRoles.Any(role => role is { Name: Roles.TeamManager, IsSelected: true }));
+            .When(x => x.UserRoles.Any(role =>
+                role.IsSelected &&
+                 (string.Equals(role.Name, Roles.TeamManager, StringComparison.OrdinalIgnoreCase) ||
+                 (string.Equals(role.Name, Roles.ResearchEthicsCommitteeManager, StringComparison.OrdinalIgnoreCase)))
+            ));
+
+        RuleFor(x => x.Country)
+           .Must(x => x != null && x.Count == 1)
+           .WithMessage(ConditionalSingleCountryMandatoryErrorMessage)
+           .When(x => x.UserRoles.Any(role =>
+               role.IsSelected &&
+                string.Equals(role.Name, Roles.MemberManagement, StringComparison.OrdinalIgnoreCase)
+           ));
 
         RuleFor(x => x.ReviewBodies)
             .Must(rbs => rbs != null && rbs.Any(rb => rb.IsSelected))
@@ -72,7 +85,10 @@ public class UserInfoValidator : AbstractValidator<UserViewModel>
             .When(x => x.UserRoles.Any(role =>
                 role.IsSelected &&
                 (string.Equals(role.Name, Roles.StudyWideReviewer, StringComparison.OrdinalIgnoreCase) ||
-                 string.Equals(role.Name, Roles.WorkflowCoordinator, StringComparison.OrdinalIgnoreCase))
+                 string.Equals(role.Name, Roles.WorkflowCoordinator, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(role.Name, Roles.Administrator, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(role.Name, Roles.ResearchEthicsCommitteeManager, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(role.Name, Roles.Reviewer, StringComparison.OrdinalIgnoreCase))
             ));
     }
 }

@@ -46,6 +46,7 @@ public class UsersController(
     private const string TeamManagerRole = Roles.TeamManager;
     private const string StudyWideReviewerRole = Roles.StudyWideReviewer;
     private const string WorkflowCoordinatorRole = Roles.WorkflowCoordinator;
+    private const string MemberManagementRole = Roles.MemberManagement;
 
     private const string EditMode = "edit";
     private const string CreateMode = "create";
@@ -271,7 +272,10 @@ public class UsersController(
     private static void ValidateUserViewModel(UserViewModel model)
     {
         if (model.UserRoles.Any(r =>
-                r.Name.Equals(TeamManagerRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected))
+                (r.Name.Equals(TeamManagerRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected) &&
+                (r.Name.Equals(MemberManagementRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected) &&
+                (r.Name.Equals(Roles.ResearchEthicsCommitteeManager, StringComparison.OrdinalIgnoreCase) && !r.IsSelected)
+             ))
         {
             model.Country = [];
         }
@@ -279,7 +283,10 @@ public class UsersController(
         // Is either role selected?
         var hasEitherRoleSelected = model.UserRoles.Any(r =>
             (r.Name.Equals(StudyWideReviewerRole, StringComparison.OrdinalIgnoreCase) ||
-             r.Name.Equals(WorkflowCoordinatorRole, StringComparison.OrdinalIgnoreCase))
+             r.Name.Equals(WorkflowCoordinatorRole, StringComparison.OrdinalIgnoreCase) ||
+             r.Name.Equals(Roles.Administrator, StringComparison.OrdinalIgnoreCase) ||
+             r.Name.Equals(Roles.ResearchEthicsCommitteeManager, StringComparison.OrdinalIgnoreCase) ||
+             r.Name.Equals(Roles.Reviewer, StringComparison.OrdinalIgnoreCase))
             && r.IsSelected
         );
 
@@ -334,6 +341,18 @@ public class UsersController(
     {
         var mode = string.IsNullOrEmpty(model.Id) ? CreateMode : EditMode;
         ViewBag.Mode = mode;
+
+        if (await featureManager.IsEnabledAsync(FeatureFlags.RecMemberManagement)
+           && model.SelectedReviewBodies != null)
+        {
+            // handle new review body multi select control
+            var selectedReviewBodyIds = model.SelectedReviewBodies;
+
+            foreach (var reviewBody in model.ReviewBodies)
+            {
+                reviewBody.IsSelected = selectedReviewBodyIds.Contains(reviewBody.Id.ToString());
+            }
+        }
 
         ValidateUserViewModel(model);
 
