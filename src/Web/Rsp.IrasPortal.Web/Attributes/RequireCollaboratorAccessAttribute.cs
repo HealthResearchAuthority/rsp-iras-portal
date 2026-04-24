@@ -42,8 +42,8 @@ public class RequireCollaboratorAccessAttribute(string accessLevel) : ActionFilt
             return;
         }
 
-        // Retrieve the user's collaborator projects from session
-        var projects = context.HttpContext.Session.GetString(SessionKeys.CollaboratorProjects);
+        // Retrieve the user's collaborator projects from context items
+        var projects = context.HttpContext.Items[ContextItemKeys.CollaboratorProjects] as string;
 
         // Deny access if no collaborator projects exist in session
         if (string.IsNullOrWhiteSpace(projects))

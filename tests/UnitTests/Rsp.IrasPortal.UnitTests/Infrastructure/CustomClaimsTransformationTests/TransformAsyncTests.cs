@@ -567,10 +567,12 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
     }
 
     [Theory, AutoData]
-    public async Task TransformAsync_Should_Store_CollaboratorProjects_In_Session_When_Not_Cached(
+    public async Task TransformAsync_Should_Store_CollaboratorProjects_In_ContextItems_When_Not_Cached
+    (
         string email,
         string identityProviderId,
-        User user)
+        User user
+    )
     {
         // Arrange
         var claims = new List<Claim>
@@ -621,57 +623,10 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
         var result = await Sut.TransformAsync(principal);
 
         // Assert
-        var storedProjects = httpContext.Session.GetString(SessionKeys.CollaboratorProjects);
+        var storedProjects = httpContext.Items[ContextItemKeys.CollaboratorProjects] as string;
         storedProjects.ShouldNotBeNull();
 
         _projectCollaboratorService.Verify(x => x.GetCollaboratorProjects(It.IsAny<string>()), Times.Once);
-    }
-
-    [Theory, AutoData]
-    public async Task TransformAsync_Should_Not_Call_ProjectCollaboratorService_When_Projects_Already_In_Session(
-        string email,
-        string identityProviderId,
-        User user)
-    {
-        // Arrange
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.Email, email),
-            new(ClaimTypes.NameIdentifier, identityProviderId)
-        };
-
-        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims));
-
-        var httpContext = new DefaultHttpContext()
-        {
-            Session = new FakeSession(),
-        };
-
-        // Pre-populate session with collaborator projects
-        httpContext.Session.SetString(SessionKeys.CollaboratorProjects, "[]");
-
-        _httpContextAccessor
-            .Setup(x => x.HttpContext)
-            .Returns(httpContext);
-
-        var userResponse = new UserResponse
-        {
-            Roles = [],
-            User = user with { Status = IrasUserStatus.Active }
-        };
-
-        var apiResponse = ApiResponseFactory.Success(userResponse);
-        var serviceResponse = apiResponse.ToServiceResponse();
-
-        _userManagementService
-            .Setup(x => x.GetUser(null, null, identityProviderId))
-            .ReturnsAsync(serviceResponse);
-
-        // Act
-        var result = await Sut.TransformAsync(principal);
-
-        // Assert - ProjectCollaboratorService should not be called
-        _projectCollaboratorService.Verify(x => x.GetCollaboratorProjects(It.IsAny<string>()), Times.Never);
     }
 
     [Theory, AutoData]
@@ -826,7 +781,7 @@ public class TransformAsyncTests : TestServiceBase<CustomClaimsTransformation>
         var result = await Sut.TransformAsync(principal);
 
         // Assert
-        var storedProjects = httpContext.Session.GetString(SessionKeys.CollaboratorProjects);
+        var storedProjects = httpContext.Items[ContextItemKeys.CollaboratorProjects] as string;
         storedProjects.ShouldBeNull();
     }
 

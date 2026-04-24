@@ -172,19 +172,14 @@ public class CustomClaimsTransformation
             // as the claims are now updated, we need to generate a new token
             await UpdateAccessToken(principal);
 
-            // check if the collaborator projects are already in session, if not get them from the api and add to session
-            var collaboratorProjects = context.Session.GetString(SessionKeys.CollaboratorProjects);
+            // store the projects in the context Items for later access
+            var collaboratorProjectsResponse = await projectCollaboratorService.GetCollaboratorProjects(userId!);
 
-            if (collaboratorProjects == null)
+            if (collaboratorProjectsResponse.IsSuccessStatusCode && collaboratorProjectsResponse.Content != null)
             {
-                var collaboratorProjectsResponse = await projectCollaboratorService.GetCollaboratorProjects(userId!);
+                var collaboratorProjects = JsonSerializer.Serialize(collaboratorProjectsResponse.Content);
 
-                if (collaboratorProjectsResponse.IsSuccessStatusCode && collaboratorProjectsResponse.Content != null)
-                {
-                    collaboratorProjects = JsonSerializer.Serialize(collaboratorProjectsResponse.Content);
-
-                    context.Session.SetString(SessionKeys.CollaboratorProjects, collaboratorProjects);
-                }
+                context.Items.Add(ContextItemKeys.CollaboratorProjects, collaboratorProjects);
             }
 
             return principal;

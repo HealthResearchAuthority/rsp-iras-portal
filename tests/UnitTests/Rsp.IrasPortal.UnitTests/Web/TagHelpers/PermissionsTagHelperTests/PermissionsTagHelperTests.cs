@@ -1111,10 +1111,7 @@ public class PermissionsTagHelperTests
     {
         var viewContext = CreateViewContext(CreateUser(Roles.Applicant));
         viewContext.TempData[TempDataKeys.ProjectRecordId] = "project-1";
-        viewContext.HttpContext.Session.SetString(
-            SessionKeys.CollaboratorProjects,
-            "[{\"ProjectRecordId\":\"project-1\",\"ProjectAccessLevel\":\"Edit\"}]"
-        );
+        viewContext.HttpContext.Items[ContextItemKeys.CollaboratorProjects] = "[{\"ProjectRecordId\":\"project-1\",\"ProjectAccessLevel\":\"Edit\"}]";
 
         var tagHelper = new PermissionsTagHelper
         {
