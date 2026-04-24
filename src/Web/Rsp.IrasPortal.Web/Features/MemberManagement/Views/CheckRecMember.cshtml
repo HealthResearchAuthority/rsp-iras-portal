@@ -28,7 +28,7 @@
 		{
 			("Member management", Url.RouteUrl("mm:home")),
 			("Research ethics committees", Url.RouteUrl("mm:researchethicscommittees")),
-			($"Research ethics committee profile: {Model.RecName}", "/")
+			($"Research ethics committee profile: {Model.RecName}", Url.RouteUrl("mm:ResearchEthicsCommitteesProfile", new {id = Model.RecId}))
 		})
 	}
 }

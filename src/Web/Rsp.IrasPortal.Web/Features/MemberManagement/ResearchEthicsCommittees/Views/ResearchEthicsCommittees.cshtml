@@ -4,121 +4,118 @@
 @model Rsp.Portal.Web.Features.MemberManagement.ResearchEthicsCommittees.Models.MemberManagementResearchEthicsCommitteesViewModel;
 
 @section Breadcrumb {
-    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
-    {
-        ("Member management", Url.RouteUrl("mm:home"))
-    })
+	@await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+	{
+		("Member management", Url.RouteUrl("mm:home"))
+	})
 }
 
 @{
-    var sortableHeaders = new[]
-    {
+	var sortableHeaders = new[]
+	{
 		new { Field = nameof(ReviewBodyDto.RegulatoryBodyName), Label = "Research ethics committee name" },
-        new { Field = nameof(ReviewBodyDto.Countries), Label = "Country" }
-    };
+		new { Field = nameof(ReviewBodyDto.Countries), Label = "Country" }
+	};
 
 	var tableId = "researchEthicsCommitteesTable";
 
-    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
-    var pageContent = pageContentData != null
-        ? pageContentData
-        : new Dictionary<string, MixedContentPageItem?>();
+	var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+	var pageContent = pageContentData != null
+		? pageContentData
+		: new Dictionary<string, MixedContentPageItem?>();
 
-    var headline = pageContent.GetValueOrDefault("MemberManagement.ResearchEthicsCommittees.Title", null);
-    var searchTitle = pageContent.GetValueOrDefault("MemberManagement.ResearchEthicsCommittees.SearchTitle", null);
-    var searchHint = pageContent.GetValueOrDefault("MemberManagement.ResearchEthicsCommittees.SearchHint", null);
+	var headline = pageContent.GetValueOrDefault("MemberManagement.ResearchEthicsCommittees.Title", null);
+	var searchTitle = pageContent.GetValueOrDefault("MemberManagement.ResearchEthicsCommittees.SearchTitle", null);
+	var searchHint = pageContent.GetValueOrDefault("MemberManagement.ResearchEthicsCommittees.SearchHint", null);
 }
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
-    </div>
-</div>
-
-<div class="govuk-grid-row">
-
-    <div class="govuk-grid-column-two-thirds">
-        <form method="post" class="govuk-form-group">
-            <label class="govuk-label" for="Search_SearchTerm">
-                <b>@Html.Raw(searchTitle?.Value)</b>
-            </label>
-            <div class="govuk-label">
-                @Html.Raw(searchHint?.Value)
-            </div>
-
-            <div class="review-body-search">
-                <input class="govuk-input" id="Search_SearchTerm" name="Search.SearchTerm" type="text" value="@Model.Search?.SearchTerm"/>
-                @{
-                    ViewBag.Style = "govuk-button govuk-button--secondary";
-                }
-                <partial name="_SubmitButton" model="@("mm:searchresearchethicscommittees", "Search", new Dictionary<string, string>())"/>
-            </div>
-        </form>
-    </div>
-</div>
-			
-<div class="govuk-grid-row">
-
-	<div class="govuk-grid-column-full">
-		@if (Model.ResearchEthicsCommittees != null && Model.ResearchEthicsCommittees.Any())
-		{
-			<div class="govuk-grid-column-full">
-				<div class="govuk-table-wrapper">
-					<table class="govuk-table govuk-table-users" id="@tableId">
-						<thead>
-							<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
-								@foreach (var header in sortableHeaders)
-								{
-									var sortableHeaderModel = new SortableHeaderModel
-									{
-										FieldName = header.Field,
-										DisplayText = header.Label,
-										CurrentSortField = Model.Pagination?.SortField,
-										CurrentSortDirection = Model.Pagination?.SortDirection,
-										TableId = tableId,
-									};
-
-									<th scope="col" class="govuk-table__header govuk-table__header-sortable">
-										<partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
-									</th>
-								}
-								<th scope="col" class="govuk-table__header">Actions</th>
-							</tr>
-						</thead>
-						<tbody class="govuk-table__body">
-							@foreach (var reviewBody in Model.ResearchEthicsCommittees)
-							{
-								<tr class="govuk-table__row">
-									<td class="govuk-table__cell">@reviewBody.RegulatoryBodyName</td>
-									<td class="govuk-table__cell">@string.Join(", ", reviewBody.Countries)</td>
-									<td class="govuk-table__cell">
-										<a class="govuk-link" asp-route="mm:researchethicscommitteesprofile" asp-route-id="@reviewBody.Id">
-											View
-											<span class="govuk-visually-hidden"> @reviewBody.RegulatoryBodyName</span>
-										</a>
-									</td>
-								</tr>
-							}
-						</tbody>
-					</table>
-					<partial name="_Pagination" model="@Model.Pagination" />
-				</div>
-			</div>
-		}
-		else if (!Model.ResearchEthicsCommittees.Any() || !string.IsNullOrEmpty(Model.Search?.SearchTerm))
-		{
-			<div class="govuk-grid-row">
-				<div class="govuk-grid-column-two-thirds search-filter-error-border">
-					<h2 class="govuk-heading-l">There are no matching results</h2>
-					<p class="govuk-body">Improve your search results by:</p>
-					<ul class="govuk-list govuk-list--bullet">
-						<li>removing filters</li>
-						<li>double-checking your spelling</li>
-						<li>using fewer keywords</li>
-						<li>searching for something less specific</li>
-					</ul>
-				</div>
-			</div>
-		}
+	<div class="govuk-grid-column-two-thirds">
+		<h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
 	</div>
+</div>
+
+<div class="govuk-grid-row">
+
+	<div class="govuk-grid-column-two-thirds">
+		<form method="post" class="govuk-form-group">
+			<label class="govuk-label" for="Search_SearchTerm">
+				<b>@Html.Raw(searchTitle?.Value)</b>
+			</label>
+			<div class="govuk-label">
+				@Html.Raw(searchHint?.Value)
+			</div>
+
+			<div class="review-body-search">
+				<input class="govuk-input" id="Search_SearchTerm" name="Search.SearchTerm" type="text" value="@Model.Search?.SearchTerm" />
+				@{
+					ViewBag.Style = "govuk-button govuk-button--secondary";
+				}
+				<partial name="_SubmitButton" model="@("mm:searchresearchethicscommittees", "Search", new Dictionary<string, string>())" />
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="govuk-grid-row">
+
+	@if (Model.ResearchEthicsCommittees != null && Model.ResearchEthicsCommittees.Any())
+	{
+		<div class="govuk-grid-column-full">
+			<div class="govuk-table-wrapper">
+				<table class="govuk-table govuk-table-users" id="@tableId">
+					<thead>
+						<tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+							@foreach (var header in sortableHeaders)
+							{
+								var sortableHeaderModel = new SortableHeaderModel
+					{
+						FieldName = header.Field,
+						DisplayText = header.Label,
+						CurrentSortField = Model.Pagination?.SortField,
+						CurrentSortDirection = Model.Pagination?.SortDirection,
+						TableId = tableId,
+					};
+
+								<th scope="col" class="govuk-table__header govuk-table__header-sortable">
+									<partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
+								</th>
+							}
+							<th scope="col" class="govuk-table__header">Actions</th>
+						</tr>
+					</thead>
+					<tbody class="govuk-table__body">
+						@foreach (var reviewBody in Model.ResearchEthicsCommittees)
+						{
+							<tr class="govuk-table__row">
+								<td class="govuk-table__cell">@reviewBody.RegulatoryBodyName</td>
+								<td class="govuk-table__cell">@string.Join(", ", reviewBody.Countries)</td>
+								<td class="govuk-table__cell">
+									<a class="govuk-link" asp-route="mm:researchethicscommitteesprofile" asp-route-id="@reviewBody.Id">
+										View
+										<span class="govuk-visually-hidden"> @reviewBody.RegulatoryBodyName</span>
+									</a>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+				<partial name="_Pagination" model="@Model.Pagination" />
+			</div>
+		</div>
+	}
+	else if (!Model.ResearchEthicsCommittees.Any() || !string.IsNullOrEmpty(Model.Search?.SearchTerm))
+	{
+		<div class="govuk-grid-column-two-thirds search-filter-error-border">
+			<h2 class="govuk-heading-l">There are no matching results</h2>
+			<p class="govuk-body">Improve your search results by:</p>
+			<ul class="govuk-list govuk-list--bullet">
+				<li>removing filters</li>
+				<li>double-checking your spelling</li>
+				<li>using fewer keywords</li>
+				<li>searching for something less specific</li>
+			</ul>
+		</div>
+	}
+
 </div>
