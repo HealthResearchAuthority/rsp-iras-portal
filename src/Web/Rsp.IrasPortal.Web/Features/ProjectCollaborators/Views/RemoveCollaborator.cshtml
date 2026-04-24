@@ -1,0 +1,73 @@
+﻿@using System
+@using System.Collections.Generic
+@using Rsp.IrasPortal.Web.Features.ProjectCollaborators.Models
+@using Rsp.Portal.Application.Constants
+@model CollaboratorViewModel
+
+@{
+    var irasId = TempData.Peek(TempDataKeys.IrasId)?.ToString() ?? string.Empty;
+    var projectTitle = TempData.Peek(TempDataKeys.ShortProjectTitle)?.ToString() ?? string.Empty;
+
+    var heading = Model.Self
+        ? "Are you sure you want to remove yourself as a collaborator?"
+        : $"Are you sure you want to remove {Model.Email} as a collaborator?";
+
+    var removeButtonText = Model.Self ? "Remove myself as collaborator" : "Remove collaborator";
+    var keepButtonText = Model.Self ? "Keep myself as collaborator" : "Keep collaborator";
+
+    var backNavigationModel = ("pov:projectteam", "Back", new Dictionary<string, string> { { "projectRecordId", Model.ProjectRecordId! } });
+
+    ViewBag.Title = "Remove collaborator";
+}
+
+@section BackNavigation {
+    <partial name="_BackNavigation" model="backNavigationModel" />
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">@heading</h1>
+
+        <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">IRAS ID</dt>
+                <dd class="govuk-summary-list__value">@irasId</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Short project title</dt>
+                <dd class="govuk-summary-list__value">@projectTitle</dd>
+            </div>
+        </dl>
+
+        <p class="govuk-body">
+            @if (Model.Self)
+            {
+                <text>
+                    Removing yourself as a collaborator means you will no longer have access to this project. You won’t be able to add yourself back as a collaborator, but another collaborator with edit permissions can add you back to the project in future if needed.
+                </text>
+            }
+            else
+            {
+                <text>
+                    Removing this collaborator means they will no longer have access to this project. Another collaborator with edit permissions can add them back to the project in future if needed.
+                </text>
+            }
+        </p>
+
+        <div class="govuk-button-group">
+            <form method="post" asp-route="col:confirmremovecollaborator">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" value="@Model.Id" />
+                <input type="hidden" asp-for="ProjectRecordId" value="@Model.ProjectRecordId" />
+                <input type="hidden" asp-for="Self" value="@Model.Self" />
+                <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">
+                    @removeButtonText
+                </button>
+
+                <a class="govuk-button govuk-button--secondary" asp-route="pov:projectteam" asp-route-projectRecordId="@Model.ProjectRecordId">
+                    @keepButtonText
+                </a>
+            </form>
+        </div>
+    </div>
+</div>

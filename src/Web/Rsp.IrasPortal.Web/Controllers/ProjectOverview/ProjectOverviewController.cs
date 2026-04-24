@@ -12,6 +12,7 @@ using Rsp.IrasPortal.Web.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
+using Rsp.Portal.Application.DTOs.Requests.UserManagement;
 using Rsp.Portal.Application.Extensions;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
@@ -37,6 +38,7 @@ public class ProjectOverviewController
     IValidator<QuestionnaireViewModel> docValidator,
     IProjectClosuresService projectClosuresService,
     IUserManagementService userManagementService,
+    IProjectCollaboratorService projectCollaboratorService,
     IFeatureManager featureManager
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, docValidator, featureManager)
 {
@@ -778,67 +780,6 @@ public class ProjectOverviewController
         return RedirectToRoute("pov:postapproval", new { projectRecordId, backRoute = "filter" });
     }
 
-    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Update)]
-    [FeatureGate(FeatureFlags.TeamRoles)]
-    public async Task<IActionResult> AddCollaborator(string projectRecordId)
-    {
-        var result = await GetProjectOverviewResult(projectRecordId!, null);
-        if (result is not OkObjectResult okResult)
-        {
-            return result;
-        }
-        var projectOverviewModel = okResult.Value as ProjectOverviewModel;
-
-        var projectTeamModel = new ProjectTeamViewModel
-        {
-            ProjectOverviewModel = projectOverviewModel!,
-        };
-
-        return View(projectTeamModel);
-    }
-
-    [Authorize(Policy = Permissions.MyResearch.ProjectRecord_Update)]
-    [FeatureGate(FeatureFlags.TeamRoles)]
-    public async Task<IActionResult> SearchCollaborator(ProjectTeamViewModel model)
-    {
-        var result = await GetProjectOverviewResult(model.ProjectOverviewModel.ProjectRecordId!, null);
-        if (result is not OkObjectResult okResult)
-        {
-            return result;
-        }
-
-        var projectOverviewModel = okResult.Value as ProjectOverviewModel;
-
-        var projectTeamResult = await GetProjectTeamResult(projectOverviewModel!);
-        if (projectTeamResult is not OkObjectResult projectTeamOkResult)
-        {
-            return projectTeamResult;
-        }
-
-        var projectTeamModel = projectTeamOkResult.Value as ProjectTeamViewModel;
-
-        var getUserResponse = await userManagementService.GetUser(null, model.Search);
-
-        if (!getUserResponse.IsSuccessStatusCode || getUserResponse.Content == null)
-        {
-            TempData[TempDataKeys.CollaboratorExists] = false;
-        }
-
-        if (getUserResponse.Content?.User != null)
-        {
-            TempData[TempDataKeys.CollaboratorExists] = true;
-        }
-
-        if (projectTeamModel!.Collaborators.Any(c => c.Email.Equals(model.Search, StringComparison.OrdinalIgnoreCase)))
-        {
-            TempData[TempDataKeys.CollaboratorAlreadyAdded] = true;
-        }
-
-        projectTeamModel.Search = model.Search;
-
-        return View(nameof(AddCollaborator), projectTeamModel);
-    }
-
     private void UpdateModificationRelatedTempData()
     {
         // If there is a project modification change, show the notification banner
@@ -921,23 +862,45 @@ public class ProjectOverviewController
 
     private async Task<IActionResult> GetProjectTeamResult(ProjectOverviewModel projectOverviewModel)
     {
-        var projectRecordCreatorUserResponse = await userManagementService.GetUser(projectOverviewModel.CreatedBy, null);
+        var projectCollaboratorsResponse = await projectCollaboratorService.GetProjectCollaborators(projectOverviewModel.ProjectRecordId!);
 
-        if (!projectRecordCreatorUserResponse.IsSuccessStatusCode || projectRecordCreatorUserResponse.Content == null)
+        if (!projectCollaboratorsResponse.IsSuccessStatusCode)
         {
-            return this.ServiceError(projectRecordCreatorUserResponse);
+            return this.ServiceError(projectCollaboratorsResponse);
         }
 
-        // TODO: Once the 'Add collaborator' feature is implemented, replace the
-        // list with a call to the service to retrieve the list of collaborators
-        List<Collaborator> collaborators =
-        [
-            new Collaborator
+        var collaborators = new List<Collaborator>();
+
+        if (projectCollaboratorsResponse.Content != null)
+        {
+            var getUsersResponse = await userManagementService.GetUsers(new SearchUserRequest
             {
-                Email = projectRecordCreatorUserResponse.Content.User.Email,
-                Access = "Edit"
+                UserIds = [.. projectCollaboratorsResponse.Content.Select(c => c.UserId)]
+            });
+
+            if (!getUsersResponse.IsSuccessStatusCode)
+            {
+                return this.ServiceError(getUsersResponse);
             }
-        ];
+
+            foreach (var collaborator in projectCollaboratorsResponse.Content)
+            {
+                var userResponse = getUsersResponse.Content?.Users.FirstOrDefault(u => u.Id == collaborator.UserId);
+
+                collaborators.Add
+                (
+                    new Collaborator
+                    {
+                        Id = collaborator.Id,
+                        UserId = collaborator.UserId,
+                        Email = userResponse?.Email ?? string.Empty,
+                        Access = collaborator.ProjectAccessLevel,
+                        IsOwner = collaborator.IsOwner,
+                        Self = collaborator.UserId == HttpContext.Items[ContextItemKeys.UserId]?.ToString()
+                    }
+                );
+            }
+        }
 
         var projectTeamModel = new ProjectTeamViewModel
         {

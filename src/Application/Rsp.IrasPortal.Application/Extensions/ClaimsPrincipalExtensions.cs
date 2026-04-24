@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.Portal.Application.AccessControl;
 using Rsp.Portal.Application.Constants;
 
@@ -91,5 +92,17 @@ public static class ClaimsPrincipalExtensions
             .ToList();
 
         return RoleStatusPermissions.GetAllowedStatusesForRoles(userRoles, entityType);
+    }
+
+    public static bool IsCollaboratorWithEditAccess(this ClaimsPrincipal _, IEnumerable<CollaboratorProjectResponse> projects, string projectRecordId)
+    {
+        var project = projects.FirstOrDefault(p => p.ProjectRecordId == projectRecordId);
+
+        if (project == null)
+        {
+            return false;
+        }
+
+        return project.ProjectAccessLevel == "Edit";
     }
 }
