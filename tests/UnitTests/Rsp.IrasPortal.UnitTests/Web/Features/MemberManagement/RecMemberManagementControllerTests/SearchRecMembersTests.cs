@@ -415,4 +415,169 @@ public class SearchRecMembersTests : TestServiceBase<RecMemberManagementControll
             .Setup(s => s.GetUser(loggedInUser.ToString(), null, null))
             .ReturnsAsync(userResponse);
     }
+
+    [Fact]
+    public async Task SearchRecMember_Get_ShouldReturnNotFound_WhenReviewBodyNotFound()
+    {
+        // Arrange
+        var recId = Guid.NewGuid();
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(recId))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.NotFound,
+                Content = null
+            });
+
+        // Act
+        var result = await Sut.SearchRecMember(recId);
+
+        // Assert
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe((int)HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task SearchRecMember_Get_ShouldReturnForbid_WhenUserHasNoAccess()
+    {
+        // Arrange
+        var recId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+
+        var rec = new ReviewBodyDto
+        {
+            Id = recId,
+            RegulatoryBodyName = "Test REC",
+            Countries = new List<string> { "Germany" }
+        };
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(recId))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = rec
+            });
+
+        var user = new User(
+            userId.ToString(),
+            "aad",
+            "Mr",
+            "Test",
+            "User",
+            "test@test.com",
+            "Dev",
+            "Org",
+            "123",
+            "United Kingdom",
+            IrasUserStatus.Active,
+            DateTime.UtcNow,
+            DateTime.UtcNow,
+            DateTime.UtcNow
+        );
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(userId.ToString(), null, null))
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new UserResponse { User = user }
+            });
+
+        var claims = new[]
+        {
+        new Claim(CustomClaimTypes.UserId, userId.ToString())
+    };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuth"))
+            }
+        };
+
+        // Act
+        var result = await Sut.SearchRecMember(recId);
+
+        // Assert
+        var statusCodeResult = result.ShouldBeOfType<ForbidResult>();
+    }
+
+    [Fact]
+    public async Task CheckRecMember_ShouldReturnNotFound_WhenUserNotInRec()
+    {
+        // Arrange
+        var recId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+
+        var rec = new ReviewBodyDto
+        {
+            Id = recId,
+            Countries = new List<string> { "United Kingdom" },
+            Users = new List<ReviewBodyUserDto>()
+        };
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(recId))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = rec
+            });
+
+        // User = admin → UserHasAccess == true
+        var claims = new[]
+        {
+        new Claim(CustomClaimTypes.UserId, userId.ToString()),
+        new Claim(ClaimTypes.Role, Roles.SystemAdministrator)
+    };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuth"))
+            }
+        };
+
+        // Act
+        var result = await Sut.CheckRecMember(recId, userId);
+
+        // Assert
+        result.ShouldBeOfType<NotFoundResult>();
+    }
+
+    [Fact]
+    public async Task AddRecMember_Post_EditMode_ShouldReturnServiceError_WhenUpdateFails()
+    {
+        // Arrange
+        var model = new RecMemberViewModel
+        {
+            RecId = Guid.NewGuid(),
+            UserId = Guid.NewGuid().ToString(),
+            EmailAddress = "test@test.com",
+            IsEditMode = true
+        };
+
+        Mocker.GetMock<IValidator<RecMemberViewModel>>()
+            .Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FluentValidation.Results.ValidationResult());
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.UpdateReviewBodyUser(It.IsAny<ReviewBodyUserDto>()))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyUserDto>
+            {
+                StatusCode = HttpStatusCode.InternalServerError,
+                Content = null
+            });
+
+        // Act
+        var result = await Sut.AddRecMember(model);
+
+        // Assert
+        var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCodeResult.StatusCode.ShouldBe((int)HttpStatusCode.InternalServerError);
+    }
 }

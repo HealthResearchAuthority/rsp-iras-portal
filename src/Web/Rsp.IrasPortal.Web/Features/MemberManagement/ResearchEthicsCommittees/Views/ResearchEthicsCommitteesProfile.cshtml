@@ -1,0 +1,101 @@
+﻿@using Rsp.IrasPortal.Web.Features.MemberManagement.ResearchEthicsCommittees.Models
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model MemberManagementResearchEthicsCommitteesProfileViewModel
+
+@{
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData != null
+        ? pageContentData
+        : new Dictionary<string, MixedContentPageItem?>();
+
+    var headline = pageContent.GetValueOrDefault("MemberManagement.ResearchEthicsCommitteesProfile.Title", null);
+}
+
+@section Breadcrumb {
+    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+    {
+        ("Member management", Url.RouteUrl("mm:home")),
+        ("Research ethics committees", Url.RouteUrl("mm:researchethicscommittees"))}
+    )
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Research ethics committee profile:<br>@Model.RegulatoryBodyName</h1>
+    </div>
+</div>
+
+<table class="govuk-table">
+    <thead>
+        <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Organisation name</b>
+            </td>
+            <td class="govuk-table__cell">
+                @Model.RegulatoryBodyName
+            </td>
+        </tr>
+
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Country</b>
+            </td>
+            <td class="govuk-table__cell">
+                @string.Join(", ", Model.Countries)
+            </td>
+        </tr>
+
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Research ethics committee name</b>
+            </td>
+            <td class="govuk-table__cell line-break-anywhere">
+                @Model.RegulatoryBodyName
+            </td>
+        </tr>
+
+        <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+                <b>Email address</b>
+            </td>
+            <td class="govuk-table__cell line-break-anywhere">
+                @Model.EmailAddress
+            </td>
+        </tr>
+
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                    <b>Members</b>
+                </td>
+                <td class="govuk-table__cell">
+                <a asp-route="mm:viewresearchethicscommitteesmembers" asp-all-route-data="@(new Dictionary<string, string> { { "researchEthicsCommitteeId", Model.Id.ToString() } })" class="govuk-link">View this research ethics committee’s list of members</a>
+                </td>
+            </tr>
+
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                    <b>Audit</b>
+                </td>
+                <td class="govuk-table__cell">
+                <a asp-route="rbc:viewresearchethicscommitteesaudit" asp-all-route-data="@(new Dictionary<string, string> { { "researchEthicsCommitteeId", Model.Id.ToString() } })" class="govuk-link">View this research ethics committee’s audit history</a>
+                </td>
+            </tr>
+
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                    <b>Last updated</b>
+                </td>
+                <td class="govuk-table__cell">
+                    @Model.UpdatedDate?.ToString("dd MMMM yyyy HH:mm")
+                </td>
+            </tr>
+    </tbody>
+</table>

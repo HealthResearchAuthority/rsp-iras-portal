@@ -1,5 +1,6 @@
 ﻿@using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.Services
+@using Rsp.Portal.Domain.AccessControl
 @using Rsp.Portal.Web.Features.Modifications.Models
 @using Rsp.Portal.Web.Helpers
 @model ModificationDetailsViewModel
@@ -37,11 +38,29 @@
                 }
             </h2>
             <ul class="govuk-summary-card__actions">
-                @if ((showChangeLink == null || showChangeLink.Equals(true)) &&
-                        (Model.Status is ModificationStatus.InDraft || (Model.Status is ModificationStatus.RequestRevisions && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart) ||
-                        (isRevisionBySponsor && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart)))
+                @if
+                (
+                    (
+                        showChangeLink == null ||
+                        showChangeLink.Equals(true)
+                    ) &&
+                    (
+                        Model.Status is ModificationStatus.InDraft ||
+                        (
+                            Model.Status is ModificationStatus.RequestRevisions &&
+                            tempHalt != AreasOfChange.ProjectHalt &&
+                            tempHalt != AreasOfChange.ProjectRestart
+                        ) ||
+                        (
+                            isRevisionBySponsor &&
+                            tempHalt != AreasOfChange.ProjectHalt &&
+                            tempHalt != AreasOfChange.ProjectRestart
+                        )
+                    )
+                )
                 {
-                    <li class="govuk-summary-card__action">
+                    <li permissions="@([Permissions.MyResearch.Modifications_Update, Permissions.Sponsor.Modifications_Authorise])"
+                        class="govuk-summary-card__action">
                         @{
                             var reviewChangesParams = new Dictionary<string, string> {
                                 { "projectRecordId", Model.ProjectRecordId },
@@ -64,12 +83,29 @@
                     </li>
                 }
 
-                @if ((showRemoveLink == null || showRemoveLink.Equals(true)) &&
-                        (Model.Status is ModificationStatus.InDraft ||
-                        (Model.Status is ModificationStatus.RequestRevisions && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart) ||
-                        (isRevisionBySponsor && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart)))
+                @if
+                (
+                    (
+                        showRemoveLink == null ||
+                        showRemoveLink.Equals(true)
+                    ) &&
+                    (
+                        Model.Status is ModificationStatus.InDraft ||
+                        (
+                            Model.Status is ModificationStatus.RequestRevisions &&
+                            tempHalt != AreasOfChange.ProjectHalt &&
+                            tempHalt != AreasOfChange.ProjectRestart
+                        ) ||
+                        (
+                            isRevisionBySponsor &&
+                            tempHalt != AreasOfChange.ProjectHalt &&
+                            tempHalt != AreasOfChange.ProjectRestart
+                        )
+                    )
+                )
                 {
-                    <li class="govuk-summary-card__action">
+                    <li permissions="@([Permissions.MyResearch.Modifications_Update, Permissions.Sponsor.Modifications_Authorise])"
+                        class="govuk-summary-card__action">
                         <a class="govuk-link"
                            asp-route="pmc:confirmremovechange"
                            asp-route-modificationChangeId="@change.ModificationChangeId"
@@ -124,11 +160,14 @@
                 @if ((Model.ModificationChanges.Any() && showModificationDetails.GetValueOrDefault()) ||
                     (Model.Status is ModificationStatus.RequestRevisions or ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestForInformation or ModificationStatus.ResponseReviseAndAuthorise))
                 {
-                    @if (change.SpecificAreaOfChangeId is
+                    @if
+                    (
+                        change.SpecificAreaOfChangeId is
                             SpecificAreasOfChange.AddNewPics or
                             SpecificAreasOfChange.AddNewSites or
                             SpecificAreasOfChange.EarlyClosureSites or
-                            SpecificAreasOfChange.EarlyClosuresPics)
+                            SpecificAreasOfChange.EarlyClosuresPics
+                    )
                     {
 
                         <vc:participating-organisations-review project-record-id="@Model.ProjectRecordId"

@@ -40,6 +40,7 @@ public static class ServicesConfiguration
         services.AddScoped<ISponsorUserAuthorisationService, SponsorUserAuthorisationService>();
         services.AddScoped<IViewHelper, ViewHelper>();
         services.AddScoped<IUserNotificationsService, UserNotificationsService>();
+        services.AddScoped<IProjectCollaboratorService, ProjectCollaboratorService>();
 
         // add message handlers
         services.AddTransient<AuthHeadersHandler>();

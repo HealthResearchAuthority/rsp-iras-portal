@@ -90,7 +90,20 @@
                     }
                 }
             </dl>
+            <feature name="@FeatureFlags.RecMemberManagement">
+                @if (Model.ReviewBody != null)
+                {
+                    <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">Research ethics committee</dt>
+                        <dd class="govuk-summary-list__value">
+                            @Model.ReviewBody.RegulatoryBodyName
 
+                            <!-- Persist ReviewBody -->
+                            <input type="hidden" asp-for="ReviewBody.Id" />
+                        </dd>
+                    </div>
+                }
+            </feature>
             <h2 class="govuk-heading-m">
                 Add project
             </h2>

@@ -18,7 +18,7 @@ public class MemberManagementControllerTests : TestServiceBase<MemberManagementC
     public async Task MemberManagement_ShouldReturnView()
     {
         // Act
-        var result = await Sut.MemberManagement();
+        var result = Sut.Index();
 
         // Assert
         result.ShouldBeOfType<ViewResult>();
