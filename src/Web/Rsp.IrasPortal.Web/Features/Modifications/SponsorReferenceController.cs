@@ -3,9 +3,9 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.FeatureManagement;
 using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
-using Microsoft.FeatureManagement;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
@@ -27,7 +27,6 @@ public class SponsorReferenceController
     IFeatureManager featureManager
 ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
 {
-    private readonly IRespondentService _respondentService = respondentService;
     private const string PostApprovalRoute = "pov:postapproval";
     private const string SectionId = "pm-sponsor-reference";
     private const string CategoryId = "Sponsor reference";
