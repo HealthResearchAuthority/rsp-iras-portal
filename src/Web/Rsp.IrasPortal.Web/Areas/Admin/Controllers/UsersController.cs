@@ -273,7 +273,8 @@ public class UsersController(
     {
         if (model.UserRoles.Any(r =>
                 (r.Name.Equals(TeamManagerRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected) &&
-                (r.Name.Equals(MemberManagementRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected)
+                (r.Name.Equals(MemberManagementRole, StringComparison.OrdinalIgnoreCase) && !r.IsSelected) &&
+                (r.Name.Equals(Roles.ResearchEthicsCommitteeManager, StringComparison.OrdinalIgnoreCase) && !r.IsSelected)
              ))
         {
             model.Country = [];
@@ -282,7 +283,10 @@ public class UsersController(
         // Is either role selected?
         var hasEitherRoleSelected = model.UserRoles.Any(r =>
             (r.Name.Equals(StudyWideReviewerRole, StringComparison.OrdinalIgnoreCase) ||
-             r.Name.Equals(WorkflowCoordinatorRole, StringComparison.OrdinalIgnoreCase))
+             r.Name.Equals(WorkflowCoordinatorRole, StringComparison.OrdinalIgnoreCase) ||
+             r.Name.Equals(Roles.Administrator, StringComparison.OrdinalIgnoreCase) ||
+             r.Name.Equals(Roles.ResearchEthicsCommitteeManager, StringComparison.OrdinalIgnoreCase) ||
+             r.Name.Equals(Roles.Reviewer, StringComparison.OrdinalIgnoreCase))
             && r.IsSelected
         );
 
