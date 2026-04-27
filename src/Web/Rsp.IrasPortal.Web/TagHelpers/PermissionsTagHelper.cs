@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.FeatureManagement;
 using Rsp.IrasPortal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.Extensions;
@@ -32,7 +33,7 @@ namespace Rsp.Portal.Web.TagHelpers;
 [HtmlTargetElement(Attributes = RolesAttributeName)]
 [HtmlTargetElement(Attributes = RoleModeAttributeName)]
 [HtmlTargetElement(Attributes = $"{StatusForAttribute},{StatusEntityAttributeName}")]
-public class PermissionsTagHelper : TagHelper
+public class PermissionsTagHelper(IFeatureManager featureManager) : TagHelper
 {
     // ------------------------------- User not authenticated attributes -------------------------------
 
@@ -170,7 +171,7 @@ public class PermissionsTagHelper : TagHelper
     /// </summary>
     /// <param name="context">TagHelperContext provided by the runtime.</param>
     /// <param name="output">TagHelperOutput used to modify the rendered output.</param>
-    public override void Process(TagHelperContext context, TagHelperOutput output)
+    public async override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
         // |Case | ShowWhenUserIsNotAuthenticated | UserIsAuthenticated | Show Output |
         // |-------|--------------------------------|---------------------|-------------| |Case 1 |
@@ -195,6 +196,7 @@ public class PermissionsTagHelper : TagHelper
         if (ShowWhenUserIsNotAuthenticated)
         {
             output.SuppressOutput();
+
             return;
         }
 
@@ -202,16 +204,18 @@ public class PermissionsTagHelper : TagHelper
         if (!isUserAuthenticated)
         {
             output.SuppressOutput();
+
             return;
         }
 
         // case 4: Evaluate permissions and roles to determine if output should be shown.
-        var showOutput = User.IsInRole(Roles.SystemAdministrator) || EvaluatePermissionsAndRoles();
+        var showOutput = User.IsInRole(Roles.SystemAdministrator) || await EvaluatePermissionsAndRoles();
 
         // If final decision is to not show output, suppress it.
         if (!showOutput)
         {
             output.SuppressOutput();
+
             return;
         }
 
@@ -224,7 +228,7 @@ public class PermissionsTagHelper : TagHelper
         }
     }
 
-    public bool EvaluatePermissionsAndRoles()
+    public async Task<bool> EvaluatePermissionsAndRoles()
     {
         // Determine whether permission or role attributes were provided
         var hasPermissionAttributes = HasPermissionAttributes();
@@ -242,7 +246,7 @@ public class PermissionsTagHelper : TagHelper
         // - If neither specified => default to granting access (no restrictions)
         bool permissionGranted = (hasPermissionAttributes, hasRoleAttributes) switch
         {
-            (true, false) => EvaluatePermissions(),
+            (true, false) => await EvaluatePermissions(),
             (false, true) => EvaluateRoles(),
             _ => true // No access attributes means access is granted
         };
@@ -298,15 +302,17 @@ public class PermissionsTagHelper : TagHelper
     /// - If a collection `Permissions` is provided, evaluates according to `PermissionEvaluationLogic`.
     /// Uses extension method `User.HasPermission(string)` to check individual permissions.
     /// </summary>
-    public bool EvaluatePermissions()
+    public async Task<bool> EvaluatePermissions()
     {
+        var teamRolesEnabled = await featureManager.IsEnabledAsync(FeatureFlags.TeamRoles);
+
         if (Permission != null)
         {
             // Single permission check
             var hasPermission = User.HasPermission(Permission);
 
             // Implement logic to check collaborator permissions based on ProjectRecordId
-            return hasPermission && EvaluateCollaboratorAccess();
+            return hasPermission && teamRolesEnabled ? EvaluateCollaboratorAccess() : true;
         }
 
         // Evaluate collection according to configured logic (Any/All).
@@ -318,7 +324,7 @@ public class PermissionsTagHelper : TagHelper
         };
 
         // Implement logic to check collaborator permissions based on ProjectRecordId
-        return hasPermissions && EvaluateCollaboratorAccess(Permissions!);
+        return hasPermissions && teamRolesEnabled ? EvaluateCollaboratorAccess(Permissions!) : true;
     }
 
     // ------------------------------- Role logic -------------------------------
@@ -378,27 +384,47 @@ public class PermissionsTagHelper : TagHelper
     public bool EvaluateCollaboratorAccess()
     {
         // if permission being evaluated is not an edit access permission
-        // collaborator permissions do not apply, as it will inherit permissions from the role
+        // collaborator permissions do not apply, as collaborator with View Only access
+        // will inherit permissions from their role which may include non-edit permissions
         if (!AppPermissions.EditAccessPermissions.Contains(Permission!))
         {
             return true;
         }
 
-        // check for edit access
-        return GetCollaboratorAccess() == "Edit";
-    }
-
-    public bool EvaluateCollaboratorAccess(IEnumerable<string> permissions)
-    {
-        // if permission being evaluated is not an edit access permission
-        // collaborator permissions do not apply, as it will inherit permissions from the role
-        if (!AppPermissions.EditAccessPermissions.Any(p => permissions.Contains(p)))
+        // sponsor or backstage users cannot be a collaborator,
+        // so if the modification is in "WithSponsor, ResponseWithSponsor, Sponsor revises modification" status,
+        // or in "WithReviewBody, ResponseWithReviewBody" status for backstage users,
+        // grant "Edit" access
+        if (SponsorOrBackStageUserHasPermissions())
         {
             return true;
         }
 
         // check for edit access
-        return GetCollaboratorAccess() == "Edit";
+        return GetCollaboratorAccess() is "Edit";
+    }
+
+    public bool EvaluateCollaboratorAccess(IEnumerable<string> permissions)
+    {
+        // if permission being evaluated is not an edit access permission
+        // collaborator permissions do not apply, as collaborator with View Only access
+        // will inherit permissions from their role which may include non-edit permissions
+        if (!AppPermissions.EditAccessPermissions.Any(p => permissions.Contains(p)))
+        {
+            return true;
+        }
+
+        // sponsor or backstage users cannot be a collaborator,
+        // so if the modification is in "WithSponsor, ResponseWithSponsor, Sponsor revises modification" status,
+        // or in "WithReviewBody, ResponseWithReviewBody" status for backstage users,
+        // grant "Edit" access
+        if (SponsorOrBackStageUserHasPermissions())
+        {
+            return true;
+        }
+
+        // check for edit access
+        return GetCollaboratorAccess() is "Edit";
     }
 
     private List<CollaboratorProjectResponse> GetCollaboratorProjects()
@@ -418,30 +444,45 @@ public class PermissionsTagHelper : TagHelper
         return collaboratorProjects ?? [];
     }
 
-    private string GetCollaboratorAccess()
+    private string? GetCollaboratorAccess()
     {
-        var status = ViewContext.TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string;
-
-        // sponsor cannot be a collaborator, so if the modification is in "Sponsor revises modification" status,
-        // grant the sponsor "Edit" access
-        if (status is ModificationStatus.ReviseAndAuthorise)
-        {
-            return "Edit";
-        }
-
         // check for edit access
         var collaboratorProjects = GetCollaboratorProjects();
 
         if (ViewContext.TempData.Peek(TempDataKeys.ProjectRecordId) is not string projectRecordId)
         {
-            return "None";
+            return null;
         }
 
-        var collaboratorAccess = collaboratorProjects?
+        // return collaborator access level
+        return collaboratorProjects?
             .FirstOrDefault(p => p.ProjectRecordId == projectRecordId)?
             .ProjectAccessLevel;
+    }
 
-        // return collaborator access level
-        return collaboratorAccess ?? "None";
+    private bool SponsorOrBackStageUserHasPermissions()
+    {
+        var status = ViewContext.TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string;
+
+        // sponsor or backstage users cannot be a collaborator,
+        // so if the modification is in "WithSponsor, ResponseWithSponsor, Sponsor revises modification" status,
+        // or in "WithReviewBody, ResponseWithReviewBody" status for backstage users,
+        // grant "Edit" access
+        return
+        (
+            User.IsInRole(Roles.Sponsor) && status is
+            ModificationStatus.WithSponsor or
+            ModificationStatus.ResponseWithSponsor or
+            ModificationStatus.ReviseAndAuthorise
+        ) ||
+        (
+            (
+                User.IsInRole(Roles.WorkflowCoordinator) ||
+                User.IsInRole(Roles.TeamManager) ||
+                User.IsInRole(Roles.StudyWideReviewer)
+            ) && status is
+            ModificationStatus.WithReviewBody or
+            ModificationStatus.ResponseWithReviewBody
+        );
     }
 }
