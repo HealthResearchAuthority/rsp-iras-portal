@@ -107,7 +107,7 @@
                                                                         })
                                 </th>
                                                                 }
-                                @if (Model.Status is ModificationStatus.InDraft || Model.Status is ModificationStatus.RequestRevisions || Model.Status is ModificationStatus.RequestForInformation || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise))
+                                @if (Model.Status is ModificationStatus.InDraft || Model.Status is ModificationStatus.RequestRevisions || Model.Status is ModificationStatus.RequestForInformation || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise) || (isRevisionBySponsor && Model.Status is ModificationStatus.ResponseReviseAndAuthorise))
                                 {
                                     <th scope="col" class="govuk-table__header">Action</th>
                                 }
@@ -178,6 +178,8 @@
                                                 DocumentStatus.Complete => "govuk-tag--blue",
                                                 ModificationStatus.WithSponsor => "govuk-tag--yellow",
                                                 ModificationStatus.ReviseAndAuthorise => "govuk-tag--yellow",
+                                                ModificationStatus.ResponseReviseAndAuthorise => "govuk-tag--red",
+                                                ModificationStatus.ResponseWithSponsor => "govuk-tag--red",
                                                 ModificationStatus.Approved => "govuk-tag--green",
                                                 ModificationStatus.WithReviewBody => "govuk-tag--green",
                                                 ModificationStatus.NotApproved => "govuk-tag--red",
@@ -198,6 +200,10 @@
                                         (
                                             isRevisionBySponsor &&
                                             Model.Status is ModificationStatus.ReviseAndAuthorise
+                                        ) ||                                        
+                                        (
+                                            isRevisionBySponsor &&
+                                            Model.Status is ModificationStatus.ResponseReviseAndAuthorise
                                         )
                                     )
                                     {
@@ -275,7 +281,7 @@
     </a>
 </div>
 
-<div status-for="Status" status-is="@ModificationStatus.ReviseAndAuthorise" class="govuk-button-group">
+<div status-for="Status" status-in="@([ModificationStatus.ReviseAndAuthorise, ModificationStatus.ResponseReviseAndAuthorise] )" class="govuk-button-group">
     @if (isRevisionBySponsor)
     {
         <a href="@Url.RouteUrl("pmc:projectdocument")"

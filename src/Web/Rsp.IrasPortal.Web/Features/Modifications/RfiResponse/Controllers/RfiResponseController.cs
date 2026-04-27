@@ -12,9 +12,11 @@ using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Extensions;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Domain.Enums;
 using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.Modifications;
@@ -279,7 +281,62 @@ public class RfiResponseController(
              });
         }
 
+        var redirectResult = await CheckDocumentsAndRedirectIfRequired(Guid.Parse(viewModel.ModificationId!));
+
+        if (redirectResult is not null)
+        {
+            return redirectResult;
+        }
+
         return RedirectToAction(nameof(RfiCheckAndSubmitResponses));
+    }
+
+    [NonAction]
+    private async Task<IActionResult?> CheckDocumentsAndRedirectIfRequired(Guid modificationId)
+    {
+        // Fetch all modification documents
+        var searchQuery = new ProjectOverviewDocumentSearchRequest
+        {
+            AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document)
+        };
+
+        var documentsResponse = await projectModificationsService.GetDocumentsForModification(
+            modificationId,
+            searchQuery,
+            1,
+            300,
+            nameof(ProjectOverviewDocumentDto.DocumentType),
+            SortDirections.Ascending);
+
+        var modificationDocuments = documentsResponse?.Content?.Documents ?? [];
+
+        // CHECK FOR INCOMPLETE DOCUMENTS
+        if (modificationDocuments.Any())
+        {
+            var documentRequest = BuildDocumentRequest();
+            var documentStatuses = await GetDocumentCompletionStatuses(documentRequest);
+
+            var hasIncompleteDocuments = documentStatuses.Any(d =>
+                d.Status.Equals(
+                    DocumentDetailStatus.Incomplete.ToString(),
+                    StringComparison.OrdinalIgnoreCase));
+
+            if (hasIncompleteDocuments)
+            {
+                return RedirectToRoute("pmc:DocumentDetailsIncomplete");
+            }
+        }
+
+        // CHECK FOR MALWARE SCAN STATUS
+        var allMalwareScansSuccessful = modificationDocuments
+            .All(d => d.IsMalwareScanSuccessful == true);
+
+        if (!allMalwareScansSuccessful)
+        {
+            return RedirectToRoute("pmc:DocumentsScanInProgress");
+        }
+
+        return null;
     }
 
     [NonAction]
@@ -320,6 +377,13 @@ public class RfiResponseController(
 
         if (!sponsorResult.IsSuccessStatusCode)
             return this.ServiceError(sponsorResult);
+
+        var redirectResult = await CheckDocumentsAndRedirectIfRequired(Guid.Parse(viewModel.ModificationId!));
+
+        if (redirectResult is not null)
+        {
+            return redirectResult;
+        }
 
         if (saveForLater)
         {

@@ -466,11 +466,9 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
         var viewModel = SetupAuthoriseOutcomeViewModel();
         Sut.ModelState.AddModelError("Outcome", "required");
 
-
         Mocker.GetMock<IFeatureManager>()
             .Setup(f => f.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
             .ReturnsAsync(true);
-
 
         Mocker.GetMock<IFeatureManager>()
             .Setup(f => f.IsEnabledAsync(FeatureFlags.RequestForInformation))
@@ -824,14 +822,8 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
         var result = await Sut.CheckAndAuthorise(viewModel);
 
         // Assert
-        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
-        redirect.RouteName.ShouldBe("pmc:ModificationDetails");
-
-        redirect.RouteValues!["projectRecordId"].ShouldBe(projectRecordId);
-        redirect.RouteValues!["irasId"].ShouldBe(irasId);
-        redirect.RouteValues!["shortTitle"].ShouldBe(shortTitle);
-        redirect.RouteValues!["projectModificationId"].ShouldBe(modificationId);
-        redirect.RouteValues!["sponsorOrganisationUserId"].ShouldBe(sponsorUserId);
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe("ConfirmReviseAndAuthoriseOutcome");
     }
 
     [Fact]

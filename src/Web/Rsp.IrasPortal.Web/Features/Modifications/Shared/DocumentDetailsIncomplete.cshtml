@@ -30,6 +30,7 @@
     var saveButtonTitle = Model.Status switch
     {
         ModificationStatus.ReviseAndAuthorise => "Return to revise and authorise",
+        ModificationStatus.ResponseReviseAndAuthorise => "Return to revise and authorise",
         ModificationStatus.RequestRevisions => "Return to make revision",
         _ => string.Empty
     };
@@ -48,6 +49,14 @@
                asp-route="pmc:modificationdetails"
                asp-all-route-data="modificationParams"
                status-for="Status"
+               status-in="@([ModificationStatus.ResponseReviseAndAuthorise] )">
+                @saveButtonTitle
+            </a>
+
+            <a class="govuk-button"
+               asp-route="pmc:modificationdetails"
+               asp-all-route-data="modificationParams"
+               status-for="Status"
                status-in="@([ModificationStatus.ReviseAndAuthorise,ModificationStatus.RequestRevisions] )">
                 @saveButtonTitle
             </a>
@@ -57,7 +66,7 @@
                asp-all-route-data="modificationParams"
                status-for="Status"
                status-mode="Hide"
-               status-in="@([ModificationStatus.ReviseAndAuthorise,ModificationStatus.RequestRevisions] )">
+               status-in="@([ModificationStatus.ReviseAndAuthorise,ModificationStatus.RequestRevisions,ModificationStatus.ResponseReviseAndAuthorise] )">
                 Return to review modification
             </a>
         </div>

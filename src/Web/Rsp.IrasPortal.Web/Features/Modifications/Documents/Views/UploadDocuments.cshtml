@@ -19,7 +19,7 @@
         { "projectModificationIdentifier", Model.ModificationIdentifier ?? string.Empty }
     };
 
-    if (Model.Status is ModificationStatus.ReviseAndAuthorise)
+    if (Model.Status is ModificationStatus.ReviseAndAuthorise or ModificationStatus.ResponseReviseAndAuthorise)
     {
         modificationParams["sponsorOrganisationUserId"] = Model.SponsorOrganisationUserId;
         modificationParams["rtsId"] = Model.RtsId;
@@ -38,7 +38,13 @@
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         @section BackNavigation {
-            <partial name="_BackNavigation" model="@("pmc:modificationdetails", "Back", modificationParams)" />
+
+            <div status-for="@Model.Status" status-is="@ModificationStatus.ResponseReviseAndAuthorise">
+                <partial name="_BackNavigation" model="@("rfi:RfiResponses", "Back", modificationParams)" />
+            </div>
+            <div status-for="@Model.Status" status-is="@ModificationStatus.ResponseReviseAndAuthorise" status-mode="Hide">
+                <partial name="_BackNavigation" model="@("pmc:modificationdetails", "Back", modificationParams)" />
+            </div>                      
         }
 
         <form asp-action="UploadDocuments" method="post" enctype="multipart/form-data">
@@ -146,7 +152,8 @@
                 @{
                     ViewBag.Style = "govuk-button govuk-button--secondary";
                 }
-                <a asp-route="pmc:saveforlater" status-for="@Model.Status" status-is="@ModificationStatus.ReviseAndAuthorise" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId" asp-route-rtsId="@Model.RtsId" asp-route-routeName="sws:modifications" class="govuk-button govuk-button--secondary">
+                <a asp-route="pmc:saveforlater" status-for="@Model.Status" status-in="@([ModificationStatus.ReviseAndAuthorise, ModificationStatus.ResponseReviseAndAuthorise])"
+                    asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId" asp-route-rtsId="@Model.RtsId" asp-route-routeName="sws:modifications" class="govuk-button govuk-button--secondary">
                     Save for later
                 </a>
 
@@ -159,7 +166,7 @@
                     Save for later
                 </a>
                 <a asp-route="pmc:saveforlater" status-for="@Model.Status" status-mode="Hide"
-                   status-in="@([ModificationStatus.ReviseAndAuthorise,ModificationStatus.RequestRevisions] )"
+                   status-in="@([ModificationStatus.ReviseAndAuthorise, ModificationStatus.RequestRevisions, ModificationStatus.ResponseReviseAndAuthorise])"
                    asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
                     Save for later
                 </a>

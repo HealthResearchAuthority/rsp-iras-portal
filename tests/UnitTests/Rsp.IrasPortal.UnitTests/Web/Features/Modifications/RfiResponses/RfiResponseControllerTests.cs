@@ -224,10 +224,17 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     )
     {
         tempDataModel.ModificationId = modificationId.ToString();
+        tempDataModel.Status = ModificationStatus.RequestForInformation;
         SetupTempData(tempDataModel);
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.SaveModificationRfiResponses(It.IsAny<ModificationRfiResponseRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
+        Mocker.GetMock<IValidator<RfiResponsesDTO>>()
+            .Setup(v => v.ValidateAsync(
+                It.IsAny<IValidationContext>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
 
         var result = await Sut.SendRfiResponses(tempDataModel, false);
 
@@ -255,7 +262,31 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
             }
         };
 
+        model.Status = ModificationStatus.RequestForInformation;
+
         SetupTempData(model);
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.SaveModificationRfiResponses(
+                It.IsAny<ModificationRfiResponseRequest>()))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.OK
+            });
+
+        Mocker.GetMock<IValidator<RfiResponsesDTO>>()
+            .Setup(v => v.ValidateAsync(
+                It.IsAny<IValidationContext>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult
+            {
+                Errors =
+                {
+                    new ValidationFailure(
+                        propertyName: "InitialResponse[0]",
+                        errorMessage: "Response is required")
+                }
+            });
 
         var result = await Sut.SendRfiResponses(model);
 
@@ -281,10 +312,18 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
             },
         };
 
+        model.Status = ModificationStatus.RequestForInformation;
+
         SetupTempData(model);
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.SaveModificationRfiResponses(It.IsAny<ModificationRfiResponseRequest>()))
             .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.InternalServerError });
+
+        Mocker.GetMock<IValidator<RfiResponsesDTO>>()
+           .Setup(v => v.ValidateAsync(
+               It.IsAny<IValidationContext>(),
+               It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new ValidationResult());
 
         var result = await Sut.SendRfiResponses(model);
         result.ShouldBeOfType<StatusCodeResult>().StatusCode.ShouldBe(500);
@@ -306,6 +345,8 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
                 InitialResponse = ["Response 1"]
             },
         };
+
+        model.Status = ModificationStatus.RequestForInformation;
 
         SetupTempData(model);
         Mocker.GetMock<IProjectModificationsService>()
@@ -334,7 +375,16 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
                 InitialResponse = ["Response 1"]
             },
         };
+
+        model.Status = ModificationStatus.RequestForInformation;
+
         SetupTempData(model);
+
+        Mocker.GetMock<IValidator<RfiResponsesDTO>>()
+           .Setup(v => v.ValidateAsync(
+               It.IsAny<IValidationContext>(),
+               It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new ValidationResult());
 
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.SaveModificationRfiResponses(It.IsAny<ModificationRfiResponseRequest>()))
@@ -393,6 +443,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         model.ModificationId = modificationId.ToString();
         model.RfiModel.RfiReasons = ["Reason 1"];
         model.RfiModel.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
+        model.Status = ModificationStatus.RequestForInformation;
 
         SetupTempData(model);
 
@@ -423,6 +474,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         model.ModificationId = modificationId.ToString();
         model.RfiModel.RfiReasons = ["Reason 1"];
         model.RfiModel.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
+        model.Status = ModificationStatus.RequestForInformation;
 
         SetupTempData(model);
 
@@ -665,5 +717,9 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
             [TempDataKeys.ShortProjectTitle] = model.ShortTitle,
             [TempDataKeys.IrasId] = model.IrasId.ToString()
         };
+        if (model.Status is not null)
+        {
+            Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationStatus] = model.Status;
+        }
     }
 }
