@@ -14,9 +14,8 @@
     var reviseAndAuthoriseBody = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.ReviseAndAuthoriseBody", null);
 
     var (header, body) = Model.Status switch
-    {
-        // After revise and authorise -> status is ResponseWithReviewBody
-        ModificationStatus.ResponseWithReviewBody
+    {        
+        ModificationStatus.ResponseReviseAndAuthorise
             => (reviseAndAuthoriseHeader, reviseAndAuthoriseBody),
 
         _ => (rfiHeader, rfiBody)
