@@ -1,16 +1,22 @@
-﻿using FluentValidation;
+﻿using System.Net;
+using System.Text.Json;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.IrasPortal.Web.Attributes;
 using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
+using Rsp.Portal.Application.Extensions;
+using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
+using Rsp.Portal.Domain.Enums;
 using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
 using Rsp.Portal.Web.Features.Modifications;
@@ -32,12 +38,14 @@ public class RfiResponseController(
     ISponsorOrganisationService sponsorOrganisationService,
     ISponsorUserAuthorisationService sponsorUserAuthorisationService,
     IValidator<QuestionnaireViewModel> validator,
+    IValidator<RfiResponsesDTO> rfiResponsesValidator,
     IFeatureManager featureManager
     ) : ModificationsControllerBase(respondentService, projectModificationsService, cmsQuestionsetService, validator, featureManager)
 {
     private const string DocumentDetailsSection = "pdm-document-metadata";
 
     [HttpGet]
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
     public async Task<IActionResult> RfiDetails(string projectId, Guid modificationId)
     {
         var model = new ModificationDetailsViewModel();
@@ -97,6 +105,7 @@ public class RfiResponseController(
     }
 
     [HttpGet]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Read)]
     public async Task<IActionResult> RfiResponses
     (
         string projectRecordId,
@@ -112,6 +121,10 @@ public class RfiResponseController(
         bool includeSelectiveDownloadError = false
     )
     {
+        TempData[TempDataKeys.IrasId] = irasId;
+        TempData[TempDataKeys.ProjectRecordId] = projectRecordId;
+        TempData[TempDataKeys.ShortProjectTitle] = shortTitle;
+
         // Retrieve all modification changes related to the modification
         var (result, model) = await PrepareModificationAsync(projectModificationId, irasId, shortTitle, projectRecordId);
         if (result is not null)
@@ -150,68 +163,249 @@ public class RfiResponseController(
         };
         model.ModificationChanges = model!.ModificationChanges.ToList();
 
+        // get back answers user set in SendRfiResponses for validation errors
+        if (TempData.TryGetValue(TempDataKeys.RfiResponses, out var raw))
+        {
+            var responses = raw as string;
+
+            if (!string.IsNullOrWhiteSpace(responses))
+            {
+                model.RfiModel.RfiResponses =
+                    JsonSerializer.Deserialize<List<RfiResponsesDTO>>(responses)
+                    ?? model.RfiModel.RfiResponses;
+            }
+        }
+
         return View(model);
     }
 
     [HttpPost]
-    public async Task<IActionResult> RfiResponses(ModificationDetailsViewModel model, bool saveForLater = false)
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Update)]
+    public async Task<IActionResult> SendRfiResponses(ModificationDetailsViewModel model, bool saveForLater = false)
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(model);
+        viewModel.Status = (viewModel as BaseProjectModificationViewModel).Status;
 
-        var responses = viewModel.RfiModel.RfiResponses
-                .Select(r => r.InitialResponse.FirstOrDefault() ?? string.Empty)
-                .ToList();
-
-        if (!saveForLater && responses.Any(string.IsNullOrWhiteSpace))
+        if (!saveForLater)
         {
-            ModelState.AddModelError(string.Empty, "You have not provided a reason. Enter the reason for requesting further information from the applicant before you continue.");
-            return RedirectToAction(nameof(RfiResponses), new
+            for (int i = 0; i < viewModel.RfiModel.RfiResponses.Count; i++)
             {
-                projectRecordId = viewModel.ProjectRecordId,
-                irasId = viewModel.IrasId,
-                shortTitle = viewModel.ShortTitle,
-                projectModificationId = Guid.Parse(viewModel.ModificationId!),
-            });
-        }
+                var response = viewModel.RfiModel.RfiResponses[i];
 
-        var saveResponsesResponse = await projectModificationsService.SaveModificationRfiResponses(
-            new ModificationRfiResponseRequest()
-            {
-                ProjectModificationId = Guid.Parse(viewModel.ModificationId!),
-                Responses = responses,
-                Role = ResponseRoles.Applicant,
-                ResponseOrigin = ResponseOrigin.InitialResponse
+                var context = new ValidationContext<RfiResponsesDTO>(response);
+                var validationResult = await rfiResponsesValidator.ValidateAsync(context);
+
+                if (!validationResult.IsValid)
+                {
+                    foreach (var error in validationResult.Errors)
+                    {
+                        ModelState.AddModelError(
+                            $"RfiModel_RfiResponses_{i}__{error.PropertyName}_",
+                            error.ErrorMessage);
+                    }
+                }
             }
-        );
 
-        if (!saveResponsesResponse.IsSuccessStatusCode)
-        {
-            return this.ServiceError(saveResponsesResponse);
-        }
+            if (!ModelState.IsValid)
+            {
+                TempData.Remove(TempDataKeys.ModelState);
+                TempData.TryAdd(
+                    TempDataKeys.ModelState,
+                    ModelState.ToDictionary(),
+                    true);
 
-        if (saveForLater)
-        {
-            TempData.Remove(TempDataKeys.RfiDetails);
-            return RedirectToAction(
-                "ReviewAllChanges",
-                "ReviewAllChanges",
-                new
+                // Save responses temporarly to not lost them during redirect to action
+                TempData[TempDataKeys.RfiResponses] =
+                    JsonSerializer.Serialize(viewModel.RfiModel.RfiResponses);
+
+                return RedirectToAction(nameof(RfiResponses), new
                 {
                     projectRecordId = viewModel.ProjectRecordId,
                     irasId = viewModel.IrasId,
                     shortTitle = viewModel.ShortTitle,
                     projectModificationId = Guid.Parse(viewModel.ModificationId!),
-                }
-            );
+                    sponsorOrganisationUserId = viewModel.SponsorOrganisationUserId,
+                    rtsId = viewModel.RtsId,
+                });
+            }
+        }
+
+        return viewModel.Status switch
+        {
+            ModificationStatus.RequestForInformation =>
+                await HandleRequestForInformation(viewModel, saveForLater),
+
+            ModificationStatus.ResponseReviseAndAuthorise =>
+                await HandleReviseAndAuthorise(viewModel, saveForLater),
+
+            _ => this.ServiceError(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Error = "Unsupported modification status for saving RFI Responses",
+            })
+        };
+    }
+
+    [NonAction]
+    private async Task<IActionResult> HandleRequestForInformation(
+    ModificationDetailsViewModel viewModel,
+    bool saveForLater)
+    {
+        var responses = viewModel.RfiModel.RfiResponses
+            .Select(r => r.InitialResponse.FirstOrDefault() ?? string.Empty)
+            .ToList();
+
+        var result = await projectModificationsService.SaveModificationRfiResponses(
+            new ModificationRfiResponseRequest
+            {
+                ProjectModificationId = Guid.Parse(viewModel.ModificationId!),
+                Responses = responses,
+                Role = ResponseRoles.Applicant,
+                ResponseOrigin = ResponseOrigin.InitialResponse
+            });
+
+        if (!result.IsSuccessStatusCode)
+            return this.ServiceError(result);
+
+        if (saveForLater)
+        {
+            return RedirectToAction(
+             "ReviewAllChanges",
+             "ReviewAllChanges",
+             new
+             {
+                 projectRecordId = viewModel.ProjectRecordId,
+                 irasId = viewModel.IrasId,
+                 shortTitle = viewModel.ShortTitle,
+                 projectModificationId = Guid.Parse(viewModel.ModificationId!)
+             });
+        }
+
+        var redirectResult = await CheckDocumentsAndRedirectIfRequired(Guid.Parse(viewModel.ModificationId!));
+
+        if (redirectResult is not null)
+        {
+            return redirectResult;
+        }
+
+        return RedirectToAction(nameof(RfiCheckAndSubmitResponses));
+    }
+
+    [NonAction]
+    private async Task<IActionResult?> CheckDocumentsAndRedirectIfRequired(Guid modificationId)
+    {
+        // Fetch all modification documents
+        var searchQuery = new ProjectOverviewDocumentSearchRequest
+        {
+            AllowedStatuses = User.GetAllowedStatuses(StatusEntitiy.Document)
+        };
+
+        var documentsResponse = await projectModificationsService.GetDocumentsForModification(
+            modificationId,
+            searchQuery,
+            1,
+            300,
+            nameof(ProjectOverviewDocumentDto.DocumentType),
+            SortDirections.Ascending);
+
+        var modificationDocuments = documentsResponse?.Content?.Documents ?? [];
+
+        // CHECK FOR INCOMPLETE DOCUMENTS
+        if (modificationDocuments.Any())
+        {
+            var documentRequest = BuildDocumentRequest();
+            var documentStatuses = await GetDocumentCompletionStatuses(documentRequest);
+
+            var hasIncompleteDocuments = documentStatuses.Any(d =>
+                d.Status.Equals(
+                    DocumentDetailStatus.Incomplete.ToString(),
+                    StringComparison.OrdinalIgnoreCase));
+
+            if (hasIncompleteDocuments)
+            {
+                return RedirectToRoute("pmc:DocumentDetailsIncomplete");
+            }
+        }
+
+        // CHECK FOR MALWARE SCAN STATUS
+        var allMalwareScansSuccessful = modificationDocuments
+            .All(d => d.IsMalwareScanSuccessful == true);
+
+        if (!allMalwareScansSuccessful)
+        {
+            return RedirectToRoute("pmc:DocumentsScanInProgress");
+        }
+
+        return null;
+    }
+
+    [NonAction]
+    private async Task<IActionResult> HandleReviseAndAuthorise(
+    ModificationDetailsViewModel viewModel,
+    bool saveForLater)
+    {
+        // Applicant – revised response
+        var applicantResponses = viewModel.RfiModel.RfiResponses
+            .Select(r => r.ReviseAndAuthorise.FirstOrDefault() ?? string.Empty)
+            .ToList();
+
+        var applicantResult = await projectModificationsService.SaveModificationRfiResponses(
+            new ModificationRfiResponseRequest
+            {
+                ProjectModificationId = Guid.Parse(viewModel.ModificationId!),
+                Responses = applicantResponses,
+                Role = ResponseRoles.Applicant,
+                ResponseOrigin = ResponseOrigin.ReviseAndAuthorise
+            });
+
+        if (!applicantResult.IsSuccessStatusCode)
+            return this.ServiceError(applicantResult);
+
+        // Sponsor – reasons for revise & authorise
+        var sponsorResponses = viewModel.RfiModel.RfiResponses
+            .Select(r => r.ReasonForReviseAndAuthorise.FirstOrDefault() ?? string.Empty)
+            .ToList();
+
+        var sponsorResult = await projectModificationsService.SaveModificationRfiResponses(
+            new ModificationRfiResponseRequest
+            {
+                ProjectModificationId = Guid.Parse(viewModel.ModificationId!),
+                Responses = sponsorResponses,
+                Role = ResponseRoles.Sponsor,
+                ResponseOrigin = ResponseOrigin.ReviseAndAuthorise
+            });
+
+        if (!sponsorResult.IsSuccessStatusCode)
+            return this.ServiceError(sponsorResult);
+
+        var redirectResult = await CheckDocumentsAndRedirectIfRequired(Guid.Parse(viewModel.ModificationId!));
+
+        if (redirectResult is not null)
+        {
+            return redirectResult;
+        }
+
+        if (saveForLater)
+        {
+            return RedirectToRoute(
+                "sws:modifications",
+                new
+                {
+                    projectRecordId = viewModel.ProjectRecordId,
+                    sponsorOrganisationUserId = viewModel.SponsorOrganisationUserId,
+                    rtsId = viewModel.RtsId
+                });
         }
 
         return RedirectToAction(nameof(RfiCheckAndSubmitResponses));
     }
 
     [HttpGet]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Submit)]
     public async Task<IActionResult> RfiCheckAndSubmitResponses()
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
+        viewModel.Status = (viewModel as BaseProjectModificationViewModel).Status;
         var rfiReasons = await projectModificationsService.GetModificationReviewResponses(viewModel.ProjectRecordId, Guid.Parse(viewModel.ModificationId));
         var rfiResponses = await projectModificationsService.GetModificationRfiResponses(viewModel.ProjectRecordId, Guid.Parse(viewModel.ModificationId));
 
@@ -233,17 +427,44 @@ public class RfiResponseController(
     }
 
     [HttpPost]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Submit)]
     public async Task<IActionResult> RfiSubmitResponses()
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
+        viewModel.Status = (viewModel as BaseProjectModificationViewModel).Status;
 
-        var updateStatusResponse = await projectModificationsService.UpdateModificationStatus(
-            new UpdateModificationStatusRequest
-            {
-                ProjectRecordId = viewModel.ProjectRecordId!,
-                ModificationId = Guid.Parse(viewModel.ModificationId!),
-                Status = ModificationStatus.ResponseWithSponsor
-            });
+        ServiceResponse updateStatusResponse;
+
+        switch (viewModel.Status)
+        {
+            case ModificationStatus.RequestForInformation:
+                updateStatusResponse = await projectModificationsService.UpdateModificationStatus(
+                    new UpdateModificationStatusRequest
+                    {
+                        ProjectRecordId = viewModel.ProjectRecordId!,
+                        ModificationId = Guid.Parse(viewModel.ModificationId!),
+                        Status = ModificationStatus.ResponseWithSponsor
+                    });
+                break;
+
+            case ModificationStatus.ResponseReviseAndAuthorise:
+                updateStatusResponse = await projectModificationsService.UpdateModificationStatus(
+                    new UpdateModificationStatusRequest
+                    {
+                        ProjectRecordId = viewModel.ProjectRecordId!,
+                        ModificationId = Guid.Parse(viewModel.ModificationId!),
+                        Status = ModificationStatus.ResponseWithReviewBody
+                    });
+                break;
+
+            default:
+                updateStatusResponse = new ServiceResponse
+                {
+                    StatusCode = HttpStatusCode.BadRequest,
+                    Error = "Unsupported modification status for saving RFI Responses"
+                };
+                break;
+        }
 
         if (!updateStatusResponse.IsSuccessStatusCode)
         {
@@ -254,8 +475,10 @@ public class RfiResponseController(
     }
 
     [HttpGet]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Read)]
     public IActionResult RfiResponsesConfirmation()
     {
-        return View();
+        var viewModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
+        return View(viewModel);
     }
 }

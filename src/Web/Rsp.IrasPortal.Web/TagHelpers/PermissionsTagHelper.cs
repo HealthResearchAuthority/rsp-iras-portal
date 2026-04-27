@@ -171,7 +171,7 @@ public class PermissionsTagHelper(IFeatureManager featureManager) : TagHelper
     /// </summary>
     /// <param name="context">TagHelperContext provided by the runtime.</param>
     /// <param name="output">TagHelperOutput used to modify the rendered output.</param>
-    public async override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
+    public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
         // |Case | ShowWhenUserIsNotAuthenticated | UserIsAuthenticated | Show Output |
         // |-------|--------------------------------|---------------------|-------------| |Case 1 |
@@ -470,9 +470,13 @@ public class PermissionsTagHelper(IFeatureManager featureManager) : TagHelper
         // grant "Edit" access
         return
         (
-            User.IsInRole(Roles.Sponsor) && status is
+            (
+                User.IsInRole(Roles.Sponsor) ||
+                User.IsInRole(Roles.OrganisationAdministrator)
+            ) && status is
             ModificationStatus.WithSponsor or
             ModificationStatus.ResponseWithSponsor or
+            ModificationStatus.ResponseReviseAndAuthorise or
             ModificationStatus.ReviseAndAuthorise
         ) ||
         (

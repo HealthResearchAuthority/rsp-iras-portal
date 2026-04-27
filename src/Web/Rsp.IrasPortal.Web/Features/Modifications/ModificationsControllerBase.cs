@@ -572,9 +572,17 @@ public abstract class ModificationsControllerBase
                 continue;
             }
 
+            if (!showIncompleteForReviseAndAuthoriseStatus &&
+                doc.Status.Equals(DocumentStatus.ResponseReviseAndAuthorise, StringComparison.OrdinalIgnoreCase))
+            {
+                doc.Status = DocumentStatus.ResponseReviseAndAuthorise;
+                continue;
+            }
+
             if (!doc.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
                 (doc.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase) ||
                 doc.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase) ||
+                doc.Status.Equals(DocumentStatus.ResponseReviseAndAuthorise, StringComparison.OrdinalIgnoreCase) ||
                 doc.Status.Equals(DocumentStatus.RequestRevisions, StringComparison.OrdinalIgnoreCase) ||
                 doc.Status.Equals(DocumentStatus.RequestForInformation, StringComparison.OrdinalIgnoreCase)))
             {
@@ -584,6 +592,11 @@ public abstract class ModificationsControllerBase
                     && !isIncomplete)
                 {
                     doc.Status = DocumentStatus.ReviseAndAuthorise;
+                }
+                else if (doc.Status.Equals(DocumentStatus.ResponseReviseAndAuthorise, StringComparison.OrdinalIgnoreCase)
+                    && !isIncomplete)
+                {
+                    doc.Status = DocumentStatus.ResponseReviseAndAuthorise;
                 }
                 else
                 {

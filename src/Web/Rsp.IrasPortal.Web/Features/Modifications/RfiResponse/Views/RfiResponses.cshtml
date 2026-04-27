@@ -1,23 +1,40 @@
 ﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Domain.AccessControl
 @using Rsp.Portal.Web.Features.Modifications.Models
 @model ModificationDetailsViewModel
 @{
     ViewBag.Title = "Request for further information";
 }
 
-@section BackNavigation {
-    <partial name="_BackNavigation" model="@("rfi:rfidetails", "Back", new Dictionary<string, string>() { { "projectId", Model.ProjectRecordId! }, { "modificationId", Model.ModificationId! } })" />
-}
+<authorized permission="@Permissions.Sponsor.Modifications_Authorise"
+            status-for="Status"
+            status-is="@ModificationStatus.ResponseReviseAndAuthorise">
+    @{
+        ViewBag.Title = "Revise and authorise";
+        ViewBag.IsRevisionBySponsor = true;
+    }
+</authorized>
+
+<div status-for="@Model.Status" status-is="@ModificationStatus.ResponseReviseAndAuthorise" status-mode="Hide">
+    @section BackNavigation {
+        <partial name="_BackNavigation" model="@("rfi:rfidetails", "Back", new Dictionary<string, string>() { { "projectId", Model.ProjectRecordId! }, { "modificationId", Model.ModificationId! } })" />
+    }
+</div>
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+        <div status-for="@Model.Status" status-is="@ModificationStatus.ResponseReviseAndAuthorise" status-mode="Hide">
+            <h2 class="govuk-heading-l">Request for further information</h2>
+        </div>
+        <div status-for="@Model.Status" status-is="@ModificationStatus.ResponseReviseAndAuthorise">
+            <h2 class="govuk-heading-l">Revise and authorise response to request for further information</h2>
+        </div>
         <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
     </div>
 </div>
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <h2 class="govuk-heading-l">Request for further information</h2>
+    <div class="govuk-grid-column-two-thirds">        
         <dl class="govuk-summary-list">
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">IRAS ID</dt>
@@ -60,9 +77,9 @@
     </div>
 </div>
 <br />
-<form method="post" asp-action="RfiResponses">
-
+<form method="post" asp-action="SendRfiResponses">
     <h2 class="govuk-heading-m">Request for further information</h2>
+
 
     <input type="hidden" name="projectModificationId" value="@Model.ModificationId" />
     @for (var i = 0; i < Model.RfiModel.RfiReasons.Count; i++)
@@ -79,27 +96,177 @@
                 </p>
             </div>
         </div>
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-one-third">
-                <label class="govuk-label" for="RfiResponses_@(i)__InitialResponse_0_">
-                    Response to reason @(i + 1)
-                </label>
-            </div>
-            <div class="govuk-grid-column-two-thirds">
-                <div class="govuk-form-group govuk-character-count mb-0" data-module="govuk-character-count" data-maxlength="300">
-                    <textarea asp-for="RfiModel.RfiResponses[i].InitialResponse[0]"
-                              class="govuk-textarea govuk-js-character-count"
-                              rows="5"
-                              aria-describedby="RfiResponses_@(i)_InitialResponse_0-info">
-                    </textarea>
 
-                    <div id="RfiResponses_@(i)_InitialResponse_0-info"
-                         class="govuk-hint govuk-character-count__message">
+        <authorized role-is="@Roles.Applicant" status-for="@Model.Status" status-is="@ModificationStatus.RequestForInformation">
+
+            <!-- INITIAL RESPONSE -->
+            <div class="govuk-grid-row">
+                @{                    
+                    var initialTextareaId = $"RfiModel_RfiResponses_{i}__InitialResponse_0_";
+                    var infoId = $"{initialTextareaId}-info";
+                    var initialFieldErrors = ViewData.ModelState[initialTextareaId]?.Errors;
+                    var initialHasError = initialFieldErrors?.Count > 0;
+                    var initialErrorMessage = initialHasError ? initialFieldErrors[0].ErrorMessage : string.Empty;
+                    var initialErrorId = $"{initialTextareaId}-error";
+                }
+
+                <div class="govuk-grid-column-one-third">
+                    <label class="govuk-label" for="RfiResponses_@(i)__InitialResponse_0__">
+                        Response to reason @(i + 1)
+                    </label>
+                </div>
+                <div class="govuk-grid-column-two-thirds">
+                    <div class="govuk-form-group govuk-character-count"
+                         data-module="govuk-character-count"
+                         data-maxlength="300"
+                         error-class-for="RfiModel.RfiResponses[i].InitialResponse[0]">
+
+                        @if (initialHasError)
+                        {
+                            <span id="@initialErrorId"
+                                  class="govuk-error-message">
+                                <span class="govuk-visually-hidden">Error:</span>
+                                @initialErrorMessage
+                            </span>
+                        }
+
+                        <textarea asp-for="RfiModel.RfiResponses[i].InitialResponse[0]"                              
+                                  class="govuk-textarea govuk-js-character-count"
+                                  rows="5"                                  
+                                  aria-describedby="@infoId">
+                                        </textarea>
+                        <noscript>
+                            <div id="@infoId"
+                                 class="govuk-hint govuk-character-count__message">
+                                <p class='govuk-hint'>You can enter up to 300 characters</p>
+                            </div>
+                        </noscript>
+
+                        <div id="@infoId"
+                             aria-hidden="true"
+                             class="govuk-hint govuk-character-count__message">
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <hr />
+        </authorized>
+
+        <authorized permission="@Permissions.Sponsor.Modifications_Authorise"  status-for="@Model.Status"  status-is="@ModificationStatus.ResponseReviseAndAuthorise">
+
+            <!-- REVISED RESPONSE -->
+            <div class="govuk-grid-row">
+                @{                    
+                    var reviseTextareaId = $"RfiModel_RfiResponses_{i}__ReviseAndAuthorise_0_";
+                    var reviseInfoId = $"{reviseTextareaId}-info";
+                    var reviseFieldErrors = ViewData.ModelState[reviseTextareaId]?.Errors;
+                    var reviseHasError = reviseFieldErrors?.Count > 0;
+                    var reviseErrorMessage = reviseHasError ? reviseFieldErrors[0].ErrorMessage : string.Empty;
+                    var reviseErrorId = $"{reviseTextareaId}-error";
+                }
+
+                <div class="govuk-grid-column-one-third">
+                    <label class="govuk-label"
+                           for="RfiResponses_@(i)__ReviseAndAuthorise_0__">
+                        Revise response to reason @(i + 1)
+                    </label>
+                </div>
+
+                <div class="govuk-grid-column-two-thirds">
+                    <div class="govuk-form-group govuk-character-count"
+                         data-module="govuk-character-count"  
+                         data-maxlength="300"
+                         error-class-for="RfiModel.RfiResponses[i].ReviseAndAuthorise[0]">
+
+                        @if (reviseHasError)
+                        {
+                            <span id="@reviseErrorId"
+                                  class="govuk-error-message">
+                                <span class="govuk-visually-hidden">Error:</span>
+                                @reviseErrorMessage
+                            </span>
+                        }
+
+                        <textarea asp-for="RfiModel.RfiResponses[i].ReviseAndAuthorise[0]"
+                                  class="govuk-textarea govuk-js-character-count"
+                                  rows="5"                                  
+                                  aria-describedby="@reviseInfoId">
+                        </textarea>
+
+                        <noscript>
+                            <div id="@reviseInfoId"
+                                 class="govuk-hint govuk-character-count__message">
+                                <p class="govuk-hint">
+                                    You can enter up to 300 characters
+                                </p>
+                            </div>
+                        </noscript>
+
+                        <div id="@reviseInfoId"
+                             aria-hidden="true"
+                             class="govuk-hint govuk-character-count__message">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REASON FOR REVISED RESPONSE -->
+            <div class="govuk-grid-row">
+                @{                    
+                    var reasonTextareaId = $"RfiModel_RfiResponses_{i}__ReasonForReviseAndAuthorise_0_";
+                    var reasonInfoId = $"{reasonTextareaId}-info";
+                    var reasonFieldErrors = ViewData.ModelState[reasonTextareaId]?.Errors;
+                    var reasonHasError = reasonFieldErrors?.Count > 0;
+                    var reasonErrorMessage = reasonHasError ? reasonFieldErrors[0].ErrorMessage : string.Empty;
+                    var reasonErrorId = $"{reasonTextareaId}-error";
+                }
+
+                <div class="govuk-grid-column-one-third">
+                    <label class="govuk-label"
+                           for="RfiResponses_@(i)__ReasonForReviseAndAuthorise_0__">
+                        Reason for revised response to reason @(i + 1)
+                    </label>
+                </div>
+
+                <div class="govuk-grid-column-two-thirds">
+                    <div class="govuk-form-group govuk-character-count"
+                        data-module="govuk-character-count"   
+                        data-maxlength="300"
+                        error-class-for="RfiModel.RfiResponses[i].ReasonForReviseAndAuthorise[0]">
+                        
+                        @if (reasonHasError)
+                        {
+                            <span id="@reasonErrorId"
+                                  class="govuk-error-message">
+                                <span class="govuk-visually-hidden">Error:</span>
+                                @reasonErrorMessage
+                            </span>
+                        }
+
+                        <textarea asp-for="RfiModel.RfiResponses[i].ReasonForReviseAndAuthorise[0]"
+                                  class="govuk-textarea govuk-js-character-count"
+                                  rows="5"                                 
+                                  aria-describedby="@reasonInfoId">
+                        </textarea>
+
+                        <noscript>
+                            <div id="@reasonInfoId"
+                                 class="govuk-hint govuk-character-count__message">
+                                <p class="govuk-hint">
+                                    You can enter up to 300 characters
+                                </p>
+                            </div>
+                        </noscript>
+
+                        <div id="@reasonInfoId"
+                             aria-hidden="true"
+                             class="govuk-hint govuk-character-count__message">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </authorized>
+
+    <hr/>
     }
     <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
     @if (Model?.ProjectOverviewDocumentViewModel?.Documents is null || !Model.ProjectOverviewDocumentViewModel.Documents.Any())
@@ -129,7 +296,7 @@
         <button type="submit" class="govuk-button" data-module="govuk-button">
             Save and continue
         </button>
-        <button asp-route-saveForLater="true" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+        <button asp-action="SendRfiResponses" asp-route-saveForLater="true" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
             Save for later
         </button>
     </div>

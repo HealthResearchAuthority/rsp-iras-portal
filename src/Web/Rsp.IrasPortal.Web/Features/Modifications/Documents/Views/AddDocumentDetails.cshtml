@@ -59,6 +59,12 @@
             modificationParams.Add("rtsId", Model.RtsId ?? string.Empty);
             navModel = ("pmc:modificationdetails", "Back", modificationParams);
         }
+        else if (Model.Status is ModificationStatus.ResponseReviseAndAuthorise)
+        {
+            modificationParams.Add("sponsorOrganisationUserId", Model.SponsorOrganisationUserId ?? string.Empty);
+            modificationParams.Add("rtsId", Model.RtsId ?? string.Empty);
+            navModel = ("rfi:RfiResponses", "Back", modificationParams);
+        }
         else
         {
             modificationParams.Add("projectModificationIdentifier", Model.ModificationIdentifier ?? string.Empty);

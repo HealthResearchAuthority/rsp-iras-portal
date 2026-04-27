@@ -10,6 +10,7 @@ public static class ModificationStatusHelper
         {
             ModificationStatus.RequestRevisions => ModificationStatus.InDraft,
             ModificationStatus.ReviseAndAuthorise => ModificationStatus.WithSponsor,
+            ModificationStatus.ResponseReviseAndAuthorise => ModificationStatus.ResponseWithSponsor,
             _ => status
         };
     }
@@ -20,6 +21,7 @@ public static class ModificationStatusHelper
         {
             DocumentStatus.RequestRevisions => DocumentStatus.Uploaded,
             DocumentStatus.ReviseAndAuthorise => DocumentStatus.WithSponsor,
+            DocumentStatus.ResponseReviseAndAuthorise => DocumentStatus.ResponseWithSponsor,
             _ => status
         };
     }

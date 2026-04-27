@@ -157,18 +157,8 @@
                         @answerText
                     </dd>
                 </div>
-                @if
-                (
-                    (
-                        Model.ModificationChanges.Any() &&
-                        showModificationDetails.GetValueOrDefault()
-                    ) ||
-                    (
-                        Model.Status is ModificationStatus.RequestRevisions or
-			ModificationStatus.ReviseAndAuthorise or
-			ModificationStatus.RequestForInformation
-                    )
-                )
+                @if ((Model.ModificationChanges.Any() && showModificationDetails.GetValueOrDefault()) ||
+                    (Model.Status is ModificationStatus.RequestRevisions or ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestForInformation or ModificationStatus.ResponseReviseAndAuthorise))
                 {
                     @if
                     (

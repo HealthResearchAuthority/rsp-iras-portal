@@ -1,0 +1,76 @@
+﻿@using Rsp.Gds.Component.Models
+@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Domain.AccessControl
+@using Rsp.Portal.Web.Features.Modifications.Models
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@model Rsp.Portal.Web.Features.SponsorWorkspace.Authorisation.Models.AuthoriseModificationsOutcomeViewModel
+
+@{
+    ViewBag.Title = (string?)ViewData[PageContentElements.MetaTitle];
+    var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
+    var pageContent = pageContentData ?? new Dictionary<string, MixedContentPageItem?>();
+
+    var title = pageContent.GetValueOrDefault("SponsorWorkspace.ConfirmReviseAndAuthoriseOutcome.Title", null);
+    var body = pageContent.GetValueOrDefault("SponsorWorkspace.ConfirmReviseAndAuthoriseOutcome.Description", null);
+
+}
+
+@section BackNavigation {
+    <partial name="_BackNavigation" model="@("sws:CheckAndAuthorise", "Back", new Dictionary<string, string>
+                                            { { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() },
+                                            { "projectRecordId", Model.ProjectRecordId.ToString() },
+                                            { "projectModificationId", Model.ProjectModificationId.ToString() },
+                                            { "irasId", Model.IrasId.ToString() },
+                                            { "shortTitle", Model.ShortTitle.ToString() },
+                                            { "rtsId", Model.RtsId.ToString() }
+                                            })" />
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">
+            @Html.Raw(title?.Value)
+        </h1>
+        <partial name="~/Features/Modifications/Shared/_ProjectModificationSummary.cshtml"
+                 model="Model"
+                 view-data="ViewData" />
+    </div>
+</div>
+
+<form asp-route="sws:SendConfirmReviseAndAuthoriseOutcome" method="post">
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <div id="reason-not-authorising-label">
+                @Html.Raw(body?.Value)
+            </div>            
+
+            <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
+            <input type="hidden" name="IrasId" value="@Model.IrasId" />
+            <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
+            <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
+            <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+            <input type="hidden" name="ProjectModificationId" value="@Model.ProjectModificationId" />
+            <input type="hidden" name="ModificationIdentifier" value="@Model.ModificationIdentifier" />
+            <input type="hidden" name="Outcome" value="@Model.Outcome" />
+            <input type="hidden" name="RtsId" value="@Model.RtsId" />
+
+            <div class="save-buttons">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">
+                    Confirm outcome
+                </button>
+                <a asp-route="sws:CheckAndAuthorise"
+                   asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
+                   asp-route-projectRecordId="@Model.ProjectRecordId"
+                   asp-route-projectModificationId="@Model.ProjectModificationId"
+                   asp-route-irasId="@Model.IrasId"
+                   asp-route-shortTitle="@Model.ShortTitle"
+                   asp-route-rtsId="@Model.RtsId"
+                   class="govuk-button govuk-button--secondary">
+                    Return to outcome selection
+                </a>
+            </div>            
+        </div>
+    </div>
+</form>
