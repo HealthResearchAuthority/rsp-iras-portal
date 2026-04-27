@@ -8,6 +8,7 @@ public class ModificationStatusHelperTests : TestServiceBase
     [Theory]
     [InlineData(ModificationStatus.RequestRevisions, ModificationStatus.InDraft)]
     [InlineData(ModificationStatus.ReviseAndAuthorise, ModificationStatus.WithSponsor)]
+    [InlineData(ModificationStatus.ResponseReviseAndAuthorise, ModificationStatus.ResponseWithSponsor)]
     [InlineData("SomeOtherStatus", "SomeOtherStatus")]
     [InlineData(null, null)]
     public void ToUiStatus_ReturnsExpectedValue(string? input, string? expected)
