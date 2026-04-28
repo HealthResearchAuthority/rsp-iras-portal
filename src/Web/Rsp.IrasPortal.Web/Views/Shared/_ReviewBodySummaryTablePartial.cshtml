@@ -1,4 +1,5 @@
 ﻿﻿@using Rsp.Portal.Application.Constants
+@using Rsp.IrasPortal.Application.Constants
 @model (AddUpdateReviewBodyModel ReviewBodyModel, bool AdditionalInformation)
 
 @{
@@ -49,20 +50,41 @@
 			</td>
 		</tr>
 
+    <tr class="govuk-table__row">
+        <td class="govuk-table__cell">
+            <b>Review body type</b>
+        </td>
+        <td class="govuk-table__cell line-break-anywhere">
+            @Model.ReviewBodyModel.ReviewBodyType
+            <input type="hidden" asp-for="ReviewBodyModel.ReviewBodyType" name="ReviewBodyType" value="@Model.ReviewBodyModel.ReviewBodyType" />
+        </td>
+        <td class="govuk-table__cell govuk-table__cell--numeric">
+            @{
+                await RenderEditLink("review body type");
+            }
+        </td>
+    </tr>
+
+    @if (Model.ReviewBodyModel.ReviewBodyType == ReviewBodyType.ResearchEthicsCommittee)
+    {
         <tr class="govuk-table__row">
             <td class="govuk-table__cell">
-                <b>Review body type</b>
+                <b>Research ethics committee ID</b>
             </td>
             <td class="govuk-table__cell line-break-anywhere">
-                @Model.ReviewBodyModel.ReviewBodyType
-                <input type="hidden" asp-for="ReviewBodyModel.ReviewBodyType" name="ReviewBodyType" value="@Model.ReviewBodyModel.ReviewBodyType" />
+                @Model.ReviewBodyModel.ResearchEthicsCommitteeId
+                <input type="hidden"
+                       asp-for="ReviewBodyModel.ResearchEthicsCommitteeId"
+                       name="ResearchEthicsCommitteeId"
+                       value="@Model.ReviewBodyModel.ResearchEthicsCommitteeId" />
             </td>
             <td class="govuk-table__cell govuk-table__cell--numeric">
                 @{
-                    await RenderEditLink("review body type");
+                    await RenderEditLink("research ethics committee id");
                 }
             </td>
         </tr>
+    }
 
 		<tr class="govuk-table__row">
 			<td class="govuk-table__cell">

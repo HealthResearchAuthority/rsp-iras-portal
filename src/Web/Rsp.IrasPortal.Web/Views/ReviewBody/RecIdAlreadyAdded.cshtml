@@ -1,0 +1,59 @@
+﻿@using Rsp.Portal.Application.Constants
+@using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@model AddUpdateReviewBodyModel
+
+@{
+	var pageContent = ViewData[PageContentElements.PageContent] as Dictionary<string, MixedContentPageItem?>
+					  ?? new Dictionary<string, MixedContentPageItem?>();
+
+	var headline = pageContent.GetValueOrDefault("ReviewBody.RecIdAlreadyAdded.Title");
+	var body = pageContent.GetValueOrDefault("ReviewBody.RecIdAlreadyAdded.Body");
+
+	var countries = Model.Countries ?? new List<string>();
+
+    var mode = ViewBag.Mode as string;
+
+	var routeName = string.Equals(mode, "create", StringComparison.OrdinalIgnoreCase)
+		? "rbc:createreviewbody"
+		: "rbc:updatereviewbody";
+
+    var buttonText = string.Equals(mode, "create", StringComparison.OrdinalIgnoreCase)
+        ? "Return to Add a new review body"
+        : "Return to Edit review body";
+}
+
+<div class="govuk-grid-row">
+	<div class="govuk-grid-column-two-thirds">
+		<h1 class="govuk-heading-l">@Html.Raw(headline?.Value)</h1>
+
+		<div class="govuk-body">
+			@Html.Raw(body?.Value)
+		</div>
+
+		<form asp-route="@routeName" method="post">
+			@Html.AntiForgeryToken()
+
+			<input type="hidden" asp-for="Id" />
+			<input type="hidden" asp-for="RegulatoryBodyName" />
+			<input type="hidden" asp-for="EmailAddress" />
+			<input type="hidden" asp-for="Description" />
+			<input type="hidden" asp-for="ReviewBodyType" />
+			<input type="hidden" asp-for="ResearchEthicsCommitteeId" />
+			<input type="hidden" asp-for="IsActive" />
+			<input type="hidden" asp-for="CreatedBy" />
+			<input type="hidden" asp-for="UpdatedBy" />
+			<input type="hidden" asp-for="UpdatedDate" />
+
+			@for (var i = 0; i < countries.Count; i++)
+			{
+				<input type="hidden"
+					   name="@($"{nameof(Model.Countries)}[{i}]")"
+					   value="@countries[i]" />
+			}
+
+			<button type="submit" class="govuk-button">
+				@buttonText
+			</button>
+		</form>
+	</div>
+</div>
