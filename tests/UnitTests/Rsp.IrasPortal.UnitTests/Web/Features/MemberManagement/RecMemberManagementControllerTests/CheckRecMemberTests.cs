@@ -314,4 +314,187 @@ public class CheckRecMemberTests : TestServiceBase<RecMemberManagementController
             .Setup(s => s.GetUser(loggedInUser.ToString(), null, null))
             .ReturnsAsync(userResponse);
     }
+
+    [Fact]
+    public async Task ResearchEthicsCommitteeMembers_ShouldReturnNotFound_WhenReviewBodyNotFound()
+    {
+        var recId = Guid.NewGuid();
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(recId))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.NotFound,
+                Content = null
+            });
+
+        var result = await Sut.ResearchEthicsCommitteeMembers(recId, null, null);
+
+        var statusCoderesult = result.ShouldBeOfType<StatusCodeResult>();
+        statusCoderesult.StatusCode.ShouldBe((int)HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task ResearchEthicsCommitteeMembers_ShouldReturnForbid_WhenUserHasNoAccess()
+    {
+        var recId = Guid.NewGuid();
+
+        var rec = new ReviewBodyDto
+        {
+            Id = recId,
+            Countries = new List<string> { "Germany" }
+        };
+
+        SetUser(LoggedInUserId);
+        SetUserResponse(LoggedInUserId);
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(recId))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = rec
+            });
+
+        var result = await Sut.ResearchEthicsCommitteeMembers(recId, null, null);
+
+        var statusCoderesult = result.ShouldBeOfType<ForbidResult>();
+    }
+
+    [Fact]
+    public async Task ResearchEthicsCommitteeMembers_ShouldReturnView_WithMembers_WhenNoSorting()
+    {
+        var recId = Guid.NewGuid();
+        SetUser(LoggedInUserId);
+        SetUserResponse(LoggedInUserId);
+
+        var rec = new ReviewBodyDto
+        {
+            Id = recId,
+            RegulatoryBodyName = "Test REC",
+            Countries = new() { "United Kingdom" },
+            Users = new List<ReviewBodyUserDto>()
+        {
+            new() { UserId = LoggedInUserId}
+        }
+        };
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(recId))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = rec
+            });
+
+        var result = await Sut.ResearchEthicsCommitteeMembers(recId, null, null);
+
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeOfType<RecMembersViewModel>();
+
+        model.RecUsers.ShouldNotBeNull();
+        model.RecUsers!.Count().ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task ResearchEthicsCommitteeMembers_ShouldSortMembers_Ascending()
+    {
+        var recId = Guid.NewGuid();
+        SetUser(LoggedInUserId);
+        SetUserResponse(LoggedInUserId);
+
+        var users = new List<ReviewBodyUserDto>
+    {
+        new() { UserId = LoggedInUserId },
+        new() { UserId = Guid.NewGuid() }
+    };
+
+        var rec = new ReviewBodyDto
+        {
+            Id = recId,
+            Countries = new() { "United Kingdom" },
+            Users = users
+        };
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(recId))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = rec
+            });
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(It.IsAny<string>(), null, null))
+            .ReturnsAsync((string userId, string? a, string? b) =>
+                new ServiceResponse<UserResponse>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new UserResponse
+                    {
+                        User = new User(
+                            userId,
+                            "aad",
+                            "Mr",
+                            "Test",
+                            "User",
+                            "test@test.com",
+                            "Dev",
+                            "Org",
+                            "123",
+                            "United Kingdom",
+                            IrasUserStatus.Active,
+                            DateTime.UtcNow,
+                            DateTime.UtcNow,
+                            DateTime.UtcNow)
+                    }
+                });
+
+        var result = await Sut.ResearchEthicsCommitteeMembers(
+            recId,
+            nameof(RecMemberViewModel.FirstName),
+            SortDirections.Ascending);
+
+        var model = result.ShouldBeOfType<ViewResult>()
+                          .Model.ShouldBeOfType<RecMembersViewModel>();
+
+        model.Pagination!.SortField.ShouldBe(nameof(RecMemberViewModel.FirstName));
+    }
+
+    [Fact]
+    public async Task ResearchEthicsCommitteeMembers_ShouldReturnServiceError_WhenUserDetailsFail()
+    {
+        var recId = Guid.NewGuid();
+        SetUser(LoggedInUserId);
+        SetUserResponse(LoggedInUserId);
+
+        var rec = new ReviewBodyDto
+        {
+            Id = recId,
+            Countries = new() { "United Kingdom" },
+            Users = new List<ReviewBodyUserDto>()
+        {
+            new() { UserId = LoggedInUserId}
+        }
+        };
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(recId))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = rec
+            });
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(LoggedInUserId.ToString(), null, null))
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                StatusCode = HttpStatusCode.NotFound
+            });
+
+        var result = await Sut.ResearchEthicsCommitteeMembers(recId, null, null);
+
+        result.ShouldBeOfType<ForbidResult>();
+    }
 }
