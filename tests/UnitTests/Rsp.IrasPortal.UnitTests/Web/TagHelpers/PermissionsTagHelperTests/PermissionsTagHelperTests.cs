@@ -87,16 +87,16 @@ public class PermissionsTagHelperTests : TestServiceBase<PermissionsTagHelper>
     [Fact]
     public void EvaluatePermissionsAndRoles_Throws_When_Both_Permissions_And_Roles_Are_Specified()
     {
-        // Arrange
-        Sut.Permission = "p";
-        Sut.RolesList = ["r"];
+            // Arrange
+            Sut.Permission = "p";
+            Sut.RolesList = ["r"];
 
-        var http = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity("TestAuth")) };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
+            var http = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity("TestAuth")) };
+            Sut.ViewContext = new ViewContext { HttpContext = http };
 
-        // Act & Assert
-        Should.Throw<InvalidOperationException>(() => Sut.EvaluatePermissionsAndRoles());
-    }
+            // Act & Assert
+            Should.Throw<InvalidOperationException>(() => Sut.EvaluatePermissionsAndRoles());
+        }
 
     [Fact]
     public async Task EvaluatePermissionsAndRoles_Returns_True_When_No_Permissions_Or_Roles_Are_Specified()
@@ -122,14 +122,14 @@ public class PermissionsTagHelperTests : TestServiceBase<PermissionsTagHelper>
     }
 
     [Fact]
-    public async Task EvaluatePermissions_Returns_True_For_Single_Permission_When_User_Does_Not_Have_Permission()
+    public async Task EvaluatePermissions_Returns_False_For_Single_Permission_When_User_Does_Not_Have_Permission()
     {
-        // Arrange
         Sut.Permission = Permissions.SystemAdministration.Workspace_Access;
         Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
-        // Act & Assert
-        (await Sut.EvaluatePermissions()).ShouldBeTrue();
+        var result = await Sut.EvaluatePermissions();
+
+        result.ShouldBeFalse();
     }
 
     [Fact]
@@ -144,14 +144,12 @@ public class PermissionsTagHelperTests : TestServiceBase<PermissionsTagHelper>
         Sut.PermissionEvaluationLogic = PermissionsTagHelper.PermissionMode.Any;
         Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
-        // Act & Assert
         (await Sut.EvaluatePermissions()).ShouldBeTrue();
     }
 
     [Fact]
-    public async Task EvaluatePermissions_Any_Returns_True_When_User_Has_No_Permissions()
+    public async Task EvaluatePermissions_Any_Returns_False_When_User_Has_No_Permissions()
     {
-        // Arrange
         Sut.Permissions =
         [
             Permissions.SystemAdministration.Workspace_Access,
@@ -160,14 +158,14 @@ public class PermissionsTagHelperTests : TestServiceBase<PermissionsTagHelper>
         Sut.PermissionEvaluationLogic = PermissionsTagHelper.PermissionMode.Any;
         Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
-        // Act & Assert
-        (await Sut.EvaluatePermissions()).ShouldBeTrue();
+        var result = await Sut.EvaluatePermissions();
+
+        result.ShouldBeFalse();
     }
 
     [Fact]
     public async Task EvaluatePermissions_All_Returns_True_When_User_Has_All_Permissions()
     {
-        // Arrange
         Sut.Permissions =
         [
             Permissions.MyResearch.ProjectRecord_Read,
@@ -176,14 +174,12 @@ public class PermissionsTagHelperTests : TestServiceBase<PermissionsTagHelper>
         Sut.PermissionEvaluationLogic = PermissionsTagHelper.PermissionMode.All;
         Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
-        // Act & Assert
         (await Sut.EvaluatePermissions()).ShouldBeTrue();
     }
 
     [Fact]
     public async Task EvaluatePermissions_All_Returns_True_When_User_Is_System_Administrator()
     {
-        // Arrange
         Sut.Permissions =
         [
             Permissions.MyResearch.Workspace_Access,
@@ -194,14 +190,12 @@ public class PermissionsTagHelperTests : TestServiceBase<PermissionsTagHelper>
         Sut.PermissionEvaluationLogic = PermissionsTagHelper.PermissionMode.All;
         Sut.ViewContext = CreateViewContext(CreateUser(Roles.SystemAdministrator));
 
-        // Act & Assert
         (await Sut.EvaluatePermissions()).ShouldBeTrue();
     }
 
     [Fact]
     public async Task EvaluatePermissions_Returns_False_For_Edit_Permission_When_TeamRoles_Enabled_And_No_Collaborator_Edit_Access()
     {
-        // Arrange
         Mocker.GetMock<IFeatureManager>()
             .Setup(m => m.IsEnabledAsync(FeatureFlags.TeamRoles))
             .ReturnsAsync(true);
@@ -209,17 +203,14 @@ public class PermissionsTagHelperTests : TestServiceBase<PermissionsTagHelper>
         Sut.Permission = Permissions.MyResearch.ProjectRecord_Update;
         Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
-        // Act
         var result = await Sut.EvaluatePermissions();
 
-        // Assert
         result.ShouldBeFalse();
     }
 
     [Fact]
     public async Task EvaluatePermissions_Returns_True_For_Edit_Permission_When_TeamRoles_Disabled_And_No_Collaborator_Edit_Access()
     {
-        // Arrange
         Mocker.GetMock<IFeatureManager>()
             .Setup(m => m.IsEnabledAsync(FeatureFlags.TeamRoles))
             .ReturnsAsync(false);
@@ -227,19 +218,14 @@ public class PermissionsTagHelperTests : TestServiceBase<PermissionsTagHelper>
         Sut.Permission = Permissions.MyResearch.ProjectRecord_Update;
         Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
-        // Act
         var result = await Sut.EvaluatePermissions();
 
-        // Assert
         result.ShouldBeTrue();
     }
-
-    // Role Evaluation Tests
 
     [Fact]
     public void EvaluateRoles_Returns_True_For_Single_Role_When_User_Is_In_Role()
     {
-        // Arrange
         Sut.Role = Roles.TeamManager;
 
         var principal = CreateUser(Roles.TeamManager);
@@ -252,499 +238,307 @@ public class PermissionsTagHelperTests : TestServiceBase<PermissionsTagHelper>
     [Fact]
     public void EvaluateRoles_Returns_False_For_Single_Role_When_User_Not_In_Role()
     {
-        // Arrange
         Sut.Role = "admin";
+        Sut.ViewContext = CreateViewContext(CreateUser("user"));
 
-        var principal = CreateUser("user");
-        Sut.ViewContext = new ViewContext { HttpContext = new DefaultHttpContext { User = principal } };
-
-        // Act & Assert
         Sut.EvaluateRoles().ShouldBeFalse();
     }
 
     [Fact]
     public void EvaluateRoles_Any_Returns_True_When_User_Has_One_Role()
     {
-        // Arrange
         Sut.RolesList = ["a", "b"];
         Sut.RoleEvaluationLogic = PermissionsTagHelper.RoleMode.Any;
+        Sut.ViewContext = CreateViewContext(CreateUser("b"));
 
-        var principal = CreateUser("b");
-        Sut.ViewContext = new ViewContext { HttpContext = new DefaultHttpContext { User = principal } };
-
-        // Act & Assert
         Sut.EvaluateRoles().ShouldBeTrue();
     }
 
     [Fact]
     public void EvaluateRoles_All_Returns_True_When_User_Has_All_Roles()
     {
-        // Arrange
         Sut.RolesList = ["x", "y"];
         Sut.RoleEvaluationLogic = PermissionsTagHelper.RoleMode.All;
+        Sut.ViewContext = CreateViewContext(CreateUser("x", "y"));
 
-        var principal = CreateUser("x", "y");
-        Sut.ViewContext = new ViewContext { HttpContext = new DefaultHttpContext { User = principal } };
-
-        // Act & Assert
         Sut.EvaluateRoles().ShouldBeTrue();
     }
 
     [Fact]
     public void EvaluateRoles_All_Returns_False_When_User_Missing_One_Role()
     {
-        // Arrange
         Sut.RolesList = ["x", "y"];
         Sut.RoleEvaluationLogic = PermissionsTagHelper.RoleMode.All;
+        Sut.ViewContext = CreateViewContext(CreateUser("x"));
 
-        var principal = CreateUser("x");
-        Sut.ViewContext = new ViewContext { HttpContext = new DefaultHttpContext { User = principal } };
-
-        // Act & Assert
         Sut.EvaluateRoles().ShouldBeFalse();
     }
-
-    // Status Access Tests
 
     [Fact]
     public void UserCanAccessStatus_Returns_True_When_StatusFor_Is_Null()
     {
-        // Arrange
-        var http = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity("TestAuth")) };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
-        // Act & Assert
         Sut.UserCanAccessStatus().ShouldBeTrue();
     }
 
     [Fact]
     public void UserCanAccessStatus_Returns_True_When_StatusEntity_Is_Empty()
     {
-        // Arrange
         Sut.StatusEntity = "";
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
-        var http = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity("TestAuth")) };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
-
-        // Act & Assert
         Sut.UserCanAccessStatus().ShouldBeTrue();
     }
 
     [Fact]
     public void UserCanAccessStatus_Returns_True_When_User_Can_Access_ProjectRecord_Status()
     {
-        // Arrange
-        var statusValue = ProjectRecordStatus.InDraft;
-        var modelExpression = CreateModelExpression(statusValue);
-
-        Sut.StatusFor = modelExpression;
+        Sut.StatusFor = CreateModelExpression(ProjectRecordStatus.InDraft);
         Sut.StatusEntity = StatusEntitiy.ProjectRecord;
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
-        var principal = CreateUser(Roles.Applicant);
-        var http = new DefaultHttpContext { User = principal };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
-
-        // Act
-        var result = Sut.UserCanAccessStatus();
-
-        // Assert
-        result.ShouldBeTrue();
+        Sut.UserCanAccessStatus().ShouldBeTrue();
     }
 
     [Fact]
     public void UserCanAccessStatus_Returns_False_When_User_Cannot_Access_ProjectRecord_Status()
     {
-        // Arrange
-        var statusValue = ProjectRecordStatus.InDraft;
-        var modelExpression = CreateModelExpression(statusValue);
-
-        Sut.StatusFor = modelExpression;
+        Sut.StatusFor = CreateModelExpression(ProjectRecordStatus.InDraft);
         Sut.StatusEntity = StatusEntitiy.ProjectRecord;
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Sponsor));
 
-        var principal = CreateUser(Roles.Sponsor);
-        var http = new DefaultHttpContext { User = principal };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
-
-        // Act
-        var result = Sut.UserCanAccessStatus();
-
-        // Assert
-        result.ShouldBeFalse();
+        Sut.UserCanAccessStatus().ShouldBeFalse();
     }
 
     [Fact]
     public void UserCanAccessStatus_Returns_True_When_User_Can_Access_Modification_Status()
     {
-        // Arrange
-        var statusValue = ModificationStatus.WithSponsor;
-        var modelExpression = CreateModelExpression(statusValue);
-
-        Sut.StatusFor = modelExpression;
+        Sut.StatusFor = CreateModelExpression(ModificationStatus.WithSponsor);
         Sut.StatusEntity = StatusEntitiy.Modification;
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Sponsor));
 
-        var principal = CreateUser(Roles.Sponsor);
-        var http = new DefaultHttpContext { User = principal };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
-
-        // Act
-        var result = Sut.UserCanAccessStatus();
-
-        // Assert
-        result.ShouldBeTrue();
+        Sut.UserCanAccessStatus().ShouldBeTrue();
     }
 
     [Fact]
     public void UserCanAccessStatus_Returns_False_When_User_Cannot_Access_Modification_Status()
     {
-        // Arrange
-        var statusValue = ModificationStatus.WithSponsor;
-        var modelExpression = CreateModelExpression(statusValue);
-
-        Sut.StatusFor = modelExpression;
+        Sut.StatusFor = CreateModelExpression(ModificationStatus.WithSponsor);
         Sut.StatusEntity = StatusEntitiy.Modification;
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.TeamManager));
 
-        var principal = CreateUser(Roles.TeamManager);
-        var http = new DefaultHttpContext { User = principal };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
-
-        // Act
-        var result = Sut.UserCanAccessStatus();
-
-        // Assert
-        result.ShouldBeFalse();
+        Sut.UserCanAccessStatus().ShouldBeFalse();
     }
 
     [Fact]
     public void UserCanAccessStatus_Returns_True_When_User_Can_Access_Document_Status()
     {
-        // Arrange
-        var statusValue = DocumentStatus.Uploaded;
-        var modelExpression = CreateModelExpression(statusValue);
-
-        Sut.StatusFor = modelExpression;
+        Sut.StatusFor = CreateModelExpression(DocumentStatus.Uploaded);
         Sut.StatusEntity = StatusEntitiy.Document;
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
-        var principal = CreateUser(Roles.Applicant);
-        var http = new DefaultHttpContext { User = principal };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
-
-        // Act
-        var result = Sut.UserCanAccessStatus();
-
-        // Assert
-        result.ShouldBeTrue();
+        Sut.UserCanAccessStatus().ShouldBeTrue();
     }
 
     [Fact]
     public void UserCanAccessStatus_Is_Case_Sensitive_For_Status()
     {
-        // Arrange
-        var statusValue = "IN DRAFT";
-        var modelExpression = CreateModelExpression(statusValue);
-
-        Sut.StatusFor = modelExpression;
+        Sut.StatusFor = CreateModelExpression("IN DRAFT");
         Sut.StatusEntity = StatusEntitiy.ProjectRecord;
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
-        var principal = CreateUser(Roles.Applicant);
-        var http = new DefaultHttpContext { User = principal };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
-
-        // Act
-        var result = Sut.UserCanAccessStatus();
-
-        // Assert
-        result.ShouldBeFalse();
+        Sut.UserCanAccessStatus().ShouldBeFalse();
     }
 
     [Fact]
     public void UserCanAccessStatus_Returns_False_For_Unknown_Entity_Type()
     {
-        // Arrange
-        var statusValue = "Some Status";
-        var modelExpression = CreateModelExpression(statusValue);
-
-        Sut.StatusFor = modelExpression;
+        Sut.StatusFor = CreateModelExpression("Some Status");
         Sut.StatusEntity = "unknownentity";
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
-        var principal = CreateUser(Roles.Applicant);
-        var http = new DefaultHttpContext { User = principal };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
-
-        // Act
-        var result = Sut.UserCanAccessStatus();
-
-        // Assert
-        result.ShouldBeFalse();
+        Sut.UserCanAccessStatus().ShouldBeFalse();
     }
 
     [Fact]
     public void UserCanAccessStatus_Returns_True_When_SystemAdministrator_Can_Access_Any_Status()
     {
-        // Arrange
-        var statusValue = ModificationStatus.WithReviewBody;
-        var modelExpression = CreateModelExpression(statusValue);
-
-        Sut.StatusFor = modelExpression;
+        Sut.StatusFor = CreateModelExpression(ModificationStatus.WithReviewBody);
         Sut.StatusEntity = StatusEntitiy.Modification;
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.SystemAdministrator));
 
-        var principal = CreateUser(Roles.SystemAdministrator);
-        var http = new DefaultHttpContext { User = principal };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
-
-        // Act
-        var result = Sut.UserCanAccessStatus();
-
-        // Assert
-        result.ShouldBeTrue();
+        Sut.UserCanAccessStatus().ShouldBeTrue();
     }
 
     [Fact]
     public void UserCanAccessStatus_Combines_Statuses_From_Multiple_Roles()
     {
-        // Arrange
-        var statusValue = ModificationStatus.InDraft;
-        var modelExpression = CreateModelExpression(statusValue);
-
-        Sut.StatusFor = modelExpression;
+        Sut.StatusFor = CreateModelExpression(ModificationStatus.InDraft);
         Sut.StatusEntity = StatusEntitiy.Modification;
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant, Roles.Sponsor));
 
-        // User with both applicant and sponsor roles
-        var principal = CreateUser(Roles.Applicant, Roles.Sponsor);
-        var http = new DefaultHttpContext { User = principal };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
-
-        // Act
-        var result = Sut.UserCanAccessStatus();
-
-        // Assert
-        result.ShouldBeTrue(); // Applicant can access "In draft"
+        Sut.UserCanAccessStatus().ShouldBeTrue();
     }
-
-    // Process Tests - Authentication
 
     [Fact]
     public async Task Process_Shows_Content_When_ShowWhenUserIsNotAuthenticated_And_User_Is_Anonymous()
     {
-        // Arrange
         Sut.ShowWhenUserIsNotAuthenticated = true;
-
-        var http = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity()) };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
+        Sut.ViewContext = CreateViewContext(new ClaimsPrincipal(new ClaimsIdentity()));
 
         var output = CreateOutput("authorized", "child content");
 
-        // Act
         await Sut.ProcessAsync(new TagHelperContext([], new Dictionary<object, object?>(), "test"), output);
 
-        // Assert
-        output.TagName.ShouldBeNull(); // standalone tag wrapper removed
+        output.TagName.ShouldBeNull();
         output.Content.IsEmptyOrWhiteSpace.ShouldBeFalse();
     }
 
     [Fact]
     public async Task Process_Suppresses_Content_When_ShowWhenUserIsNotAuthenticated_And_User_Is_Authenticated()
     {
-        // Arrange
         Sut.ShowWhenUserIsNotAuthenticated = true;
-
-        var principal = CreateUser(Roles.TeamManager);
-
-        var http = new DefaultHttpContext { User = principal };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.TeamManager));
 
         var output = CreateOutput("authorized-when", "child content");
 
-        // Act
         await Sut.ProcessAsync(new TagHelperContext([], new Dictionary<object, object?>(), "test"), output);
 
-        // Assert
         output.Content.IsEmptyOrWhiteSpace.ShouldBeTrue();
     }
 
     [Fact]
     public async Task Process_Suppresses_Content_When_User_Is_Not_Authenticated_And_No_ShowFlag()
     {
-        // Arrange
-        var http = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity()) };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
+        Sut.ViewContext = CreateViewContext(new ClaimsPrincipal(new ClaimsIdentity()));
 
         var output = CreateOutput("div", "test content");
 
-        // Act
         await Sut.ProcessAsync(new TagHelperContext([], new Dictionary<object, object?>(), "test"), output);
 
-        // Assert
         output.Content.IsEmptyOrWhiteSpace.ShouldBeTrue();
     }
-
-    // Process Tests - Role-Based
 
     [Fact]
     public async Task Process_Shows_Content_When_User_Is_Authenticated_And_Role_Matches()
     {
-        // Arrange
         Sut.Role = Roles.TeamManager;
-
-        var principal = CreateUser(Roles.TeamManager);
-        var http = new DefaultHttpContext { User = principal };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.TeamManager));
 
         var output = CreateOutput("div", "visible content");
 
-        // Act
         await Sut.ProcessAsync(new TagHelperContext([], new Dictionary<object, object?>(), "test"), output);
 
-        // Assert
         output.Content.IsEmptyOrWhiteSpace.ShouldBeFalse();
     }
 
     [Fact]
     public async Task Process_Suppresses_Content_When_User_Does_Not_Have_Required_Role()
     {
-        // Arrange
         Sut.Role = "admin";
-
-        var principal = CreateUser("user");
-        var http = new DefaultHttpContext { User = principal };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
+        Sut.ViewContext = CreateViewContext(CreateUser("user"));
 
         var output = CreateOutput("div", "admin content");
 
-        // Act
         await Sut.ProcessAsync(new TagHelperContext([], new Dictionary<object, object?>(), "test"), output);
 
-        // Assert
         output.Content.IsEmptyOrWhiteSpace.ShouldBeTrue();
     }
 
     [Fact]
     public async Task Process_Shows_Content_When_RolesList_Any_Mode_And_User_Has_One_Role()
     {
-        // Arrange
         Sut.RolesList = ["a", "b"];
         Sut.RoleEvaluationLogic = PermissionsTagHelper.RoleMode.Any;
-
-        var principal = CreateUser("b");
-        Sut.ViewContext = new ViewContext { HttpContext = new DefaultHttpContext { User = principal } };
+        Sut.ViewContext = CreateViewContext(CreateUser("b"));
 
         var output = CreateOutput("div", "any content");
 
-        // Act
         await Sut.ProcessAsync(new TagHelperContext([], new Dictionary<object, object?>(), "test"), output);
 
-        // Assert
         output.Content.IsEmptyOrWhiteSpace.ShouldBeFalse();
     }
 
     [Fact]
     public async Task Process_Suppresses_Content_When_RolesList_All_Mode_And_User_Missing_One_Role()
     {
-        // Arrange
         Sut.RolesList = ["x", "y"];
         Sut.RoleEvaluationLogic = PermissionsTagHelper.RoleMode.All;
-
-        var principal = CreateUser("x");
-        Sut.ViewContext = new ViewContext { HttpContext = new DefaultHttpContext { User = principal } };
+        Sut.ViewContext = CreateViewContext(CreateUser("x"));
 
         var output = CreateOutput("div", "all content");
 
-        // Act
         await Sut.ProcessAsync(new TagHelperContext([], new Dictionary<object, object?>(), "test"), output);
 
-        // Assert
         output.Content.IsEmptyOrWhiteSpace.ShouldBeTrue();
     }
-
-    // Process Tests - Permission-Based
 
     [Fact]
     public async Task Process_Shows_Content_When_User_Has_Required_Permission()
     {
-        // Arrange
         Sut.Permission = Permissions.MyResearch.Workspace_Access;
-
-        var principal = CreateUser(Roles.Applicant);
-        var http = new DefaultHttpContext { User = principal };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
         var output = CreateOutput("div", "workspace content");
 
-        // Act
         await Sut.ProcessAsync(new TagHelperContext([], new Dictionary<object, object?>(), "test"), output);
 
-        // Assert
         output.Content.IsEmptyOrWhiteSpace.ShouldBeFalse();
     }
 
     [Fact]
     public async Task Process_Suppresses_Content_When_User_Does_Not_Have_Required_Permission()
     {
-        // Arrange
         Sut.Permission = Permissions.SystemAdministration.Workspace_Access;
-
-        var principal = CreateUser(Roles.Applicant);
-        var http = new DefaultHttpContext { User = principal };
-        Sut.ViewContext = new ViewContext { HttpContext = http };
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
         var output = CreateOutput("div", "admin workspace content");
 
-        // Act
         await Sut.ProcessAsync(new TagHelperContext([], new Dictionary<object, object?>(), "test"), output);
 
-        // Assert
-        output.Content.IsEmptyOrWhiteSpace.ShouldBeFalse();
+        output.Content.IsEmptyOrWhiteSpace.ShouldBeTrue();
     }
 
     [Fact]
     public async Task Process_Shows_Content_When_PermissionsList_Any_Mode_And_User_Has_One_Permission()
     {
-        // Arrange
         Sut.Permissions =
         [
             Permissions.MyResearch.Workspace_Access,
             Permissions.SystemAdministration.Workspace_Access
         ];
         Sut.PermissionEvaluationLogic = PermissionsTagHelper.PermissionMode.Any;
-
-        var principal = CreateUser(Roles.Applicant);
-        Sut.ViewContext = new ViewContext { HttpContext = new DefaultHttpContext { User = principal } };
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
         var output = CreateOutput("div", "any permission content");
 
-        // Act
         await Sut.ProcessAsync(new TagHelperContext([], new Dictionary<object, object?>(), "test"), output);
 
-        // Assert
         output.Content.IsEmptyOrWhiteSpace.ShouldBeFalse();
     }
 
     [Fact]
     public async Task Process_Suppresses_Content_When_PermissionsList_All_Mode_And_User_Missing_One_Permission()
     {
-        // Arrange
         Sut.Permissions =
         [
             Permissions.MyResearch.Workspace_Access,
             Permissions.SystemAdministration.Workspace_Access
         ];
         Sut.PermissionEvaluationLogic = PermissionsTagHelper.PermissionMode.All;
-
-        var principal = CreateUser(Roles.Applicant);
-        Sut.ViewContext = new ViewContext { HttpContext = new DefaultHttpContext { User = principal } };
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
         var output = CreateOutput("div", "all permissions content");
 
-        // Act
         await Sut.ProcessAsync(new TagHelperContext([], new Dictionary<object, object?>(), "test"), output);
 
-        // Assert
-        output.Content.IsEmptyOrWhiteSpace.ShouldBeFalse();
+        output.Content.IsEmptyOrWhiteSpace.ShouldBeTrue();
     }
 
     [Fact]
     public async Task Process_Shows_Content_For_System_Administrator_With_Multiple_Workspace_Permissions()
     {
-        // Arrange
         Sut.Permissions =
         [
             Permissions.MyResearch.Workspace_Access,
@@ -752,74 +546,57 @@ public class PermissionsTagHelperTests : TestServiceBase<PermissionsTagHelper>
             Permissions.SystemAdministration.Workspace_Access
         ];
         Sut.PermissionEvaluationLogic = PermissionsTagHelper.PermissionMode.All;
-
-        var principal = CreateUser(Roles.SystemAdministrator);
-        Sut.ViewContext = new ViewContext { HttpContext = new DefaultHttpContext { User = principal } };
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.SystemAdministrator));
 
         var output = CreateOutput("div", "admin content");
 
-        // Act
         await Sut.ProcessAsync(new TagHelperContext([], new Dictionary<object, object?>(), "test"), output);
 
-        // Assert
         output.Content.IsEmptyOrWhiteSpace.ShouldBeFalse();
     }
-
-    // Process Tests - Status-Based
 
     [Fact]
     public async Task Process_Suppresses_Content_When_User_Cannot_Access_Status()
     {
-        // Arrange
         Sut.StatusFor = CreateModelExpression(ProjectRecordStatus.InDraft);
         Sut.StatusEntity = StatusEntitiy.ProjectRecord;
-        Sut.ViewContext = new ViewContext { HttpContext = new DefaultHttpContext { User = CreateUser(Roles.Sponsor) } };
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Sponsor));
 
         var output = CreateOutput("div", "restricted content");
 
-        // Act
         await Sut.ProcessAsync(new TagHelperContext([], new Dictionary<object, object?>(), "test"), output);
 
-        // Assert
         output.Content.IsEmptyOrWhiteSpace.ShouldBeTrue();
     }
 
     [Fact]
     public async Task Process_Shows_Content_When_User_Can_Access_Status()
     {
-        // Arrange
         Sut.StatusFor = CreateModelExpression(ProjectRecordStatus.InDraft);
         Sut.StatusEntity = StatusEntitiy.ProjectRecord;
-        Sut.ViewContext = new ViewContext { HttpContext = new DefaultHttpContext { User = CreateUser(Roles.Applicant) } };
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
         var output = CreateOutput("div", "visible content");
 
-        // Act
         await Sut.ProcessAsync(new TagHelperContext([], new Dictionary<object, object?>(), "test"), output);
 
-        // Assert
         output.Content.IsEmptyOrWhiteSpace.ShouldBeFalse();
     }
 
     [Fact]
     public async Task Process_Suppresses_Content_When_User_Has_Permission_But_Cannot_Access_Status()
     {
-        // Arrange
         Sut.Permission = Permissions.MyResearch.ProjectRecord_Read;
         Sut.StatusFor = CreateModelExpression(ProjectRecordStatus.InDraft);
         Sut.StatusEntity = StatusEntitiy.ProjectRecord;
-        Sut.ViewContext = new ViewContext { HttpContext = new DefaultHttpContext { User = CreateUser(Roles.Sponsor) } };
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Sponsor));
 
         var output = CreateOutput("div", "restricted content");
 
-        // Act
         await Sut.ProcessAsync(new TagHelperContext([], new Dictionary<object, object?>(), "test"), output);
 
-        // Assert
         output.Content.IsEmptyOrWhiteSpace.ShouldBeTrue();
     }
-
-    // Collaborator Access Tests
 
     [Fact]
     public void EvaluateCollaboratorAccess_Returns_True_For_Non_Edit_Permission()
@@ -843,7 +620,8 @@ public class PermissionsTagHelperTests : TestServiceBase<PermissionsTagHelper>
     {
         var viewContext = CreateViewContext(CreateUser(Roles.Applicant));
         viewContext.TempData[TempDataKeys.ProjectRecordId] = "project-1";
-        viewContext.HttpContext.Items[ContextItemKeys.CollaboratorProjects] = "[{\"ProjectRecordId\":\"project-1\",\"ProjectAccessLevel\":\"Edit\"}]";
+        viewContext.HttpContext.Items[ContextItemKeys.CollaboratorProjects] =
+            "[{\"ProjectRecordId\":\"project-1\",\"ProjectAccessLevel\":\"Edit\"}]";
 
         Sut.Permission = Permissions.MyResearch.ProjectRecord_Update;
         Sut.ViewContext = viewContext;
