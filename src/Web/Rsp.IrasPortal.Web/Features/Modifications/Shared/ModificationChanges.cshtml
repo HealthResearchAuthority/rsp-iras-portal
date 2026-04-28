@@ -54,7 +54,8 @@
                         (
                             isRevisionBySponsor &&
                             tempHalt != AreasOfChange.ProjectHalt &&
-                            tempHalt != AreasOfChange.ProjectRestart
+                            tempHalt != AreasOfChange.ProjectRestart &&
+                            Model.Status is not ModificationStatus.ResponseReviseAndAuthorise
                         )
                     )
                 )
@@ -99,7 +100,8 @@
                         (
                             isRevisionBySponsor &&
                             tempHalt != AreasOfChange.ProjectHalt &&
-                            tempHalt != AreasOfChange.ProjectRestart
+                            tempHalt != AreasOfChange.ProjectRestart &&
+                            Model.Status is not ModificationStatus.ResponseReviseAndAuthorise
                         )
                     )
                 )
