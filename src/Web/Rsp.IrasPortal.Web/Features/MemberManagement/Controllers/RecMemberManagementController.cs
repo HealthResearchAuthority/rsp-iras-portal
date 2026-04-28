@@ -467,43 +467,35 @@ public class RecMemberManagementController(
         return View(model);
     }
 
-    private static List<RecMemberViewModel> SortMembers(string? sortField, string? sortDirection, List<RecMemberViewModel> tempRecUsers)
+    private static readonly Dictionary<string, Func<RecMemberViewModel, string?>> SortSelectors =
+    new()
     {
-        if (!string.IsNullOrEmpty(sortField))
+        [nameof(RecMemberViewModel.FirstName)] = u => u.FirstName,
+        [nameof(RecMemberViewModel.LastName)] = u => u.LastName,
+        [nameof(RecMemberViewModel.EmailAddress)] = u => u.EmailAddress,
+        [nameof(RecMemberViewModel.CommitteeRole)] = u => u.CommitteeRole,
+        [nameof(RecMemberViewModel.Designation)] = u => u.Designation
+    };
+
+    private static List<RecMemberViewModel> SortMembers(
+    string? sortField,
+    string? sortDirection,
+    List<RecMemberViewModel> users)
+    {
+        if (string.IsNullOrEmpty(sortField))
         {
-            var ascending = sortDirection == SortDirections.Ascending;
-
-            tempRecUsers = sortField switch
-            {
-                nameof(RecMemberViewModel.FirstName)
-                    => ascending
-                        ? tempRecUsers.OrderBy(u => u.FirstName).ToList()
-                        : tempRecUsers.OrderByDescending(u => u.FirstName).ToList(),
-
-                nameof(RecMemberViewModel.LastName)
-                    => ascending
-                        ? tempRecUsers.OrderBy(u => u.LastName).ToList()
-                        : tempRecUsers.OrderByDescending(u => u.LastName).ToList(),
-
-                nameof(RecMemberViewModel.EmailAddress)
-                    => ascending
-                        ? tempRecUsers.OrderBy(u => u.EmailAddress).ToList()
-                        : tempRecUsers.OrderByDescending(u => u.EmailAddress).ToList(),
-
-                nameof(RecMemberViewModel.CommitteeRole)
-                    => ascending
-                        ? tempRecUsers.OrderBy(u => u.CommitteeRole).ToList()
-                        : tempRecUsers.OrderByDescending(u => u.CommitteeRole).ToList(),
-
-                nameof(RecMemberViewModel.Designation)
-                    => ascending
-                        ? tempRecUsers.OrderBy(u => u.Designation).ToList()
-                        : tempRecUsers.OrderByDescending(u => u.Designation).ToList(),
-
-                _ => tempRecUsers
-            };
+            return users;
         }
 
-        return tempRecUsers;
+        if (!SortSelectors.TryGetValue(sortField, out var selector))
+        {
+            return users;
+        }
+
+        var ascending = sortDirection == SortDirections.Ascending;
+
+        return ascending
+            ? users.OrderBy(selector).ToList()
+            : users.OrderByDescending(selector).ToList();
     }
 }
