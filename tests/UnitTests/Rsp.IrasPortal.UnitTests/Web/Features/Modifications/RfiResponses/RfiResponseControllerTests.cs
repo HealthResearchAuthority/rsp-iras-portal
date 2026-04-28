@@ -226,7 +226,8 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         // Arrange
         tempDataModel.ModificationId = projectModificationId.ToString();
         tempDataModel.Status = ModificationStatus.RequestForInformation;
-
+        tempDataModel.SponsorOrganisationUserId = Guid.NewGuid().ToString();
+        tempDataModel.RtsId = "12";
         // Fake RFI responses put into TempData (to be deserialized in GET)
         var rfiResponses = new List<RfiResponsesDTO>
         {
@@ -255,6 +256,8 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         tempData[TempDataKeys.IrasId] = "12345";
         tempData[TempDataKeys.ProjectRecordId] = "PR-001";
         tempData[TempDataKeys.ShortProjectTitle] = "Test project";
+        tempData[TempDataKeys.ProjectModification.SponsorOrganisationUserId] = tempDataModel.SponsorOrganisationUserId;
+        tempData[TempDataKeys.ProjectModification.RtsId] = tempDataModel.RtsId;
         tempData[TempDataKeys.RfiResponses] = JsonSerializer.Serialize(rfiResponses);
 
         Sut.TempData = tempData;
@@ -544,6 +547,8 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         {
             ModificationId = Guid.NewGuid().ToString(),
             Status = ModificationStatus.RequestForInformation,
+            SponsorOrganisationUserId = Guid.NewGuid().ToString(),
+            RtsId = "12",
             RfiModel = new()
             {
                 RfiReasons = ["Reason 1"],
@@ -578,6 +583,8 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         {
             ModificationId = Guid.NewGuid().ToString(),
             Status = ModificationStatus.ResponseReviseAndAuthorise,
+            SponsorOrganisationUserId = Guid.NewGuid().ToString(),
+            RtsId = "12",
             RfiModel = new()
             {
                 RfiReasons = ["Reason 1"],
@@ -615,6 +622,8 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         {
             ModificationId = Guid.NewGuid().ToString(),
             Status = status,
+            SponsorOrganisationUserId = Guid.NewGuid().ToString(),
+            RtsId = "12",
             RfiModel = new()
             {
                 RfiReasons = ["Reason 1"],
@@ -688,7 +697,8 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         model.RfiModel.RfiReasons = ["Reason 1"];
         model.RfiModel.RfiResponses = new List<RfiResponsesDTO> { new RfiResponsesDTO { InitialResponse = ["Response 1"] }, };
         model.Status = ModificationStatus.RequestForInformation;
-
+        model.SponsorOrganisationUserId = Guid.NewGuid().ToString();
+        model.RtsId = "12";
         SetupTempData(model);
 
         Mocker.GetMock<IProjectModificationsService>()
@@ -716,7 +726,9 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         {
             ModificationId = Guid.NewGuid().ToString(),
             ProjectRecordId = "PR-001",
-            Status = ModificationStatus.RequestForInformation
+            Status = ModificationStatus.RequestForInformation,
+            SponsorOrganisationUserId = Guid.NewGuid().ToString(),
+            RtsId = "12"
         };
 
         SetupTempData(model);
@@ -750,7 +762,9 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         {
             ModificationId = Guid.NewGuid().ToString(),
             ProjectRecordId = "PR-002",
-            Status = ModificationStatus.ResponseReviseAndAuthorise
+            Status = ModificationStatus.ResponseReviseAndAuthorise,
+            SponsorOrganisationUserId = Guid.NewGuid().ToString(),
+            RtsId = "12"
         };
 
         SetupTempData(model);
@@ -786,7 +800,9 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         {
             ModificationId = Guid.NewGuid().ToString(),
             ProjectRecordId = "PR-003",
-            Status = status
+            Status = status,
+            SponsorOrganisationUserId = Guid.NewGuid().ToString(),
+            RtsId = "12"
         };
 
         SetupTempData(model);
@@ -808,7 +824,9 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         {
             ModificationId = Guid.NewGuid().ToString(),
             ProjectRecordId = "PR-004",
-            Status = ModificationStatus.RequestForInformation
+            Status = ModificationStatus.RequestForInformation,
+            SponsorOrganisationUserId = Guid.NewGuid().ToString(),
+            RtsId = "12"
         };
 
         SetupTempData(model);
@@ -1039,6 +1057,103 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         model.ModificationChanges.Count.ShouldBe(1);
     }
 
+    [Theory, AutoData]
+    public async Task SendRfiResponses_POST_Saves_And_Redirects_When_SaveForLater_Is_True_For_RequestRevision
+   (
+       ModificationDetailsViewModel model,
+       Guid modificationId
+   )
+    {
+        model.ModificationId = modificationId.ToString();
+        model.RfiModel.RfiReasons = ["Reason 1"];
+        model.RfiModel.RfiResponses = new List<RfiResponsesDTO>
+        {
+            new RfiResponsesDTO
+            {
+                InitialResponse = ["Response 1"]
+            },
+        };
+
+        model.Status = ModificationStatus.ResponseWithSponsor;
+
+        SetupTempData(model);
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.SaveModificationRfiResponses(It.IsAny<ModificationRfiResponseRequest>()))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.OK });
+
+        var result = await Sut.SendRfiResponses(model, saveForLater: true);
+
+        var redirectResult = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirectResult.RouteName.ShouldBe("sws:modifications");
+    }
+
+    [Theory, AutoData]
+    public async Task SendRfiResponses_POST_Saves_And_Redirects_When_SaveForLater_Is_False_For_RequestRevision
+   (
+       ModificationDetailsViewModel model,
+       Guid modificationId
+   )
+    {
+        model.ModificationId = modificationId.ToString();
+        model.RfiModel.RfiReasons = ["Reason 1"];
+        model.RfiModel.RfiResponses = new List<RfiResponsesDTO>
+        {
+            new RfiResponsesDTO
+            {
+                InitialResponse = ["Response 1"]
+            },
+        };
+
+        model.Status = ModificationStatus.ResponseWithSponsor;
+
+        SetupTempData(model);
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.SaveModificationRfiResponses(It.IsAny<ModificationRfiResponseRequest>()))
+            .ReturnsAsync(new ServiceResponse { StatusCode = HttpStatusCode.BadRequest });
+
+        var result = await Sut.SendRfiResponses(model, saveForLater: true);
+
+        // Assert
+        var objectResult = result.ShouldBeOfType<StatusCodeResult>();
+        objectResult.StatusCode.ShouldBe((int)HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task SendRfiResponses_POST_RequestRevision_Redirects_To_CheckAndSubmit()
+    {
+        // Arrange
+        var model = new ModificationDetailsViewModel
+        {
+            ModificationId = Guid.NewGuid().ToString(),
+            Status = ModificationStatus.ResponseWithSponsor,
+            SponsorOrganisationUserId = Guid.NewGuid().ToString(),
+            RtsId = "12",
+            RfiModel = new()
+            {
+                RfiReasons = ["Reason 1"],
+                RfiResponses =
+                [
+                    new RfiResponsesDTO
+                {
+                    InitialResponse = ["Response 1"]
+                }
+                ]
+            }
+        };
+
+        SetupTempData(model);
+        SetupValidUser();
+        SetupSuccessfulValidation();
+        SetupSuccessfulSaveResponses();
+
+        // Act
+        var result = await Sut.SendRfiResponses(model, saveForLater: false);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(Sut.RfiCheckAndSubmitResponses));
+    }
+
     private void SetupTempData(ModificationDetailsViewModel model)
     {
         if (model.IrasId == null)
@@ -1052,7 +1167,9 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
             [TempDataKeys.ProjectRecordId] = model.ProjectRecordId,
             [TempDataKeys.ProjectModification.ProjectModificationId] = Guid.Parse(model.ModificationId),
             [TempDataKeys.ShortProjectTitle] = model.ShortTitle,
-            [TempDataKeys.IrasId] = model.IrasId.ToString()
+            [TempDataKeys.IrasId] = model.IrasId.ToString(),
+            [TempDataKeys.ProjectModification.SponsorOrganisationUserId] = model.SponsorOrganisationUserId,
+            [TempDataKeys.ProjectModification.RtsId] = model.RtsId
         };
         if (model.Status is not null)
         {

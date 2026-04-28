@@ -18,24 +18,40 @@
 
 <div status-for="@Model.Status" status-is="@ModificationStatus.ResponseReviseAndAuthorise" status-mode="Hide">
     @section BackNavigation {
-        <partial name="_BackNavigation" model="@("rfi:rfidetails", "Back", new Dictionary<string, string>() { { "projectId", Model.ProjectRecordId! }, { "modificationId", Model.ModificationId! } })" />
+        @if (Model.Status == ModificationStatus.ResponseWithSponsor)
+        {
+            <partial name="_BackNavigation" model="@(("sws:checkandauthorise", "Back", new Dictionary<string, string> {
+           { "projectRecordId", Model.ProjectRecordId },
+           { "irasId", Model.IrasId.ToString() },
+           { "shortTitle", Model.ShortTitle },
+           { "projectModificationId", Model.ModificationId},
+           { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() },
+           { "rtsId", Model.RtsId }}))" />
+        }
+        else
+        {
+            <partial name="_BackNavigation" model="@("rfi:rfidetails", "Back", new Dictionary<string, string>() { { "projectId", Model.ProjectRecordId! }, { "modificationId", Model.ModificationId! } })" />
+        }
     }
 </div>
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <div status-for="@Model.Status" status-is="@ModificationStatus.ResponseReviseAndAuthorise" status-mode="Hide">
+        <div status-for="@Model.Status" status-in="@([ModificationStatus.ResponseReviseAndAuthorise,ModificationStatus.ResponseWithSponsor])" status-mode="Hide">
             <h2 class="govuk-heading-l">Request for further information</h2>
         </div>
         <div status-for="@Model.Status" status-is="@ModificationStatus.ResponseReviseAndAuthorise">
             <h2 class="govuk-heading-l">Revise and authorise response to request for further information</h2>
+        </div>
+        <div status-for="@Model.Status" status-is="@ModificationStatus.ResponseWithSponsor">
+            <h2 class="govuk-heading-l">Request revisions to the response</h2>
         </div>
         <partial name="_ValidationSummary" model="@(ViewData.ModelState, "There is a problem")" />
     </div>
 </div>
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">        
+    <div class="govuk-grid-column-two-thirds">
         <dl class="govuk-summary-list">
             <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">IRAS ID</dt>
@@ -81,7 +97,6 @@
 <form method="post" asp-action="SendRfiResponses">
     <h2 class="govuk-heading-m">Request for further information</h2>
 
-
     <input type="hidden" name="projectModificationId" value="@Model.ModificationId" />
     @for (var i = 0; i < Model.RfiModel.RfiReasons.Count; i++)
     {
@@ -102,7 +117,7 @@
 
             <!-- INITIAL RESPONSE -->
             <div class="govuk-grid-row">
-                @{                    
+                @{
                     var initialTextareaId = $"RfiModel_RfiResponses_{i}__InitialResponse_0_";
                     var infoId = $"{initialTextareaId}-info";
                     var initialFieldErrors = ViewData.ModelState[initialTextareaId]?.Errors;
@@ -131,9 +146,9 @@
                             </span>
                         }
 
-                        <textarea asp-for="RfiModel.RfiResponses[i].InitialResponse[0]"                              
+                        <textarea asp-for="RfiModel.RfiResponses[i].InitialResponse[0]"
                                   class="govuk-textarea govuk-js-character-count"
-                                  rows="5"                                  
+                                  rows="5"
                                   aria-describedby="@infoId">
                                         </textarea>
                         <noscript>
@@ -152,11 +167,11 @@
             </div>
         </authorized>
 
-        <authorized permission="@Permissions.Sponsor.Modifications_Authorise"  status-for="@Model.Status"  status-is="@ModificationStatus.ResponseReviseAndAuthorise">
+        <authorized permission="@Permissions.Sponsor.Modifications_Authorise" status-for="@Model.Status" status-is="@ModificationStatus.ResponseReviseAndAuthorise">
 
             <!-- REVISED RESPONSE -->
             <div class="govuk-grid-row">
-                @{                    
+                @{
                     var reviseTextareaId = $"RfiModel_RfiResponses_{i}__ReviseAndAuthorise_0_";
                     var reviseInfoId = $"{reviseTextareaId}-info";
                     var reviseFieldErrors = ViewData.ModelState[reviseTextareaId]?.Errors;
@@ -174,7 +189,7 @@
 
                 <div class="govuk-grid-column-two-thirds">
                     <div class="govuk-form-group govuk-character-count"
-                         data-module="govuk-character-count"  
+                         data-module="govuk-character-count"
                          data-maxlength="300"
                          error-class-for="RfiModel.RfiResponses[i].ReviseAndAuthorise[0]">
 
@@ -189,7 +204,7 @@
 
                         <textarea asp-for="RfiModel.RfiResponses[i].ReviseAndAuthorise[0]"
                                   class="govuk-textarea govuk-js-character-count"
-                                  rows="5"                                  
+                                  rows="5"
                                   aria-describedby="@reviseInfoId">
                         </textarea>
 
@@ -212,7 +227,7 @@
 
             <!-- REASON FOR REVISED RESPONSE -->
             <div class="govuk-grid-row">
-                @{                    
+                @{
                     var reasonTextareaId = $"RfiModel_RfiResponses_{i}__ReasonForReviseAndAuthorise_0_";
                     var reasonInfoId = $"{reasonTextareaId}-info";
                     var reasonFieldErrors = ViewData.ModelState[reasonTextareaId]?.Errors;
@@ -230,10 +245,10 @@
 
                 <div class="govuk-grid-column-two-thirds">
                     <div class="govuk-form-group govuk-character-count"
-                        data-module="govuk-character-count"   
-                        data-maxlength="300"
-                        error-class-for="RfiModel.RfiResponses[i].ReasonForReviseAndAuthorise[0]">
-                        
+                         data-module="govuk-character-count"
+                         data-maxlength="300"
+                         error-class-for="RfiModel.RfiResponses[i].ReasonForReviseAndAuthorise[0]">
+
                         @if (reasonHasError)
                         {
                             <span id="@reasonErrorId"
@@ -245,7 +260,7 @@
 
                         <textarea asp-for="RfiModel.RfiResponses[i].ReasonForReviseAndAuthorise[0]"
                                   class="govuk-textarea govuk-js-character-count"
-                                  rows="5"                                 
+                                  rows="5"
                                   aria-describedby="@reasonInfoId">
                         </textarea>
 
@@ -267,33 +282,116 @@
             </div>
         </authorized>
 
-    <hr/>
+        <!-- REQUEST REVISION -->
+        <feature name="@FeatureFlags.SponsorAuthorisation">
+            <authorized role-in="@([Roles.Applicant, Roles.Sponsor, Roles.OrganisationAdministrator])"
+                        permission="@Permissions.Sponsor.Modifications_Authorise"
+                        status-for="@Model.Status"
+                        status-is="@ModificationStatus.ResponseWithSponsor">
+                @{
+                    var requestRevisionTextareaId = $"RfiModel_RfiResponses_{i}__RequestRevisionsBySponsor_0_";
+                    var requestRevisionInfoId = $"{requestRevisionTextareaId}-info";
+                    var requestRevisionFieldErrors = ViewData.ModelState[requestRevisionTextareaId]?.Errors;
+                    var requestRevisionHasError = requestRevisionFieldErrors?.Count > 0;
+                    var requestRevisionErrorMessage = requestRevisionHasError ? requestRevisionFieldErrors[0].ErrorMessage : string.Empty;
+                    var requestRevisionErrorId = $"{requestRevisionTextareaId}-error";
+                }
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-one-third">
+                        <label class="govuk-label" for="RfiModel_RfiResponses_@(i)__InitialResponse_0_">
+                            Response to reason @(i + 1)
+                        </label>
+                    </div>
+                    <div class="govuk-grid-column-two-thirds">
+                        <label class="govuk-label" for="RfiModel_RfiResponses_@(i)__InitialResponse_0_">
+                            @{
+                                var response = Model.RfiModel.RfiResponses
+                                .ElementAtOrDefault(i)?
+                                .InitialResponse
+                                .FirstOrDefault();
+                            }
+                            @response
+                        </label>
+                    </div>
+                </div>
+                <br />
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-one-third">
+                        <label class="govuk-label" for="RfiResponses_@(i)__InitialResponse[0]">
+                            Requested revisions to response to reason @(i + 1)
+                        </label>
+                    </div>
+                    <div class="govuk-grid-column-two-thirds">
+                        <div class="govuk-form-group govuk-character-count"
+                             data-module="govuk-character-count"
+                             data-maxlength="300"
+                             error-class-for="RfiModel.RfiResponses[i].RequestRevisionsBySponsor[0]">
+
+                            @if (requestRevisionHasError)
+                            {
+                                <span id="@requestRevisionErrorId"
+                                      class="govuk-error-message">
+                                    <span class="govuk-visually-hidden">Error:</span>
+                                    @requestRevisionErrorMessage
+                                </span>
+                            }
+
+                            <textarea asp-for="RfiModel.RfiResponses[i].RequestRevisionsBySponsor[0]"
+                                      class="govuk-textarea govuk-js-character-count"
+                                      rows="5"
+                                      aria-describedby="@requestRevisionInfoId">
+                            </textarea>
+
+                            <noscript>
+                                <div id="@requestRevisionInfoId"
+                                     class="govuk-hint govuk-character-count__message">
+                                    <p class="govuk-hint">
+                                        You can enter up to 300 characters
+                                    </p>
+                                </div>
+                            </noscript>
+
+                            <div id="@requestRevisionInfoId"
+                                 aria-hidden="true"
+                                 class="govuk-hint govuk-character-count__message">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </authorized>
+        </feature>
+        <hr />
     }
-    <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
-    @if (Model?.ProjectOverviewDocumentViewModel?.Documents is null || !Model.ProjectOverviewDocumentViewModel.Documents.Any())
-    {
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds">
-                <h2 class="govuk-heading-m">Supporting documents</h2>
-                <p class="govuk-body">
-                    If any of the changes you're making involve an update to any project documents, make sure you add a copy of the original and updated documents.
-                </p>
+    <div status-for="@Model.Status" status-is="@ModificationStatus.ResponseWithSponsor" status-mode="Hide">
+        <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+        @if (Model?.ProjectOverviewDocumentViewModel?.Documents is null || !Model.ProjectOverviewDocumentViewModel.Documents.Any())
+        {
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-two-thirds">
+                    <h2 class="govuk-heading-m">Supporting documents</h2>
+                    <p class="govuk-body">
+                        If any of the changes you're making involve an update to any project documents, make sure you add a copy of the original and updated documents.
+                    </p>
+                </div>
             </div>
-        </div>
-        <div class="govuk-button-group">
-            <button type="submit"
-                    formaction="@Url.RouteUrl("pmc:projectdocument")"
-                    formmethod="get"
-                    class="govuk-button govuk-button--secondary">
-                Add documents
-            </button>
-        </div>
-    }
-    else
-    {
-        <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
-    }
+            <div class="govuk-button-group">
+                <button type="submit"
+                        formaction="@Url.RouteUrl("pmc:projectdocument")"
+                        formmethod="get"
+                        class="govuk-button govuk-button--secondary">
+                    Add documents
+                </button>
+            </div>
+        }
+        else
+        {
+            <partial name="SupportingDocuments" model="Model" view-data="ViewData" />
+        }
+    </div>
+
     <div class="save-buttons">
+        <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+        <input type="hidden" name="RtsId" value="@Model.RtsId" />
         <button type="submit" class="govuk-button" data-module="govuk-button">
             Save and continue
         </button>

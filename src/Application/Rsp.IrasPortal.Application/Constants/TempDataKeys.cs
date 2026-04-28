@@ -32,6 +32,8 @@ public struct TempDataKeys
         public const string DateSponsorSubmittedOutcome = "td:date_sponsor_submitted_outcome";
         public const string SelectedParticipatingOrganisations = "td:selected_participating_organisations";
         public const string DateSubmitted = "td:date_submitted_to_regulator";
+        public const string SponsorOrganisationUserId = "td:sponsor_organisation_user_Id";
+        public const string RtsId = "td:Rts_Id";
     }
 
     public struct ProjectModificationChange

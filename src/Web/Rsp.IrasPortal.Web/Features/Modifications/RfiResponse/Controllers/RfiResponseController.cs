@@ -131,7 +131,8 @@ public class RfiResponseController(
         {
             return result;
         }
-
+        model.SponsorOrganisationUserId = sponsorOrganisationUserId.ToString();
+        model.RtsId = rtsId;
         // Add modification documents
         var modificationDocumentsResponseResult = await this.GetModificationDocuments(Guid.Parse(model.ModificationId),
         DocumentDetailsSection, 1, int.MaxValue, sortField, sortDirection, isSponsorRevisingModification: true);
@@ -175,7 +176,8 @@ public class RfiResponseController(
                     ?? model.RfiModel.RfiResponses;
             }
         }
-
+        TempData[TempDataKeys.ProjectModification.SponsorOrganisationUserId] = model.SponsorOrganisationUserId;
+        TempData[TempDataKeys.ProjectModification.RtsId] = model.RtsId;
         return View(model);
     }
 
@@ -185,6 +187,8 @@ public class RfiResponseController(
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(model);
         viewModel.Status = (viewModel as BaseProjectModificationViewModel).Status;
+        viewModel.SponsorOrganisationUserId = TempData.Peek(TempDataKeys.ProjectModification.SponsorOrganisationUserId).ToString();
+        viewModel.RtsId = TempData.Peek(TempDataKeys.ProjectModification.RtsId) as string;
 
         if (!saveForLater)
         {
@@ -237,6 +241,9 @@ public class RfiResponseController(
 
             ModificationStatus.ResponseReviseAndAuthorise =>
                 await HandleReviseAndAuthorise(viewModel, saveForLater),
+
+            ModificationStatus.ResponseWithSponsor =>
+                await HandleRequestRevisions(viewModel, saveForLater),
 
             _ => this.ServiceError(new ServiceResponse
             {
@@ -406,6 +413,8 @@ public class RfiResponseController(
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
         viewModel.Status = (viewModel as BaseProjectModificationViewModel).Status;
+        viewModel.SponsorOrganisationUserId = TempData.Peek(TempDataKeys.ProjectModification.SponsorOrganisationUserId).ToString();
+        viewModel.RtsId = TempData.Peek(TempDataKeys.ProjectModification.RtsId) as string;
         var rfiReasons = await projectModificationsService.GetModificationReviewResponses(viewModel.ProjectRecordId, Guid.Parse(viewModel.ModificationId));
         var rfiResponses = await projectModificationsService.GetModificationRfiResponses(viewModel.ProjectRecordId, Guid.Parse(viewModel.ModificationId));
 
@@ -428,13 +437,25 @@ public class RfiResponseController(
 
     [HttpPost]
     [ModificationAuthorise(Permissions.MyResearch.Modifications_Submit)]
-    public async Task<IActionResult> RfiSubmitResponses()
+    public async Task<IActionResult> RfiSubmitResponses(bool saveForLater = false)
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
         viewModel.Status = (viewModel as BaseProjectModificationViewModel).Status;
-
+        viewModel.SponsorOrganisationUserId = TempData.Peek(TempDataKeys.ProjectModification.SponsorOrganisationUserId).ToString();
+        viewModel.RtsId = TempData.Peek(TempDataKeys.ProjectModification.RtsId) as string;
         ServiceResponse updateStatusResponse;
 
+        if (saveForLater && viewModel.Status == ModificationStatus.ResponseWithSponsor)
+        {
+            return RedirectToRoute(
+               "sws:modifications",
+               new
+               {
+                   projectRecordId = viewModel.ProjectRecordId,
+                   sponsorOrganisationUserId = viewModel.SponsorOrganisationUserId,
+                   rtsId = viewModel.RtsId
+               });
+        }
         switch (viewModel.Status)
         {
             case ModificationStatus.RequestForInformation:
@@ -454,6 +475,16 @@ public class RfiResponseController(
                         ProjectRecordId = viewModel.ProjectRecordId!,
                         ModificationId = Guid.Parse(viewModel.ModificationId!),
                         Status = ModificationStatus.ResponseWithReviewBody
+                    });
+                break;
+
+            case ModificationStatus.ResponseWithSponsor:
+                updateStatusResponse = await projectModificationsService.UpdateModificationStatus(
+                    new UpdateModificationStatusRequest
+                    {
+                        ProjectRecordId = viewModel.ProjectRecordId!,
+                        ModificationId = Guid.Parse(viewModel.ModificationId!),
+                        Status = ModificationStatus.RequestForInformation
                     });
                 break;
 
@@ -479,6 +510,45 @@ public class RfiResponseController(
     public IActionResult RfiResponsesConfirmation()
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
+        viewModel.SponsorOrganisationUserId = TempData.Peek(TempDataKeys.ProjectModification.SponsorOrganisationUserId).ToString();
+        viewModel.RtsId = TempData.Peek(TempDataKeys.ProjectModification.RtsId) as string;
         return View(viewModel);
+    }
+
+    [NonAction]
+    private async Task<IActionResult> HandleRequestRevisions(
+    ModificationDetailsViewModel viewModel,
+    bool saveForLater)
+    {
+        // sponsor request revision response
+        var sponsorResponses = viewModel.RfiModel.RfiResponses
+            .Select(r => r.RequestRevisionsBySponsor.FirstOrDefault() ?? string.Empty)
+            .ToList();
+
+        var applicantResult = await projectModificationsService.SaveModificationRfiResponses(
+            new ModificationRfiResponseRequest
+            {
+                ProjectModificationId = Guid.Parse(viewModel.ModificationId!),
+                Responses = sponsorResponses,
+                Role = ResponseRoles.Sponsor,
+                ResponseOrigin = ResponseOrigin.RequestRevisions
+            });
+
+        if (!applicantResult.IsSuccessStatusCode)
+            return this.ServiceError(applicantResult);
+
+        if (saveForLater)
+        {
+            return RedirectToRoute(
+                "sws:modifications",
+                new
+                {
+                    projectRecordId = viewModel.ProjectRecordId,
+                    sponsorOrganisationUserId = viewModel.SponsorOrganisationUserId,
+                    rtsId = viewModel.RtsId
+                });
+        }
+
+        return RedirectToAction(nameof(RfiCheckAndSubmitResponses));
     }
 }
