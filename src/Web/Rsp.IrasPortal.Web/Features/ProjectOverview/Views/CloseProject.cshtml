@@ -60,7 +60,7 @@
         <br />
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
-                <p> Actual project closure date  </p>
+                @* <p> Actual project closure date  </p> *@
                 <fieldset class="govuk-fieldset">
                     <rsp-gds-date-input asp-for="ActualClosureDate"
                                         day-name="ActualClosureDateDay"
@@ -70,7 +70,8 @@
                                         year-name="ActualClosureDateYear"
                                         year-value="@Model.ActualClosureDateYear"
                                         hint-html="For example, 28 February 2023"
-                                        error-key="ActualClosureDate"
+                                        error-key="ActualClosureDate",
+										label-text="Actual project closure date"
                                         id="ActualClosureDate"
                                         label-html-class="font-weight-none" />
                 </fieldset>
