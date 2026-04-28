@@ -286,9 +286,9 @@ public class CheckRecMemberTests : TestServiceBase<RecMemberManagementController
     // arrange logged in user response
     private void SetUserResponse(Guid loggedInUser)
     {
-        var user = new UserResponse
+        var users = new UsersResponse
         {
-            User = new User(loggedInUser.ToString(),
+            Users = new List<User>{ new User(loggedInUser.ToString(),
                             "azure-ad-12345",
                             "Mr",
                             "Test",
@@ -302,13 +302,42 @@ public class CheckRecMemberTests : TestServiceBase<RecMemberManagementController
                             DateTime.UtcNow,
                             DateTime.UtcNow.AddDays(-2),
                             DateTime.UtcNow)
+            }
         };
+
+        var user = new User(loggedInUser.ToString(),
+                            "azure-ad-12345",
+                            "Mr",
+                            "Test",
+                            "Test",
+                            "some@email.com",
+                            "Software Developer",
+                            "orgName", // IMPORTANT: match org if your action filters by org
+                            "+44 7700 900123",
+                            "United Kingdom",
+                            IrasUserStatus.Active,
+                            DateTime.UtcNow,
+                            DateTime.UtcNow.AddDays(-2),
+                            DateTime.UtcNow);
 
         var userResponse = new ServiceResponse<UserResponse>
         {
             StatusCode = HttpStatusCode.OK,
-            Content = user
+            Content = new UserResponse
+            {
+                User = user
+            }
         };
+
+        var usersResponse = new ServiceResponse<UsersResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = users
+        };
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUsersByIds(new List<string> { loggedInUser.ToString() }, null, It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync(usersResponse);
 
         Mocker.GetMock<IUserManagementService>()
             .Setup(s => s.GetUser(loggedInUser.ToString(), null, null))
@@ -425,28 +454,31 @@ public class CheckRecMemberTests : TestServiceBase<RecMemberManagementController
             });
 
         Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(It.IsAny<string>(), null, null))
-            .ReturnsAsync((string userId, string? a, string? b) =>
-                new ServiceResponse<UserResponse>
+            .Setup(s => s.GetUsersByIds(It.IsAny<IEnumerable<string>>(), null, It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync((IEnumerable<string> userId, string? a, int b, int c) =>
+                new ServiceResponse<UsersResponse>
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new UserResponse
+                    Content = new UsersResponse
                     {
-                        User = new User(
-                            userId,
-                            "aad",
-                            "Mr",
-                            "Test",
-                            "User",
-                            "test@test.com",
-                            "Dev",
-                            "Org",
-                            "123",
-                            "United Kingdom",
-                            IrasUserStatus.Active,
-                            DateTime.UtcNow,
-                            DateTime.UtcNow,
-                            DateTime.UtcNow)
+                        Users = new List<User>
+                        {
+                            new User(
+                                LoggedInUserId.ToString(),
+                                "aad",
+                                "Mr",
+                                "Test",
+                                "User",
+                                "test@test.com",
+                                "Dev",
+                                "Org",
+                                "123",
+                                "United Kingdom",
+                                IrasUserStatus.Active,
+                                DateTime.UtcNow,
+                                DateTime.UtcNow,
+                                DateTime.UtcNow)
+                        }
                     }
                 });
 
@@ -503,6 +535,7 @@ public class CheckRecMemberTests : TestServiceBase<RecMemberManagementController
     {
         var recId = Guid.NewGuid();
         SetUser(LoggedInUserId);
+        SetUserResponse(LoggedInUserId);
 
         var userId = Guid.NewGuid();
         var rec = new ReviewBodyDto
@@ -520,14 +553,14 @@ public class CheckRecMemberTests : TestServiceBase<RecMemberManagementController
                 Content = rec
             });
 
-        UserResponse user = getUserResponse(userId);
+        UsersResponse users = new UsersResponse { Users = new List<User> { getUserResponse(userId).User } };
 
         Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(It.IsAny<string>(), null, null))
-            .ReturnsAsync(new ServiceResponse<UserResponse>
+            .Setup(s => s.GetUsersByIds(It.IsAny<IEnumerable<string>>(), null, It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync(new ServiceResponse<UsersResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = user
+                Content = users
             });
 
         var result = await Sut.ResearchEthicsCommitteeMembers(recId, null, null);
@@ -540,6 +573,7 @@ public class CheckRecMemberTests : TestServiceBase<RecMemberManagementController
     {
         var recId = Guid.NewGuid();
         SetUser(LoggedInUserId);
+        SetUserResponse(LoggedInUserId);
 
         var user1 = Guid.NewGuid();
         var user2 = Guid.NewGuid();
@@ -562,16 +596,15 @@ public class CheckRecMemberTests : TestServiceBase<RecMemberManagementController
                 StatusCode = HttpStatusCode.OK,
                 Content = rec
             });
-        UserResponse user = getUserResponse(userId);
+        UsersResponse users = new UsersResponse { Users = new List<User> { getUserResponse(user1).User } };
 
         Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(It.IsAny<string>(), null, null))
-            .ReturnsAsync((string id, string? a, string? b) =>
-                new ServiceResponse<UserResponse>
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = user
-                });
+            .Setup(s => s.GetUsersByIds(It.IsAny<IEnumerable<string>>(), null, It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync(new ServiceResponse<UsersResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = users
+            });
 
         var result = await Sut.ResearchEthicsCommitteeMembers(
             recId,
@@ -589,6 +622,7 @@ public class CheckRecMemberTests : TestServiceBase<RecMemberManagementController
     {
         var recId = Guid.NewGuid();
         SetUser(LoggedInUserId);
+        SetUserResponse(LoggedInUserId);
 
         var userId = Guid.NewGuid();
 
@@ -607,14 +641,14 @@ public class CheckRecMemberTests : TestServiceBase<RecMemberManagementController
                 Content = rec
             });
 
-        UserResponse user = getUserResponse(userId);
+        UsersResponse users = new UsersResponse { Users = new List<User> { getUserResponse(userId).User } };
 
         Mocker.GetMock<IUserManagementService>()
-            .Setup(s => s.GetUser(It.IsAny<string>(), null, null))
-            .ReturnsAsync(new ServiceResponse<UserResponse>
+            .Setup(s => s.GetUsersByIds(It.IsAny<IEnumerable<string>>(), null, It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync(new ServiceResponse<UsersResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = user
+                Content = users
             });
 
         var result = await Sut.ResearchEthicsCommitteeMembers(
