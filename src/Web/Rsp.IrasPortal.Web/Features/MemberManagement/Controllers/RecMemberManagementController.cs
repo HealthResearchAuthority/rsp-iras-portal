@@ -15,6 +15,7 @@ using Rsp.Portal.Web.Extensions;
 
 namespace Rsp.IrasPortal.Web.Features.MemberManagement.Controllers;
 
+[Authorize(Policy = Workspaces.MemberManagement)]
 [Authorize(Policy = Permissions.MemberManagement.ResearchEthicsCommittees_ManageMembers)]
 [Route("membermanagement/[action]", Name = "mm:[action]")]
 [FeatureGate(FeatureFlags.RecMemberManagement)]
