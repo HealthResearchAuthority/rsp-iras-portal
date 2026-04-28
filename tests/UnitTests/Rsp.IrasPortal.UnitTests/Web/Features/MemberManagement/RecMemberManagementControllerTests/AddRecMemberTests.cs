@@ -257,8 +257,8 @@ public class AddRecMemberTests : TestServiceBase<RecMemberManagementController>
 
         // assert
         var viewResult = result.ShouldBeOfType<RedirectToActionResult>();
-        viewResult.ActionName.ShouldBe("SearchRecMember");
-        viewResult.RouteValues["recId"].ShouldBe(model.RecId);
+        viewResult.ActionName.ShouldBe("ResearchEthicsCommitteeMembers");
+        viewResult.RouteValues["id"].ShouldBe(model.RecId);
 
         Mocker.GetMock<IReviewBodyService>()
             .Verify(s => s.AddUserToReviewBody(It.IsAny<ReviewBodyUserDto>()), Times.Once);

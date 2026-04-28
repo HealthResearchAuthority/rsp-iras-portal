@@ -356,7 +356,8 @@ public class RecMemberManagementController(
             }
 
             // TODO change to Users list page once present
-            return RedirectToAction(nameof(SearchRecMember), new { recId = model.RecId });
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
+            return RedirectToAction(nameof(ResearchEthicsCommitteeMembers), new { id = model.RecId });
         }
     }
 
@@ -403,5 +404,99 @@ public class RecMemberManagementController(
         };
 
         return model;
+    }
+
+    /// <summary>
+    ///     Displays a Research Ethics Committee Members
+    /// </summary>
+    [Authorize(Policy = Permissions.MemberManagement.ResearchEthicsCommittees_ManageMembers)]
+    [HttpGet]
+    public async Task<IActionResult> ResearchEthicsCommitteeMembers(Guid id, string? sortField, string? sortDirection)
+    {
+        var recProfile = await reviewBodyService.GetReviewBodyById(id);
+
+        if (!recProfile.IsSuccessStatusCode ||
+                recProfile.Content == null)
+        {
+            return this.ServiceError(recProfile);
+        }
+
+        if (!await MemberManagementHelper.UserHasAccess(recProfile.Content, User, userService))
+        {
+            // if user does not have access to the review body, return 403 forbidden
+            return Forbid();
+        }
+
+        var model = new RecMembersViewModel()
+        {
+            RecId = recProfile.Content?.Id,
+            RecName = recProfile.Content?.RegulatoryBodyName
+        };
+
+        // pagination data not needed - only sorting
+        model.Pagination = new PaginationViewModel(0, 0, 0)
+        {
+            SortField = sortField,
+            SortDirection = sortDirection
+        };
+
+        // retrieving and mapping users data
+        var recUsers = recProfile.Content?.Users;
+
+        if (recUsers is not null)
+        {
+            var tempRecUsers = new List<RecMemberViewModel>();
+
+            var usersDetails = await userService.GetUsersByIds(recUsers.Select(x => x.UserId.ToString()), null, 1, int.MaxValue);
+
+            if (!usersDetails.IsSuccessStatusCode || usersDetails.Content == null)
+            {
+                // user does not exist, throw error
+                return this.ServiceError(usersDetails);
+            }
+
+            foreach (var userDetails in usersDetails.Content.Users)
+            {
+                tempRecUsers.Add(PopulateRecMemberViewModel(userDetails, recProfile.Content!, recUsers.First(x => x.UserId.ToString() == userDetails.Id), false));
+            }
+
+            tempRecUsers = SortMembers(sortField, sortDirection, tempRecUsers);
+
+            model.RecUsers = tempRecUsers;
+        }
+
+        return View(model);
+    }
+
+    private static readonly Dictionary<string, Func<RecMemberViewModel, string?>> SortSelectors =
+    new()
+    {
+        [nameof(RecMemberViewModel.FirstName)] = u => u.FirstName,
+        [nameof(RecMemberViewModel.LastName)] = u => u.LastName,
+        [nameof(RecMemberViewModel.EmailAddress)] = u => u.EmailAddress,
+        [nameof(RecMemberViewModel.CommitteeRole)] = u => u.CommitteeRole,
+        [nameof(RecMemberViewModel.Designation)] = u => u.Designation
+    };
+
+    private static List<RecMemberViewModel> SortMembers(
+    string? sortField,
+    string? sortDirection,
+    List<RecMemberViewModel> users)
+    {
+        if (string.IsNullOrEmpty(sortField))
+        {
+            return users;
+        }
+
+        if (!SortSelectors.TryGetValue(sortField, out var selector))
+        {
+            return users;
+        }
+
+        var ascending = sortDirection == SortDirections.Ascending;
+
+        return ascending
+            ? users.OrderBy(selector).ToList()
+            : users.OrderByDescending(selector).ToList();
     }
 }
