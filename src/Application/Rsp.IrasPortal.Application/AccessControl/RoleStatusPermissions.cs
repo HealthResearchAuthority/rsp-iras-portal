@@ -236,7 +236,8 @@ public static class RoleStatusPermissions
                     DocumentStatus.Superseded,
                     DocumentStatus.ResponseWithReviewBody,
                     DocumentStatus.ResponseWithSponsor,
-                    DocumentStatus.RequestForInformation
+                    DocumentStatus.RequestForInformation,
+                    DocumentStatus.ResponseRequestRevisions
                 }
             },
             {
