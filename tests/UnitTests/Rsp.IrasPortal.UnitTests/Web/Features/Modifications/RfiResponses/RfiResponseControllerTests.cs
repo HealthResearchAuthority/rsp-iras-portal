@@ -1154,6 +1154,66 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         redirect.ActionName.ShouldBe(nameof(Sut.RfiCheckAndSubmitResponses));
     }
 
+    [Fact]
+    public async Task RfiSubmitResponses_POST_RequestRevision_Updates_Status_And_Redirects()
+    {
+        // Arrange
+        var model = new ModificationDetailsViewModel
+        {
+            ModificationId = Guid.NewGuid().ToString(),
+            ProjectRecordId = "PR-002",
+            Status = ModificationStatus.ResponseWithSponsor,
+            SponsorOrganisationUserId = Guid.NewGuid().ToString(),
+            RtsId = "12"
+        };
+
+        SetupTempData(model);
+        SetupValidUser();
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.UpdateModificationStatus(
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ProjectRecordId == model.ProjectRecordId &&
+                    r.ModificationId == Guid.Parse(model.ModificationId!) &&
+                    r.Status == ModificationStatus.RequestForInformation
+                )))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.OK
+            });
+
+        // Act
+        var result = await Sut.RfiSubmitResponses();
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(Sut.RfiResponsesConfirmation));
+    }
+
+    [Fact]
+    public async Task RfiSubmitResponses_POST_RequestRevision_SaveForLater_And_Redirects()
+    {
+        // Arrange
+        var model = new ModificationDetailsViewModel
+        {
+            ModificationId = Guid.NewGuid().ToString(),
+            ProjectRecordId = "PR-002",
+            Status = ModificationStatus.ResponseWithSponsor,
+            SponsorOrganisationUserId = Guid.NewGuid().ToString(),
+            RtsId = "12"
+        };
+
+        SetupTempData(model);
+        SetupValidUser();
+
+        // Act
+        var result = await Sut.RfiSubmitResponses(true);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe("sws:modifications");
+    }
+
     private void SetupTempData(ModificationDetailsViewModel model)
     {
         if (model.IrasId == null)
