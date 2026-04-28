@@ -167,18 +167,63 @@ public class RfiResponseController(
         // get back answers user set in SendRfiResponses for validation errors
         if (TempData.TryGetValue(TempDataKeys.RfiResponses, out var raw))
         {
-            var responses = raw as string;
-
-            if (!string.IsNullOrWhiteSpace(responses))
-            {
-                model.RfiModel.RfiResponses =
-                    JsonSerializer.Deserialize<List<RfiResponsesDTO>>(responses)
-                    ?? model.RfiModel.RfiResponses;
-            }
+            MergeRfiResponseDataFromTempData(model, raw as string);
         }
         TempData[TempDataKeys.ProjectModification.SponsorOrganisationUserId] = model.SponsorOrganisationUserId;
         TempData[TempDataKeys.ProjectModification.RtsId] = model.RtsId;
         return View(model);
+    }
+
+    protected void MergeRfiResponseDataFromTempData(ModificationDetailsViewModel model, string responsesJson)
+    {
+        if (!string.IsNullOrWhiteSpace(responsesJson))
+        {
+            var tempResponses =
+                JsonSerializer.Deserialize<List<RfiResponsesDTO>>(responsesJson);
+
+            if (tempResponses is not null)
+            {
+                for (var i = 0; i < tempResponses.Count; i++)
+                {
+                    var temp = tempResponses[i];
+                    var target = model.RfiModel.RfiResponses[i];
+
+                    if (temp.InitialResponse.Count > 0 &&
+                        !string.IsNullOrWhiteSpace(temp.InitialResponse[0]))
+                    {
+                        target.InitialResponse[0] = temp.InitialResponse[0];
+                    }
+
+                    if (temp.RequestRevisionsByApplicant.Count > 0 &&
+                        !string.IsNullOrWhiteSpace(temp.RequestRevisionsByApplicant[0]))
+                    {
+                        target.RequestRevisionsByApplicant[0] =
+                            temp.RequestRevisionsByApplicant[0];
+                    }
+
+                    if (temp.RequestRevisionsBySponsor.Count > 0 &&
+                        !string.IsNullOrWhiteSpace(temp.RequestRevisionsBySponsor[0]))
+                    {
+                        target.RequestRevisionsBySponsor[0] =
+                            temp.RequestRevisionsBySponsor[0];
+                    }
+
+                    if (temp.ReviseAndAuthorise.Count > 0 &&
+                        !string.IsNullOrWhiteSpace(temp.ReviseAndAuthorise[0]))
+                    {
+                        target.ReviseAndAuthorise[0] =
+                            temp.ReviseAndAuthorise[0];
+                    }
+
+                    if (temp.ReasonForReviseAndAuthorise.Count > 0 &&
+                        !string.IsNullOrWhiteSpace(temp.ReasonForReviseAndAuthorise[0]))
+                    {
+                        target.ReasonForReviseAndAuthorise[0] =
+                            temp.ReasonForReviseAndAuthorise[0];
+                    }
+                }
+            }
+        }
     }
 
     [HttpPost]

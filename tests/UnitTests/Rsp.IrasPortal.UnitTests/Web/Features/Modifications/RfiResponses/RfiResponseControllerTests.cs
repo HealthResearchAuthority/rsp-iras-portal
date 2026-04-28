@@ -221,7 +221,8 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     [Theory, AutoData]
     public async Task RfiResponses_GET_Returns_View_With_Model(
     ModificationDetailsViewModel tempDataModel,
-    Guid projectModificationId)
+    Guid projectModificationId,
+    ModificationRfiResponseResponse rfiResponseResponse)
     {
         // Arrange
         tempDataModel.ModificationId = projectModificationId.ToString();
@@ -233,7 +234,19 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         {
             new()
             {
-                InitialResponse = new List<string> { "Test response" }
+                InitialResponse = new List<string> { "Test response" },
+                ReasonForReviseAndAuthorise = new List<string> { "Test response" },
+                RequestRevisionsByApplicant = new List<string>{ "Test response"},
+                RequestRevisionsBySponsor= new List<string>{"Test response"},
+                ReviseAndAuthorise = new List<string>{ "Test response" }
+            },
+            new()
+            {
+                InitialResponse = new List<string> { "Test response1" },
+                ReasonForReviseAndAuthorise = new List<string> { "Test response1" },
+                RequestRevisionsByApplicant = new List<string>{ "Test response1"},
+                RequestRevisionsBySponsor= new List<string>{"Test response1"},
+                ReviseAndAuthorise = new List<string>{ "Test response1" }
             }
         };
 
@@ -259,7 +272,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         tempData[TempDataKeys.ProjectModification.SponsorOrganisationUserId] = tempDataModel.SponsorOrganisationUserId;
         tempData[TempDataKeys.ProjectModification.RtsId] = tempDataModel.RtsId;
         tempData[TempDataKeys.RfiResponses] = JsonSerializer.Serialize(rfiResponses);
-
+        tempDataModel.RfiModel.RfiResponses = rfiResponses;
         Sut.TempData = tempData;
 
         // Mock dependencies required by GET
@@ -298,7 +311,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
             .ReturnsAsync(new ServiceResponse<ModificationRfiResponseResponse>
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new ModificationRfiResponseResponse()
+                Content = rfiResponseResponse
             });
 
         // changes
