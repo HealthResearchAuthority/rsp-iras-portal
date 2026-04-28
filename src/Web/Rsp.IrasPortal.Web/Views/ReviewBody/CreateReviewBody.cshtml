@@ -71,14 +71,19 @@
                     <span class="govuk-error-message">@selectMessage</span>
                 }
                 <select class="govuk-select govuk-!-width-three-quarters" asp-for="ReviewBodyType" id="ReviewBodyType" name="ReviewBodyType">
-                    <option value="" selected disabled hidden></option>
+                    <option value="" selected disabled hidden>Select review body type</option>
                     @foreach (var choice in ReviewBodyType.OptionsMap)
                     {
                         <option value="@choice.Value">@choice.Value</option>
                     }
                 </select>
             </div>
-            
+
+                <rsp-gds-input asp-for="ResearchEthicsCommitteeId"
+                               conditional-field="true"
+                               data-condition="Research ethics committee"
+                               label-text="Research ethics committee ID"
+                               width-class="govuk-!-width-one-quarter" />
 
             <rsp-gds-input asp-for="EmailAddress"
                            label-text="Email address"
@@ -96,3 +101,5 @@
         </form>
     </div>
 </div>
+
+<script src="~/js/manageReviewBodies.js"></script>

@@ -6,4 +6,5 @@ public class ReviewBodySearchRequest
     public List<string> Country { get; set; } = [];
     public bool? Status { get; set; }
     public List<string> ReviewBodyType { get; set; } = [];
+    public int RecId { get; set; }
 }

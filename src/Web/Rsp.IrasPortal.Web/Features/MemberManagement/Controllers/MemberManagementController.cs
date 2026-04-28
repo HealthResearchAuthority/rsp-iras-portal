@@ -11,10 +11,11 @@ namespace Rsp.Portal.Web.Features.MemberManagement.Controllers;
 /// </summary>
 [Authorize(Policy = Workspaces.MemberManagement)]
 [FeatureGate(FeatureFlags.RecMemberManagement)]
-[Route("membermanagement")]
+[Route("[controller]/[action]", Name = "mm:[action]")]
 public class MemberManagementController : Controller
 {
-    [HttpGet("", Name = "mm:home")]
+    [HttpGet]
+    [Route("/membermanagement", Name = "mm:home")]
     public IActionResult Index()
     {
         return View("MemberManagement");

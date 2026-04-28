@@ -1,9 +1,11 @@
 ﻿using System.Data;
 using System.Text.Json;
+using Azure.Core;
 using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -34,6 +36,7 @@ public class ReviewBodyController(
     private const string AuditTrailView = nameof(AuditTrail);
     private const string ConfirmAddRemoveUser = nameof(ConfirmAddRemoveUser);
     private const string SuccessAddRemoveUserMessageView = nameof(SuccessAddRemoveUserMessageView);
+    private const string RecIdAlreadyAddedView = nameof(RecIdAlreadyAdded);
 
     private const string UpdateMode = "update";
     private const string CreateMode = "create";
@@ -193,6 +196,26 @@ public class ReviewBodyController(
 
         if (validationResult.IsValid)
         {
+            switch (model.ReviewBodyType)
+            {
+                case ReviewBodyType.ResearchEthicsCommittee:
+                {
+                    var response = await reviewBodyService.GetAllReviewBodies(new ReviewBodySearchRequest
+                    {
+                        ReviewBodyType = [ReviewBodyType.ResearchEthicsCommittee],
+                        RecId = Convert.ToInt32(model.ResearchEthicsCommitteeId)
+                    });
+
+                    if (response is { IsSuccessStatusCode: true, Content.TotalCount: > 0 })
+                    {
+                        ViewBag.Mode = CreateMode;
+                        return RedirectToAction(RecIdAlreadyAddedView, model);
+                    }
+
+                    break;
+                }
+            }
+
             return View(ConfirmChangesView, model);
         }
 
@@ -238,6 +261,20 @@ public class ReviewBodyController(
             }
 
             return View(CreateUpdateReviewBodyView, model);
+        }
+
+        if (model.ReviewBodyType == ReviewBodyType.ResearchEthicsCommittee)
+        {
+            var recResponse = await reviewBodyService.GetAllReviewBodies(new ReviewBodySearchRequest
+            {
+                RecId = Convert.ToInt32(model.ResearchEthicsCommitteeId)
+            });
+
+            if (recResponse is { IsSuccessStatusCode: true, Content.TotalCount: > 0 })
+            {
+                ViewBag.Mode = UpdateMode;
+                return RedirectToAction(RecIdAlreadyAddedView, model);
+            }
         }
 
         var reviewBody = model.Adapt<ReviewBodyDto>();
@@ -650,4 +687,13 @@ public class ReviewBodyController(
             fromPagination = true
         });
     }
+
+    [HttpGet]
+    [Route("/reviewbody/recidalreadyadded", Name = "rbc:recidalreadyadded")]
+    public IActionResult RecIdAlreadyAdded(AddUpdateReviewBodyModel model)
+    {
+        ViewBag.Mode = model.Id == Guid.Empty ? CreateMode : UpdateMode;
+        return View(RecIdAlreadyAddedView, model);
+    }
+
 }
