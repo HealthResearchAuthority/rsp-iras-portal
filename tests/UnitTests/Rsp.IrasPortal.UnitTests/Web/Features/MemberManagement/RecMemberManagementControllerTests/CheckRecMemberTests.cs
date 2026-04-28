@@ -497,4 +497,159 @@ public class CheckRecMemberTests : TestServiceBase<RecMemberManagementController
 
         result.ShouldBeOfType<ForbidResult>();
     }
+
+    [Fact]
+    public async Task SortMembers_ShouldReturnUnsorted_WhenSortFieldIsNull()
+    {
+        var recId = Guid.NewGuid();
+        SetUser(LoggedInUserId);
+
+        var userId = Guid.NewGuid();
+        var rec = new ReviewBodyDto
+        {
+            Id = recId,
+            Countries = new() { "United Kingdom" },
+            Users = new List<ReviewBodyUserDto> { new ReviewBodyUserDto { UserId = userId } }
+        };
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(recId))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = rec
+            });
+
+        UserResponse user = getUserResponse(userId);
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(It.IsAny<string>(), null, null))
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = user
+            });
+
+        var result = await Sut.ResearchEthicsCommitteeMembers(recId, null, null);
+
+        result.ShouldBeOfType<ViewResult>();
+    }
+
+    [Fact]
+    public async Task SortMembers_ShouldSortByLastName_Descending()
+    {
+        var recId = Guid.NewGuid();
+        SetUser(LoggedInUserId);
+
+        var user1 = Guid.NewGuid();
+        var user2 = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var rec = new ReviewBodyDto
+        {
+            Id = recId,
+            Countries = new() { "United Kingdom" },
+            Users = new List<ReviewBodyUserDto>
+        {
+            new() { UserId = user1 },
+            new() { UserId = user2 }
+        }
+        };
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(recId))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = rec
+            });
+        UserResponse user = getUserResponse(userId);
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(It.IsAny<string>(), null, null))
+            .ReturnsAsync((string id, string? a, string? b) =>
+                new ServiceResponse<UserResponse>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = user
+                });
+
+        var result = await Sut.ResearchEthicsCommitteeMembers(
+            recId,
+            nameof(RecMemberViewModel.LastName),
+            SortDirections.Descending);
+
+        var model = result.ShouldBeOfType<ViewResult>()
+            .Model.ShouldBeOfType<RecMembersViewModel>();
+
+        model.RecUsers.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task SortMembers_ShouldUseDefault_WhenSortFieldIsUnknown()
+    {
+        var recId = Guid.NewGuid();
+        SetUser(LoggedInUserId);
+
+        var userId = Guid.NewGuid();
+
+        var rec = new ReviewBodyDto
+        {
+            Id = recId,
+            Countries = new() { "United Kingdom" },
+            Users = new List<ReviewBodyUserDto> { new ReviewBodyUserDto { UserId = userId } }
+        };
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(recId))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = rec
+            });
+
+        UserResponse user = getUserResponse(userId);
+
+        Mocker.GetMock<IUserManagementService>()
+            .Setup(s => s.GetUser(It.IsAny<string>(), null, null))
+            .ReturnsAsync(new ServiceResponse<UserResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = user
+            });
+
+        var result = await Sut.ResearchEthicsCommitteeMembers(
+            recId,
+            "UnknownField",
+            SortDirections.Ascending);
+
+        result.ShouldBeOfType<ViewResult>();
+    }
+
+    private static UserResponse getUserResponse(Guid userId)
+    {
+        var user = new UserResponse
+        {
+            User = new User(userId.ToString(),
+                                    "azure-ad-12345",
+                                    "Mr",
+                                    "Test",
+                                    "Test",
+                                    "userEmail@email.com",
+                                    "Software Developer",
+                                    "orgName", // IMPORTANT: match org if your action filters by org
+                                    "+44 7700 900123",
+                                    "United Kingdom",
+                                    IrasUserStatus.Active,
+                                    DateTime.UtcNow,
+                                    DateTime.UtcNow.AddDays(-2),
+                                    DateTime.UtcNow)
+        };
+
+        var userResponse = new ServiceResponse<UserResponse>
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = user
+        };
+        return user;
+    }
 }
