@@ -5,7 +5,7 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <h1 class="govuk-heading-l">Modification</h1>
+        <h1 class="govuk-heading-l">Modification details</h1>
 
         <dl class="govuk-summary-list">
             <div class="govuk-summary-list__row">
@@ -33,6 +33,9 @@
                         var tagClass = Model.Status switch
                         {
                             ModificationStatus.WithSponsor => "govuk-tag--yellow",
+                            ModificationStatus.ReviseAndAuthorise => "govuk-tag--yellow",
+                            ModificationStatus.ResponseWithSponsor => "govuk-tag--red",
+                            ModificationStatus.ResponseReviseAndAuthorise => "govuk-tag--red",
                             ModificationStatus.Approved => "govuk-tag--green",
                             ModificationStatus.WithReviewBody => "govuk-tag--green",
                             ModificationStatus.NotApproved => "govuk-tag--red",

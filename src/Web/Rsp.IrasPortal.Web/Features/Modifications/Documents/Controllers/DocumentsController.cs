@@ -344,6 +344,18 @@ public class DocumentsController
                 modificationModel.RtsId
             });
         }
+        else if (modificationModel.Status is ModificationStatus.ResponseReviseAndAuthorise)
+        {
+            return RedirectToRoute("rfi:RfiResponses", new
+            {
+                modificationModel.ProjectRecordId,
+                modificationModel.IrasId,
+                modificationModel.ShortTitle,
+                projectModificationId = modificationModel.ModificationId,
+                modificationModel.SponsorOrganisationUserId,
+                modificationModel.RtsId
+            });
+        }
 
         // If validation passes, proceed to the sponsor-reference step.
         return RedirectToAction(
@@ -1782,7 +1794,7 @@ public class DocumentsController
         var status = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string;
         var sponsorOrganisationUserId = TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId);
         var rtsId = TempData.Peek(TempDataKeys.RevisionRtsId) as string;
-        if (status is ModificationStatus.ReviseAndAuthorise)
+        if (status is ModificationStatus.ReviseAndAuthorise or ModificationStatus.ResponseReviseAndAuthorise)
         {
             return RedirectToRoute("sws:modifications", new { sponsorOrganisationUserId, rtsId });
         }
@@ -1805,6 +1817,10 @@ public class DocumentsController
         if (status is ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestRevisions)
         {
             return RedirectToRoute("pmc:ModificationDetails", new { projectRecordId, irasId, shortTitle, projectModificationId, sponsorOrganisationUserId, rtsId });
+        }
+        else if (status is ModificationStatus.ResponseReviseAndAuthorise)
+        {
+            return RedirectToRoute("rfi:RfiResponses", new { projectRecordId, irasId, shortTitle, projectModificationId, sponsorOrganisationUserId, rtsId });
         }
 
         return RedirectToRoute(ReviewAllChangesRoute, new { projectRecordId, irasId, shortTitle, projectModificationId });
@@ -1930,6 +1946,7 @@ public class DocumentsController
         {
             ModificationStatus.ReviseAndAuthorise => DocumentStatus.ReviseAndAuthorise,
             ModificationStatus.RequestRevisions => DocumentStatus.RequestRevisions,
+            ModificationStatus.ResponseReviseAndAuthorise => DocumentStatus.ResponseReviseAndAuthorise,
             _ => DocumentStatus.Uploaded
         };
 

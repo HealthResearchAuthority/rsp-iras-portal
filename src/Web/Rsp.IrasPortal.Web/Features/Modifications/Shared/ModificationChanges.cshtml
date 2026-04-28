@@ -54,7 +54,8 @@
                         (
                             isRevisionBySponsor &&
                             tempHalt != AreasOfChange.ProjectHalt &&
-                            tempHalt != AreasOfChange.ProjectRestart
+                            tempHalt != AreasOfChange.ProjectRestart &&
+                            Model.Status is not ModificationStatus.ResponseReviseAndAuthorise
                         )
                     )
                 )
@@ -99,7 +100,8 @@
                         (
                             isRevisionBySponsor &&
                             tempHalt != AreasOfChange.ProjectHalt &&
-                            tempHalt != AreasOfChange.ProjectRestart
+                            tempHalt != AreasOfChange.ProjectRestart &&
+                            Model.Status is not ModificationStatus.ResponseReviseAndAuthorise
                         )
                     )
                 )
@@ -157,18 +159,8 @@
                         @answerText
                     </dd>
                 </div>
-                @if
-                (
-                    (
-                        Model.ModificationChanges.Any() &&
-                        showModificationDetails.GetValueOrDefault()
-                    ) ||
-                    (
-                        Model.Status is ModificationStatus.RequestRevisions or
-			ModificationStatus.ReviseAndAuthorise or
-			ModificationStatus.RequestForInformation
-                    )
-                )
+                @if ((Model.ModificationChanges.Any() && showModificationDetails.GetValueOrDefault()) ||
+                    (Model.Status is ModificationStatus.RequestRevisions or ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestForInformation or ModificationStatus.ResponseReviseAndAuthorise))
                 {
                     @if
                     (

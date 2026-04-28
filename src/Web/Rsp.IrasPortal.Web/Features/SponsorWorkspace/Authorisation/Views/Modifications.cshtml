@@ -161,9 +161,22 @@
                                                    asp-route-rtsId="@Model.RtsId">
                                                     <strong>@modification.ModificationId</strong>
                                                 </a>
-                                            }
-                                            else
-                                            {
+                                                }
+                                                else if (modification.Status == ModificationStatus.ResponseReviseAndAuthorise && isAuthoriser)
+                                                {
+                                                    <a class="govuk-link"
+                                                       asp-route="rfi:RfiResponses"
+                                                       asp-route-projectRecordId="@modification.ProjectRecordId"
+                                                       asp-route-irasId="@(modification.ModificationId?.Split('/')[0])"
+                                                       asp-route-shortTitle="@modification.ShortProjectTitle"
+                                                       asp-route-projectModificationId="@modification.Id"
+                                                       asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
+                                                       asp-route-rtsId="@Model.RtsId">
+                                                        <strong>@modification.ModificationId</strong>
+                                                    </a>
+                                                }
+                                                else
+                                                {
                                                 <a class="govuk-link"
                                                    asp-route="sws:checkandauthorise"
                                                    asp-route-projectRecordId="@modification.ProjectRecordId"
@@ -184,14 +197,15 @@
                                             @{
                                                 var tagClass = modification.Status switch
                                                 {
-                                                    ModificationStatus.WithSponsor => "govuk-tag--yellow",
+                                                    ModificationStatus.WithSponsor => "govuk-tag--yellow",                                                    
                                                     ModificationStatus.ReviseAndAuthorise => "govuk-tag--yellow",
+                                                    ModificationStatus.ResponseWithSponsor => "govuk-tag--red",
+                                                    ModificationStatus.ResponseReviseAndAuthorise => "govuk-tag--red",
                                                     ModificationStatus.Approved => "govuk-tag--green",
                                                     ModificationStatus.WithReviewBody => "govuk-tag--green",
                                                     ModificationStatus.NotApproved => "govuk-tag--red",
                                                     ModificationStatus.NotAuthorised => "govuk-tag--red",
-                                                    ModificationStatus.Withdrawn => "govuk-tag--red",
-                                                    ModificationStatus.ResponseWithSponsor => "govuk-tag--red",
+                                                    ModificationStatus.Withdrawn => "govuk-tag--red",                                                    
                                                     ModificationStatus.ResponseWithReviewBody => "govuk-tag--green",
                                                     _ => "govuk-tag--blue"
                                                 };
