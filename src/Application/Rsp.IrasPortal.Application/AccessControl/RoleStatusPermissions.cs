@@ -111,7 +111,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.Withdrawn,
                     ModificationStatus.ResponseWithSponsor,
                     ModificationStatus.ResponseWithReviewBody,
-                    ModificationStatus.ResponseReviseAndAuthorise
+                    ModificationStatus.ResponseReviseAndAuthorise,
+                    ModificationStatus.ResponseRequestRevisions
                 }
             },
             {

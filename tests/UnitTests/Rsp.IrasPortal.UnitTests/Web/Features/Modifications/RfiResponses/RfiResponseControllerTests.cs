@@ -1188,7 +1188,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
                 It.Is<UpdateModificationStatusRequest>(r =>
                     r.ProjectRecordId == model.ProjectRecordId &&
                     r.ModificationId == Guid.Parse(model.ModificationId!) &&
-                    r.Status == ModificationStatus.RequestForInformation
+                    r.Status == ModificationStatus.ResponseRequestRevisions
                 )))
             .ReturnsAsync(new ServiceResponse
             {

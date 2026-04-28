@@ -23,6 +23,10 @@
         .RequestRevisionsBySponsor?
         .FirstOrDefault();
 
+    var applicantRequestRevisionResponse = rfiResponse?
+        .RequestRevisionsByApplicant?
+        .FirstOrDefault();
+
     <div class="govuk-summary-card">
         <div class="govuk-summary-card__title-wrapper">
             <h2 class="govuk-summary-card__title">
@@ -62,7 +66,7 @@
                             </dd>
                         </div>
                     }
-                    else if (Model.Status is ModificationStatus.ResponseWithSponsor or ModificationStatus.RequestForInformation)
+                    else if (!string.IsNullOrWhiteSpace(sponsorRequestRevisionResponse))
                     {
                         <!-- REQUEST REVISIONS -->
                         <div class="govuk-summary-list__row">
@@ -70,22 +74,20 @@
                                 Response to reason @(i + 1)
                             </dt>
                             <dd class="govuk-summary-list__value">
-                                @(string.IsNullOrWhiteSpace(initialResponse)
+                                @(string.IsNullOrWhiteSpace(applicantRequestRevisionResponse)
                                     ? "No response provided"
-                                    : initialResponse)
+                                    : applicantRequestRevisionResponse)
                             </dd>
                         </div>
-                        if (!string.IsNullOrWhiteSpace(sponsorRequestRevisionResponse) && Model.Status == ModificationStatus.RequestForInformation)
-                        {
-                            <div class="govuk-summary-list__row">
-                                <dt class="govuk-summary-list__key">
-                                    Requested revisions to response to reason @(i + 1)
-                                </dt>
-                                <dd class="govuk-summary-list__value">
-                                    @sponsorRequestRevisionResponse
-                                </dd>
-                            </div>
-                        }
+
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">
+                                Requested revisions to response to reason @(i + 1)
+                            </dt>
+                            <dd class="govuk-summary-list__value">
+                                @sponsorRequestRevisionResponse
+                            </dd>
+                        </div>
                     }
                     else
                     {

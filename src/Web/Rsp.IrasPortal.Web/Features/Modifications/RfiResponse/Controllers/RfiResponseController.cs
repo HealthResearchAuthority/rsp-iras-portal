@@ -131,8 +131,9 @@ public class RfiResponseController(
         {
             return result;
         }
-        model.SponsorOrganisationUserId = sponsorOrganisationUserId.ToString();
         model.RtsId = rtsId;
+        model.SponsorOrganisationUserId = sponsorOrganisationUserId.ToString();
+
         // Add modification documents
         var modificationDocumentsResponseResult = await this.GetModificationDocuments(Guid.Parse(model.ModificationId),
         DocumentDetailsSection, 1, int.MaxValue, sortField, sortDirection, isSponsorRevisingModification: true);
@@ -169,60 +170,45 @@ public class RfiResponseController(
         {
             MergeRfiResponseDataFromTempData(model, raw as string);
         }
-        TempData[TempDataKeys.ProjectModification.SponsorOrganisationUserId] = model.SponsorOrganisationUserId;
-        TempData[TempDataKeys.ProjectModification.RtsId] = model.RtsId;
         return View(model);
     }
 
     protected void MergeRfiResponseDataFromTempData(ModificationDetailsViewModel model, string responsesJson)
     {
-        if (!string.IsNullOrWhiteSpace(responsesJson))
+        if (string.IsNullOrWhiteSpace(responsesJson))
         {
-            var tempResponses =
-                JsonSerializer.Deserialize<List<RfiResponsesDTO>>(responsesJson);
+            return;
+        }
 
-            if (tempResponses is not null)
+        var tempResponses =
+            JsonSerializer.Deserialize<List<RfiResponsesDTO>>(responsesJson);
+
+        if (tempResponses is null)
+        {
+            return;
+        }
+
+        model.RfiModel.RfiResponses
+            .Zip(tempResponses, (target, temp) => new { target, temp })
+            .ToList()
+            .ForEach(pair =>
             {
-                for (var i = 0; i < tempResponses.Count; i++)
-                {
-                    var temp = tempResponses[i];
-                    var target = model.RfiModel.RfiResponses[i];
+                CopyIfNotEmpty(pair.temp.InitialResponse, pair.target.InitialResponse);
+                CopyIfNotEmpty(pair.temp.RequestRevisionsByApplicant, pair.target.RequestRevisionsByApplicant);
+                CopyIfNotEmpty(pair.temp.RequestRevisionsBySponsor, pair.target.RequestRevisionsBySponsor);
+                CopyIfNotEmpty(pair.temp.ReviseAndAuthorise, pair.target.ReviseAndAuthorise);
+                CopyIfNotEmpty(pair.temp.ReasonForReviseAndAuthorise, pair.target.ReasonForReviseAndAuthorise);
+            });
+    }
 
-                    if (temp.InitialResponse.Count > 0 &&
-                        !string.IsNullOrWhiteSpace(temp.InitialResponse[0]))
-                    {
-                        target.InitialResponse[0] = temp.InitialResponse[0];
-                    }
-
-                    if (temp.RequestRevisionsByApplicant.Count > 0 &&
-                        !string.IsNullOrWhiteSpace(temp.RequestRevisionsByApplicant[0]))
-                    {
-                        target.RequestRevisionsByApplicant[0] =
-                            temp.RequestRevisionsByApplicant[0];
-                    }
-
-                    if (temp.RequestRevisionsBySponsor.Count > 0 &&
-                        !string.IsNullOrWhiteSpace(temp.RequestRevisionsBySponsor[0]))
-                    {
-                        target.RequestRevisionsBySponsor[0] =
-                            temp.RequestRevisionsBySponsor[0];
-                    }
-
-                    if (temp.ReviseAndAuthorise.Count > 0 &&
-                        !string.IsNullOrWhiteSpace(temp.ReviseAndAuthorise[0]))
-                    {
-                        target.ReviseAndAuthorise[0] =
-                            temp.ReviseAndAuthorise[0];
-                    }
-
-                    if (temp.ReasonForReviseAndAuthorise.Count > 0 &&
-                        !string.IsNullOrWhiteSpace(temp.ReasonForReviseAndAuthorise[0]))
-                    {
-                        target.ReasonForReviseAndAuthorise[0] =
-                            temp.ReasonForReviseAndAuthorise[0];
-                    }
-                }
-            }
+    private static void CopyIfNotEmpty(
+    IList<string> source,
+    IList<string> target)
+    {
+        if (source.Count > 0 &&
+            !string.IsNullOrWhiteSpace(source[0]))
+        {
+            target[0] = source[0];
         }
     }
 
@@ -232,8 +218,6 @@ public class RfiResponseController(
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(model);
         viewModel.Status = (viewModel as BaseProjectModificationViewModel).Status;
-        viewModel.SponsorOrganisationUserId = TempData.Peek(TempDataKeys.ProjectModification.SponsorOrganisationUserId).ToString();
-        viewModel.RtsId = TempData.Peek(TempDataKeys.ProjectModification.RtsId) as string;
 
         if (!saveForLater)
         {
@@ -458,8 +442,6 @@ public class RfiResponseController(
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
         viewModel.Status = (viewModel as BaseProjectModificationViewModel).Status;
-        viewModel.SponsorOrganisationUserId = TempData.Peek(TempDataKeys.ProjectModification.SponsorOrganisationUserId).ToString();
-        viewModel.RtsId = TempData.Peek(TempDataKeys.ProjectModification.RtsId) as string;
         var rfiReasons = await projectModificationsService.GetModificationReviewResponses(viewModel.ProjectRecordId, Guid.Parse(viewModel.ModificationId));
         var rfiResponses = await projectModificationsService.GetModificationRfiResponses(viewModel.ProjectRecordId, Guid.Parse(viewModel.ModificationId));
 
@@ -486,8 +468,6 @@ public class RfiResponseController(
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
         viewModel.Status = (viewModel as BaseProjectModificationViewModel).Status;
-        viewModel.SponsorOrganisationUserId = TempData.Peek(TempDataKeys.ProjectModification.SponsorOrganisationUserId).ToString();
-        viewModel.RtsId = TempData.Peek(TempDataKeys.ProjectModification.RtsId) as string;
         ServiceResponse updateStatusResponse;
 
         if (saveForLater && viewModel.Status == ModificationStatus.ResponseWithSponsor)
@@ -529,7 +509,7 @@ public class RfiResponseController(
                     {
                         ProjectRecordId = viewModel.ProjectRecordId!,
                         ModificationId = Guid.Parse(viewModel.ModificationId!),
-                        Status = ModificationStatus.RequestForInformation
+                        Status = ModificationStatus.ResponseRequestRevisions
                     });
                 break;
 
@@ -555,8 +535,6 @@ public class RfiResponseController(
     public IActionResult RfiResponsesConfirmation()
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
-        viewModel.SponsorOrganisationUserId = TempData.Peek(TempDataKeys.ProjectModification.SponsorOrganisationUserId).ToString();
-        viewModel.RtsId = TempData.Peek(TempDataKeys.ProjectModification.RtsId) as string;
         return View(viewModel);
     }
 
@@ -580,7 +558,9 @@ public class RfiResponseController(
             });
 
         if (!applicantResult.IsSuccessStatusCode)
+        {
             return this.ServiceError(applicantResult);
+        }
 
         if (saveForLater)
         {
