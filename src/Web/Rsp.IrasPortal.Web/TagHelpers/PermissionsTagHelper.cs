@@ -311,8 +311,12 @@ public class PermissionsTagHelper(IFeatureManager featureManager) : TagHelper
             // Single permission check
             var hasPermission = User.HasPermission(Permission);
 
-            // Implement logic to check collaborator permissions based on ProjectRecordId
-            return hasPermission && teamRolesEnabled ? EvaluateCollaboratorAccess() : true;
+            if (!hasPermission)
+            {
+                return false;
+            }
+
+            return teamRolesEnabled ? EvaluateCollaboratorAccess() : true;
         }
 
         // Evaluate collection according to configured logic (Any/All).
@@ -323,8 +327,12 @@ public class PermissionsTagHelper(IFeatureManager featureManager) : TagHelper
             _ => false
         };
 
-        // Implement logic to check collaborator permissions based on ProjectRecordId
-        return hasPermissions && teamRolesEnabled ? EvaluateCollaboratorAccess(Permissions!) : true;
+        if (!hasPermissions)
+        {
+            return false;
+        }
+
+        return teamRolesEnabled ? EvaluateCollaboratorAccess(Permissions!) : true;
     }
 
     // ------------------------------- Role logic -------------------------------
