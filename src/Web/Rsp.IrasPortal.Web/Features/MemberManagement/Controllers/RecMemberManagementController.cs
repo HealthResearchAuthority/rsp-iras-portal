@@ -404,4 +404,106 @@ public class RecMemberManagementController(
 
         return model;
     }
+
+    /// <summary>
+    ///     Displays a Research Ethics Committee Members
+    /// </summary>
+    [Authorize(Policy = Permissions.MemberManagement.ResearchEthicsCommittees_ManageMembers)]
+    [HttpGet]
+    public async Task<IActionResult> ResearchEthicsCommitteeMembers(Guid id, string? sortField, string? sortDirection)
+    {
+        var recProfile = await reviewBodyService.GetReviewBodyById(id);
+
+        if (!recProfile.IsSuccessStatusCode ||
+                recProfile.Content == null)
+        {
+            return this.ServiceError(recProfile);
+        }
+
+        if (!await MemberManagementHelper.UserHasAccess(recProfile.Content, User, userService))
+        {
+            // if user does not have access to the review body, return 403 forbidden
+            return Forbid();
+        }
+
+        var model = new RecMembersViewModel()
+        {
+            RecId = recProfile.Content?.Id,
+            RecName = recProfile.Content?.RegulatoryBodyName
+        };
+
+        // pagination data not needed - only sorting
+        model.Pagination = new PaginationViewModel(0, 0, 0)
+        {
+            SortField = sortField,
+            SortDirection = sortDirection
+        };
+
+        // retrieving and mapping users data
+        var recUsers = recProfile.Content?.Users;
+
+        if (recUsers is not null)
+        {
+            var tempRecUsers = new List<RecMemberViewModel>();
+
+            foreach (var user in recUsers)
+            {
+                var userDetails = await userService.GetUser(user.UserId.ToString(), null);
+
+                if (!userDetails.IsSuccessStatusCode || userDetails.Content == null)
+                {
+                    // user does not exist, throw error
+                    return this.ServiceError(userDetails);
+                }
+
+                tempRecUsers.Add(PopulateRecMemberViewModel(userDetails.Content.User, recProfile.Content!, user, false));
+            }
+
+            tempRecUsers = SortMembers(sortField, sortDirection, tempRecUsers);
+
+            model.RecUsers = tempRecUsers;
+        }
+
+        return View(model);
+    }
+
+    private static List<RecMemberViewModel> SortMembers(string? sortField, string? sortDirection, List<RecMemberViewModel> tempRecUsers)
+    {
+        if (!string.IsNullOrEmpty(sortField))
+        {
+            var ascending = sortDirection == SortDirections.Ascending;
+
+            tempRecUsers = sortField switch
+            {
+                nameof(RecMemberViewModel.FirstName)
+                    => ascending
+                        ? tempRecUsers.OrderBy(u => u.FirstName).ToList()
+                        : tempRecUsers.OrderByDescending(u => u.FirstName).ToList(),
+
+                nameof(RecMemberViewModel.LastName)
+                    => ascending
+                        ? tempRecUsers.OrderBy(u => u.LastName).ToList()
+                        : tempRecUsers.OrderByDescending(u => u.LastName).ToList(),
+
+                nameof(RecMemberViewModel.EmailAddress)
+                    => ascending
+                        ? tempRecUsers.OrderBy(u => u.EmailAddress).ToList()
+                        : tempRecUsers.OrderByDescending(u => u.EmailAddress).ToList(),
+
+                nameof(RecMemberViewModel.CommitteeRole)
+                    => ascending
+                        ? tempRecUsers.OrderBy(u => u.CommitteeRole).ToList()
+                        : tempRecUsers.OrderByDescending(u => u.CommitteeRole).ToList(),
+
+                nameof(RecMemberViewModel.Designation)
+                    => ascending
+                        ? tempRecUsers.OrderBy(u => u.Designation).ToList()
+                        : tempRecUsers.OrderByDescending(u => u.Designation).ToList(),
+
+                _ => tempRecUsers
+            };
+        }
+
+        return tempRecUsers;
+    }
 }
