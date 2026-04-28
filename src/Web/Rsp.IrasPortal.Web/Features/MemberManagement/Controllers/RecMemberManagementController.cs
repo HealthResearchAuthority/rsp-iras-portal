@@ -356,7 +356,8 @@ public class RecMemberManagementController(
             }
 
             // TODO change to Users list page once present
-            return RedirectToAction(nameof(SearchRecMember), new { recId = model.RecId });
+            TempData[TempDataKeys.ShowNotificationBanner] = true;
+            return RedirectToAction(nameof(ResearchEthicsCommitteeMembers), new { id = model.RecId });
         }
     }
 
@@ -446,17 +447,17 @@ public class RecMemberManagementController(
         {
             var tempRecUsers = new List<RecMemberViewModel>();
 
-            foreach (var user in recUsers)
+            var usersDetails = await userService.GetUsersByIds(recUsers.Select(x => x.UserId.ToString()), null, 1, int.MaxValue);
+
+            if (!usersDetails.IsSuccessStatusCode || usersDetails.Content == null)
             {
-                var userDetails = await userService.GetUser(user.UserId.ToString(), null);
+                // user does not exist, throw error
+                return this.ServiceError(usersDetails);
+            }
 
-                if (!userDetails.IsSuccessStatusCode || userDetails.Content == null)
-                {
-                    // user does not exist, throw error
-                    return this.ServiceError(userDetails);
-                }
-
-                tempRecUsers.Add(PopulateRecMemberViewModel(userDetails.Content.User, recProfile.Content!, user, false));
+            foreach (var userDetails in usersDetails.Content.Users)
+            {
+                tempRecUsers.Add(PopulateRecMemberViewModel(userDetails, recProfile.Content!, recUsers.First(x => x.UserId.ToString() == userDetails.Id), false));
             }
 
             tempRecUsers = SortMembers(sortField, sortDirection, tempRecUsers);
