@@ -14,30 +14,33 @@
     var tableHeader = pageContent.GetValueOrDefault("Modifications.Rfi.RfiCheckAndSubmitResponses.TableHeader", null);
     var reviseAndAuthoriseHeader = pageContent.GetValueOrDefault("Modifications.Rfi.RfiCheckAndSubmitResponses.ReviseAndAuthoriseHeader", null);
     var reviseAndAuthoriseBody = pageContent.GetValueOrDefault("Modifications.Rfi.RfiCheckAndSubmitResponses.ReviseAndAuthoriseBody", null);
+    var requestRevisionHeader = pageContent.GetValueOrDefault("Modifications.Rfi.RfiCheckAndSubmitResponses.RequestRevisionHeader", null);
+    var requestRevisionBody = pageContent.GetValueOrDefault("Modifications.Rfi.RfiCheckAndSubmitResponses.RequestRevisionBody", null);
 
     var (header, body) = Model.Status switch
     {
         ModificationStatus.ResponseReviseAndAuthorise
             => (reviseAndAuthoriseHeader, reviseAndAuthoriseBody),
-
+        ModificationStatus.ResponseWithSponsor
+            => (requestRevisionHeader, requestRevisionBody),
         _ => (rfiHeader, rfiBody)
     };
 
     ViewBag.Title = header?.Value;
 
     var backRouteValues = new Dictionary<string, string>
-            {
-                ["projectRecordId"] = Model.ProjectRecordId,
-                ["irasId"] = Model.IrasId,
-                ["shortTitle"] = Model.ShortTitle,
-                ["projectModificationId"] = Model.ModificationId,
-                ["sponsorOrganisationUserId"] = Model.SponsorOrganisationUserId,
-                ["rtsId"] = Model.RtsId
-            };
+    {
+        ["projectRecordId"] = Model.ProjectRecordId,
+        ["irasId"] = Model.IrasId,
+        ["shortTitle"] = Model.ShortTitle,
+        ["projectModificationId"] = Model.ModificationId,
+        ["sponsorOrganisationUserId"] = Model.SponsorOrganisationUserId,
+        ["rtsId"] = Model.RtsId
+    };
 }
 
 @section BackNavigation {
-    <partial name="_BackNavigation"  model="@("rfi:RfiResponses", "Back", backRouteValues)" /> 
+    <partial name="_BackNavigation" model="@("rfi:RfiResponses", "Back", backRouteValues)" />
 }
 
 <div class="govuk-grid-row">
@@ -103,7 +106,7 @@
                                         .FirstOrDefault();
                                 }
                                 @(string.IsNullOrWhiteSpace(response) ? "No response provided" : response)
-                            </dd>                            
+                            </dd>
                         </div>
                     </authorized>
 
@@ -161,7 +164,44 @@
                                 </a>
                             </dd>
                         </div>
+                    </authorized>
 
+                    <!-- Request revision -->
+                    <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
+                                status-for="@Model.Status"
+                                status-is="@ModificationStatus.ResponseWithSponsor">
+
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">
+                                Response to reason @(i + 1)
+                            </dt>
+                            <dd class="govuk-summary-list__value">
+                                @{
+                                    var requestRevisionResponse = Model.RfiModel.RfiResponses
+                                        .ElementAtOrDefault(i)?
+                                        .InitialResponse
+                                        .FirstOrDefault();
+                                }
+                                @(string.IsNullOrWhiteSpace(requestRevisionResponse) ? "No response provided" : requestRevisionResponse)
+                            </dd>
+                        </div>
+                        <!-- Request revision response by sponsor -->
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">
+                                Requested revisions to response to reason @(i + 1)
+                            </dt>
+                            <dd class="govuk-summary-list__value">
+                                @{
+                                    var requestRevisionResponseBySponsor = Model.RfiModel.RfiResponses
+                                        .ElementAtOrDefault(i)?
+                                        .RequestRevisionsBySponsor
+                                        .FirstOrDefault();
+                                }
+                                @(string.IsNullOrWhiteSpace(requestRevisionResponseBySponsor)
+                     ? "No request revision response provided"
+                     : requestRevisionResponseBySponsor)
+                            </dd>
+                        </div>
                     </authorized>
                 }
             </dl>
@@ -178,7 +218,21 @@
                 <button type="submit" class="govuk-button" data-module="govuk-button">
                     Authorise and submit
                 </button>
-            </div>            
+            </div>
+            <div class="govuk-grid-row">
+                <div status-for="@Model.Status"
+                     status-is="@ModificationStatus.ResponseWithSponsor">
+                    <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+                    <input type="hidden" name="RtsId" value="@Model.RtsId" />
+
+                    <button type="submit" class="govuk-button" data-module="govuk-button">
+                        Send revisions request
+                    </button>
+                    <button asp-action="RfiSubmitResponses" asp-route-saveForLater="true" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+                        Save for later
+                    </button>
+                </div>
+            </div>
         </form>
     </div>
 </div>

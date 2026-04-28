@@ -77,7 +77,6 @@ public abstract class ModificationsControllerBase
         {
             return (this.ServiceError(modificationRfiResponsesResponse), null);
         }
-        var rfiResponses = new List<RfiResponsesDTO>();
 
         TempData[TempDataKeys.ProjectModification.ProjectModificationStatus] = modification.Status;
 

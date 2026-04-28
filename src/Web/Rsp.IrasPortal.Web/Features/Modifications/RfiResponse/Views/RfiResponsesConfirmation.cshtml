@@ -2,22 +2,25 @@
 @using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
 @model BaseProjectModificationViewModel
-@{    
+@{
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
     var pageContent = pageContentData != null ?
         pageContentData :
         new Dictionary<string, MixedContentPageItem?>();
 
     var rfiHeader = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.RfiTitle", null);
-    var rfiBody = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.RfiBody", null);    
+    var rfiBody = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.RfiBody", null);
     var reviseAndAuthoriseHeader = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.ReviseAndAuthoriseHeader", null);
     var reviseAndAuthoriseBody = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.ReviseAndAuthoriseBody", null);
+    var requestRevisionHeader = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.RequestRevisionHeader", null);
+    var requestRevisionBody = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.RequestRevisionBody", null);
 
     var (header, body) = Model.Status switch
-    {        
+    {
         ModificationStatus.ResponseReviseAndAuthorise
             => (reviseAndAuthoriseHeader, reviseAndAuthoriseBody),
-
+        ModificationStatus.ResponseWithSponsor
+            => (requestRevisionHeader, requestRevisionBody),
         _ => (rfiHeader, rfiBody)
     };
 
@@ -44,13 +47,13 @@
         </div>
 
         <div status-for="@Model.Status"
-             status-is="@ModificationStatus.ResponseReviseAndAuthorise">
+             status-in="@([ModificationStatus.ResponseReviseAndAuthorise, ModificationStatus.ResponseWithSponsor])">
             <a class="govuk-button" asp-route="sws:modifications"
-                asp-route-projectRecordId="@Model.ProjectRecordId" 
-                asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
-                asp-route-rtsId="@Model.RtsId">
+               asp-route-projectRecordId="@Model.ProjectRecordId"
+               asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
+               asp-route-rtsId="@Model.RtsId">
                 Return to authorisations
             </a>
-        </div>        
+        </div>
     </div>
 </div>

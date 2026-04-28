@@ -418,7 +418,7 @@ public class AuthorisationsModificationsController
         }
 
         var rfiFeatureFlagEnabled = await featureManager.IsEnabledAsync(FeatureFlags.RequestForInformation);
-
+        var rfiRequestRevisionFeatureFlagEnabled = await featureManager.IsEnabledAsync(FeatureFlags.SponsorAuthorisation);
         switch (model.Outcome)
         {
             case "Authorised":
@@ -475,7 +475,14 @@ public class AuthorisationsModificationsController
                 break;
 
             case "RequestRevisions":
-                return RedirectToAction(nameof(RequestRevisions), model);
+                if (rfiRequestRevisionFeatureFlagEnabled && model.Status is ModificationStatus.ResponseWithSponsor)
+                {
+                    return RedirectToRoute("rfi:RfiResponses", new { model.ProjectRecordId, model.IrasId, model.ShortTitle, model.ProjectModificationId, model.SponsorOrganisationUserId, model.RtsId });
+                }
+                else
+                {
+                    return RedirectToAction(nameof(RequestRevisions), model);
+                }
 
             case "ReviseAndAuthorise":
 

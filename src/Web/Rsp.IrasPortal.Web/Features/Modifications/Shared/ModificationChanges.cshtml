@@ -160,16 +160,18 @@
                     </dd>
                 </div>
                 @if ((Model.ModificationChanges.Any() && showModificationDetails.GetValueOrDefault()) ||
-                    (Model.Status is ModificationStatus.RequestRevisions or ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestForInformation or ModificationStatus.ResponseReviseAndAuthorise))
+                  (Model.Status is ModificationStatus.RequestRevisions or ModificationStatus.ReviseAndAuthorise or
+                                   ModificationStatus.RequestForInformation or ModificationStatus.ResponseReviseAndAuthorise or
+                                   ModificationStatus.ResponseWithSponsor))
                 {
                     @if
-                    (
-                        change.SpecificAreaOfChangeId is
-                            SpecificAreasOfChange.AddNewPics or
-                            SpecificAreasOfChange.AddNewSites or
-                            SpecificAreasOfChange.EarlyClosureSites or
-                            SpecificAreasOfChange.EarlyClosuresPics
-                    )
+                  (
+                      change.SpecificAreaOfChangeId is
+                          SpecificAreasOfChange.AddNewPics or
+                          SpecificAreasOfChange.AddNewSites or
+                          SpecificAreasOfChange.EarlyClosureSites or
+                          SpecificAreasOfChange.EarlyClosuresPics
+                  )
                     {
 
                         <vc:participating-organisations-review project-record-id="@Model.ProjectRecordId"

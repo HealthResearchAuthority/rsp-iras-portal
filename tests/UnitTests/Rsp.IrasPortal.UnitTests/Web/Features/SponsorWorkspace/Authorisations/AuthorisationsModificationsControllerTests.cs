@@ -1117,6 +1117,48 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
     }
 
     [Fact]
+    public async Task CheckAndAuthorise_ValidModelState_Rfi_RequestRevisions_Should_Redirect_To_RequestRevisions()
+    {
+        // Arrange
+        var viewModel = SetupAuthoriseOutcomeViewModel();
+        viewModel.Outcome = "RequestRevisions";
+        viewModel.Status = ModificationStatus.ResponseWithSponsor;
+
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.SponsorAuthorisation))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await Sut.CheckAndAuthorise(viewModel);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe("rfi:RfiResponses");
+        redirect.RouteValues.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task CheckAndAuthorise_ValidModelState_Rfi_RequestRevisions_Feature_Flag_Off()
+    {
+        // Arrange
+        var viewModel = SetupAuthoriseOutcomeViewModel();
+        viewModel.Outcome = "RequestRevisions";
+        viewModel.Status = ModificationStatus.WithSponsor;
+
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.SponsorAuthorisation))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await Sut.CheckAndAuthorise(viewModel);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(AuthorisationsModificationsController.RequestRevisions));
+        redirect.RouteValues.ShouldNotBeNull();
+    }
+
+    [Fact]
     public void Confirmation_Returns_View_With_Model()
     {
         // Arrange

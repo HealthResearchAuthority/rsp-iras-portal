@@ -24,4 +24,5 @@ public struct DocumentStatus
     public const string ResponseWithReviewBody = "Response with review body";
     public const string RequestForInformation = "Request for further information";
     public const string ResponseReviseAndAuthorise = "Sponsor revises response";
+    public const string ResponseRequestRevisions = "Response request revisions";
 }
