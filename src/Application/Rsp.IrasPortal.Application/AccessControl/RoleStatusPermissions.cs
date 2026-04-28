@@ -111,7 +111,8 @@ public static class RoleStatusPermissions
                     ModificationStatus.Withdrawn,
                     ModificationStatus.ResponseWithSponsor,
                     ModificationStatus.ResponseWithReviewBody,
-                    ModificationStatus.ResponseReviseAndAuthorise
+                    ModificationStatus.ResponseReviseAndAuthorise,
+                    ModificationStatus.ResponseRequestRevisions
                 }
             },
             {
@@ -235,7 +236,8 @@ public static class RoleStatusPermissions
                     DocumentStatus.Superseded,
                     DocumentStatus.ResponseWithReviewBody,
                     DocumentStatus.ResponseWithSponsor,
-                    DocumentStatus.RequestForInformation
+                    DocumentStatus.RequestForInformation,
+                    DocumentStatus.ResponseRequestRevisions
                 }
             },
             {

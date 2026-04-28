@@ -22,6 +22,7 @@ public struct ModificationStatus
     public const string RequestRevisions = "Request revision";
     public const string ReviseAndAuthorise = "Sponsor revises modification";
     public const string ResponseReviseAndAuthorise = "Sponsor revises response";
+    public const string ResponseRequestRevisions = "Response request revision";
 
     public static readonly List<string> Types = [
         InDraft,
@@ -40,6 +41,7 @@ public struct ModificationStatus
         RequestRevisions,
         ReviseAndAuthorise,
         ResponseWithSponsor,
-        ResponseReviseAndAuthorise
-   ];
+        ResponseReviseAndAuthorise,
+        ResponseRequestRevisions
+    ];
 }
