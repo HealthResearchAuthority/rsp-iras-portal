@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Rsp.IrasPortal.Application.Constants;
 using Rsp.Portal.Web.Models;
 
 namespace Rsp.Portal.Web.Validators;
@@ -51,6 +52,23 @@ public class AddUpdateReviewBodyModelValidator : AbstractValidator<AddUpdateRevi
         RuleFor(x => x.ReviewBodyType)
             .NotEmpty()
             .WithMessage("Select a review body type");
+
+        RuleFor(x => x.ResearchEthicsCommitteeId)
+            .NotEmpty()
+            .WithMessage("Enter a research ethics committee ID")
+            .When(x => string.Equals(
+                x.ReviewBodyType,
+                ReviewBodyType.ResearchEthicsCommittee,
+                StringComparison.OrdinalIgnoreCase));
+
+        RuleFor(x => x.ResearchEthicsCommitteeId)
+            .Must(value => int.TryParse(value, out var id) && id > 0)
+            .WithMessage("Research ethics committee ID must only include numbers")
+            .When(x => string.Equals(
+                           x.ReviewBodyType,
+                           ReviewBodyType.ResearchEthicsCommittee,
+                           StringComparison.OrdinalIgnoreCase)
+                       && !string.IsNullOrWhiteSpace(x.ResearchEthicsCommitteeId));
     }
 
     private static int GetWordCount(string? text)
