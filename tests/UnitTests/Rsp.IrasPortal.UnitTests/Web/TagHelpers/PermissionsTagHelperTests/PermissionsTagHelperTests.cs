@@ -224,6 +224,61 @@ public class PermissionsTagHelperTests : TestServiceBase<PermissionsTagHelper>
     }
 
     [Fact]
+    public async Task EvaluatePermissions_Returns_True_For_Edit_Permission_When_TeamRoles_Enabled_And_User_Is_Not_Applicant()
+    {
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(m => m.IsEnabledAsync(FeatureFlags.TeamRoles))
+            .ReturnsAsync(true);
+
+        Sut.Permission = Permissions.Sponsor.Modifications_Authorise;
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Sponsor));
+
+        var result = await Sut.EvaluatePermissions();
+
+        result.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task EvaluatePermissions_Collection_Returns_False_For_Edit_Permission_When_TeamRoles_Enabled_And_No_Collaborator_Edit_Access()
+    {
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(m => m.IsEnabledAsync(FeatureFlags.TeamRoles))
+            .ReturnsAsync(true);
+
+        Sut.Permissions =
+        [
+            Permissions.MyResearch.ProjectRecord_Read,
+            Permissions.MyResearch.ProjectRecord_Update
+        ];
+        Sut.PermissionEvaluationLogic = PermissionsTagHelper.PermissionMode.All;
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
+
+        var result = await Sut.EvaluatePermissions();
+
+        result.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task EvaluatePermissions_Collection_Returns_True_For_Edit_Permission_When_TeamRoles_Enabled_And_User_Is_Not_Applicant()
+    {
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(m => m.IsEnabledAsync(FeatureFlags.TeamRoles))
+            .ReturnsAsync(true);
+
+        Sut.Permissions =
+        [
+            Permissions.Sponsor.Modifications_Search,
+            Permissions.Sponsor.Modifications_Authorise
+        ];
+        Sut.PermissionEvaluationLogic = PermissionsTagHelper.PermissionMode.All;
+        Sut.ViewContext = CreateViewContext(CreateUser(Roles.Sponsor));
+
+        var result = await Sut.EvaluatePermissions();
+
+        result.ShouldBeTrue();
+    }
+
+    [Fact]
     public void EvaluateRoles_Returns_True_For_Single_Role_When_User_Is_In_Role()
     {
         Sut.Role = Roles.TeamManager;
@@ -635,17 +690,6 @@ public class PermissionsTagHelperTests : TestServiceBase<PermissionsTagHelper>
         Sut.ViewContext = CreateViewContext(CreateUser(Roles.Applicant));
 
         Sut.EvaluateCollaboratorAccess([Permissions.MyResearch.Workspace_Access]).ShouldBeTrue();
-    }
-
-    [Fact]
-    public void EvaluateCollaboratorAccess_Collection_Returns_True_When_Modification_Is_ReviseAndAuthorise()
-    {
-        var viewContext = CreateViewContext(CreateUser(Roles.Sponsor));
-        viewContext.TempData[TempDataKeys.ProjectModification.ProjectModificationStatus] = ModificationStatus.ReviseAndAuthorise;
-
-        Sut.ViewContext = viewContext;
-
-        Sut.EvaluateCollaboratorAccess([Permissions.MyResearch.Modifications_Update]).ShouldBeTrue();
     }
 
     private static ViewContext CreateViewContext(ClaimsPrincipal user)
