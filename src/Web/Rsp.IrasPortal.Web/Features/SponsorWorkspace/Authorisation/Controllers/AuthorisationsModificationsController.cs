@@ -323,6 +323,15 @@ public class AuthorisationsModificationsController
                 sortDirection
             );
 
+        if (response is null)
+        {
+            return this.ServiceError(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Error = "Cannot get modification details"
+            });
+        }
+
         var auth = await sponsorUserAuthorisationService.AuthoriseWithOrganisationContextAsync(this, sponsorOrganisationUserId, User, rtsId);
         if (!auth.IsAuthorised)
         {
@@ -339,16 +348,14 @@ public class AuthorisationsModificationsController
 
         TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
 
-        if (await featureManager.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+        var errorResult = await SetRevisionAndRfiViewBagsAsync(
+                 projectRecordId,
+                 projectModificationId,
+                 response.Status);
+
+        if (errorResult is not null)
         {
-            var reviewResponse = await projectModificationsService.GetModificationReviewResponses(projectRecordId, projectModificationId);
-
-            if (!reviewResponse.IsSuccessStatusCode)
-            {
-                return this.ServiceError(reviewResponse);
-            }
-
-            ViewBag.RevisionSent = !string.IsNullOrWhiteSpace(reviewResponse.Content!.RevisionDescription);
+            return errorResult;
         }
 
         return View(response);
@@ -369,6 +376,15 @@ public class AuthorisationsModificationsController
             model.RtsId
         );
 
+        if (hydrated is null)
+        {
+            return this.ServiceError(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Error = "Cannot get modification details"
+            });
+        }
+
         if (!ModelState.IsValid)
         {
             var sponsorOrganisationUser = await sponsorOrganisationService.GetSponsorOrganisationUser(Guid.Parse(model.SponsorOrganisationUserId), model.RtsId);
@@ -380,31 +396,14 @@ public class AuthorisationsModificationsController
 
             TempData[TempDataKeys.IsAuthoriser] = sponsorOrganisationUser.Content!.IsAuthoriser;
 
-            if (await featureManager.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+            var errorResult = await SetRevisionAndRfiViewBagsAsync(
+                model.ProjectRecordId,
+                model.ProjectModificationId,
+                model.Status);
+
+            if (errorResult is not null)
             {
-                var reviewResponse = await projectModificationsService.GetModificationReviewResponses(model.ProjectRecordId, model.ProjectModificationId);
-
-                if (!reviewResponse.IsSuccessStatusCode)
-                {
-                    return this.ServiceError(reviewResponse);
-                }
-
-                var isRfiEnabled = await featureManager.IsEnabledAsync(FeatureFlags.RequestForInformation);
-
-                if (!isRfiEnabled)
-                {
-                    // legacy behaviour
-                    ViewBag.RevisionSent =
-                        !string.IsNullOrWhiteSpace(reviewResponse.Content!.RevisionDescription);
-                }
-                else
-                {
-                    ViewBag.RevisionSent =
-                        reviewResponse.Content!.ModificationRevisionResponses
-                            .Any(r =>
-                                r.Role == ResponseRoles.Sponsor &&
-                                r.ResponseOrigin == ResponseOrigin.RequestRevisions);
-                }
+                return errorResult;
             }
 
             // Preserve the posted Outcome so the radios keep the selection
@@ -547,6 +546,58 @@ public class AuthorisationsModificationsController
         }
 
         return RedirectToAction(nameof(Confirmation), model);
+    }
+
+    [NonAction]
+    internal async Task<IActionResult?> SetRevisionAndRfiViewBagsAsync(
+    string projectRecordId,
+    Guid projectModificationId,
+    string status)
+    {
+        if (await featureManager.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+        {
+            var reviewResponse =
+                await projectModificationsService.GetModificationReviewResponses(
+                    projectRecordId,
+                    projectModificationId);
+
+            if (!reviewResponse.IsSuccessStatusCode)
+            {
+                return this.ServiceError(reviewResponse);
+            }
+
+            var isRfiEnabled =
+                await featureManager.IsEnabledAsync(FeatureFlags.RequestForInformation);
+
+            ViewBag.RevisionSent = !isRfiEnabled
+                ? !string.IsNullOrWhiteSpace(reviewResponse.Content!.RevisionDescription)
+                : reviewResponse.Content!.ModificationRevisionResponses.Any(r =>
+                    r.Role == ResponseRoles.Sponsor &&
+                    r.ResponseOrigin == ResponseOrigin.RequestRevisions);
+        }
+
+        if (await featureManager.IsEnabledAsync(FeatureFlags.SponsorAuthorisation)
+            && status is ModificationStatus.ResponseWithSponsor)
+        {
+            var rfiResponses =
+                await projectModificationsService.GetModificationRfiResponses(
+                    projectRecordId,
+                    projectModificationId);
+
+            if (!rfiResponses.IsSuccessStatusCode)
+            {
+                return this.ServiceError(rfiResponses);
+            }
+
+            var dto = rfiResponses.Content!;
+
+            ViewBag.RfiRevisionSent =
+                dto.RfiResponses.Any(r =>
+                    !string.IsNullOrWhiteSpace(r.RequestRevisionsBySponsor.FirstOrDefault()))
+                && dto.IsLastSponsorRequestRevisionsDraft is false;
+        }
+
+        return null;
     }
 
     private async Task<(bool flowControl, IActionResult value)> UpdateProjectHaltAndRestartStatus(string projectRecordId, string? specificAreaOfChangeId)
