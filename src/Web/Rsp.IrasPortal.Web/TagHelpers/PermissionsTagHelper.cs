@@ -316,7 +316,12 @@ public class PermissionsTagHelper(IFeatureManager featureManager) : TagHelper
                 return false;
             }
 
-            return teamRolesEnabled ? EvaluateCollaboratorAccess() : true;
+            return teamRolesEnabled switch
+            {
+                true when User.IsInRole(Roles.Applicant) => EvaluateCollaboratorAccess(),
+                true when !User.IsInRole(Roles.Applicant) => true,
+                _ => true
+            };
         }
 
         // Evaluate collection according to configured logic (Any/All).
@@ -332,7 +337,15 @@ public class PermissionsTagHelper(IFeatureManager featureManager) : TagHelper
             return false;
         }
 
-        return teamRolesEnabled ? EvaluateCollaboratorAccess(Permissions!) : true;
+        return teamRolesEnabled switch
+        {
+            // only evaluate collaborator access for applicants when team roles is enabled,
+            // as this is the only scenario where collaborator access levels would apply.
+            // For other users or when team roles is not enabled, permissions are sufficient to determine access.
+            true when User.IsInRole(Roles.Applicant) => EvaluateCollaboratorAccess(Permissions!),
+            true when !User.IsInRole(Roles.Applicant) => true,
+            _ => true
+        };
     }
 
     // ------------------------------- Role logic -------------------------------
@@ -399,15 +412,6 @@ public class PermissionsTagHelper(IFeatureManager featureManager) : TagHelper
             return true;
         }
 
-        // sponsor or backstage users cannot be a collaborator,
-        // so if the modification is in "WithSponsor, ResponseWithSponsor, Sponsor revises modification" status,
-        // or in "WithReviewBody, ResponseWithReviewBody" status for backstage users,
-        // grant "Edit" access
-        if (SponsorOrBackStageUserHasPermissions())
-        {
-            return true;
-        }
-
         // check for edit access
         return GetCollaboratorAccess() is "Edit";
     }
@@ -418,15 +422,6 @@ public class PermissionsTagHelper(IFeatureManager featureManager) : TagHelper
         // collaborator permissions do not apply, as collaborator with View Only access
         // will inherit permissions from their role which may include non-edit permissions
         if (!AppPermissions.EditAccessPermissions.Any(p => permissions.Contains(p)))
-        {
-            return true;
-        }
-
-        // sponsor or backstage users cannot be a collaborator,
-        // so if the modification is in "WithSponsor, ResponseWithSponsor, Sponsor revises modification" status,
-        // or in "WithReviewBody, ResponseWithReviewBody" status for backstage users,
-        // grant "Edit" access
-        if (SponsorOrBackStageUserHasPermissions())
         {
             return true;
         }
@@ -466,35 +461,5 @@ public class PermissionsTagHelper(IFeatureManager featureManager) : TagHelper
         return collaboratorProjects?
             .FirstOrDefault(p => p.ProjectRecordId == projectRecordId)?
             .ProjectAccessLevel;
-    }
-
-    private bool SponsorOrBackStageUserHasPermissions()
-    {
-        var status = ViewContext.TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string;
-
-        // sponsor or backstage users cannot be a collaborator,
-        // so if the modification is in "WithSponsor, ResponseWithSponsor, Sponsor revises modification" status,
-        // or in "WithReviewBody, ResponseWithReviewBody" status for backstage users,
-        // grant "Edit" access
-        return
-        (
-            (
-                User.IsInRole(Roles.Sponsor) ||
-                User.IsInRole(Roles.OrganisationAdministrator)
-            ) && status is
-            ModificationStatus.WithSponsor or
-            ModificationStatus.ResponseWithSponsor or
-            ModificationStatus.ResponseReviseAndAuthorise or
-            ModificationStatus.ReviseAndAuthorise
-        ) ||
-        (
-            (
-                User.IsInRole(Roles.WorkflowCoordinator) ||
-                User.IsInRole(Roles.TeamManager) ||
-                User.IsInRole(Roles.StudyWideReviewer)
-            ) && status is
-            ModificationStatus.WithReviewBody or
-            ModificationStatus.ResponseWithReviewBody
-        );
     }
 }
