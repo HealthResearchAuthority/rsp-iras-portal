@@ -44,7 +44,7 @@ public static class Permissions
         public const string ProjectRecord_Search = "myresearch.projectrecord.search";
 
         /// <summary>
-        /// allows searching project close
+        /// allows closing project records
         /// </summary>
         public const string ProjectRecord_Close = "myresearch.projectrecord.close";
 
@@ -355,18 +355,11 @@ public static class Permissions
         MyResearch.Modifications_Delete,
         MyResearch.Modifications_Withdraw,
         MyResearch.Modifications_Submit,
+        MyResearch.Modifications_Resubmission,
 
         // Project Documents permissions
         MyResearch.ProjectDocuments_Upload,
         MyResearch.ProjectDocuments_Update,
-        MyResearch.ProjectDocuments_Delete,
-
-        // Sponsor actions on modifications
-        Sponsor.Modifications_Review,
-        Sponsor.Modifications_Authorise,
-
-        // Backstage user permissions
-        MyResearch.Modifications_Review,
-        MyResearch.Modifications_Approve
+        MyResearch.ProjectDocuments_Delete
     ];
 }
