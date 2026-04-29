@@ -4,6 +4,8 @@ public class ModificationRfiResponseResponse
 {
     public Guid ModificationId { get; set; }
     public List<RfiResponsesDTO> RfiResponses { get; set; } = [];
+    public bool? IsLastSponsorRequestRevisionsDraft { get; set; }
+    public bool? IsLastSponsorReasonForReviseAndAuthoriseDraft { get; set; }
 }
 
 public class RfiResponsesDTO

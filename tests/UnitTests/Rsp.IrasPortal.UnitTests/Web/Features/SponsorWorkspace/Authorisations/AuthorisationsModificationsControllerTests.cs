@@ -391,17 +391,6 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
             .Setup(f => f.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
             .ReturnsAsync(true);
 
-        Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationReviewResponses("PR1", _sponsorOrganisationUserId))
-            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new ProjectModificationReviewResponse
-                {
-                    RevisionDescription = "abc"
-                }
-            });
-
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
         sponsorOrganisationService
             .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
@@ -1538,7 +1527,18 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                 StatusCode = HttpStatusCode.OK,
                 Content = new ProjectModificationReviewResponse
                 {
-                    RevisionDescription = "default description"
+                    RevisionDescription = "default description",
+                    ModificationRevisionResponses = new List<ModificationRevisionResponse>
+                    {
+                        new ModificationRevisionResponse
+                        {
+                            Response = "default description",
+                            Role = ResponseRoles.Sponsor,
+                            ResponseOrigin = ResponseOrigin.RequestRevisions,
+                            CreatedBy = "a",
+                            CreatedDateTime = DateTime.UtcNow
+                        }
+                    }
                 }
             });
 
@@ -1550,7 +1550,13 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                 StatusCode = HttpStatusCode.OK,
                 Content = new ModificationRfiResponseResponse
                 {
-                    RfiResponses = []
+                    RfiResponses = [
+                            new RfiResponsesDTO
+                            {
+                                RequestRevisionsBySponsor = ["default"]
+                            }
+                        ],
+                    IsLastSponsorRequestRevisionsDraft = false
                 }
             });
 
@@ -1562,6 +1568,10 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
                     It.IsAny<ClaimsPrincipal>(),
                     It.IsAny<string>()))
                 .ReturnsAsync(SponsorUserAuthorisationResult.Ok(Guid.NewGuid()));
+
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.SponsorAuthorisation))
+            .ReturnsAsync(true);
 
         // This is your domain object you're enriching
         var modification = new ModificationDetailsViewModel
@@ -3013,17 +3023,6 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
      .Setup(f => f.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
      .ReturnsAsync(true);
 
-        Mocker.GetMock<IProjectModificationsService>()
-            .Setup(s => s.GetModificationReviewResponses("PR1", _sponsorOrganisationUserId))
-            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new ProjectModificationReviewResponse
-                {
-                    RevisionDescription = "abc"
-                }
-            });
-
         var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
         sponsorOrganisationService
             .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
@@ -3039,6 +3038,128 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
         result.ShouldBeOfType<ViewResult>();
         var view = result.ShouldBeOfType<ViewResult>();
         view.ViewData["RevisionSent"].ShouldBe(true);
+    }
+
+    [Fact]
+    public async Task CheckAndAuthorise_WhenLastSponsorRequestRevisionsIsDraft_SetsRfiRevisionSent_False()
+    {
+        var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
+
+        Mocker.GetMock<IFeatureManager>()
+         .Setup(f => f.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+         .ReturnsAsync(true);
+
+        var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
+        sponsorOrganisationService
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new SponsorOrganisationUserDto { Id = Guid.NewGuid() }
+            });
+
+        var projectModificationId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var projectRecordId = "PR-001";
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModification(It.IsAny<string>(), It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationResponse
+                {
+                    Id = projectModificationId,
+                    ModificationIdentifier = projectModificationId.ToString(),
+                    Status = ModificationStatus.ResponseWithSponsor,
+                    ProjectRecordId = projectRecordId,
+                    ModificationNumber = 1,
+                    CreatedDate = DateTime.UtcNow,
+                    UpdatedDate = DateTime.UtcNow,
+                    CreatedBy = "TestUser",
+                    UpdatedBy = "TestUser",
+                    ModificationType = "Substantial",
+                    Category = "Category A",
+                    ReviewType = "Full Review",
+                }
+            });
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationRfiResponses(It.IsAny<string>(),
+                It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ModificationRfiResponseResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ModificationRfiResponseResponse
+                {
+                    RfiResponses = [
+                            new RfiResponsesDTO
+                            {
+                                RequestRevisionsBySponsor = ["default"]
+                            }
+                        ],
+                    IsLastSponsorRequestRevisionsDraft = true
+                }
+            });
+
+        var result = await Sut.CheckAndAuthorise("PR1", "IRAS", "Short",
+            _sponsorOrganisationUserId, _sponsorOrganisationUserId, "123");
+
+        result.ShouldBeOfType<ViewResult>();
+        var view = result.ShouldBeOfType<ViewResult>();
+        view.ViewData["RevisionSent"].ShouldBe(true);
+        view.ViewData["RfiRevisionSent"].ShouldBe(false);
+    }
+
+    [Fact]
+    public async Task CheckAndAuthorise_WhenLastSponsorRequestRevisionsIsNotDraft_SetsRfiRevisionSent_True()
+    {
+        var authoriseOutcomeViewModel = SetupAuthoriseOutcomeViewModel();
+
+        Mocker.GetMock<IFeatureManager>()
+         .Setup(f => f.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+         .ReturnsAsync(true);
+
+        var sponsorOrganisationService = Mocker.GetMock<ISponsorOrganisationService>();
+        sponsorOrganisationService
+            .Setup(s => s.GetSponsorOrganisationUser(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<SponsorOrganisationUserDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new SponsorOrganisationUserDto { Id = Guid.NewGuid() }
+            });
+
+        var projectModificationId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var projectRecordId = "PR-001";
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModification(It.IsAny<string>(), It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationResponse
+                {
+                    Id = projectModificationId,
+                    ModificationIdentifier = projectModificationId.ToString(),
+                    Status = ModificationStatus.ResponseWithSponsor,
+                    ProjectRecordId = projectRecordId,
+                    ModificationNumber = 1,
+                    CreatedDate = DateTime.UtcNow,
+                    UpdatedDate = DateTime.UtcNow,
+                    CreatedBy = "TestUser",
+                    UpdatedBy = "TestUser",
+                    ModificationType = "Substantial",
+                    Category = "Category A",
+                    ReviewType = "Full Review",
+                }
+            });
+
+        var result = await Sut.CheckAndAuthorise("PR1", "IRAS", "Short",
+            _sponsorOrganisationUserId, _sponsorOrganisationUserId, "123");
+
+        result.ShouldBeOfType<ViewResult>();
+        var view = result.ShouldBeOfType<ViewResult>();
+        view.ViewData["RevisionSent"].ShouldBe(true);
+        view.ViewData["RfiRevisionSent"].ShouldBe(true);
     }
 
     [Theory, AutoData]
@@ -3240,6 +3361,171 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
 
         // Assert
         result.ShouldNotBeNull(); // ServiceError(BadRequest)
+    }
+
+    [Fact]
+    public async Task Sets_RevisionSent_When_SponsorRequestedRevisions()
+    {
+        Mocker.GetMock<IFeatureManager>()
+           .Setup(f => f.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+           .ReturnsAsync(true);
+
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.RequestForInformation))
+            .ReturnsAsync(true);
+
+        Mocker.GetMock<IProjectModificationsService>()
+           .Setup(s => s.GetModificationReviewResponses(It.IsAny<string>(), It.IsAny<Guid>()))
+           .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+           {
+               StatusCode = HttpStatusCode.OK,
+               Content = new ProjectModificationReviewResponse
+               {
+                   ModificationRevisionResponses =
+                    [
+                        new ModificationRevisionResponse
+                        {
+                            Id = Guid.NewGuid(),
+                            ProjectModificationId = Guid.NewGuid(),
+                            Response = "Sponsor revision",
+                            Role = ResponseRoles.Sponsor,
+                            ResponseOrigin = ResponseOrigin.RequestRevisions,
+                            CreatedDateTime = DateTime.UtcNow,
+                            CreatedBy = "user",
+                            UpdatedDateTime = DateTime.UtcNow,
+                            UpdatedBy = "user"
+                        }
+                    ]
+               }
+           });
+
+        await Sut.SetRevisionAndRfiViewBagsAsync(
+            "abc", Guid.NewGuid(), "Any");
+
+        bool revisionSent = Sut.ViewBag.RevisionSent;
+        revisionSent.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Sets_RevisionSent_When_RevisionDescriptionExists_And_RfiDisabled()
+    {
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+            .ReturnsAsync(true);
+
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.RequestForInformation))
+            .ReturnsAsync(false);
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses(It.IsAny<string>(), It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationReviewResponse
+                {
+                    RevisionDescription = "Some revision"
+                }
+            });
+
+        await Sut.SetRevisionAndRfiViewBagsAsync(
+            "abc", Guid.NewGuid(), "Any");
+
+        bool revisionSent = Sut.ViewBag.RevisionSent;
+        revisionSent.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Returns_ServiceError_When_ReviewResponseFails()
+    {
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+            .ReturnsAsync(true);
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses(It.IsAny<string>(), It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+            {
+                StatusCode = HttpStatusCode.InternalServerError
+            });
+
+        var result = await Sut.SetRevisionAndRfiViewBagsAsync(
+            "abc", Guid.NewGuid(), "Any");
+
+        result.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task Sets_RfiRevisionSent_When_SponsorRfiRevisionSent_And_NotDraft()
+    {
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.SponsorAuthorisation))
+            .ReturnsAsync(true);
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationRfiResponses(It.IsAny<string>(),
+                It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ModificationRfiResponseResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ModificationRfiResponseResponse
+                {
+                    RfiResponses = [
+                            new RfiResponsesDTO
+                            {
+                                RequestRevisionsBySponsor = ["Fix this"]
+                            }
+                        ],
+                    IsLastSponsorRequestRevisionsDraft = false
+                }
+            });
+
+        await Sut.SetRevisionAndRfiViewBagsAsync(
+            "abc",
+            Guid.NewGuid(),
+            ModificationStatus.ResponseWithSponsor);
+
+        bool rfiRevisionSent = Sut.ViewBag.RfiRevisionSent;
+        rfiRevisionSent.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Returns_ServiceError_When_RfiResponseFails()
+    {
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.SponsorAuthorisation))
+            .ReturnsAsync(true);
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationRfiResponses(It.IsAny<string>(),
+                It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ModificationRfiResponseResponse>
+            {
+                StatusCode = HttpStatusCode.BadRequest
+            });
+
+        var result = await Sut.SetRevisionAndRfiViewBagsAsync(
+            "abc",
+            Guid.NewGuid(),
+            ModificationStatus.ResponseWithSponsor);
+
+        result.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task Does_Not_Set_RfiRevisionSent_When_SponsorAuthorisationFeatureDisabled()
+    {
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.SponsorAuthorisation))
+            .ReturnsAsync(false);
+
+        await Sut.SetRevisionAndRfiViewBagsAsync(
+            "abc",
+            Guid.NewGuid(),
+            ModificationStatus.ResponseWithSponsor);
+
+        bool? rfiRevisionSent = Sut.ViewBag.RfiRevisionSent as bool?;
+        rfiRevisionSent.ShouldBeNull();
     }
 
     public SponsorUserAuthorisationResult Authorised(Guid gid)

@@ -158,7 +158,9 @@ public abstract class ModificationsControllerBase
             RfiModel = new RfiDetailsViewModel
             {
                 RfiReasons = modificationReviewResponse.Content?.RequestForInformationReasons ?? [],
-                RfiResponses = modificationRfiResponsesResponse.Content?.RfiResponses ?? []
+                RfiResponses = modificationRfiResponsesResponse.Content?.RfiResponses ?? [],
+                IsLastSponsorRequestRevisionsDraft = modificationRfiResponsesResponse.Content?.IsLastSponsorRequestRevisionsDraft,
+                IsLastSponsorReasonForReviseAndAuthoriseDraft = modificationRfiResponsesResponse.Content?.IsLastSponsorReasonForReviseAndAuthoriseDraft
             },
             ApplicantRevisionResponse = applicantRevisionResponse,
             ModificationRevisionResponses = modification?.ModificationRevisionResponses ?? [],
