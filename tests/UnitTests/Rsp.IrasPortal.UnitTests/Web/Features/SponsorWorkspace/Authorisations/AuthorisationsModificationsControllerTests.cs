@@ -3363,6 +3363,171 @@ public class AuthorisationsModificationsControllerTests : TestServiceBase<TestAu
         result.ShouldNotBeNull(); // ServiceError(BadRequest)
     }
 
+    [Fact]
+    public async Task Sets_RevisionSent_When_SponsorRequestedRevisions()
+    {
+        Mocker.GetMock<IFeatureManager>()
+           .Setup(f => f.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+           .ReturnsAsync(true);
+
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.RequestForInformation))
+            .ReturnsAsync(true);
+
+        Mocker.GetMock<IProjectModificationsService>()
+           .Setup(s => s.GetModificationReviewResponses(It.IsAny<string>(), It.IsAny<Guid>()))
+           .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+           {
+               StatusCode = HttpStatusCode.OK,
+               Content = new ProjectModificationReviewResponse
+               {
+                   ModificationRevisionResponses =
+                    [
+                        new ModificationRevisionResponse
+                        {
+                            Id = Guid.NewGuid(),
+                            ProjectModificationId = Guid.NewGuid(),
+                            Response = "Sponsor revision",
+                            Role = ResponseRoles.Sponsor,
+                            ResponseOrigin = ResponseOrigin.RequestRevisions,
+                            CreatedDateTime = DateTime.UtcNow,
+                            CreatedBy = "user",
+                            UpdatedDateTime = DateTime.UtcNow,
+                            UpdatedBy = "user"
+                        }
+                    ]
+               }
+           });
+
+        await Sut.SetRevisionAndRfiViewBagsAsync(
+            "abc", Guid.NewGuid(), "Any");
+
+        bool revisionSent = Sut.ViewBag.RevisionSent;
+        revisionSent.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Sets_RevisionSent_When_RevisionDescriptionExists_And_RfiDisabled()
+    {
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+            .ReturnsAsync(true);
+
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.RequestForInformation))
+            .ReturnsAsync(false);
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses(It.IsAny<string>(), It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ProjectModificationReviewResponse
+                {
+                    RevisionDescription = "Some revision"
+                }
+            });
+
+        await Sut.SetRevisionAndRfiViewBagsAsync(
+            "abc", Guid.NewGuid(), "Any");
+
+        bool revisionSent = Sut.ViewBag.RevisionSent;
+        revisionSent.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Returns_ServiceError_When_ReviewResponseFails()
+    {
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.RevisionAndAuthorisation))
+            .ReturnsAsync(true);
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationReviewResponses(It.IsAny<string>(), It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationReviewResponse>
+            {
+                StatusCode = HttpStatusCode.InternalServerError
+            });
+
+        var result = await Sut.SetRevisionAndRfiViewBagsAsync(
+            "abc", Guid.NewGuid(), "Any");
+
+        result.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task Sets_RfiRevisionSent_When_SponsorRfiRevisionSent_And_NotDraft()
+    {
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.SponsorAuthorisation))
+            .ReturnsAsync(true);
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationRfiResponses(It.IsAny<string>(),
+                It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ModificationRfiResponseResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ModificationRfiResponseResponse
+                {
+                    RfiResponses = [
+                            new RfiResponsesDTO
+                            {
+                                RequestRevisionsBySponsor = ["Fix this"]
+                            }
+                        ],
+                    IsLastSponsorRequestRevisionsDraft = false
+                }
+            });
+
+        await Sut.SetRevisionAndRfiViewBagsAsync(
+            "abc",
+            Guid.NewGuid(),
+            ModificationStatus.ResponseWithSponsor);
+
+        bool rfiRevisionSent = Sut.ViewBag.RfiRevisionSent;
+        rfiRevisionSent.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Returns_ServiceError_When_RfiResponseFails()
+    {
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.SponsorAuthorisation))
+            .ReturnsAsync(true);
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationRfiResponses(It.IsAny<string>(),
+                It.IsAny<Guid>()))
+            .ReturnsAsync(new ServiceResponse<ModificationRfiResponseResponse>
+            {
+                StatusCode = HttpStatusCode.BadRequest
+            });
+
+        var result = await Sut.SetRevisionAndRfiViewBagsAsync(
+            "abc",
+            Guid.NewGuid(),
+            ModificationStatus.ResponseWithSponsor);
+
+        result.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task Does_Not_Set_RfiRevisionSent_When_SponsorAuthorisationFeatureDisabled()
+    {
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(f => f.IsEnabledAsync(FeatureFlags.SponsorAuthorisation))
+            .ReturnsAsync(false);
+
+        await Sut.SetRevisionAndRfiViewBagsAsync(
+            "abc",
+            Guid.NewGuid(),
+            ModificationStatus.ResponseWithSponsor);
+
+        bool? rfiRevisionSent = Sut.ViewBag.RfiRevisionSent as bool?;
+        rfiRevisionSent.ShouldBeNull();
+    }
+
     public SponsorUserAuthorisationResult Authorised(Guid gid)
     {
         return SponsorUserAuthorisationResult.Ok(gid);
