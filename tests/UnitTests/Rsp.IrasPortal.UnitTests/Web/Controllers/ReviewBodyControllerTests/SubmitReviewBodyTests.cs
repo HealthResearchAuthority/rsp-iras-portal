@@ -4,7 +4,9 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.FeatureManagement;
 using Rsp.IrasPortal.Application.Constants;
+using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
 using Rsp.Portal.Application.DTOs.Responses;
@@ -90,6 +92,11 @@ public class SubmitReviewBodyTests : TestServiceBase<ReviewBodyController>
         model.EmailAddress = "valid.email@example.com";
         model.ResearchEthicsCommitteeId = "123";
         model.ReviewBodyType = ReviewBodyType.ResearchEthicsCommittee;
+
+        // Enable feature flag
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(x => x.IsEnabledAsync(FeatureFlags.RecMemberManagement))
+            .ReturnsAsync(true);
 
         SetupValidValidation();
         SetupExistingRecIdResponse(1);
@@ -198,6 +205,13 @@ public class SubmitReviewBodyTests : TestServiceBase<ReviewBodyController>
 
     private void SetupExistingRecIdResponse(int totalCount)
     {
+        var reviewBodies = Enumerable.Range(0, totalCount)
+            .Select(_ => new ReviewBodyDto
+            {
+                Id = Guid.NewGuid()
+            })
+            .ToList();
+
         Mocker.GetMock<IReviewBodyService>()
             .Setup(s => s.GetAllReviewBodies(
                 It.IsAny<ReviewBodySearchRequest>(),
@@ -210,7 +224,8 @@ public class SubmitReviewBodyTests : TestServiceBase<ReviewBodyController>
                 StatusCode = HttpStatusCode.OK,
                 Content = new AllReviewBodiesResponse
                 {
-                    TotalCount = totalCount
+                    TotalCount = totalCount,
+                    ReviewBodies = reviewBodies
                 }
             });
     }
