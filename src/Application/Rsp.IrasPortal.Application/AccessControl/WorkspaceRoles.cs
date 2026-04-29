@@ -60,7 +60,7 @@ public static class WorkspaceRolesMatrix
         // - Team managers, Member Management and admins
         [Workspaces.MemberManagement] =
         [
-            Roles.TeamManager, Roles.MemberManagement, Roles.SystemAdministrator
+            Roles.TeamManager, Roles.MemberManagement, Roles.SystemAdministrator, Roles.ResearchEthicsCommitteeManager
         ]
     };
 
