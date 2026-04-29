@@ -206,7 +206,8 @@
                 }
             </dl>
 
-            <div status-for="@Model.Status"
+            <div permission="@Permissions.MyResearch.Modifications_Update"
+                 status-for="@Model.Status"
                  status-is="@ModificationStatus.RequestForInformation">
                 <button type="submit" class="govuk-button" data-module="govuk-button">
                     Send response to sponsor

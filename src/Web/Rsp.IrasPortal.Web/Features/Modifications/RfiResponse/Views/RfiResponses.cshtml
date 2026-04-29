@@ -113,7 +113,9 @@
             </div>
         </div>
 
-        <authorized role-is="@Roles.Applicant" status-for="@Model.Status" status-is="@ModificationStatus.RequestForInformation">
+        <authorized role-is="@Roles.Applicant"
+                    status-for="@Model.Status"
+                    status-in="@([ModificationStatus.RequestForInformation, ModificationStatus.ResponseRequestRevisions])">
 
             <!-- INITIAL RESPONSE -->
             <div class="govuk-grid-row">
@@ -284,8 +286,7 @@
 
         <!-- REQUEST REVISION -->
         <feature name="@FeatureFlags.SponsorAuthorisation">
-            <authorized role-in="@([Roles.Applicant, Roles.Sponsor, Roles.OrganisationAdministrator])"
-                        permission="@Permissions.Sponsor.Modifications_Authorise"
+            <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
                         status-for="@Model.Status"
                         status-is="@ModificationStatus.ResponseWithSponsor">
                 @{
@@ -366,22 +367,24 @@
         <hr aria-hidden="true" class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
         @if (Model?.ProjectOverviewDocumentViewModel?.Documents is null || !Model.ProjectOverviewDocumentViewModel.Documents.Any())
         {
-            <div class="govuk-grid-row">
-                <div class="govuk-grid-column-two-thirds">
-                    <h2 class="govuk-heading-m">Supporting documents</h2>
-                    <p class="govuk-body">
-                        If any of the changes you're making involve an update to any project documents, make sure you add a copy of the original and updated documents.
-                    </p>
+            <authorized permission="@Permissions.MyResearch.ProjectDocuments_Upload">
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-two-thirds">
+                        <h2 class="govuk-heading-m">Supporting documents</h2>
+                        <p class="govuk-body">
+                            If any of the changes you're making involve an update to any project documents, make sure you add a copy of the original and updated documents.
+                        </p>
+                    </div>
                 </div>
-            </div>
-            <div class="govuk-button-group">
-                <button type="submit"
-                        formaction="@Url.RouteUrl("pmc:projectdocument")"
-                        formmethod="get"
-                        class="govuk-button govuk-button--secondary">
-                    Add documents
-                </button>
-            </div>
+                <div class="govuk-button-group">
+                    <button type="submit"
+                            formaction="@Url.RouteUrl("pmc:projectdocument")"
+                            formmethod="get"
+                            class="govuk-button govuk-button--secondary">
+                        Add documents
+                    </button>
+                </div>
+            </authorized>
         }
         else
         {
@@ -389,7 +392,7 @@
         }
     </div>
 
-    <div class="save-buttons">
+    <div class="save-buttons" permissions="@([Permissions.MyResearch.Modifications_Update, Permissions.Sponsor.Modifications_Authorise])">
         <button type="submit" class="govuk-button" data-module="govuk-button">
             Save and continue
         </button>
