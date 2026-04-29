@@ -6,4 +6,6 @@ public class RfiDetailsViewModel
 {
     public IList<string> RfiReasons { get; set; } = [];
     public List<RfiResponsesDTO> RfiResponses { get; set; } = [];
+    public bool? IsLastSponsorRequestRevisionsDraft { get; set; }
+    public bool? IsLastSponsorReasonForReviseAndAuthoriseDraft { get; set; }
 }

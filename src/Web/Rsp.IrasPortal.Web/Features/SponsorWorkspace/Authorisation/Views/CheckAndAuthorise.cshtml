@@ -73,7 +73,8 @@
                        : string.Empty
         });
 
-        if (ViewBag.RevisionSent == false)
+        if ((ViewBag.RevisionSent == false && Model.Status is ModificationStatus.WithSponsor) ||
+            (ViewBag.RfiRevisionSent == false && Model.Status is ModificationStatus.ResponseWithSponsor))
         {
             outcomeOptions.Add(new OutcomeOptions
             {

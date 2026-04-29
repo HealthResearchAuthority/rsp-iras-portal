@@ -45,7 +45,7 @@
                         </dd>
                     </div>
 
-                    @if (!string.IsNullOrWhiteSpace(reasonForReviseAndAuthorise))
+                    @if (!string.IsNullOrWhiteSpace(reasonForReviseAndAuthorise) && Model.RfiModel.IsLastSponsorReasonForReviseAndAuthoriseDraft is false)
                     {
                         <!-- REVISED RESPONSE -->
                         <div class="govuk-summary-list__row">
@@ -66,28 +66,54 @@
                             </dd>
                         </div>
                     }
-                    else if (!string.IsNullOrWhiteSpace(sponsorRequestRevisionResponse))
+                    else if (!string.IsNullOrWhiteSpace(sponsorRequestRevisionResponse) && Model.RfiModel.IsLastSponsorRequestRevisionsDraft is false)
                     {
-                        <!-- REQUEST REVISIONS -->
-                        <div class="govuk-summary-list__row">
-                            <dt class="govuk-summary-list__key">
-                                Response to reason @(i + 1)
-                            </dt>
-                            <dd class="govuk-summary-list__value">
-                                @(string.IsNullOrWhiteSpace(applicantRequestRevisionResponse)
-                                    ? "No response provided"
-                                    : applicantRequestRevisionResponse)
-                            </dd>
-                        </div>
+                        <!-- REQUEST REVISIONS - DURING APPLICANTS REVISION -->
+                        if (Model.Status is ModificationStatus.ResponseRequestRevisions)
+                        {  
+                            <div class="govuk-summary-list__row">
+                                <dt class="govuk-summary-list__key">
+                                    Response to reason @(i + 1)
+                                </dt>
+                                <dd class="govuk-summary-list__value">
+                                    @(string.IsNullOrWhiteSpace(initialResponse)
+                                        ? "No response provided"
+                                        : initialResponse)
+                                </dd>
+                            </div>
 
-                        <div class="govuk-summary-list__row">
-                            <dt class="govuk-summary-list__key">
-                                Requested revisions to response to reason @(i + 1)
-                            </dt>
-                            <dd class="govuk-summary-list__value">
-                                @sponsorRequestRevisionResponse
-                            </dd>
-                        </div>
+                            <div class="govuk-summary-list__row">
+                                <dt class="govuk-summary-list__key">
+                                    Requested revisions to response to reason @(i + 1)
+                                </dt>
+                                <dd class="govuk-summary-list__value">
+                                    @sponsorRequestRevisionResponse
+                                </dd>
+                            </div>                        
+                        }
+                        else
+                        {                
+                            <!-- REQUEST REVISIONS - AFTER APPLICANTS REVISION SENT TO SPONSOR -->
+                            <div class="govuk-summary-list__row">
+                                <dt class="govuk-summary-list__key">
+                                    Requested revisions to response to reason @(i + 1)
+                                </dt>
+                                <dd class="govuk-summary-list__value">
+                                    @sponsorRequestRevisionResponse
+                                </dd>
+                            </div>
+
+                            <div class="govuk-summary-list__row">
+                                <dt class="govuk-summary-list__key">
+                                    Updated response to reason @(i + 1)
+                                </dt>
+                                <dd class="govuk-summary-list__value">
+                                    @(string.IsNullOrWhiteSpace(applicantRequestRevisionResponse)
+                                        ? "No response provided"
+                                        : applicantRequestRevisionResponse)
+                                </dd>
+                            </div>                        
+                        }
                     }
                     else
                     {
@@ -102,7 +128,6 @@
                                     : initialResponse)
                             </dd>
                         </div>
-
                     }
                 </dl>
             </div>

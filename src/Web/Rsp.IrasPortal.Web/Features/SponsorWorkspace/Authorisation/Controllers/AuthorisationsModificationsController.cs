@@ -348,7 +348,43 @@ public class AuthorisationsModificationsController
                 return this.ServiceError(reviewResponse);
             }
 
-            ViewBag.RevisionSent = !string.IsNullOrWhiteSpace(reviewResponse.Content!.RevisionDescription);
+            var isRfiEnabled = await featureManager.IsEnabledAsync(FeatureFlags.RequestForInformation);
+
+            if (!isRfiEnabled)
+            {
+                // legacy behaviour
+                ViewBag.RevisionSent =
+                    !string.IsNullOrWhiteSpace(reviewResponse.Content!.RevisionDescription);
+            }
+            else
+            {
+                ViewBag.RevisionSent =
+                    reviewResponse.Content!.ModificationRevisionResponses
+                        .Any(r =>
+                            r.Role == ResponseRoles.Sponsor &&
+                            r.ResponseOrigin == ResponseOrigin.RequestRevisions);
+            }
+        }
+
+        if (await featureManager.IsEnabledAsync(FeatureFlags.SponsorAuthorisation))
+        {
+            if (response.Status is ModificationStatus.ResponseWithSponsor)
+            {
+                var rfiResponses = await projectModificationsService.GetModificationRfiResponses(projectRecordId, projectModificationId);
+
+                if (!rfiResponses.IsSuccessStatusCode)
+                {
+                    return this.ServiceError(rfiResponses);
+                }
+
+                var rfiResponsesDto = rfiResponses.Content!;
+
+                ViewBag.RfiRevisionSent =
+                    rfiResponsesDto.RfiResponses
+                        .Any(r => !string.IsNullOrWhiteSpace(
+                            r.RequestRevisionsBySponsor.FirstOrDefault()))
+                        && rfiResponsesDto.IsLastSponsorRequestRevisionsDraft is false;
+            }
         }
 
         return View(response);
@@ -404,6 +440,27 @@ public class AuthorisationsModificationsController
                             .Any(r =>
                                 r.Role == ResponseRoles.Sponsor &&
                                 r.ResponseOrigin == ResponseOrigin.RequestRevisions);
+                }
+            }
+
+            if (await featureManager.IsEnabledAsync(FeatureFlags.SponsorAuthorisation))
+            {
+                if (model.Status is ModificationStatus.ResponseWithSponsor)
+                {
+                    var rfiResponses = await projectModificationsService.GetModificationRfiResponses(model.ProjectRecordId, model.ProjectModificationId);
+
+                    if (!rfiResponses.IsSuccessStatusCode)
+                    {
+                        return this.ServiceError(rfiResponses);
+                    }
+
+                    var rfiResponsesDto = rfiResponses.Content!;
+
+                    ViewBag.RfiRevisionSent =
+                        rfiResponsesDto.RfiResponses
+                            .Any(r => !string.IsNullOrWhiteSpace(
+                                r.RequestRevisionsBySponsor.FirstOrDefault()))
+                            && rfiResponsesDto.IsLastSponsorRequestRevisionsDraft is false;
                 }
             }
 
