@@ -2,6 +2,7 @@
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -56,6 +57,11 @@ public class ConfirmChangesTests : TestServiceBase<ReviewBodyController>
         model.EmailAddress = "valid.email@example.com";
         model.ResearchEthicsCommitteeId = "123";
         model.ReviewBodyType = ReviewBodyType.ResearchEthicsCommittee;
+
+        // Enable feature flag
+        Mocker.GetMock<IFeatureManager>()
+            .Setup(x => x.IsEnabledAsync(FeatureFlags.RecMemberManagement))
+            .ReturnsAsync(true);
 
         SetupValidValidation();
 
@@ -134,12 +140,20 @@ public class ConfirmChangesTests : TestServiceBase<ReviewBodyController>
 
     private static ServiceResponse<AllReviewBodiesResponse> CreateReviewBodiesResponse(int totalCount)
     {
+        var reviewBodies = Enumerable.Range(0, totalCount)
+            .Select(_ => new ReviewBodyDto
+            {
+                Id = Guid.NewGuid()
+            })
+            .ToList();
+
         return new ServiceResponse<AllReviewBodiesResponse>
         {
             StatusCode = HttpStatusCode.OK,
             Content = new AllReviewBodiesResponse
             {
-                TotalCount = totalCount
+                TotalCount = totalCount,
+                ReviewBodies = reviewBodies
             }
         };
     }

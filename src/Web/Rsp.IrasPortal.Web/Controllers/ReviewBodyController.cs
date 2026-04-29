@@ -5,6 +5,8 @@ using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
+using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -23,7 +25,8 @@ namespace Rsp.Portal.Web.Controllers;
 public class ReviewBodyController(
     IReviewBodyService reviewBodyService,
     IUserManagementService userService,
-    IValidator<AddUpdateReviewBodyModel> validator)
+    IValidator<AddUpdateReviewBodyModel> validator,
+    IFeatureManager featureManager)
     : Controller
 {
     private const string Error = nameof(Error);
@@ -196,23 +199,26 @@ public class ReviewBodyController(
 
         if (validationResult.IsValid)
         {
-            switch (model.ReviewBodyType)
+            if (await featureManager.IsEnabledAsync(FeatureFlags.RecMemberManagement))
             {
-                case ReviewBodyType.ResearchEthicsCommittee:
+                switch (model.ReviewBodyType)
                 {
-                    var response = await reviewBodyService.GetAllReviewBodies(new ReviewBodySearchRequest
+                    case ReviewBodyType.ResearchEthicsCommittee:
                     {
-                        ReviewBodyType = [ReviewBodyType.ResearchEthicsCommittee],
-                        RecId = Convert.ToInt32(model.ResearchEthicsCommitteeId)
-                    });
+                        var response = await reviewBodyService.GetAllReviewBodies(new ReviewBodySearchRequest
+                        {
+                            ReviewBodyType = [ReviewBodyType.ResearchEthicsCommittee],
+                            RecId = Convert.ToInt32(model.ResearchEthicsCommitteeId)
+                        });
 
-                    if (response is { IsSuccessStatusCode: true, Content.TotalCount: > 0 })
-                    {
-                        ViewBag.Mode = CreateMode;
-                        return RedirectToAction(RecIdAlreadyAddedView, model);
+                        if (response is { IsSuccessStatusCode: true, Content.ReviewBodies: not null } &&
+                            response.Content.ReviewBodies.Any())
+                        {
+                            ViewBag.Mode = CreateMode;
+                            return RedirectToAction(RecIdAlreadyAddedView, model);
+                        }
+                        break;
                     }
-
-                    break;
                 }
             }
 
@@ -263,14 +269,15 @@ public class ReviewBodyController(
             return View(CreateUpdateReviewBodyView, model);
         }
 
-        if (model.ReviewBodyType == ReviewBodyType.ResearchEthicsCommittee)
+        if (await featureManager.IsEnabledAsync(FeatureFlags.RecMemberManagement) && model.ReviewBodyType == ReviewBodyType.ResearchEthicsCommittee)
         {
             var recResponse = await reviewBodyService.GetAllReviewBodies(new ReviewBodySearchRequest
             {
                 RecId = Convert.ToInt32(model.ResearchEthicsCommitteeId)
             });
 
-            if (recResponse is { IsSuccessStatusCode: true, Content.TotalCount: > 0 })
+            if (recResponse is { IsSuccessStatusCode: true, Content.ReviewBodies: not null } &&
+                recResponse.Content.ReviewBodies.Any())
             {
                 ViewBag.Mode = UpdateMode;
                 return RedirectToAction(RecIdAlreadyAddedView, model);
@@ -689,6 +696,7 @@ public class ReviewBodyController(
     }
 
     [HttpGet]
+    [FeatureGate(FeatureFlags.RecMemberManagement)]
     [Route("/reviewbody/recidalreadyadded", Name = "rbc:recidalreadyadded")]
     public IActionResult RecIdAlreadyAdded(AddUpdateReviewBodyModel model)
     {

@@ -78,12 +78,13 @@
                     }
                 </select>
             </div>
-
+            <feature name="@FeatureFlags.RecMemberManagement">
                 <rsp-gds-input asp-for="ResearchEthicsCommitteeId"
                                conditional-field="true"
                                data-condition="Research ethics committee"
                                label-text="Research ethics committee ID"
                                width-class="govuk-!-width-one-quarter" />
+                </feature>
 
             <rsp-gds-input asp-for="EmailAddress"
                            label-text="Email address"
