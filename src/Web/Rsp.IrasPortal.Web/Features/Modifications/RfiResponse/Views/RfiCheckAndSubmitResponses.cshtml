@@ -107,6 +107,13 @@
                                 }
                                 @(string.IsNullOrWhiteSpace(response) ? "No response provided" : response)
                             </dd>
+							<dd class="govuk-summary-list__actions">
+								<a class="govuk-link"
+								   asp-route="rfi:RfiResponses"
+								   asp-all-route-data="backRouteValues">
+									Change
+								</a>
+							</dd>
                         </div>
                     </authorized>
 
