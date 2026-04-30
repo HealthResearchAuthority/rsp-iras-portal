@@ -39,6 +39,7 @@ public class ProjectCollaboratorsController
         {
             ProjectRecordId = model.ProjectRecordId!,
             UserId = model.UserId!,
+            Email = model.Email!,
             ProjectAccessLevel = model.ProjectAccessLevel!
         });
 

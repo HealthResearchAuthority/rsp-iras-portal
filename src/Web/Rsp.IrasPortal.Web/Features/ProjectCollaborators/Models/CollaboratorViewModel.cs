@@ -12,5 +12,7 @@ public class CollaboratorViewModel
 
     public string? ProjectAccessLevel { get; set; }
 
+    public bool IsOwner { get; set; }
+
     public bool Self { get; set; }
 }

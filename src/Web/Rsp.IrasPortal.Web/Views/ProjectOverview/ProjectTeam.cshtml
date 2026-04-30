@@ -1,4 +1,5 @@
 ﻿@using Rsp.IrasPortal.Application.DTOs.Responses
+@using Rsp.IrasPortal.Web.Features.ProjectCollaborators.Models
 @using Rsp.IrasPortal.Web.Models
 @using Rsp.Portal.Application.Constants;
 @using Rsp.Portal.Application.Extensions
@@ -96,8 +97,8 @@ else
                 var tableId = "collaboratorTable";
                 var sortableHeaders = new[]
                 {
-                    new { Field = nameof(Collaborator.Email), Label = "Collaborator email" },
-                    new { Field = nameof(Collaborator.Access), Label = "Project access" }
+                    new { Field = nameof(CollaboratorViewModel.Email), Label = "Collaborator email" },
+                    new { Field = nameof(CollaboratorViewModel.ProjectAccessLevel), Label = "Project access" }
                 };
             }
 
@@ -139,14 +140,14 @@ else
                         );
 
                         var totalCollaborators = Model.Collaborators.Count;
-                        var totalCollaboratorsWithEditAccess = Model.Collaborators.Count(c => c.Access == "Edit");
+                        var totalCollaboratorsWithEditAccess = Model.Collaborators.Count(c => c.ProjectAccessLevel == "Edit");
                     }
 
                     @foreach (var collaborator in Model.Collaborators)
                     {
                         <tr class="govuk-table__row">
                             <td class="govuk-table__cell">@collaborator.Email</td>
-                            <td class="govuk-table__cell">@collaborator.Access</td>
+                            <td class="govuk-table__cell">@collaborator.ProjectAccessLevel</td>
                             <td class="govuk-table__cell">
 
                                 <ul class="govuk-summary-card__actions">
@@ -161,10 +162,10 @@ else
                                     {
                                         var routeParams = new Dictionary<string, string>
                                         {
-                                            { "id", collaborator.Id.ToString() },
-                                            { "projectAccessLevel", collaborator.Access },
-                                            { "email", collaborator.Email },
-                                            { "userId", collaborator.UserId },
+                                            { "id", collaborator.Id!.ToString() },
+                                            { "projectAccessLevel", collaborator.ProjectAccessLevel! },
+                                            { "email", collaborator.Email! },
+                                            { "userId", collaborator.UserId! },
                                             { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId! },
                                             { "self", collaborator.Self.ToString() }
                                         };
