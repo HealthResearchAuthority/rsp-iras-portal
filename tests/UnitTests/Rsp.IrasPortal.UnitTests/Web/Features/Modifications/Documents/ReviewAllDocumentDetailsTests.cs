@@ -296,7 +296,7 @@ public class ReviewAllDocumentDetailsTests : TestServiceBase<DocumentsController
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
 
-        redirect.RouteName.ShouldBe("pmc:ModificationDetails");
+        redirect.RouteName.ShouldBe("rfi:RfiResponses");
 
         redirect.RouteValues["projectRecordId"].ShouldBe(projId);
         redirect.RouteValues["irasId"].ShouldBe("IRAS-123");
