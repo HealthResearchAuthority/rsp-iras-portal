@@ -42,6 +42,14 @@
         { "shortTitle", Model.ShortTitle ?? string.Empty },
         { "projectModificationId", Model.ModificationId ?? string.Empty }
     };
+    var rfiResponseParams = new Dictionary<string, string> {
+    { "projectRecordId", Model.ProjectRecordId },
+    { "irasId", Model.IrasId  },
+    { "shortTitle", Model.ShortTitle ?? string.Empty },
+    { "projectModificationId", Model.ModificationId ?? string.Empty },
+    { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId ?? string.Empty },
+    { "rtsId", Model.RtsId ?? string.Empty }
+    };
 
 }
 @if (Model.Status is ModificationStatus.RequestRevisions)
@@ -100,7 +108,7 @@ else
     var description = pageContent.GetValueOrDefault("ModificationDetails.RevisionDescriptionBody", null);
 }
 
-<div class="govuk-grid-row">
+<div class="govuk-grid-row" status-for="@Model.Status" status-is="@ModificationStatus.ResponseRequestRevisions" status-mode="Hide">
     <div class="govuk-grid-column-two-thirds">
         @{
             string heading = isRevisionBySponsor
@@ -153,7 +161,7 @@ else
     </div>
 </div>
 
-<div class="govuk-grid-row">
+<div class="govuk-grid-row" status-for="@Model.Status" status-is="@ModificationStatus.ResponseRequestRevisions" status-mode="Hide">
     <div class="govuk-grid-column-full">
         <h2 class="govuk-heading-m">Changes</h2>
         <partial name="ModificationChanges" model="Model" view-data="ViewData" />
@@ -171,18 +179,18 @@ else
 
         <div class="save-buttons">
             @if
-                                    (
-                                        (Model.Status is ModificationStatus.InDraft) ||
-                                        (Model.Status is ModificationStatus.RequestRevisions && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart) ||
-                                        (isRevisionBySponsor && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart) &&
-                                        Model.ModificationChanges.Count < 10
-                                    )
+      (
+          (Model.Status is ModificationStatus.InDraft) ||
+          (Model.Status is ModificationStatus.RequestRevisions && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart) ||
+          (isRevisionBySponsor && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart) &&
+          Model.ModificationChanges.Count < 10
+      )
             {
                 <a permissions="@([Permissions.MyResearch.Modifications_Update, Permissions.Sponsor.Modifications_Authorise])"
-                       asp-route="pmc:areaofchange"
-                       asp-route-projectModificationId="@Model.ModificationId"
-                       asp-route-projectRecordId="@Model.ProjectRecordId"
-                       class="govuk-button govuk-button--secondary">
+                   asp-route="pmc:areaofchange"
+                   asp-route-projectModificationId="@Model.ModificationId"
+                   asp-route-projectRecordId="@Model.ProjectRecordId"
+                   class="govuk-button govuk-button--secondary">
                     Add another change to this modification
                 </a>
             }
@@ -190,9 +198,9 @@ else
             @if (!Model.ModificationChanges.Any() && Model.Status is ModificationStatus.InDraft)
             {
                 <a permissions="@([Permissions.MyResearch.Modifications_Update, Permissions.Sponsor.Modifications_Authorise])"
-                       asp-route="pmc:saveforlater"
-                       asp-route-projectRecordId="@Model.ProjectRecordId"
-                       asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
+                   asp-route="pmc:saveforlater"
+                   asp-route-projectRecordId="@Model.ProjectRecordId"
+                   asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
                     Save for later
                 </a>
             }
@@ -246,14 +254,14 @@ else
     }
 
     <a permissions="@([Permissions.MyResearch.Modifications_Delete, Permissions.Sponsor.Modifications_Authorise])"
-           status-for="Status"
-           status-is="@ModificationStatus.InDraft"
-           asp-route-projectRecordId="@Model.ProjectRecordId"
-           asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
-           asp-route-shortTitle="@Model.ShortTitle"
-           asp-route-projectModificationId="@Model.ModificationId"
-           asp-route="pmc:deletemodification"
-           class="govuk-link">
+       status-for="Status"
+       status-is="@ModificationStatus.InDraft"
+       asp-route-projectRecordId="@Model.ProjectRecordId"
+       asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
+       asp-route-shortTitle="@Model.ShortTitle"
+       asp-route-projectModificationId="@Model.ModificationId"
+       asp-route="pmc:deletemodification"
+       class="govuk-link">
         Delete modification
     </a>
 </authorized>
@@ -315,76 +323,104 @@ else
                                   class="govuk-textarea govuk-js-character-count"
                                   rows="5"
                                   aria-describedby="with-hint-info with-hint-hint"
-                                      aria-labelledby="revision-description-label">
+                                  aria-labelledby="revision-description-label">
                             </textarea>
-                            <noscript>
-                                <div id="RevisionDescription-info"
-                                     class="govuk-hint govuk-character-count__message">
-                                    <p class='govuk-hint'>You can enter up to 500 characters</p>
-                                </div>
-                            </noscript>
-
+                        <noscript>
                             <div id="RevisionDescription-info"
-                                 aria-hidden="true"
                                  class="govuk-hint govuk-character-count__message">
+                                <p class='govuk-hint'>You can enter up to 500 characters</p>
                             </div>
-                        </div>
+                        </noscript>
 
-                        <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
-                        <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
-                        <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
-                        <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
-                        <input type="hidden" name="IrasId" value="@Model.IrasId" />
-                        <input type="hidden" name="RtsId" value="@Model.RtsId" />
-                        <input type="hidden" name="ReviewType" value="@Model.ReviewType" />
-                        <input type="hidden" name="SpecificAreaOfChangeId" value="@Model.SpecificAreaOfChangeId" />
-                        <input type="hidden" name="Status" value="@Model.Status" />
-                        <input type="hidden" name="ModificationIdentifier" value="@Model.ModificationIdentifier" />
-                        <input type="hidden" name="DateCreated" value="@Model.DateCreated" />
-
-                        @for (int i = 0; i < Model.ModificationChanges.Count; i++)
-                        {
-                            <input type="hidden" name="ModificationChanges[@i].SpecificAreaOfChangeId" value="@Model.ModificationChanges[i].SpecificAreaOfChangeId" />
-                            <input type="hidden" name="ModificationChanges[@i].SpecificChangeName" value="@Model.ModificationChanges[i].SpecificChangeName" />
-                            <input type="hidden" name="ModificationChanges[@i].ModificationChangeId" value="@Model.ModificationChanges[i].ModificationChangeId" />
-                        }
-
-                        <div class="save-buttons">
-                            @if (Model.ChangesReadyForSubmission)
-                            {
-                                <button type="submit"
-                                        asp-route="sws:authoriserevision"
-                                        class="govuk-button">
-                                    Authorise
-                                </button>
-                            }
-                            else
-                            {
-                                <a class="govuk-button"
-                                       asp-route="pmc:unfinishedchanges"
-                                       asp-route-projectRecordId="@Model.ProjectRecordId">
-                                    Authorise
-                                </a>
-                            }
-
-                            <button type="submit"
-                                    asp-route="sws:authoriserevision"
-                                    name="isSaveForLater"
-                                    value="true"
-                                    class="govuk-button govuk-button--secondary">
-                                Save for later
-                            </button>
+                        <div id="RevisionDescription-info"
+                             aria-hidden="true"
+                             class="govuk-hint govuk-character-count__message">
                         </div>
                     </div>
-                </div>
-            </form>
-        }
-    </authorized>
 
-    <feature name="@FeatureFlags.RequestRevisions">
-        <authorized role-is="@Roles.Applicant"
-                    status-for="@Model.Status"
-                    status-is="@ModificationStatus.RequestRevisions">
-            <partial name="MakeRevision" model="Model" view-data="ViewData" />
-        </authorized>
-    </feature>
+                    <input type="hidden" name="ProjectRecordId" value="@Model.ProjectRecordId" />
+                    <input type="hidden" name="ModificationId" value="@Model.ModificationId" />
+                    <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
+                    <input type="hidden" name="ShortTitle" value="@Model.ShortTitle" />
+                    <input type="hidden" name="IrasId" value="@Model.IrasId" />
+                    <input type="hidden" name="RtsId" value="@Model.RtsId" />
+                    <input type="hidden" name="ReviewType" value="@Model.ReviewType" />
+                    <input type="hidden" name="SpecificAreaOfChangeId" value="@Model.SpecificAreaOfChangeId" />
+                    <input type="hidden" name="Status" value="@Model.Status" />
+                    <input type="hidden" name="ModificationIdentifier" value="@Model.ModificationIdentifier" />
+                    <input type="hidden" name="DateCreated" value="@Model.DateCreated" />
+
+                    @for (int i = 0; i < Model.ModificationChanges.Count; i++)
+                    {
+                        <input type="hidden" name="ModificationChanges[@i].SpecificAreaOfChangeId" value="@Model.ModificationChanges[i].SpecificAreaOfChangeId" />
+                        <input type="hidden" name="ModificationChanges[@i].SpecificChangeName" value="@Model.ModificationChanges[i].SpecificChangeName" />
+                        <input type="hidden" name="ModificationChanges[@i].ModificationChangeId" value="@Model.ModificationChanges[i].ModificationChangeId" />
+                    }
+
+                    <div class="save-buttons">
+                        @if (Model.ChangesReadyForSubmission)
+                        {
+                            <button type="submit"
+                                    asp-route="sws:authoriserevision"
+                                    class="govuk-button">
+                                Authorise
+                            </button>
+                        }
+                        else
+                        {
+                            <a class="govuk-button"
+                               asp-route="pmc:unfinishedchanges"
+                               asp-route-projectRecordId="@Model.ProjectRecordId">
+                                Authorise
+                            </a>
+                        }
+
+                        <button type="submit"
+                                asp-route="sws:authoriserevision"
+                                name="isSaveForLater"
+                                value="true"
+                                class="govuk-button govuk-button--secondary">
+                            Save for later
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    }
+</authorized>
+
+<feature name="@FeatureFlags.RequestRevisions">
+    <authorized role-is="@Roles.Applicant"
+                status-for="@Model.Status"
+                status-is="@ModificationStatus.RequestRevisions">
+        <partial name="MakeRevision" model="Model" view-data="ViewData" />
+    </authorized>
+</feature>
+
+<feature name="@FeatureFlags.SponsorAuthorisation">
+    <authorized role-is="@Roles.Applicant"
+                status-for="@Model.Status"
+                status-is="@ModificationStatus.ResponseRequestRevisions">
+        <partial name="_ReviewModification" model="Model" />
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <div class="govuk-heading-m">
+                    Withdraw this modification
+                </div>
+                <a asp-route="pmc:withdrawmodification"
+                   class="govuk-button govuk-button--secondary">
+                    Withdraw modification
+                </a>
+            </div>
+        </div>
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <a asp-route="rfi:RfiResponses"
+                   asp-all-route-data="@rfiResponseParams"
+                   class="govuk-button govuk-button--primary">
+                    Make revisions
+                </a>
+            </div>
+        </div>
+    </authorized>
+</feature>

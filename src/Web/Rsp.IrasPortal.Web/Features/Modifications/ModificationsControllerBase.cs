@@ -448,7 +448,8 @@ public abstract class ModificationsControllerBase
             !a.Status.Equals(DocumentStatus.Failed, StringComparison.OrdinalIgnoreCase) &&
             (a.Status.Equals(DocumentStatus.Uploaded, StringComparison.OrdinalIgnoreCase) ||
              a.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase) ||
-             a.Status.Equals(DocumentStatus.RequestRevisions, StringComparison.OrdinalIgnoreCase)))
+             a.Status.Equals(DocumentStatus.RequestRevisions, StringComparison.OrdinalIgnoreCase) ||
+             a.Status.Equals(DocumentStatus.ResponseRequestRevisions, StringComparison.OrdinalIgnoreCase)))
         {
             var isIncomplete = await EvaluateDocumentCompletion(a.Id, questionnaire);
             if (a.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase)
@@ -585,7 +586,8 @@ public abstract class ModificationsControllerBase
                 doc.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase) ||
                 doc.Status.Equals(DocumentStatus.ResponseReviseAndAuthorise, StringComparison.OrdinalIgnoreCase) ||
                 doc.Status.Equals(DocumentStatus.RequestRevisions, StringComparison.OrdinalIgnoreCase) ||
-                doc.Status.Equals(DocumentStatus.RequestForInformation, StringComparison.OrdinalIgnoreCase)))
+                doc.Status.Equals(DocumentStatus.RequestForInformation, StringComparison.OrdinalIgnoreCase) ||
+                doc.Status.Equals(DocumentStatus.ResponseRequestRevisions, StringComparison.OrdinalIgnoreCase)))
             {
                 bool isIncomplete = await EvaluateDocumentCompletion(doc.Id, questionnaire, addModelErrors);
 

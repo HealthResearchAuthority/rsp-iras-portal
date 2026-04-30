@@ -8,7 +8,6 @@
 @model ModificationDetailsViewModel
 @inject IFeatureManager featureManager
 
-
 @{
     bool isRevisionBySponsor = ViewBag.IsRevisionBySponsor as bool? ?? false;
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
@@ -59,7 +58,6 @@
                                                         Select all documents on this page
                                                     </label>
                                                 </div>
-
                                             </div>
                                         }
                                     </feature>
@@ -233,7 +231,7 @@
                                                     <br />
 
                                                     <a permissions="@([Permissions.MyResearch.ProjectDocuments_Delete, Permissions.Sponsor.Modifications_Authorise])"
-                                                        asp-route="pmc:confirmdeletedocument"
+                                                       asp-route="pmc:confirmdeletedocument"
                                                        asp-route-id="@modification.Id"
                                                        asp-route-backRoute="toaddpage"
                                                        class="govuk-link">
@@ -264,7 +262,7 @@
                                                     </p>
 
                                                     <a permissions="@([Permissions.MyResearch.ProjectDocuments_Delete, Permissions.Sponsor.Modifications_Authorise])"
-                                                        asp-route="pmc:confirmdeletedocument"
+                                                       asp-route="pmc:confirmdeletedocument"
                                                        asp-route-id="@modification.Id"
                                                        asp-route-backRoute="toaddpage"
                                                        class="govuk-button govuk-button--warning govuk-!-margin-bottom-0">

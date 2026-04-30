@@ -138,7 +138,7 @@ public class SponsorReferenceController
             return RedirectToRoute(PostApprovalRoute, new { projectRecordId });
         }
 
-        if (status is ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestRevisions)
+        if (status is ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestRevisions or ModificationStatus.ResponseRequestRevisions)
         {
             return RedirectToRoute("pmc:ModificationDetails", new
             {

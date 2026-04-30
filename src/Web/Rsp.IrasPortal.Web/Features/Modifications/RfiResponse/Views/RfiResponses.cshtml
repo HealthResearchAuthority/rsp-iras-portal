@@ -4,6 +4,12 @@
 @model ModificationDetailsViewModel
 @{
     ViewBag.Title = "Request for further information";
+
+    var buttonTitle = Model.Status switch
+    {
+        ModificationStatus.ResponseRequestRevisions => "Send response to sponsor",
+        _ => "Save and continue"
+    };
 }
 
 <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
@@ -13,6 +19,15 @@
         ViewBag.Title = "Revise and authorise";
         ViewBag.IsRevisionBySponsor = true;
         ViewData[ViewDataKeys.ShowModificationChangeStatus] = false;
+    }
+</authorized>
+
+<authorized status-for="Status"
+            permission="@Permissions.MyResearch.Modifications_Update"
+            status-is="@ModificationStatus.ResponseRequestRevisions">
+    @{
+        ViewBag.Title = "Make revisions";
+        ViewBag.IsRevisionBySponsor = false;
     }
 </authorized>
 
@@ -284,7 +299,7 @@
 
         <!-- REQUEST REVISION -->
         <feature name="@FeatureFlags.SponsorAuthorisation">
-            <authorized role-in="@([Roles.Applicant, Roles.Sponsor, Roles.OrganisationAdministrator])"
+            <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
                         status-for="@Model.Status"
                         status-is="@ModificationStatus.ResponseWithSponsor">
                 @{
@@ -294,6 +309,7 @@
                     var requestRevisionHasError = requestRevisionFieldErrors?.Count > 0;
                     var requestRevisionErrorMessage = requestRevisionHasError ? requestRevisionFieldErrors[0].ErrorMessage : string.Empty;
                     var requestRevisionErrorId = $"{requestRevisionTextareaId}-error";
+
                 }
                 <div class="govuk-grid-row">
                     <div class="govuk-grid-column-one-third">
@@ -359,6 +375,84 @@
                 </div>
             </authorized>
         </feature>
+
+        <feature name="@FeatureFlags.SponsorAuthorisation">
+            <authorized permission="@Permissions.MyResearch.Modifications_Update"
+                        status-for="@Model.Status"
+                        status-is="@ModificationStatus.ResponseRequestRevisions">
+                @{
+                    var applicantMakeRevisionTextareaId = $"RfiModel_RfiResponses_{i}__RequestRevisionsBySponsor_0_";
+                    var applicantMakeRevisionInfoId = $"{applicantMakeRevisionTextareaId}-info";
+                    var applicantMakeRevisionFieldErrors = ViewData.ModelState[applicantMakeRevisionTextareaId]?.Errors;
+                    var applicantMakeRevisionHasError = applicantMakeRevisionFieldErrors?.Count > 0;
+                    var applicantMakeRevisionErrorMessage = applicantMakeRevisionHasError ? applicantMakeRevisionFieldErrors[0].ErrorMessage : string.Empty;
+                    var applicantMakeRevisionErrorId = $"{applicantMakeRevisionTextareaId}-error";
+
+                }
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-one-third">
+                        <label class="govuk-label" for="RfiModel_RfiResponses_@(i)__RequestRevisionsBySponsor_0_">
+                            Revisions requested to response @(i + 1)
+                        </label>
+                    </div>
+                    <div class="govuk-grid-column-two-thirds">
+                        <label class="govuk-label" for="RfiModel_RfiResponses_@(i)__RequestRevisionsBySponsor_0_">
+                            @{
+                                var response = Model.RfiModel.RfiResponses
+                                .ElementAtOrDefault(i)?
+                                .RequestRevisionsBySponsor
+                                .FirstOrDefault();
+                            }
+                            @response
+                        </label>
+                    </div>
+                </div>
+                <br />
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-one-third">
+                        <label class="govuk-label" for="RfiResponses_@(i)__InitialResponse[0]">
+                            Make revisions to response @(i + 1)
+                        </label>
+                    </div>
+                    <div class="govuk-grid-column-two-thirds">
+                        <div class="govuk-form-group govuk-character-count"
+                             data-module="govuk-character-count"
+                             data-maxlength="300"
+                             error-class-for="RfiModel.RfiResponses[i].RequestRevisionsByApplicant[0]">
+
+                            @if (applicantMakeRevisionHasError)
+                            {
+                                <span id="@applicantMakeRevisionErrorId"
+                                      class="govuk-error-message">
+                                    <span class="govuk-visually-hidden">Error:</span>
+                                    @applicantMakeRevisionErrorMessage
+                                </span>
+                            }
+
+                            <textarea asp-for="RfiModel.RfiResponses[i].RequestRevisionsByApplicant[0]"
+                                      class="govuk-textarea govuk-js-character-count"
+                                      rows="5"
+                                      aria-describedby="@applicantMakeRevisionInfoId">
+                             </textarea>
+
+                            <noscript>
+                                <div id="@applicantMakeRevisionInfoId"
+                                     class="govuk-hint govuk-character-count__message">
+                                    <p class="govuk-hint">
+                                        You can enter up to 300 characters
+                                    </p>
+                                </div>
+                            </noscript>
+
+                            <div id="@applicantMakeRevisionInfoId"
+                                 aria-hidden="true"
+                                 class="govuk-hint govuk-character-count__message">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </authorized>
+        </feature>
         <hr />
     }
     <div status-for="@Model.Status" status-is="@ModificationStatus.ResponseWithSponsor" status-mode="Hide">
@@ -390,7 +484,7 @@
 
     <div class="save-buttons">
         <button type="submit" class="govuk-button" data-module="govuk-button">
-            Save and continue
+            @buttonTitle
         </button>
         <button asp-action="SendRfiResponses" asp-route-saveForLater="true" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
             Save for later

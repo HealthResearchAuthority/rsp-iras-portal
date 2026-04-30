@@ -93,7 +93,8 @@ public class ModificationDetailsController
         }
         // If its sponsor revision - validate if sponsor is authoriser
         if ((modification.Status is ModificationStatus.ReviseAndAuthorise && sponsorOrganisationUserId != null && rtsId != null) ||
-            (modification.Status is ModificationStatus.RequestRevisions))
+            (modification.Status is ModificationStatus.RequestRevisions) ||
+            (modification.Status is ModificationStatus.ResponseRequestRevisions))
         {
             // Add sponsor details
             modification.SponsorOrganisationUserId = sponsorOrganisationUserId?.ToString();
@@ -174,6 +175,16 @@ public class ModificationDetailsController
         if (documentsSelectiveDownloadEnabled && includeSelectiveDownloadError)
         {
             ModelState.AddModelError("DownloadSelectionButton", "Select at least one document");
+        }
+        var modificationAuditResponse = await projectModificationsService.GetModificationAuditTrail(projectModificationId);
+        if (modificationAuditResponse.IsSuccessStatusCode && modificationAuditResponse.Content is not null)
+        {
+            modification.AuditTrailModel = new AuditTrailModel
+            {
+                AuditTrail = modificationAuditResponse.Content,
+                ModificationIdentifier = modification.ModificationId ?? "",
+                ShortTitle = shortTitle,
+            };
         }
 
         // Render the details view
