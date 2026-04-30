@@ -117,10 +117,10 @@
         </div>
     </authorized>
 
-    <feature name="@FeatureFlags.RequestRevisions">
+    <feature name="@FeatureFlags.RequestRevisions, @FeatureFlags.SponsorAuthorisation">
         <authorized role-is="@Roles.Applicant"
                     status-for="@modificationBaseModel.Status"
-                    status-is="@ModificationStatus.RequestRevisions">
+                    status-in="@([ModificationStatus.RequestRevisions,ModificationStatus.ResponseRequestRevisions])">
             @if (modificationBaseModel.Status is not null && !string.IsNullOrWhiteSpace(modificationBaseModel.DateSponsorSubmittedOutcome))
             {
                 <div class="govuk-summary-list__row">

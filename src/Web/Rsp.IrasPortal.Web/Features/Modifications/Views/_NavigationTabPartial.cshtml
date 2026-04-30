@@ -47,6 +47,7 @@
     string defaultTab =
         queryDocuments == ModificationOverview.Documents ? ModificationOverview.Documents :
         Model?.Status == ModificationStatus.ResponseWithSponsor ? ModificationOverview.RequestForFurtherInformation :
+        Model?.Status == ModificationStatus.ResponseRequestRevisions ? ModificationOverview.RequestForFurtherInformation :
         isNotOnlyApplicant ? ModificationOverview.SponsorDetails : ModificationOverview.ModificationDetails;
 
     // set active tab id

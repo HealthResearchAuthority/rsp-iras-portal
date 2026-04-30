@@ -20,7 +20,7 @@
 }
 
 @section BackNavigation {
-    @if (Model.Status is ModificationStatus.RequestRevisions)
+    @if (Model.Status is ModificationStatus.RequestRevisions or ModificationStatus.ResponseRequestRevisions)
     {
         <partial name="_BackNavigation" model="@("pmc:modificationdetails", "Back", modificationParams)" />
     }

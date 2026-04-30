@@ -23,7 +23,7 @@ public static class ModificationStatusHelper
             DocumentStatus.RequestRevisions => DocumentStatus.Uploaded,
             DocumentStatus.ReviseAndAuthorise => DocumentStatus.WithSponsor,
             DocumentStatus.ResponseReviseAndAuthorise => DocumentStatus.ResponseWithSponsor,
-            DocumentStatus.ResponseRequestRevisions => ModificationStatus.RequestForInformation,
+            DocumentStatus.ResponseRequestRevisions => DocumentStatus.Uploaded,
             _ => status
         };
     }

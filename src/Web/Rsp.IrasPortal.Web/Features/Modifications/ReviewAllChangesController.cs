@@ -551,7 +551,7 @@ public class ReviewAllChangesController
     }
 
     [Authorize(Policy = Permissions.MyResearch.Modifications_Withdraw)]
-    [FeatureGate(RequirementType.Any, FeatureFlags.WithdrawModification, FeatureFlags.RequestForInformation)]
+    [FeatureGate(RequirementType.Any, FeatureFlags.WithdrawModification, FeatureFlags.RequestForInformation, FeatureFlags.SponsorAuthorisation)]
     [HttpGet]
     public IActionResult WithdrawModification()
     {

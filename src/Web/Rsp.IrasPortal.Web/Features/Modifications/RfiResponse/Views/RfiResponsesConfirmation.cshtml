@@ -14,6 +14,8 @@
     var reviseAndAuthoriseBody = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.ReviseAndAuthoriseBody", null);
     var requestRevisionHeader = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.RequestRevisionHeader", null);
     var requestRevisionBody = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.RequestRevisionBody", null);
+    var responsRequestRevisionHeader = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.ResponseRequestRevisionHeader", null);
+    var responsRequestRevisionBody = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.ResponseRequestRevisionBody", null);
 
     var (header, body) = Model.Status switch
     {
@@ -21,6 +23,8 @@
             => (reviseAndAuthoriseHeader, reviseAndAuthoriseBody),
         ModificationStatus.ResponseWithSponsor
             => (requestRevisionHeader, requestRevisionBody),
+        ModificationStatus.ResponseRequestRevisions
+            => (responsRequestRevisionHeader, responsRequestRevisionBody),
         _ => (rfiHeader, rfiBody)
     };
 

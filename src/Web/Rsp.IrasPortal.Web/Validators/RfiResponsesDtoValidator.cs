@@ -19,8 +19,11 @@ public class RfiResponsesDtoValidator : AbstractValidator<RfiResponsesDTO>
     private static readonly string MaxLengthErrorMessage =
         $"The description must be between 1 and {MaxCharactersCount} characters";
 
-    private const string RequestRevisionRequiredMessage =
+    private const string SponsorRequestRevisionRequiredMessage =
         "You have not provided a revision to response. Enter a response before you continue.";
+
+    private const string ApplicantRequestRevisionRequiredMessage =
+        "You have not provided the revisions made to response. Enter a response before you continue.";
 
     public RfiResponsesDtoValidator()
     {
@@ -56,15 +59,25 @@ public class RfiResponsesDtoValidator : AbstractValidator<RfiResponsesDTO>
                 .WithMessage(MaxLengthErrorMessage)
                 .OverridePropertyName("ReasonForReviseAndAuthorise_0");
         });
-        // REQUEST REVISION
+        // REQUEST REVISION BY SPONSOR
         When(x => x.RequestRevisionsBySponsor.Count > 0, () =>
         {
             RuleFor(x => x.RequestRevisionsBySponsor[0])
                 .NotEmpty()
-                .WithMessage(RequestRevisionRequiredMessage)
+                .WithMessage(SponsorRequestRevisionRequiredMessage)
                 .MaximumLength(MaxCharactersCount)
                 .WithMessage(MaxLengthErrorMessage)
                 .OverridePropertyName("RequestRevisionsBySponsor_0");
+        });
+        // REQUEST REVISION BY APPLICANT
+        When(x => x.RequestRevisionsByApplicant.Count > 0, () =>
+        {
+            RuleFor(x => x.RequestRevisionsByApplicant[0])
+                .NotEmpty()
+                .WithMessage(ApplicantRequestRevisionRequiredMessage)
+                .MaximumLength(MaxCharactersCount)
+                .WithMessage(MaxLengthErrorMessage)
+                .OverridePropertyName("RequestRevisionsByApplicant_0");
         });
     }
 }

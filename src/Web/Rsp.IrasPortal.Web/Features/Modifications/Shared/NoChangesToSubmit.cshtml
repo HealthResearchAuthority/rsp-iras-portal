@@ -20,7 +20,7 @@
 
     var saveButtonTitle = Model.Status switch
     {
-        ModificationStatus.RequestRevisions => "Return to make revision",
+        ModificationStatus.RequestRevisions or ModificationStatus.ResponseRequestRevisions => "Return to make revision",
         ModificationStatus.ReviseAndAuthorise => "Return to revise and authorise",
         _ => "Return to modification details"
     };
