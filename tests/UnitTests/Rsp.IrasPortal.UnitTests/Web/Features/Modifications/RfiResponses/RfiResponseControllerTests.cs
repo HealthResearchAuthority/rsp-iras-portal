@@ -1220,7 +1220,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         SetupValidUser();
 
         // Act
-        var result = await Sut.RfiSubmitResponses(true);
+        var result = await Sut.RfiSubmitResponses();
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();

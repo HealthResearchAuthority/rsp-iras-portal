@@ -398,12 +398,12 @@
                     <div class="govuk-grid-column-two-thirds">
                         <label class="govuk-label" for="RfiModel_RfiResponses_@(i)__RequestRevisionsBySponsor_0_">
                             @{
-                                var response = Model.RfiModel.RfiResponses
+                                var requestRevisionsBySponsor = Model.RfiModel.RfiResponses
                                 .ElementAtOrDefault(i)?
                                 .RequestRevisionsBySponsor
                                 .FirstOrDefault();
                             }
-                            @response
+                            @requestRevisionsBySponsor
                         </label>
                     </div>
                 </div>

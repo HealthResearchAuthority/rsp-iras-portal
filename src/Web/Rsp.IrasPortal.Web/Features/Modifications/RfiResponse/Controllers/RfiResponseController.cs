@@ -415,13 +415,6 @@ public class RfiResponseController(
         if (!sponsorResult.IsSuccessStatusCode)
             return this.ServiceError(sponsorResult);
 
-        var redirectResult = await CheckDocumentsAndRedirectIfRequired(Guid.Parse(viewModel.ModificationId!));
-
-        if (redirectResult is not null)
-        {
-            return redirectResult;
-        }
-
         if (saveForLater)
         {
             return RedirectToRoute(
@@ -432,6 +425,12 @@ public class RfiResponseController(
                     sponsorOrganisationUserId = viewModel.SponsorOrganisationUserId,
                     rtsId = viewModel.RtsId
                 });
+        }
+        var redirectResult = await CheckDocumentsAndRedirectIfRequired(Guid.Parse(viewModel.ModificationId!));
+
+        if (redirectResult is not null)
+        {
+            return redirectResult;
         }
 
         return RedirectToAction(nameof(RfiCheckAndSubmitResponses));
@@ -586,6 +585,12 @@ public class RfiResponseController(
               {
                   projectRecordId = viewModel.ProjectRecordId,
               });
+        }
+        var redirectResult = await CheckDocumentsAndRedirectIfRequired(Guid.Parse(viewModel.ModificationId!));
+
+        if (redirectResult is not null)
+        {
+            return redirectResult;
         }
 
         if (viewModel.Status == ModificationStatus.ResponseRequestRevisions)
