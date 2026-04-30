@@ -21,6 +21,11 @@ public class ProjectCollaboratorRequest
     public string UserId { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the email of the collaborator user.
+    /// </summary>
+    public string Email { get; set; } = null!;
+
+    /// <summary>
     /// Gets or sets the collaborator access level for the project.
     /// </summary>
     public string ProjectAccessLevel { get; set; } = null!;

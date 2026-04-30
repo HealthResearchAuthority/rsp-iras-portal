@@ -8,7 +8,7 @@ public class ProjectCollaboratorResponse
     /// <summary>
     /// Gets or sets the unique identifier for the collaborator record.
     /// </summary>
-    public Guid Id { get; set; }
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the project record identifier the collaborator belongs to.
