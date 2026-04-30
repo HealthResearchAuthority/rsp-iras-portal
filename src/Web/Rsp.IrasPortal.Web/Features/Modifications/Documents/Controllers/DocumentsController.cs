@@ -344,7 +344,7 @@ public class DocumentsController
                 modificationModel.RtsId
             });
         }
-        else if (modificationModel.Status is ModificationStatus.ResponseReviseAndAuthorise)
+        else if (modificationModel.Status is ModificationStatus.ResponseReviseAndAuthorise or ModificationStatus.RequestForInformation)
         {
             return RedirectToRoute("rfi:RfiResponses", new
             {
@@ -717,6 +717,25 @@ public class DocumentsController
             else if (downloadSource == "ModificationDetails")
             {
                 return RedirectToRoute("pmc:ModificationDetails", new
+                {
+                    projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string,
+                    irasId = TempData.Peek(TempDataKeys.IrasId) as string,
+                    shortTitle = TempData.Peek(TempDataKeys.ShortProjectTitle) as string,
+                    projectModificationId =
+                    TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationId) is Guid id
+                    ? id
+                    : Guid.NewGuid(),
+                    sponsorOrganisationUserId =
+                    TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId) is Guid userId
+                    ? userId
+                    : Guid.NewGuid(),
+                    rtsId = TempData.Peek(TempDataKeys.RevisionRtsId) as string,
+                    includeSelectiveDownloadError = true
+                });
+            }
+            else if (downloadSource == "RfiResponses")
+            {
+                return RedirectToRoute("rfi:RfiResponses", new
                 {
                     projectRecordId = TempData.Peek(TempDataKeys.ProjectRecordId) as string,
                     irasId = TempData.Peek(TempDataKeys.IrasId) as string,
@@ -1818,7 +1837,7 @@ public class DocumentsController
         {
             return RedirectToRoute("pmc:ModificationDetails", new { projectRecordId, irasId, shortTitle, projectModificationId, sponsorOrganisationUserId, rtsId });
         }
-        else if (status is ModificationStatus.ResponseReviseAndAuthorise)
+        else if (status is ModificationStatus.ResponseReviseAndAuthorise or ModificationStatus.RequestForInformation)
         {
             return RedirectToRoute("rfi:RfiResponses", new { projectRecordId, irasId, shortTitle, projectModificationId, sponsorOrganisationUserId, rtsId });
         }

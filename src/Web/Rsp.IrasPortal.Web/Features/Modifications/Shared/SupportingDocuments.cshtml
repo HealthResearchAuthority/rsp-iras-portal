@@ -106,8 +106,17 @@
                                                                         }
                                                                         })
                                 </th>
-                                                                }
-                                @if (Model.Status is ModificationStatus.InDraft || Model.Status is ModificationStatus.RequestRevisions || Model.Status is ModificationStatus.RequestForInformation || (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise) || (isRevisionBySponsor && Model.Status is ModificationStatus.ResponseReviseAndAuthorise))
+                                }
+                                @if (
+                                         (
+                                             Model.Status is ModificationStatus.InDraft ||
+                                             Model.Status is ModificationStatus.RequestRevisions ||
+                                             Model.Status is ModificationStatus.RequestForInformation ||
+                                             (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise) ||
+                                             (isRevisionBySponsor && Model.Status is ModificationStatus.ResponseReviseAndAuthorise)
+                                         ) 
+                                         && ViewBag.AreDocumentsReadOnly is not true
+                                    )
                                 {
                                     <th scope="col" class="govuk-table__header">Action</th>
                                 }
@@ -194,6 +203,7 @@
                                     </td>
                                     @if
                                     (
+                                        (
                                         Model.Status is ModificationStatus.InDraft ||
                                         Model.Status is ModificationStatus.RequestRevisions ||
                                         Model.Status is ModificationStatus.RequestForInformation ||
@@ -204,7 +214,9 @@
                                         (
                                             isRevisionBySponsor &&
                                             Model.Status is ModificationStatus.ResponseReviseAndAuthorise
-                                        )
+                                        ) 
+                                        ) &&
+                                        ViewBag.AreDocumentsReadOnly is not true
                                     )
                                     {
                                         <td class="govuk-table__cell">
@@ -274,11 +286,14 @@
 </div>
 
 <div status-for="Status" status-in="@([ModificationStatus.InDraft,ModificationStatus.RequestRevisions,ModificationStatus.RequestForInformation] )" class="govuk-button-group">
-    <a permission="@Permissions.MyResearch.Modifications_Update"
-        href="@Url.RouteUrl("pmc:projectdocument")"
-       class="govuk-button govuk-button--secondary">
+    @if (ViewBag.AreDocumentsReadOnly is not true)
+    {
+        <a permission="@Permissions.MyResearch.Modifications_Update"
+            href="@Url.RouteUrl("pmc:projectdocument")"
+           class="govuk-button govuk-button--secondary">
         Add documents
-    </a>
+        </a>
+    }    
 </div>
 
 <div status-for="Status" status-in="@([ModificationStatus.ReviseAndAuthorise, ModificationStatus.ResponseReviseAndAuthorise] )" class="govuk-button-group">

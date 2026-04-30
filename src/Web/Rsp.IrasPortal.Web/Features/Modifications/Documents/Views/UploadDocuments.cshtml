@@ -39,10 +39,10 @@
     <div class="govuk-grid-column-two-thirds">
         @section BackNavigation {
 
-            <div status-for="@Model.Status" status-is="@ModificationStatus.ResponseReviseAndAuthorise">
+            <div status-for="@Model.Status" status-in="@([ModificationStatus.RequestForInformation, ModificationStatus.ResponseReviseAndAuthorise])">
                 <partial name="_BackNavigation" model="@("rfi:RfiResponses", "Back", modificationParams)" />
             </div>
-            <div status-for="@Model.Status" status-is="@ModificationStatus.ResponseReviseAndAuthorise" status-mode="Hide">
+            <div status-for="@Model.Status" status-in="@([ModificationStatus.RequestForInformation, ModificationStatus.ResponseReviseAndAuthorise])" status-mode="Hide">
                 <partial name="_BackNavigation" model="@("pmc:modificationdetails", "Back", modificationParams)" />
             </div>                      
         }
