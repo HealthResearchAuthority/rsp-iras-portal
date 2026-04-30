@@ -23,7 +23,7 @@ public class ValidateAsyncTests : TestServiceBase<RfiResponsesDtoValidator>
 
         result.ShouldHaveValidationErrorFor("InitialResponse_0")
             .WithErrorMessage(
-                "You have not provided a reason. Enter the reason for requesting further information from the applicant before you continue.");
+                "You have not provided a response to reason. Enter the response to request for further information before you continue.");
     }
 
     [Fact]
