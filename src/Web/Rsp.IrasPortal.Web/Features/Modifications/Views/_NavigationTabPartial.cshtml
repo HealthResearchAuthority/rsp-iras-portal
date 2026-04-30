@@ -63,6 +63,10 @@
     var activeTabId = (allowedTabs.Contains(requestedTab) ? requestedTab : defaultTab);
     baseRouteParams.Remove("activeTabId");
 
+    if (Model.Status is ModificationStatus.RequestForInformation)
+    {
+        ViewBag.AreDocumentsReadOnly = true;
+    }
 }
 
 <!-- Keep the same GOV.UK Service Navigation look -->

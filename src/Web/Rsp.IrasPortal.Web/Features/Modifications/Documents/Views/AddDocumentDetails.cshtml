@@ -65,6 +65,10 @@
             modificationParams.Add("rtsId", Model.RtsId ?? string.Empty);
             navModel = ("rfi:RfiResponses", "Back", modificationParams);
         }
+        else if (Model.Status is ModificationStatus.RequestForInformation)
+        {
+            navModel = ("rfi:RfiResponses", "Back", modificationParams);    
+        }
         else
         {
             modificationParams.Add("projectModificationIdentifier", Model.ModificationIdentifier ?? string.Empty);

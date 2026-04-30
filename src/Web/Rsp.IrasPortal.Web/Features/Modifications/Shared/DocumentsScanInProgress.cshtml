@@ -24,11 +24,13 @@
 
     var title = pageContent.GetValueOrDefault("Modifications.Documentsscaninprogress.Title", null);
     var body = pageContent.GetValueOrDefault("Modifications.Documentsscaninprogress.Body", null);
+
     var saveButtonTitle = Model.Status switch
     {
         ModificationStatus.ReviseAndAuthorise => "Return to revise and authorise",
         ModificationStatus.ResponseReviseAndAuthorise => "Return to revise and authorise",
         ModificationStatus.RequestRevisions => "Return to make revision",
+        ModificationStatus.RequestForInformation => "Return to request for further information",
         _ => string.Empty
     };
 
@@ -46,7 +48,7 @@
                asp-route="rfi:rfiresponses"
                asp-all-route-data="modificationParams"
                status-for="Status"
-               status-in="@([ModificationStatus.ResponseReviseAndAuthorise] )">
+               status-in="@([ModificationStatus.ResponseReviseAndAuthorise, ModificationStatus.RequestForInformation] )">
                 @saveButtonTitle
             </a>
 
@@ -63,7 +65,7 @@
                asp-all-route-data="modificationParams"
                status-for="Status"
                status-mode="Hide"
-               status-in="@([ModificationStatus.ReviseAndAuthorise, ModificationStatus.RequestRevisions, ModificationStatus.ResponseReviseAndAuthorise])">
+               status-in="@([ModificationStatus.ReviseAndAuthorise, ModificationStatus.RequestRevisions, ModificationStatus.ResponseReviseAndAuthorise, ModificationStatus.RequestForInformation])">
                 Return to review modification
             </a>
         </div>
