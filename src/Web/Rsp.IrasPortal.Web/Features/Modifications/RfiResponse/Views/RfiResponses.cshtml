@@ -285,7 +285,6 @@
         <!-- REQUEST REVISION -->
         <feature name="@FeatureFlags.SponsorAuthorisation">
             <authorized role-in="@([Roles.Applicant, Roles.Sponsor, Roles.OrganisationAdministrator])"
-                        permission="@Permissions.Sponsor.Modifications_Authorise"
                         status-for="@Model.Status"
                         status-is="@ModificationStatus.ResponseWithSponsor">
                 @{
