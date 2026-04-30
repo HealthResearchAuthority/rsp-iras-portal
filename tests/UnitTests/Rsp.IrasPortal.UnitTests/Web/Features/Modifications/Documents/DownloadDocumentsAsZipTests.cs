@@ -465,6 +465,52 @@ public class DownloadDocumentsAsZipTests : TestServiceBase<DocumentsController>
     }
 
     [Fact]
+    public async Task DownloadDocumentsSelectionAsZip_RedirectsToRfiResponses_WithSelectiveDownloadError_WhenNoDocumentsSelected()
+    {
+        // Arrange
+        var modificationGuid = Guid.NewGuid();
+        var irasId = "358577";
+        var sponsorOrganisationUserId = Guid.NewGuid();
+        var rtsId = "RTS-123";
+
+        List<string>? selectedDocuments = null;
+
+        Sut.TempData = new TempDataDictionary(
+            new DefaultHttpContext(),
+            Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectRecordId] = "project-record-id",
+            [TempDataKeys.IrasId] = irasId,
+            [TempDataKeys.ShortProjectTitle] = "Short title",
+            [TempDataKeys.ProjectModification.ProjectModificationId] = modificationGuid,
+            [TempDataKeys.RevisionSponsorOrganisationUserId] = sponsorOrganisationUserId,
+            [TempDataKeys.RevisionRtsId] = rtsId
+        };
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+
+        // Act
+        var result = await Sut.DownloadDocumentsSelectionAsZip(
+            selectedDocuments,
+            "RfiResponses");
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+
+        redirect.RouteName.ShouldBe("rfi:RfiResponses");
+
+        redirect.RouteValues.ShouldContainKey("includeSelectiveDownloadError");
+        redirect.RouteValues["includeSelectiveDownloadError"].ShouldBe(true);
+
+        redirect.RouteValues["projectModificationId"].ShouldBe(modificationGuid);
+        redirect.RouteValues["sponsorOrganisationUserId"].ShouldBe(sponsorOrganisationUserId);
+        redirect.RouteValues["rtsId"].ShouldBe(rtsId);
+    }
+
+    [Fact]
     public async Task DownloadDocumentsSelectionAsZip_ReturnsModificationDetailsModelError_FileResult_WithZip()
     {
         // Arrange

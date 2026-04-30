@@ -8,7 +8,7 @@ public class RfiResponsesDtoValidator : AbstractValidator<RfiResponsesDTO>
     private const int MaxCharactersCount = 300;
 
     private const string InitialResponseRequiredMessage =
-        "You have not provided a reason. Enter the reason for requesting further information from the applicant before you continue.";
+        "You have not provided a response to reason. Enter the response to request for further information before you continue.";
 
     private const string ReviseAndAuthoriseRequiredMessage =
         "You have not revised response to reason. Enter the revision to response before you continue.";
