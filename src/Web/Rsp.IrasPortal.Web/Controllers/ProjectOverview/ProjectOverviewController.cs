@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.FeatureManagement;
-using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.DTOs;
 using Rsp.IrasPortal.Web.Features.Modifications.ParticipatingOrganisations.Models;
+using Rsp.IrasPortal.Web.Features.ProjectCollaborators.Models;
 using Rsp.IrasPortal.Web.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
@@ -274,7 +274,7 @@ public class ProjectOverviewController
         string? backRoute,
         int pageNumber = 1,
         int pageSize = 20,
-        string sortField = nameof(Collaborator.Email),
+        string sortField = nameof(CollaboratorViewModel.Email),
         string sortDirection = SortDirections.Ascending
     )
     {
@@ -322,7 +322,7 @@ public class ProjectOverviewController
     public async Task<IActionResult> ResearchLocations(string projectRecordId, string? backRoute, int pageNumber = 1,
         int pageSize = 10)
     {
-        var result = await GetProjectOverviewResult(projectRecordId!, backRoute, nameof(ResearchLocations),pageNumber,pageSize);
+        var result = await GetProjectOverviewResult(projectRecordId!, backRoute, nameof(ResearchLocations), pageNumber, pageSize);
         if (result is not OkObjectResult okResult)
         {
             return result;
@@ -344,7 +344,7 @@ public class ProjectOverviewController
     /// or an error details if the project record or answers are not found or a service error occurs.
     /// </returns>
     [NonAction]
-    public async Task<IActionResult> GetProjectOverview(string projectRecordId, string? specificViewName = null, int pageNumber = 1 ,
+    public async Task<IActionResult> GetProjectOverview(string projectRecordId, string? specificViewName = null, int pageNumber = 1,
         int pageSize = 10)
     {
         // Retrieve the project record by its ID
@@ -843,12 +843,12 @@ public class ProjectOverviewController
         }
     }
 
-    private async Task<IActionResult> GetProjectOverviewResult(string projectRecordId, string? backRoute, string? specificViewName = null , int? pageNumber = 1,
+    private async Task<IActionResult> GetProjectOverviewResult(string projectRecordId, string? backRoute, string? specificViewName = null, int? pageNumber = 1,
     int? pageSize = 10)
     {
         SetupShortProjectTitleBackNav("pov", "app:Welcome", backRoute);
 
-        var response = await GetProjectOverview(projectRecordId, specificViewName, pageNumber.Value ,pageSize.Value);
+        var response = await GetProjectOverview(projectRecordId, specificViewName, pageNumber.Value, pageSize.Value);
 
         // if status code is not a successful status code
         if ((response is StatusCodeResult result && result.StatusCode is < 200 or > 299) ||
@@ -869,7 +869,7 @@ public class ProjectOverviewController
             return this.ServiceError(projectCollaboratorsResponse);
         }
 
-        var collaborators = new List<Collaborator>();
+        var collaborators = new List<CollaboratorViewModel>();
 
         if (projectCollaboratorsResponse.Content != null)
         {
@@ -889,12 +889,12 @@ public class ProjectOverviewController
 
                 collaborators.Add
                 (
-                    new Collaborator
+                    new CollaboratorViewModel
                     {
                         Id = collaborator.Id,
                         UserId = collaborator.UserId,
                         Email = userResponse?.Email ?? string.Empty,
-                        Access = collaborator.ProjectAccessLevel,
+                        ProjectAccessLevel = collaborator.ProjectAccessLevel,
                         IsOwner = collaborator.IsOwner,
                         Self = collaborator.UserId == HttpContext.Items[ContextItemKeys.UserId]?.ToString()
                     }
