@@ -398,7 +398,7 @@
                         status-for="@Model.Status"
                         status-is="@ModificationStatus.ResponseRequestRevisions">
                 @{
-                    var applicantMakeRevisionTextareaId = $"RfiModel_RfiResponses_{i}__RequestRevisionsBySponsor_0_";
+                    var applicantMakeRevisionTextareaId = $"RfiModel_RfiResponses_{i}__RequestRevisionsByApplicant_0_";
                     var applicantMakeRevisionInfoId = $"{applicantMakeRevisionTextareaId}-info";
                     var applicantMakeRevisionFieldErrors = ViewData.ModelState[applicantMakeRevisionTextareaId]?.Errors;
                     var applicantMakeRevisionHasError = applicantMakeRevisionFieldErrors?.Count > 0;
