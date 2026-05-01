@@ -94,7 +94,7 @@
                             </label>
                         </div>
                         <feature name="@FeatureFlags.RequestForInformation">
-                            <div class="govuk-radios__item">
+                            <div class="govuk-radios__item" status-for="@Model.ModificationDetails.Status" status-mode="Hide" status-is="@ModificationStatus.ResponseWithReviewBody">
                                 <input class="govuk-radios__input" id="rfi" type="radio" value="@ModificationStatus.RequestForInformation" asp-for="ReviewOutcome">
                                 <label class="govuk-label govuk-radios__label" for="rfi">
                                     @ModificationStatus.RequestForInformation

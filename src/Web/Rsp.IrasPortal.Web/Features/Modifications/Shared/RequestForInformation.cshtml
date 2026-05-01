@@ -1,4 +1,5 @@
-﻿@using Rsp.Portal.Web.Features.Modifications.Models
+﻿@using Rsp.Portal.Domain.Identity
+@using Rsp.Portal.Web.Features.Modifications.Models
 @using Rsp.Portal.Application.Constants
 @model ModificationDetailsViewModel
 
@@ -27,17 +28,17 @@
         .RequestRevisionsByApplicant?
         .FirstOrDefault();
 
-    var responseExists = (!string.IsNullOrWhiteSpace(initialResponse)
+    var shouldDisplayResponse = (!string.IsNullOrWhiteSpace(initialResponse)
         || !string.IsNullOrWhiteSpace(reviseAndAuthorise)
         || !string.IsNullOrWhiteSpace(reasonForReviseAndAuthorise)
         || !string.IsNullOrWhiteSpace(sponsorRequestRevisionResponse)
         || !string.IsNullOrWhiteSpace(applicantRequestRevisionResponse))
-        && Model.Status != ModificationStatus.RequestForInformation;
+        && (Model.Status != ModificationStatus.RequestForInformation || User.IsInRole(Roles.Applicant));
 
     <div class="govuk-summary-card">
         <div class="govuk-summary-card__title-wrapper">
             <h2 class="govuk-summary-card__title">
-                Request for further information @(responseExists ? "and response" : "")
+                Request for further information @(shouldDisplayResponse ? "and response" : "")
             </h2>
         </div>
         <div class="govuk-summary-card__content">
@@ -125,9 +126,9 @@
                     else
                     {
                         <!-- INITIAL RESPONSE (DEFAULT) -->
-                        if (!string.IsNullOrWhiteSpace(initialResponse))
+                        if (shouldDisplayResponse)
                         {
-                            <div status-for="@Model.Status" status-mode="Hide" status-in="@([ModificationStatus.RequestForInformation])" class="govuk-summary-list__row">
+                            <div class="govuk-summary-list__row">
                                 <dt class="govuk-summary-list__key">
                                     Response to reason @(i + 1)
                                 </dt>

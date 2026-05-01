@@ -112,7 +112,9 @@ public static class RoleStatusPermissions
                     ModificationStatus.ResponseWithSponsor,
                     ModificationStatus.ResponseWithReviewBody,
                     ModificationStatus.ResponseReviseAndAuthorise,
-                    ModificationStatus.ResponseRequestRevisions
+                    ModificationStatus.ResponseRequestRevisions,
+                    ModificationStatus.ResponseUnderReview,
+                    ModificationStatus.ResponseReviewInProgress
                 }
             },
             {
@@ -128,7 +130,9 @@ public static class RoleStatusPermissions
                     ModificationStatus.Withdrawn,
                     ModificationStatus.ResponseWithSponsor,
                     ModificationStatus.ResponseWithReviewBody,
-                    ModificationStatus.ResponseReviseAndAuthorise
+                    ModificationStatus.ResponseReviseAndAuthorise,
+                    ModificationStatus.ResponseUnderReview,
+                    ModificationStatus.ResponseReviewInProgress
                 }
             },
             {
@@ -144,7 +148,9 @@ public static class RoleStatusPermissions
                     ModificationStatus.Withdrawn,
                     ModificationStatus.ResponseWithSponsor,
                     ModificationStatus.ResponseWithReviewBody,
-                    ModificationStatus.ResponseReviseAndAuthorise
+                    ModificationStatus.ResponseReviseAndAuthorise,
+                    ModificationStatus.ResponseUnderReview,
+                    ModificationStatus.ResponseReviewInProgress
                 }
             },
             {
@@ -157,7 +163,10 @@ public static class RoleStatusPermissions
                     ModificationStatus.ReviewInProgress,
                     ModificationStatus.RequestForInformation,
                     ModificationStatus.Withdrawn,
-                    ModificationStatus.ResponseWithSponsor
+                    ModificationStatus.ResponseWithReviewBody,
+                    ModificationStatus.ResponseWithSponsor,
+                    ModificationStatus.ResponseUnderReview,
+                    ModificationStatus.ResponseReviewInProgress
                 }
             },
             {
@@ -170,7 +179,10 @@ public static class RoleStatusPermissions
                     ModificationStatus.ReviewInProgress,
                     ModificationStatus.RequestForInformation,
                     ModificationStatus.Withdrawn,
-                    ModificationStatus.ResponseWithSponsor
+                    ModificationStatus.ResponseWithReviewBody,
+                    ModificationStatus.ResponseWithSponsor,
+                    ModificationStatus.ResponseUnderReview,
+                    ModificationStatus.ResponseReviewInProgress
                 }
             },
             {
@@ -183,7 +195,10 @@ public static class RoleStatusPermissions
                     ModificationStatus.Received,
                     ModificationStatus.RequestForInformation,
                     ModificationStatus.Withdrawn,
-                    ModificationStatus.ResponseWithSponsor
+                    ModificationStatus.ResponseWithReviewBody,
+                    ModificationStatus.ResponseWithSponsor,
+                    ModificationStatus.ResponseUnderReview,
+                    ModificationStatus.ResponseReviewInProgress
                 }
             }
         };

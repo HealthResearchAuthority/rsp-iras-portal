@@ -62,6 +62,9 @@ public class MyTasklistController(
         {
             searchQuery.AllowedStatuses.Add(ModificationStatus.WithReviewBody);
             searchQuery.AllowedStatuses.Add(ModificationStatus.ReviewInProgress);
+            searchQuery.AllowedStatuses.Add(ModificationStatus.ResponseWithReviewBody);
+            searchQuery.AllowedStatuses.Add(ModificationStatus.ResponseReviewInProgress);
+            searchQuery.AllowedStatuses.Add(ModificationStatus.ResponseUnderReview);
         }
 
         // Reverse date logic when searching by "days since submission"

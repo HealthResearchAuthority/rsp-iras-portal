@@ -23,6 +23,8 @@ public struct ModificationStatus
     public const string ReviseAndAuthorise = "Sponsor revises modification";
     public const string ResponseReviseAndAuthorise = "Sponsor revises response";
     public const string ResponseRequestRevisions = "Response request revision";
+    public const string ResponseUnderReview = "Response under review";
+    public const string ResponseReviewInProgress = "Response review in progress";
 
     public static readonly List<string> Types = [
         InDraft,
