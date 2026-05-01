@@ -19,10 +19,6 @@
 
     var isRevisionBySponsor = (bool?)ViewData["isRevisionBySponsor"] ?? false;
     var tempHalt = TempData.Peek(TempDataKeys.ProjectModification.SpecificAreaOfChangeText) as string;
-
-    var showLinks = Model.Status is not ModificationStatus.RequestRevisions &&
-                    Model.Status is not ModificationStatus.ReviseAndAuthorise &&
-                    Model.Status is not ModificationStatus.ResponseRequestRevisions;
 }
 
 @foreach (var (change, changeIndex) in Model.ModificationChanges.Select((change, changeIndex) => (change, changeIndex)))
@@ -181,7 +177,7 @@
                         <vc:participating-organisations-review project-record-id="@Model.ProjectRecordId"
                                                                modification-change-id="@change.ModificationChangeId"
                                                                specific-area-of-change-id="@change.SpecificAreaOfChangeId"
-                                                               show-links="@showLinks" />
+                                                               show-links="false" />
                     }
 
                     @foreach (var question in change.Questions.Where(q => q.SectionId != "pom-participating-organisation-details"))
