@@ -1,6 +1,8 @@
 ﻿@using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Domain.AccessControl
 @using Rsp.Portal.Web.Features.Modifications.Models
+@using Microsoft.AspNetCore.Http.Extensions
+@inject IHttpContextAccessor httpContextAccessor
 @model ModificationDetailsViewModel
 @{
     ViewBag.Title = "Request for further information";
@@ -10,6 +12,10 @@
         ModificationStatus.ResponseRequestRevisions => "Send response to sponsor",
         _ => "Save and continue"
     };
+    // this url will be used to redirect, when search button is clicked
+
+    TempData[TempDataKeys.ProjectModification.LinkBackToReferrer] = true;
+    TempData[TempDataKeys.ProjectModification.UrlReferrer] = Context.Request.GetDisplayUrl();
 }
 
 <authorized permission="@Permissions.Sponsor.Modifications_Authorise"
@@ -35,18 +41,29 @@
     @section BackNavigation {
         @if (Model.Status == ModificationStatus.ResponseWithSponsor)
         {
-            <partial name="_BackNavigation" model="@(("sws:checkandauthorise", "Back", new Dictionary<string, string> {
+            <partial name="_BackNavigation" model="@("sws:checkandauthorise", "Back", new Dictionary<string, string> {
            { "projectRecordId", Model.ProjectRecordId },
            { "irasId", Model.IrasId.ToString() },
            { "shortTitle", Model.ShortTitle },
            { "projectModificationId", Model.ModificationId},
            { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() },
-           { "rtsId", Model.RtsId }}))" />
+           { "rtsId", Model.RtsId }})" />
+        }
+        else if (Model.Status == ModificationStatus.ResponseRequestRevisions)
+        {
+            <partial name="_BackNavigation" model="@("pmc:ModificationDetails", "Back", new Dictionary<string, string> {
+           { "projectRecordId", Model.ProjectRecordId },
+           { "irasId", Model.IrasId.ToString() },
+           { "shortTitle", Model.ShortTitle },
+           { "projectModificationId", Model.ModificationId},
+           { "sponsorOrganisationUserId", Model.SponsorOrganisationUserId.ToString() },
+           { "rtsId", Model.RtsId }})" />
         }
         else
         {
             <partial name="_BackNavigation" model="@("rfi:rfidetails", "Back", new Dictionary<string, string>() { { "projectId", Model.ProjectRecordId! }, { "modificationId", Model.ModificationId! } })" />
         }
+
     }
 </div>
 
@@ -482,11 +499,26 @@
         }
     </div>
 
+    <div class="govuk-grid-row" status-for="@Model.Status" status-is="@ModificationStatus.ResponseRequestRevisions">
+        <div class="govuk-grid-column-two-thirds">
+            <div class="govuk-heading-m">
+                Withdraw this modification
+            </div>
+            <a asp-route="pmc:withdrawmodification" asp-route-backRoute="makerevisions"
+               class="govuk-button govuk-button--secondary">
+                Withdraw modification
+            </a>
+        </div>
+    </div>
     <div class="save-buttons">
         <button type="submit" class="govuk-button" data-module="govuk-button">
             @buttonTitle
         </button>
-        <button asp-action="SendRfiResponses" asp-route-saveForLater="true" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+        <button asp-action="SendRfiResponses"
+                asp-route-saveForLater="true"
+                type="submit"
+                class="govuk-button govuk-button--secondary"
+                data-module="govuk-button">
             Save for later
         </button>
     </div>

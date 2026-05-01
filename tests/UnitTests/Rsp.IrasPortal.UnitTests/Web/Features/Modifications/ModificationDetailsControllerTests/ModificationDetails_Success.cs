@@ -18,16 +18,27 @@ namespace Rsp.Portal.UnitTests.Web.Features.Modifications.ModificationDetailsCon
 
 public class ModificationDetails_Success : TestServiceBase<ModificationDetailsController>
 {
-    [Fact]
-    public async Task Returns_View_With_Mapped_Changes_And_Flags()
+    [Theory]
+    [AutoData]
+    public async Task Returns_View_With_Mapped_Changes_And_Flags(ProjectModificationAuditTrailResponse item, ReviewOutcomeViewModel reviewOutcomeViewModel)
     {
         // Arrange
         var http = new DefaultHttpContext();
         Sut.ControllerContext = new() { HttpContext = http };
         Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>());
 
+        Sut.TempData[TempDataKeys.ProjectModification.ProjectModificationsDetails] = reviewOutcomeViewModel.ModificationDetails;
+
         var modId = Guid.NewGuid();
         var changeId = Guid.NewGuid();
+
+        Mocker.GetMock<IProjectModificationsService>()
+           .Setup(s => s.GetModificationAuditTrail(modId))
+           .ReturnsAsync(new ServiceResponse<ProjectModificationAuditTrailResponse>
+           {
+               Content = item,
+               StatusCode = HttpStatusCode.OK,
+           });
 
         // 1. GetModification -> one modification entry
         Mocker.GetMock<IProjectModificationsService>()
@@ -165,8 +176,9 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
         model.ModificationChanges[0].SpecificChangeName.ShouldBe("Specific Name");
     }
 
-    [Fact]
-    public async Task ModificationDetails_Returns_View_Without_SponsorDetails_When_NotSponsorRevision()
+    [Theory]
+    [AutoData]
+    public async Task ModificationDetails_Returns_View_Without_SponsorDetails_When_NotSponsorRevision(ProjectModificationAuditTrailResponse item)
     {
         // Arrange
         var http = new DefaultHttpContext();
@@ -175,7 +187,14 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
 
         var modId = Guid.NewGuid();
         var changeId = Guid.NewGuid();
-
+        // Arrange
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationAuditTrail(modId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationAuditTrailResponse>
+            {
+                Content = item,
+                StatusCode = HttpStatusCode.OK,
+            });
         // modification
         Mocker.GetMock<IProjectModificationsService>()
             .Setup(s => s.GetModification("PR1", modId))
@@ -315,8 +334,9 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
         model.SponsorDetails.ShouldBeEmpty();
     }
 
-    [Fact]
-    public async Task ModificationDetails_Executes_SponsorRevisionFlow()
+    [Theory]
+    [AutoData]
+    public async Task ModificationDetails_Executes_SponsorRevisionFlow(ProjectModificationAuditTrailResponse item)
     {
         // Arrange
         var http = new DefaultHttpContext();
@@ -328,6 +348,15 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
 
         var sponsorUserId = Guid.NewGuid();
         var rtsId = "RTS-123";
+
+        // Arrange
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationAuditTrail(modId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationAuditTrailResponse>
+            {
+                Content = item,
+                StatusCode = HttpStatusCode.OK,
+            });
 
         // main modification with ReviseAndAuthorise
         Mocker.GetMock<IProjectModificationsService>()
@@ -588,8 +617,9 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
         doc1.Status.ShouldBe(DocumentStatus.ReviseAndAuthorise); // Complete (stays ReviseAndAuthorise)
     }
 
-    [Fact]
-    public async Task ModificationDetails_When_No_Changes_exist()
+    [Theory]
+    [AutoData]
+    public async Task ModificationDetails_When_No_Changes_exist(ProjectModificationAuditTrailResponse item)
     {
         // Arrange
         var http = new DefaultHttpContext();
@@ -601,6 +631,15 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
 
         var sponsorUserId = Guid.NewGuid();
         var rtsId = "RTS-123";
+
+        // Arrange
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationAuditTrail(modId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationAuditTrailResponse>
+            {
+                Content = item,
+                StatusCode = HttpStatusCode.OK,
+            });
 
         // main modification with ReviseAndAuthorise
         Mocker.GetMock<IProjectModificationsService>()
@@ -904,8 +943,9 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
         model.Status.ShouldBe(expectedStatus);
     }
 
-    [Fact]
-    public async Task Returns_View_With_Empy_Array()
+    [Theory]
+    [AutoData]
+    public async Task Returns_View_With_Empy_Array(ProjectModificationAuditTrailResponse item)
     {
         // Arrange
         var http = new DefaultHttpContext();
@@ -914,6 +954,14 @@ public class ModificationDetails_Success : TestServiceBase<ModificationDetailsCo
 
         var modId = Guid.NewGuid();
         var changeId = Guid.NewGuid();
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.GetModificationAuditTrail(modId))
+            .ReturnsAsync(new ServiceResponse<ProjectModificationAuditTrailResponse>
+            {
+                Content = item,
+                StatusCode = HttpStatusCode.OK,
+            });
 
         // 1. GetModification -> one modification entry
         Mocker.GetMock<IProjectModificationsService>()

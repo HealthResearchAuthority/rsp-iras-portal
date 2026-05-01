@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -186,6 +187,14 @@ public class ModificationDetailsController
                 ShortTitle = shortTitle,
             };
         }
+        //For PDF download data population
+        var reviewOutcomeModel = new ReviewOutcomeViewModel
+        {
+            ModificationDetails = modification,
+        };
+
+        TempData[TempDataKeys.ProjectModification.ProjectModificationsDetails] =
+            JsonSerializer.Serialize(reviewOutcomeModel);
 
         // Render the details view
         return View(modification);

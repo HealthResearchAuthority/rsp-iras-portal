@@ -332,7 +332,7 @@ public class DocumentsController
 
         // get data from session for Revise and authorise
         var modificationModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());
-        if (modificationModel.Status is ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestRevisions or ModificationStatus.ResponseRequestRevisions)
+        if (modificationModel.Status is ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestRevisions)
         {
             return RedirectToRoute("pmc:ModificationDetails", new
             {
@@ -344,7 +344,7 @@ public class DocumentsController
                 modificationModel.RtsId
             });
         }
-        else if (modificationModel.Status is ModificationStatus.ResponseReviseAndAuthorise or ModificationStatus.RequestForInformation)
+        else if (modificationModel.Status is ModificationStatus.ResponseReviseAndAuthorise or ModificationStatus.RequestForInformation or ModificationStatus.ResponseRequestRevisions)
         {
             return RedirectToRoute("rfi:RfiResponses", new
             {
@@ -1833,11 +1833,11 @@ public class DocumentsController
         var sponsorOrganisationUserId = TempData.Peek(TempDataKeys.RevisionSponsorOrganisationUserId);
         var rtsId = TempData.Peek(TempDataKeys.RevisionRtsId) as string;
 
-        if (status is ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestRevisions or ModificationStatus.ResponseRequestRevisions)
+        if (status is ModificationStatus.ReviseAndAuthorise or ModificationStatus.RequestRevisions)
         {
             return RedirectToRoute("pmc:ModificationDetails", new { projectRecordId, irasId, shortTitle, projectModificationId, sponsorOrganisationUserId, rtsId });
         }
-        else if (status is ModificationStatus.ResponseReviseAndAuthorise or ModificationStatus.RequestForInformation)
+        else if (status is ModificationStatus.ResponseReviseAndAuthorise or ModificationStatus.RequestForInformation or ModificationStatus.ResponseRequestRevisions)
         {
             return RedirectToRoute("rfi:RfiResponses", new { projectRecordId, irasId, shortTitle, projectModificationId, sponsorOrganisationUserId, rtsId });
         }

@@ -272,6 +272,7 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         tempData[TempDataKeys.ProjectModification.SponsorOrganisationUserId] = tempDataModel.SponsorOrganisationUserId;
         tempData[TempDataKeys.ProjectModification.RtsId] = tempDataModel.RtsId;
         tempData[TempDataKeys.RfiResponses] = JsonSerializer.Serialize(rfiResponses);
+        tempData[TempDataKeys.ProjectModification.ProjectModificationsDetails] = tempDataModel;
         tempDataModel.RfiModel.RfiResponses = rfiResponses;
         Sut.TempData = tempData;
 
@@ -1204,23 +1205,125 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
     }
 
     [Fact]
-    public async Task RfiSubmitResponses_POST_RequestRevision_SaveForLater_And_Redirects()
+    public async Task RfiSendResponses_ResponseRequestRevision_Updates_Status_And_Redirects()
     {
         // Arrange
         var model = new ModificationDetailsViewModel
         {
             ModificationId = Guid.NewGuid().ToString(),
-            ProjectRecordId = "PR-002",
-            Status = ModificationStatus.ResponseWithSponsor,
+            Status = ModificationStatus.ResponseRequestRevisions,
             SponsorOrganisationUserId = Guid.NewGuid().ToString(),
-            RtsId = "12"
+            RtsId = "12",
+            RfiModel = new()
+            {
+                RfiReasons = ["Reason 1"],
+                RfiResponses =
+                [
+                    new RfiResponsesDTO
+                {
+                    InitialResponse = ["Response 1"],
+                    RequestRevisionsByApplicant = ["Applicant response 1"],
+                    RequestRevisionsBySponsor = ["Sponsor response 1"],
+                }
+                ]
+            }
         };
 
         SetupTempData(model);
         SetupValidUser();
+        SetupSuccessfulValidation();
+        SetupSuccessfulSaveResponses();
+
+        Mocker.GetMock<IProjectModificationsService>()
+            .Setup(s => s.UpdateModificationStatus(
+                It.Is<UpdateModificationStatusRequest>(r =>
+                    r.ProjectRecordId == model.ProjectRecordId &&
+                    r.ModificationId == Guid.Parse(model.ModificationId!) &&
+                    r.Status == ModificationStatus.ResponseWithSponsor
+                )))
+            .ReturnsAsync(new ServiceResponse
+            {
+                StatusCode = HttpStatusCode.OK
+            });
 
         // Act
-        var result = await Sut.RfiSubmitResponses();
+        var result = await Sut.SendRfiResponses(model);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToActionResult>();
+        redirect.ActionName.ShouldBe(nameof(Sut.RfiResponsesConfirmation));
+    }
+
+    [Fact]
+    public async Task RfiSendResponses_ResponseRequestRevision_SaveForLater_And_Redirects()
+    {
+        // Arrange
+        var model = new ModificationDetailsViewModel
+        {
+            ModificationId = Guid.NewGuid().ToString(),
+            Status = ModificationStatus.ResponseRequestRevisions,
+            SponsorOrganisationUserId = Guid.NewGuid().ToString(),
+            RtsId = "12",
+            RfiModel = new()
+            {
+                RfiReasons = ["Reason 1"],
+                RfiResponses =
+                [
+                    new RfiResponsesDTO
+                {
+                    InitialResponse = ["Response 1"],
+                    RequestRevisionsByApplicant = ["Applicant response 1"],
+                    RequestRevisionsBySponsor = ["Sponsor response 1"],
+                }
+                ]
+            }
+        };
+
+        SetupTempData(model);
+        SetupValidUser();
+        SetupSuccessfulValidation();
+        SetupSuccessfulSaveResponses();
+
+        // Act
+        var result = await Sut.SendRfiResponses(model, true);
+
+        // Assert
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe("pov:postapproval");
+    }
+
+    [Fact]
+    public async Task RfiSendResponses_ResponseWithSponsor_SaveForLater_And_Redirects()
+    {
+        // Arrange
+        var model = new ModificationDetailsViewModel
+        {
+            ModificationId = Guid.NewGuid().ToString(),
+            Status = ModificationStatus.ResponseWithSponsor,
+            SponsorOrganisationUserId = Guid.NewGuid().ToString(),
+            RtsId = "12",
+            RfiModel = new()
+            {
+                RfiReasons = ["Reason 1"],
+                RfiResponses =
+                [
+                    new RfiResponsesDTO
+                {
+                    InitialResponse = ["Response 1"],
+                    RequestRevisionsByApplicant = ["Applicant response 1"],
+                    RequestRevisionsBySponsor = ["Sponsor response 1"],
+                }
+                ]
+            }
+        };
+
+        SetupTempData(model);
+        SetupValidUser();
+        SetupSuccessfulValidation();
+        SetupSuccessfulSaveResponses();
+
+        // Act
+        var result = await Sut.SendRfiResponses(model, true);
 
         // Assert
         var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
@@ -1242,7 +1345,8 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
             [TempDataKeys.ShortProjectTitle] = model.ShortTitle,
             [TempDataKeys.IrasId] = model.IrasId.ToString(),
             [TempDataKeys.ProjectModification.SponsorOrganisationUserId] = model.SponsorOrganisationUserId,
-            [TempDataKeys.ProjectModification.RtsId] = model.RtsId
+            [TempDataKeys.ProjectModification.RtsId] = model.RtsId,
+            [TempDataKeys.ProjectModification.ProjectModificationsDetails] = model
         };
         if (model.Status is not null)
         {
