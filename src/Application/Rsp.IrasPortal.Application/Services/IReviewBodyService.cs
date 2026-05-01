@@ -27,6 +27,8 @@ public interface IReviewBodyService : IInterceptable
 
     Task<ServiceResponse<ReviewBodyAuditTrailResponse>> ReviewBodyAuditTrail(Guid id, int skip, int take);
 
+    Task<ServiceResponse<ReviewBodyAuditTrailResponse>> ReviewBodyUserAuditTrail(Guid id, Guid userId, int skip, int take, string sortField, string sortDirection);
+
     Task<ServiceResponse> EnableReviewBody(Guid id);
 
     Task<ServiceResponse<ReviewBodyUserDto>> AddUserToReviewBody(ReviewBodyUserDto reviewBodyUser);

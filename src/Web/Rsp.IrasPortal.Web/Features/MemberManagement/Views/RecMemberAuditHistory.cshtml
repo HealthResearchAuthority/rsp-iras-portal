@@ -1,0 +1,81 @@
+﻿@using Rsp.IrasPortal.Web.Features.MemberManagement.Models;
+@model RecMemberAuditHistoryViewModel
+
+@{
+    ViewData["Title"] = "REC Member Audit History";
+    var tableId = "recMemberAuditHistoryTable";
+    var sortableHeaders = new[]
+    {
+        new { Field = nameof(RecMemberAuditHistoryEntryViewModel.DateTimeStamp), Label = "Date" },
+        new { Field = nameof(RecMemberAuditHistoryEntryViewModel.Description), Label = "Description" },
+    };
+}
+
+@section Breadcrumb {
+    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+    {
+        ("Member management", Url.RouteUrl("mm:home")),
+        ("Research ethics committees", Url.RouteUrl("mm:researchethicscommittees")),
+        ($"Research ethics committee profile: {Model.ReviewBody.RegulatoryBodyName}", 
+            Url.RouteUrl("mm:researchethicscommitteesprofile", 
+            new { id = Model.ReviewBody.Id })
+        ),
+        ($"User profile: {Model.User.GivenName} {Model.User.FamilyName}",
+            Url.RouteUrl("mm:checkrecmember",
+            new { recId = Model.ReviewBody.Id, userId = Model.User.Id })
+        )
+    })
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Audit history</h1>
+    </div>
+</div>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+        <div class="govuk-grid-column-full">
+            <div class="govuk-table-wrapper">
+                <table class="govuk-table" id="@tableId">
+                    <thead>
+                        <tr class="govuk-table__row govuk-table__header-sortable">
+                            @foreach (var header in sortableHeaders)
+                            {
+                                var sortableHeaderModel = new SortableHeaderModel
+                                {
+                                    FieldName = header.Field,
+                                    DisplayText = header.Label,
+                                    CurrentSortField = Model.Pagination?.SortField,
+                                    CurrentSortDirection = Model.Pagination?.SortDirection,
+                                    TableId = tableId,
+                                    AdditionalParameters = new Dictionary<string, string>
+                                    {
+                                        { "recId", Model.ReviewBody.Id.ToString() },
+                                        { "userId", Model.User.Id!.ToString() }
+                                    }
+                                };
+
+                                <th scope="col" class="govuk-table__header govuk-table__header-sortable @(header.Label.Contains("name") ? "govuk-table--name" : "") @(header.Label == "Email address" ? "line-break-anywhere" : "")">
+                                    <partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
+                                </th>
+                            }
+                            <th scope="col" class="govuk-table__header">Actioned by</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var auditEntry in Model.AuditHistoryEntries)
+                        {
+                            <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">@auditEntry.DateTimeStamp.ToString("dd MMM yyyy 'at' hh:mm") @auditEntry.DateTimeStamp.ToString("tt").ToLower()</td>
+                                <td class="govuk-table__cell line-break-anywhere">@auditEntry.Description</td>
+                                <td class="govuk-table__cell">@auditEntry.User</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <partial name="_Pagination" model="@Model.Pagination" />
+        </div>
+    </div>
+</div>
