@@ -242,7 +242,7 @@
 								<b>Audit </b>
 							</td>
 							<td class="govuk-table__cell govuk-!-width-two-thirds">
-								<a href="#" class="govuk-link">View this user's audit history</a>
+                                <a asp-route="mm:RecMemberAuditHistory" asp-route-recid="@Model.RecId" asp-route-userid="@Model.UserId" class="govuk-link">View this user's audit history</a>
 
 							</td>
 							<td class="govuk-table__cell">
