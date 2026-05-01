@@ -44,8 +44,8 @@
         </p>
 
         <div status-for="@Model.Status"
-             status-is="@ModificationStatus.RequestForInformation">
-            <a class="govuk-button" asp-route="pov:index" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-modificationId="@Model.ModificationId">
+             status-in="@([ModificationStatus.RequestForInformation,ModificationStatus.ResponseRequestRevisions ])">
+            <a class="govuk-button" asp-route="pov:postapproval" asp-route-projectRecordId="@Model.ProjectRecordId">
                 Return to project overview
             </a>
         </div>
