@@ -106,11 +106,15 @@ public class ModificationsTasklistController
             searchQuery.AllowedStatuses.Add(ModificationStatus.WithReviewBody);
             searchQuery.AllowedStatuses.Add(ModificationStatus.Received);
             searchQuery.AllowedStatuses.Add(ModificationStatus.ReviewInProgress);
+            searchQuery.AllowedStatuses.Add(ModificationStatus.ResponseWithReviewBody);
+            searchQuery.AllowedStatuses.Add(ModificationStatus.ResponseUnderReview);
         }
 
         if (User.IsInRole(Roles.WorkflowCoordinator))
         {
             searchQuery.AllowedStatuses.Add(ModificationStatus.WithReviewBody);
+            searchQuery.AllowedStatuses.Add(ModificationStatus.ResponseWithReviewBody);
+            searchQuery.AllowedStatuses.Add(ModificationStatus.ResponseUnderReview);
             searchQuery.AllowedStatuses.Add(ModificationStatus.Received);
         }
 
