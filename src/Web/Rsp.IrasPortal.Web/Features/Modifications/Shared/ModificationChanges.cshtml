@@ -177,7 +177,7 @@
                         <vc:participating-organisations-review project-record-id="@Model.ProjectRecordId"
                                                                modification-change-id="@change.ModificationChangeId"
                                                                specific-area-of-change-id="@change.SpecificAreaOfChangeId"
-                                                               show-links="@showLinks" />
+                                                               show-links="false" />
                     }
 
                     @foreach (var question in change.Questions.Where(q => q.SectionId != "pom-participating-organisation-details"))
