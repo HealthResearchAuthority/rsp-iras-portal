@@ -26,8 +26,8 @@
 }
 
 @* @section is added for the back button, so that we can render something below the back button
-	and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
-	the named section *@
+    and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+    the named section *@
 @section BackNavigation {
     <partial name="_BackNavigation" model="navModel.Value" />
 }
@@ -91,8 +91,8 @@
                                     @if (docu.IsMalwareScanSuccessful == true)
                                     {
                                         <a asp-route="pmc:downloaddocument"
-                                               asp-route-fileName="@docu.FileName"
-                                               asp-route-path="@docu.DocumentStoragePath" class="govuk-link">
+                                           asp-route-fileName="@docu.FileName"
+                                           asp-route-path="@docu.DocumentStoragePath" class="govuk-link">
                                             @docu.FileName
                                         </a>
                                     }
@@ -185,8 +185,8 @@
                                         @if (docu.IsMalwareScanSuccessful == true)
                                         {
                                             <a asp-route="pmc:downloaddocument"
-                                                   asp-route-fileName="@docu.DocumentToReplaceFileName"
-                                                   asp-route-path="@docu.DocumentToReplaceStoragePath" class="govuk-link">
+                                               asp-route-fileName="@docu.DocumentToReplaceFileName"
+                                               asp-route-path="@docu.DocumentToReplaceStoragePath" class="govuk-link">
                                                 @docu.DocumentToReplaceFileName
                                             </a>
                                         }
@@ -229,11 +229,11 @@
                                     }
                                 </dd>
                                 @if ((docu.DocumentType == "Clean" || docu.DocumentType == "Tracked")
-                                                                      && string.IsNullOrEmpty(docu.LinkedDocumentFileName))
+                                                                   && string.IsNullOrEmpty(docu.LinkedDocumentFileName))
                                 {
                                     <dd class="govuk-summary-list__actions">
                                         <a class="govuk-link"
-                                               href="@Url.RouteUrl("pmc:supersededocumenttype", new { documentTypeId = docu.MetaDataDocumentTypeId, projectRecordId = docu.ProjectRecordId, currentDocumentId = docu.DocumentId, reviewAnswers = true })">
+                                           href="@Url.RouteUrl("pmc:supersededocumenttype", new { documentTypeId = docu.MetaDataDocumentTypeId, projectRecordId = docu.ProjectRecordId, currentDocumentId = docu.DocumentId, reviewAnswers = true })">
                                             Change
                                             <span class="govuk-visually-hidden"> clean or tracked</span>
                                         </a>
@@ -271,8 +271,8 @@
                                             @if (docu.IsMalwareScanSuccessful == true)
                                             {
                                                 <a asp-route="pmc:downloaddocument"
-                                                       asp-route-fileName="@docu.LinkedDocumentFileName"
-                                                       asp-route-path="@docu.LinkedDocumentStoragePath" class="govuk-link">
+                                                   asp-route-fileName="@docu.LinkedDocumentFileName"
+                                                   asp-route-path="@docu.LinkedDocumentStoragePath" class="govuk-link">
                                                     @docu.LinkedDocumentFileName
                                                 </a>
                                             }
@@ -308,12 +308,17 @@
                    asp-route-projectRecordId="@projectRecordId" asp-route-sponsorOrganisationUserId="@sponsorOrganisationUserId" asp-route-rtsId="@rtsId" asp-route-routeName="sws:modifications" class="govuk-button govuk-button--secondary">
                     Save for later
                 </a>
-                <a asp-route="pov:postapproval" status-for="@status" status-is="@ModificationStatus.RequestRevisions" asp-route-projectRecordId="@projectRecordId" class="govuk-button govuk-button--secondary">
+                <a asp-route="pov:postapproval"
+                   status-for="@status"
+                   status-in="@([ModificationStatus.RequestRevisions,ModificationStatus.ResponseRequestRevisions])"
+                   asp-route-projectRecordId="@projectRecordId"
+                   asp-route-showBanner="true"
+                   class="govuk-button govuk-button--secondary">
                     Save for later
                 </a>
                 <a asp-route="pmc:saveforlater" status-for="@status" status-mode="Hide"
-                       status-in="@([ModificationStatus.ReviseAndAuthorise, ModificationStatus.RequestRevisions, ModificationStatus.ResponseReviseAndAuthorise])"
-                       asp-route-projectRecordId="@projectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
+                   status-in="@([ModificationStatus.ReviseAndAuthorise, ModificationStatus.RequestRevisions, ModificationStatus.ResponseReviseAndAuthorise,ModificationStatus.ResponseRequestRevisions])"
+                   asp-route-projectRecordId="@projectRecordId" asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
                     Save for later
                 </a>
             </div>

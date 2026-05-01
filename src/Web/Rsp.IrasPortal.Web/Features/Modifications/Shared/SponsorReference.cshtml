@@ -39,7 +39,8 @@
 
             @{
 
-                if (isReviewAllInProgress && modification.Status != ModificationStatus.RequestRevisions)
+                if (isReviewAllInProgress && modification.Status != ModificationStatus.RequestRevisions &&
+                                             modification.Status != ModificationStatus.ResponseRequestRevisions)
                 {
                     <partial name="_BackNavigation" model="@("pmc:reviewallchanges", "Back", modificationParams)" />
                 }

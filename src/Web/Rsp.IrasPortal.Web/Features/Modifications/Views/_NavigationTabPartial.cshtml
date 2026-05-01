@@ -47,6 +47,7 @@
     string defaultTab =
         queryDocuments == ModificationOverview.Documents ? ModificationOverview.Documents :
         Model?.Status == ModificationStatus.ResponseWithSponsor ? ModificationOverview.RequestForFurtherInformation :
+        Model?.Status == ModificationStatus.ResponseRequestRevisions ? ModificationOverview.RequestForFurtherInformation :
         isNotOnlyApplicant ? ModificationOverview.SponsorDetails : ModificationOverview.ModificationDetails;
 
     // set active tab id
@@ -129,7 +130,11 @@
                         </li>
                     }
 
-                    <li status-for="@Model!.Status" status-in="@([ModificationStatus.RequestForInformation, ModificationStatus.ResponseRequestRevisions,ModificationStatus.ResponseWithSponsor, ModificationStatus.ResponseReviseAndAuthorise, ModificationStatus.ResponseWithReviewBody])" class="govuk-service-navigation__item small-margin @(activeTabId == ModificationOverview.RequestForFurtherInformation ? "govuk-service-navigation__item--active" : "")">
+                    <li status-for="@Model!.Status"
+                        status-in="@([ModificationStatus.RequestForInformation, ModificationStatus.ResponseRequestRevisions,
+                                     ModificationStatus.ResponseWithSponsor, ModificationStatus.ResponseReviseAndAuthorise,
+                                     ModificationStatus.ResponseWithReviewBody, ModificationStatus.NotAuthorised])"
+                        class="govuk-service-navigation__item small-margin @(activeTabId == ModificationOverview.RequestForFurtherInformation ? "govuk-service-navigation__item--active" : "")">
                         <a class="govuk-service-navigation__link"
                            asp-route=""
                            asp-all-route-data="baseRouteParams"

@@ -15,7 +15,6 @@
 }
 @if (await featureManager.IsEnabledAsync(FeatureFlags.ProgressiveEnhancement))
 {
-    
 
     // Collect all rules for conditional questions
     var conditionalRules = Model.GetConditionalRules();
@@ -59,7 +58,7 @@
             modificationParams.Add("rtsId", Model.RtsId ?? string.Empty);
             navModel = ("pmc:modificationdetails", "Back", modificationParams);
         }
-        else if (Model.Status is ModificationStatus.ResponseReviseAndAuthorise)
+        else if (Model.Status is ModificationStatus.ResponseReviseAndAuthorise or ModificationStatus.ResponseRequestRevisions)
         {
             modificationParams.Add("sponsorOrganisationUserId", Model.SponsorOrganisationUserId ?? string.Empty);
             modificationParams.Add("rtsId", Model.RtsId ?? string.Empty);
@@ -67,7 +66,7 @@
         }
         else if (Model.Status is ModificationStatus.RequestForInformation)
         {
-            navModel = ("rfi:RfiResponses", "Back", modificationParams);    
+            navModel = ("rfi:RfiResponses", "Back", modificationParams);
         }
         else
         {

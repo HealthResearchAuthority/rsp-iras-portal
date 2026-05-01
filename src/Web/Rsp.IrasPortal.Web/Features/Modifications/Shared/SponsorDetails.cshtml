@@ -18,7 +18,7 @@
         <h2 class="govuk-summary-card__title">
             Sponsor details
         </h2>
-        @if (Model.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions || isRevisionBySponsor)
+        @if (Model.Status is ModificationStatus.InDraft or ModificationStatus.RequestRevisions or ModificationStatus.ResponseRequestRevisions || isRevisionBySponsor)
         {
             <ul permissions="@([Permissions.MyResearch.Modifications_Update, Permissions.Sponsor.Modifications_Authorise])"
                 class="govuk-summary-card__actions">

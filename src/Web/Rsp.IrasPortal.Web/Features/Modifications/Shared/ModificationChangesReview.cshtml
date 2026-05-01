@@ -119,10 +119,10 @@
         </h2>
 
         @if (modification.SpecificAreaOfChangeId is
-        SpecificAreasOfChange.AddNewPics or
-        SpecificAreasOfChange.AddNewSites or
-        SpecificAreasOfChange.EarlyClosureSites or
-        SpecificAreasOfChange.EarlyClosuresPics)
+     SpecificAreasOfChange.AddNewPics or
+     SpecificAreasOfChange.AddNewSites or
+     SpecificAreasOfChange.EarlyClosureSites or
+     SpecificAreasOfChange.EarlyClosuresPics)
         {
             <vc:participating-organisations-review project-record-id="@projectRecordId"
                                                    modification-change-id="@modification.ModificationChangeId"
@@ -193,17 +193,17 @@
                     ViewBag.Style = "govuk-button govuk-button--secondary";
                 }
                 <a asp-route="pov:postapproval"
-                       status-for="@modification.Status"
-                       status-is="@ModificationStatus.RequestRevisions"
-                       asp-route-projectRecordId="@modification.ProjectRecordId"
-                       asp-route-showBanner="true"
-                       class="govuk-button govuk-button--secondary">
+                   status-for="@modification.Status"
+                   status-in="@([ModificationStatus.RequestRevisions,ModificationStatus.ResponseRequestRevisions])"
+                   asp-route-projectRecordId="@modification.ProjectRecordId"
+                   asp-route-showBanner="true"
+                   class="govuk-button govuk-button--secondary">
                     Save for later
                 </a>
                 <partial name="_SubmitButton" model="@("pmc:saveforlater", "Save for later", saveForLaterParams)"
                          status-for="@modification.Status"
                          status-mode="Hide"
-                         status-is="@ModificationStatus.RequestRevisions" />
+                         status-in="@([ModificationStatus.RequestRevisions,ModificationStatus.ResponseRequestRevisions])" />
             </div>
         </form>
     </div>

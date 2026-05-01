@@ -16,6 +16,9 @@
                 ModificationStatus.InDraft
                 => "Review all changes",
 
+                ModificationStatus.ResponseRequestRevisions
+                => "Request for revisions",
+
                 _ => "Modification details"
             };
         }
@@ -102,7 +105,7 @@
                     <div class="govuk-body">
                         @Model.RevisionDescription
                     </div>
-                }                
+                }
             </div>
         }
     </div>

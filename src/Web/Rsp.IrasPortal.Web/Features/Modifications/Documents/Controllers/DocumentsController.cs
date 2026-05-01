@@ -344,7 +344,7 @@ public class DocumentsController
                 modificationModel.RtsId
             });
         }
-        else if (modificationModel.Status is ModificationStatus.ResponseReviseAndAuthorise or ModificationStatus.RequestForInformation)
+        else if (modificationModel.Status is ModificationStatus.ResponseReviseAndAuthorise or ModificationStatus.RequestForInformation or ModificationStatus.ResponseRequestRevisions)
         {
             return RedirectToRoute("rfi:RfiResponses", new
             {
@@ -1837,7 +1837,7 @@ public class DocumentsController
         {
             return RedirectToRoute("pmc:ModificationDetails", new { projectRecordId, irasId, shortTitle, projectModificationId, sponsorOrganisationUserId, rtsId });
         }
-        else if (status is ModificationStatus.ResponseReviseAndAuthorise or ModificationStatus.RequestForInformation)
+        else if (status is ModificationStatus.ResponseReviseAndAuthorise or ModificationStatus.RequestForInformation or ModificationStatus.ResponseRequestRevisions)
         {
             return RedirectToRoute("rfi:RfiResponses", new { projectRecordId, irasId, shortTitle, projectModificationId, sponsorOrganisationUserId, rtsId });
         }
@@ -1966,6 +1966,7 @@ public class DocumentsController
             ModificationStatus.ReviseAndAuthorise => DocumentStatus.ReviseAndAuthorise,
             ModificationStatus.RequestRevisions => DocumentStatus.RequestRevisions,
             ModificationStatus.ResponseReviseAndAuthorise => DocumentStatus.ResponseReviseAndAuthorise,
+            ModificationStatus.ResponseRequestRevisions => DocumentStatus.ResponseRequestRevisions,
             _ => DocumentStatus.Uploaded
         };
 
