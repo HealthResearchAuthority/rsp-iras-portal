@@ -170,6 +170,15 @@ public class RfiResponseController(
         {
             MergeRfiResponseDataFromTempData(model, raw as string);
         }
+        //For PDF download data population
+        var reviewOutcomeModel = new ReviewOutcomeViewModel
+        {
+            ModificationDetails = model,
+        };
+
+        TempData[TempDataKeys.ProjectModification.ProjectModificationsDetails] =
+            JsonSerializer.Serialize(reviewOutcomeModel);
+
         return View(model);
     }
 
@@ -502,16 +511,6 @@ public class RfiResponseController(
                     });
                 break;
 
-            case ModificationStatus.ResponseRequestRevisions:
-                updateStatusResponse = await projectModificationsService.UpdateModificationStatus(
-                    new UpdateModificationStatusRequest
-                    {
-                        ProjectRecordId = viewModel.ProjectRecordId!,
-                        ModificationId = Guid.Parse(viewModel.ModificationId!),
-                        Status = ModificationStatus.ResponseWithSponsor
-                    });
-                break;
-
             default:
                 updateStatusResponse = new ServiceResponse
                 {
@@ -584,6 +583,7 @@ public class RfiResponseController(
               new
               {
                   projectRecordId = viewModel.ProjectRecordId,
+                  showBanner = true
               });
         }
         var redirectResult = await CheckDocumentsAndRedirectIfRequired(Guid.Parse(viewModel.ModificationId!));

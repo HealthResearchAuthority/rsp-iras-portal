@@ -56,6 +56,10 @@
 {
     <partial name="_BackNavigation" model="@("pmc:requestforrevision", "Back", modificationParams)" />
 }
+else if (Model.Status is ModificationStatus.ResponseRequestRevisions)
+{
+    <partial name="_BackNavigation" model="@("pov:postapproval", "Back", new Dictionary<string, string> { { "projectRecordId", Model.ProjectRecordId }})" />
+}
 else
 {
     @section BackNavigation {
@@ -179,12 +183,12 @@ else
 
         <div class="save-buttons">
             @if
-      (
-          (Model.Status is ModificationStatus.InDraft) ||
-          (Model.Status is ModificationStatus.RequestRevisions && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart) ||
-          (isRevisionBySponsor && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart) &&
-          Model.ModificationChanges.Count < 10
-      )
+(
+  (Model.Status is ModificationStatus.InDraft) ||
+  (Model.Status is ModificationStatus.RequestRevisions && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart) ||
+  (isRevisionBySponsor && tempHalt != AreasOfChange.ProjectHalt && tempHalt != AreasOfChange.ProjectRestart) &&
+  Model.ModificationChanges.Count < 10
+)
             {
                 <a permissions="@([Permissions.MyResearch.Modifications_Update, Permissions.Sponsor.Modifications_Authorise])"
                    asp-route="pmc:areaofchange"

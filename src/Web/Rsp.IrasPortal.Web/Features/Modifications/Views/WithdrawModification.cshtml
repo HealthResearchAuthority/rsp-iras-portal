@@ -6,12 +6,14 @@
     ViewBag.Title = "Withdraw modification";
 
     var modificationParams = new Dictionary<string, string>
-    {
+{
         { "projectRecordId", Model.ModificationDetails.ProjectRecordId },
         { "irasId", Model.ModificationDetails.IrasId },
         { "shortTitle", Model.ModificationDetails.ShortTitle ?? string.Empty },
         { "projectModificationId", Model.ModificationDetails.ModificationId ?? string.Empty },
-        { "projectModificationIdentifier", Model.ModificationDetails.ModificationIdentifier ?? string.Empty }
+        { "projectModificationIdentifier", Model.ModificationDetails.ModificationIdentifier ?? string.Empty },
+        { "sponsorOrganisationUserId", Model.ModificationDetails.SponsorOrganisationUserId ?? string.Empty },
+        { "rtsId", Model.ModificationDetails.RtsId ?? string.Empty }
     };
 
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
@@ -19,13 +21,25 @@
         ? pageContentData
         : new Dictionary<string, MixedContentPageItem?>();
 
-	var headline = pageContent.GetValueOrDefault("Modifications.WithdrawModification.Title", null);
-	var body = pageContent.GetValueOrDefault("Modifications.WithdrawModification.Body", null);
+    var headline = pageContent.GetValueOrDefault("Modifications.WithdrawModification.Title", null);
+    var body = pageContent.GetValueOrDefault("Modifications.WithdrawModification.Body", null);
+    var backRoute = Context.Request.Query["backRoute"].ToString();
 }
 
 @section BackNavigation {
     @{
-        <partial name="_BackNavigation" model="@("pmc:reviewallchanges", "Back", modificationParams)"/>
+        if (Model.ModificationDetails.Status == ModificationStatus.ResponseRequestRevisions && string.IsNullOrEmpty(backRoute))
+        {
+            <partial name="_BackNavigation" model="@("pmc:ModificationDetails", "Back", modificationParams)" />
+        }
+        else if (Model.ModificationDetails.Status == ModificationStatus.ResponseRequestRevisions && !string.IsNullOrEmpty(backRoute))
+        {
+            <partial name="_BackNavigation" model="@("rfi:RfiResponses", "Back", modificationParams)" />
+        }
+        else
+        {
+            <partial name="_BackNavigation" model="@("pmc:reviewallchanges", "Back", modificationParams)" />
+        }
     }
 }
 
@@ -34,9 +48,9 @@
         <h2 class="govuk-heading-l">@Html.Raw(headline?.Value) @Model.ModificationDetails.ModificationIdentifier</h2>
         <p class="govuk-body">@Html.Raw(body?.Value)</p>
         <form method="post">
-			<input type="hidden" name="ProjectModificationId" value="@Model.ModificationDetails.ModificationId" />
-			<input type="hidden" name="ProjectRecordId" value="@Model.ModificationDetails.ProjectRecordId" />
-			<button asp-route="pmc:confirmwithdrawmodification" type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">
+            <input type="hidden" name="ProjectModificationId" value="@Model.ModificationDetails.ModificationId" />
+            <input type="hidden" name="ProjectRecordId" value="@Model.ModificationDetails.ProjectRecordId" />
+            <button asp-route="pmc:confirmwithdrawmodification" type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">
                 Confirm
             </button>
         </form>
