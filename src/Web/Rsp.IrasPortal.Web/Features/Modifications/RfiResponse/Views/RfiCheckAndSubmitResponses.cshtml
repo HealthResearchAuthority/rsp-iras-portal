@@ -229,13 +229,11 @@
             <div class="govuk-grid-row">
                 <div status-for="@Model.Status"
                      status-is="@ModificationStatus.ResponseWithSponsor">
-                    <input type="hidden" name="SponsorOrganisationUserId" value="@Model.SponsorOrganisationUserId" />
-                    <input type="hidden" name="RtsId" value="@Model.RtsId" />
 
                     <button type="submit" class="govuk-button" data-module="govuk-button">
                         Send revisions request
                     </button>
-                    <button asp-action="RfiSubmitResponses" asp-route-saveForLater="true" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+                    <button asp-action="SendRfiResponses" asp-route-saveForLater="true" type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
                         Save for later
                     </button>
                 </div>

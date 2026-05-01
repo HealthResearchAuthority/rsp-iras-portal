@@ -8,7 +8,6 @@
 @model ModificationDetailsViewModel
 @inject IFeatureManager featureManager
 
-
 @{
     bool isRevisionBySponsor = ViewBag.IsRevisionBySponsor as bool? ?? false;
     var pageContentData = (Dictionary<string, MixedContentPageItem?>?)ViewData[PageContentElements.PageContent];
@@ -26,6 +25,13 @@
             : path.Contains("modifications/modificationdetails")
                 ? "ModificationDetails"
                 : "";
+
+    var backRoute = Model.Status switch
+    {
+        ModificationStatus.ResponseRequestRevisions => "responseRequestRevision",
+        ModificationStatus.RequestForInformation => "toaddpage",
+        _ => string.Empty
+    };
 }
 <script>
     document.documentElement.classList.add("js-enabled");
@@ -59,7 +65,6 @@
                                                         Select all documents on this page
                                                     </label>
                                                 </div>
-
                                             </div>
                                         }
                                     </feature>
@@ -105,18 +110,19 @@
                                                                         {"sponsorOrganisationUserId", Model.SponsorOrganisationUserId}
                                                                         }
                                                                         })
-                                </th>
+                                    </th>
                                 }
                                 @if (
-                                         (
-                                             Model.Status is ModificationStatus.InDraft ||
-                                             Model.Status is ModificationStatus.RequestRevisions ||
-                                             Model.Status is ModificationStatus.RequestForInformation ||
-                                             (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise) ||
-                                             (isRevisionBySponsor && Model.Status is ModificationStatus.ResponseReviseAndAuthorise)
-                                         ) 
-                                         && ViewBag.AreDocumentsReadOnly is not true
-                                    )
+                     (
+                         Model.Status is ModificationStatus.InDraft ||
+                         Model.Status is ModificationStatus.RequestRevisions ||
+                         Model.Status is ModificationStatus.RequestForInformation ||
+                         Model.Status is ModificationStatus.ResponseRequestRevisions ||
+                         (isRevisionBySponsor && Model.Status is ModificationStatus.ReviseAndAuthorise) ||
+                         (isRevisionBySponsor && Model.Status is ModificationStatus.ResponseReviseAndAuthorise)
+                     )
+                     && ViewBag.AreDocumentsReadOnly is not true
+)
                                 {
                                     <th scope="col" class="govuk-table__header">Action</th>
                                 }
@@ -202,22 +208,23 @@
                                         </strong>
                                     </td>
                                     @if
-                                    (
-                                        (
-                                        Model.Status is ModificationStatus.InDraft ||
-                                        Model.Status is ModificationStatus.RequestRevisions ||
-                                        Model.Status is ModificationStatus.RequestForInformation ||
-                                        (
-                                            isRevisionBySponsor &&
-                                            Model.Status is ModificationStatus.ReviseAndAuthorise
-                                        ) ||                                        
-                                        (
-                                            isRevisionBySponsor &&
-                                            Model.Status is ModificationStatus.ResponseReviseAndAuthorise
-                                        ) 
-                                        ) &&
-                                        ViewBag.AreDocumentsReadOnly is not true
-                                    )
+(
+(
+Model.Status is ModificationStatus.InDraft ||
+Model.Status is ModificationStatus.RequestRevisions ||
+Model.Status is ModificationStatus.RequestForInformation ||
+Model.Status is ModificationStatus.ResponseRequestRevisions ||
+(
+                        isRevisionBySponsor &&
+                        Model.Status is ModificationStatus.ReviseAndAuthorise
+) ||
+(
+                        isRevisionBySponsor &&
+                        Model.Status is ModificationStatus.ResponseReviseAndAuthorise
+)
+) &&
+ViewBag.AreDocumentsReadOnly is not true
+)
                                     {
                                         <td class="govuk-table__cell">
                                             @if (!isFailed && !isTracked)
@@ -229,13 +236,31 @@
                                                    class="govuk-link">
                                                     Change details
                                                 </a>
-                                                <feature name="@FeatureFlags.RequestForInformation">
+                                                @*<feature name="@FeatureFlags.RequestForInformation">
+                                                        <br />
+
+                                                        <a permissions="@([Permissions.MyResearch.ProjectDocuments_Delete, Permissions.Sponsor.Modifications_Authorise])"
+                                                           asp-route="pmc:confirmdeletedocument"
+                                                           asp-route-id="@modification.Id"
+                                                           asp-route-backRoute="toaddpage"
+                                                           class="govuk-link">
+                                                            Remove
+                                                            <span class="govuk-visually-hidden"> @modification.FileName</span>
+                                                        </a>
+                                                    </feature>*@
+                                                <feature name="@FeatureFlags.SponsorAuthorisation,@FeatureFlags.RequestForInformation" requirement="Any">
                                                     <br />
 
                                                     <a permissions="@([Permissions.MyResearch.ProjectDocuments_Delete, Permissions.Sponsor.Modifications_Authorise])"
-                                                        asp-route="pmc:confirmdeletedocument"
+                                                       asp-route="pmc:confirmdeletedocument"
                                                        asp-route-id="@modification.Id"
-                                                       asp-route-backRoute="toaddpage"
+                                                       asp-route-backRoute=@backRoute
+                                                       asp-route-projectRecordId="@Model.ProjectRecordId"
+                                                       asp-route-irasId="@Model.IrasId"
+                                                       asp-route-shortTitle="@Model.ShortTitle"
+                                                       asp-route-projectModificationId="@Model.ModificationId"
+                                                       asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
+                                                       asp-route-rtsId="@Model.RtsId"
                                                        class="govuk-link">
                                                         Remove
                                                         <span class="govuk-visually-hidden"> @modification.FileName</span>
@@ -264,7 +289,7 @@
                                                     </p>
 
                                                     <a permissions="@([Permissions.MyResearch.ProjectDocuments_Delete, Permissions.Sponsor.Modifications_Authorise])"
-                                                        asp-route="pmc:confirmdeletedocument"
+                                                       asp-route="pmc:confirmdeletedocument"
                                                        asp-route-id="@modification.Id"
                                                        asp-route-backRoute="toaddpage"
                                                        class="govuk-button govuk-button--warning govuk-!-margin-bottom-0">
@@ -285,15 +310,15 @@
     </div>
 </div>
 
-<div status-for="Status" status-in="@([ModificationStatus.InDraft,ModificationStatus.RequestRevisions,ModificationStatus.RequestForInformation] )" class="govuk-button-group">
+<div status-for="Status" status-in="@([ModificationStatus.InDraft,ModificationStatus.RequestRevisions,ModificationStatus.RequestForInformation,ModificationStatus.ResponseRequestRevisions] )" class="govuk-button-group">
     @if (ViewBag.AreDocumentsReadOnly is not true)
     {
         <a permission="@Permissions.MyResearch.Modifications_Update"
-            href="@Url.RouteUrl("pmc:projectdocument")"
+           href="@Url.RouteUrl("pmc:projectdocument")"
            class="govuk-button govuk-button--secondary">
-        Add documents
+            Add documents
         </a>
-    }    
+    }
 </div>
 
 <div status-for="Status" status-in="@([ModificationStatus.ReviseAndAuthorise, ModificationStatus.ResponseReviseAndAuthorise] )" class="govuk-button-group">

@@ -320,4 +320,69 @@ public class SaveSponsorReference_Tests : TestServiceBase<SponsorReferenceContro
         rv["sponsorOrganisationUserId"].ShouldBe(sponsorUserId);
         rv["rtsId"].ShouldBe(rtsId);
     }
+
+    [Fact]
+    public async Task Redirects_To_SwsModifications_When_SaveForLater_And_ResponseRequestRevision()
+    {
+        var http = new DefaultHttpContext();
+        http.Items[Rsp.Portal.Application.Constants.ContextItemKeys.UserId] = "R1";
+        Sut.ControllerContext = new() { HttpContext = http };
+
+        var modId = Guid.NewGuid();
+        var sponsorUserId = Guid.NewGuid();
+        var rtsId = "RTS-123";
+
+        Sut.TempData = new TempDataDictionary(http, Mock.Of<ITempDataProvider>())
+        {
+            [TempDataKeys.ProjectModification.ProjectModificationId] = modId,
+            [TempDataKeys.ProjectRecordId] = "PR1",
+            [TempDataKeys.ProjectModification.ProjectModificationStatus] = ModificationStatus.ResponseRequestRevisions,
+            [TempDataKeys.RevisionSponsorOrganisationUserId] = sponsorUserId,
+            [TempDataKeys.RevisionRtsId] = rtsId
+        };
+
+        Mocker.GetMock<ICmsQuestionsetService>()
+            .Setup(s => s.GetModificationQuestionSet(It.Is<string>(x => x == SectionId), It.IsAny<string>()))
+            .ReturnsAsync(new ServiceResponse<CmsQuestionSetResponse>
+            {
+                StatusCode = System.Net.HttpStatusCode.OK,
+                Content = new()
+                {
+                    Sections =
+                    [
+                        new SectionModel
+                    {
+                        Id = SectionId,
+                        CategoryId = CategoryId,
+                        Questions = [ new QuestionModel { Id = "Q1", QuestionId = "Q1", AnswerDataType = "Text", CategoryId = CategoryId } ]
+                    }
+                    ]
+                }
+            });
+
+        Mocker.GetMock<IValidator<QuestionnaireViewModel>>()
+            .SetupSequence(v => v.ValidateAsync(It.IsAny<ValidationContext<QuestionnaireViewModel>>(), default))
+            .ReturnsAsync(new FluentValidation.Results.ValidationResult())
+            .ReturnsAsync(new FluentValidation.Results.ValidationResult());
+
+        Mocker.GetMock<IRespondentService>()
+            .Setup(s => s.SaveModificationAnswers(It.IsAny<ProjectModificationAnswersRequest>()))
+            .ReturnsAsync(new ServiceResponse { StatusCode = System.Net.HttpStatusCode.OK });
+
+        var model = new QuestionnaireViewModel
+        {
+            Questions =
+            [
+                new QuestionViewModel { Index = 0, QuestionId = "Q1", Category = CategoryId, SectionId = SectionId }
+            ]
+        };
+
+        var result = await Sut.SaveSponsorReference(model, saveForLater: false);
+
+        var redirect = result.ShouldBeOfType<RedirectToRouteResult>();
+        redirect.RouteName.ShouldBe("pmc:ModificationDetails");
+
+        redirect.RouteValues!["sponsorOrganisationUserId"].ShouldBe(sponsorUserId);
+        redirect.RouteValues!["rtsId"].ShouldBe(rtsId);
+    }
 }

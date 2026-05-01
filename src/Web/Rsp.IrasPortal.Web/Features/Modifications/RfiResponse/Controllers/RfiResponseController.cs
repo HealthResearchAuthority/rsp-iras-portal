@@ -170,6 +170,15 @@ public class RfiResponseController(
         {
             MergeRfiResponseDataFromTempData(model, raw as string);
         }
+        //For PDF download data population
+        var reviewOutcomeModel = new ReviewOutcomeViewModel
+        {
+            ModificationDetails = model,
+        };
+
+        TempData[TempDataKeys.ProjectModification.ProjectModificationsDetails] =
+            JsonSerializer.Serialize(reviewOutcomeModel);
+
         return View(model);
     }
 
@@ -271,7 +280,8 @@ public class RfiResponseController(
             ModificationStatus.ResponseReviseAndAuthorise =>
                 await HandleReviseAndAuthorise(viewModel, saveForLater),
 
-            ModificationStatus.ResponseWithSponsor =>
+            ModificationStatus.ResponseWithSponsor or
+            ModificationStatus.ResponseRequestRevisions =>
                 await HandleRequestRevisions(viewModel, saveForLater),
 
             _ => this.ServiceError(new ServiceResponse
@@ -414,13 +424,6 @@ public class RfiResponseController(
         if (!sponsorResult.IsSuccessStatusCode)
             return this.ServiceError(sponsorResult);
 
-        var redirectResult = await CheckDocumentsAndRedirectIfRequired(Guid.Parse(viewModel.ModificationId!));
-
-        if (redirectResult is not null)
-        {
-            return redirectResult;
-        }
-
         if (saveForLater)
         {
             return RedirectToRoute(
@@ -431,6 +434,12 @@ public class RfiResponseController(
                     sponsorOrganisationUserId = viewModel.SponsorOrganisationUserId,
                     rtsId = viewModel.RtsId
                 });
+        }
+        var redirectResult = await CheckDocumentsAndRedirectIfRequired(Guid.Parse(viewModel.ModificationId!));
+
+        if (redirectResult is not null)
+        {
+            return redirectResult;
         }
 
         return RedirectToAction(nameof(RfiCheckAndSubmitResponses));
@@ -464,23 +473,12 @@ public class RfiResponseController(
 
     [HttpPost]
     [ModificationAuthorise(Permissions.MyResearch.Modifications_Submit)]
-    public async Task<IActionResult> RfiSubmitResponses(bool saveForLater = false)
+    public async Task<IActionResult> RfiSubmitResponses()
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
         viewModel.Status = (viewModel as BaseProjectModificationViewModel).Status;
         ServiceResponse updateStatusResponse;
 
-        if (saveForLater && viewModel.Status == ModificationStatus.ResponseWithSponsor)
-        {
-            return RedirectToRoute(
-               "sws:modifications",
-               new
-               {
-                   projectRecordId = viewModel.ProjectRecordId,
-                   sponsorOrganisationUserId = viewModel.SponsorOrganisationUserId,
-                   rtsId = viewModel.RtsId
-               });
-        }
         switch (viewModel.Status)
         {
             case ModificationStatus.RequestForInformation:
@@ -548,12 +546,17 @@ public class RfiResponseController(
             .Select(r => r.RequestRevisionsBySponsor.FirstOrDefault() ?? string.Empty)
             .ToList();
 
+        // applicant request revision response
+        var applicantResponses = viewModel.RfiModel.RfiResponses
+            .Select(r => r.RequestRevisionsByApplicant.FirstOrDefault() ?? string.Empty)
+            .ToList();
+
         var applicantResult = await projectModificationsService.SaveModificationRfiResponses(
             new ModificationRfiResponseRequest
             {
                 ProjectModificationId = Guid.Parse(viewModel.ModificationId!),
-                Responses = sponsorResponses,
-                Role = ResponseRoles.Sponsor,
+                Responses = viewModel.Status == ModificationStatus.ResponseWithSponsor ? sponsorResponses : applicantResponses,
+                Role = viewModel.Status == ModificationStatus.ResponseWithSponsor ? ResponseRoles.Sponsor : ResponseRoles.Applicant,
                 ResponseOrigin = ResponseOrigin.RequestRevisions
             });
 
@@ -564,16 +567,47 @@ public class RfiResponseController(
 
         if (saveForLater)
         {
+            if (viewModel.Status == ModificationStatus.ResponseWithSponsor)
+            {
+                return RedirectToRoute(
+                    "sws:modifications",
+                    new
+                    {
+                        projectRecordId = viewModel.ProjectRecordId,
+                        sponsorOrganisationUserId = viewModel.SponsorOrganisationUserId,
+                        rtsId = viewModel.RtsId
+                    });
+            }
             return RedirectToRoute(
-                "sws:modifications",
-                new
-                {
-                    projectRecordId = viewModel.ProjectRecordId,
-                    sponsorOrganisationUserId = viewModel.SponsorOrganisationUserId,
-                    rtsId = viewModel.RtsId
-                });
+              "pov:postapproval",
+              new
+              {
+                  projectRecordId = viewModel.ProjectRecordId,
+                  showBanner = true
+              });
+        }
+        var redirectResult = await CheckDocumentsAndRedirectIfRequired(Guid.Parse(viewModel.ModificationId!));
+
+        if (redirectResult is not null)
+        {
+            return redirectResult;
         }
 
+        if (viewModel.Status == ModificationStatus.ResponseRequestRevisions)
+        {
+            var updateStatusResponse = await projectModificationsService.UpdateModificationStatus(
+                    new UpdateModificationStatusRequest
+                    {
+                        ProjectRecordId = viewModel.ProjectRecordId!,
+                        ModificationId = Guid.Parse(viewModel.ModificationId!),
+                        Status = ModificationStatus.ResponseWithSponsor,
+                    });
+            if (!updateStatusResponse.IsSuccessStatusCode)
+            {
+                return this.ServiceError(updateStatusResponse);
+            }
+            return RedirectToAction(nameof(RfiResponsesConfirmation));
+        }
         return RedirectToAction(nameof(RfiCheckAndSubmitResponses));
     }
 }

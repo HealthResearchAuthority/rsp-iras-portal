@@ -14,6 +14,8 @@
     var reviseAndAuthoriseBody = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.ReviseAndAuthoriseBody", null);
     var requestRevisionHeader = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.RequestRevisionHeader", null);
     var requestRevisionBody = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.RequestRevisionBody", null);
+    var responsRequestRevisionHeader = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.ResponseRequestRevisionHeader", null);
+    var responsRequestRevisionBody = pageContent.GetValueOrDefault("Modifications.Rfi.RfiResponsesConfirmation.ResponseRequestRevisionBody", null);
 
     var (header, body) = Model.Status switch
     {
@@ -21,6 +23,8 @@
             => (reviseAndAuthoriseHeader, reviseAndAuthoriseBody),
         ModificationStatus.ResponseWithSponsor
             => (requestRevisionHeader, requestRevisionBody),
+        ModificationStatus.ResponseRequestRevisions
+            => (responsRequestRevisionHeader, responsRequestRevisionBody),
         _ => (rfiHeader, rfiBody)
     };
 
@@ -40,8 +44,8 @@
         </p>
 
         <div status-for="@Model.Status"
-             status-is="@ModificationStatus.RequestForInformation">
-            <a class="govuk-button" asp-route="pov:index" asp-route-projectRecordId="@Model.ProjectRecordId" asp-route-modificationId="@Model.ModificationId">
+             status-in="@([ModificationStatus.RequestForInformation,ModificationStatus.ResponseRequestRevisions ])">
+            <a class="govuk-button" asp-route="pov:postapproval" asp-route-projectRecordId="@Model.ProjectRecordId">
                 Return to project overview
             </a>
         </div>
