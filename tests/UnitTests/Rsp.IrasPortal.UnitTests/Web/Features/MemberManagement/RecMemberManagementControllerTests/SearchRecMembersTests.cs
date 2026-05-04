@@ -8,10 +8,12 @@ using Rsp.IrasPortal.Web.Features.MemberManagement.Controllers;
 using Rsp.IrasPortal.Web.Features.MemberManagement.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Responses;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.UnitTests;
+using Rsp.Portal.Web.Models;
 using Claim = System.Security.Claims.Claim;
 
 namespace Rsp.IrasPortal.UnitTests.Web.Features.MemberManagement.RecMemberManagementControllerTests;
@@ -579,5 +581,165 @@ public class SearchRecMembersTests : TestServiceBase<RecMemberManagementControll
         // Assert
         var statusCodeResult = result.ShouldBeOfType<StatusCodeResult>();
         statusCodeResult.StatusCode.ShouldBe((int)HttpStatusCode.InternalServerError);
+    }
+
+    [Fact]
+    public async Task RecProfileAuditHistory_ShouldReturnView_WhenNoAuditItems()
+    {
+        var recId = Guid.NewGuid();
+        SetUser(LoggedInUserId);
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.ReviewBodyAuditTrail(recId, It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ReviewBodyAuditTrailResponse
+                {
+                    Items = null,
+                    TotalCount = 0
+                }
+            });
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(recId))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ReviewBodyDto { RegulatoryBodyName = "REC A" }
+            });
+
+        var result = await Sut.RecProfileAuditHistory(recId, null, null);
+
+        var view = result.ShouldBeOfType<ViewResult>();
+        var model = view.Model.ShouldBeOfType<ReviewBodyAuditTrailViewModel>();
+
+        model.Items.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task RecProfileAuditHistory_ShouldNotSort_WhenSortFieldIsNull()
+    {
+        var recId = Guid.NewGuid();
+        SetUser(LoggedInUserId);
+
+        var items = new List<ReviewBodyAuditTrailDto>
+    {
+        new() { Description = "B", DateTimeStamp = DateTime.UtcNow },
+        new() { Description = "A", DateTimeStamp = DateTime.UtcNow.AddMinutes(-1) }
+    };
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.ReviewBodyAuditTrail(recId, It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ReviewBodyAuditTrailResponse
+                {
+                    Items = items,
+                    TotalCount = items.Count
+                }
+            });
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(recId))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ReviewBodyDto { RegulatoryBodyName = "REC A" }
+            });
+
+        var result = await Sut.RecProfileAuditHistory(recId, null, null);
+
+        var model = result.ShouldBeOfType<ViewResult>()
+            .Model.ShouldBeOfType<ReviewBodyAuditTrailViewModel>();
+
+        model.Items.ShouldBe(items);
+    }
+
+    [Fact]
+    public async Task RecProfileAuditHistory_ShouldSortByDescription_Ascending()
+    {
+        var recId = Guid.NewGuid();
+        SetUser(LoggedInUserId);
+
+        var items = new List<ReviewBodyAuditTrailDto>
+    {
+        new() { Description = "Z" },
+        new() { Description = "A" }
+    };
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.ReviewBodyAuditTrail(recId, It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ReviewBodyAuditTrailResponse
+                {
+                    Items = items,
+                    TotalCount = items.Count
+                }
+            });
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(recId))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ReviewBodyDto { RegulatoryBodyName = "REC A" }
+            });
+
+        var result = await Sut.RecProfileAuditHistory(
+            recId,
+            nameof(ReviewBodyAuditTrailDto.Description),
+            SortDirections.Ascending);
+
+        var model = result.ShouldBeOfType<ViewResult>()
+            .Model.ShouldBeOfType<ReviewBodyAuditTrailViewModel>();
+
+        model.Items.First().Description.ShouldBe("A");
+    }
+
+    [Fact]
+    public async Task RecProfileAuditHistory_ShouldIgnoreSorting_WhenSortFieldIsUnknown()
+    {
+        var recId = Guid.NewGuid();
+        SetUser(LoggedInUserId);
+
+        var items = new List<ReviewBodyAuditTrailDto>
+    {
+        new() { Description = "B" },
+        new() { Description = "A" }
+    };
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.ReviewBodyAuditTrail(recId, It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyAuditTrailResponse>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ReviewBodyAuditTrailResponse
+                {
+                    Items = items,
+                    TotalCount = items.Count
+                }
+            });
+
+        Mocker.GetMock<IReviewBodyService>()
+            .Setup(s => s.GetReviewBodyById(recId))
+            .ReturnsAsync(new ServiceResponse<ReviewBodyDto>
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new ReviewBodyDto { RegulatoryBodyName = "REC A" }
+            });
+
+        var result = await Sut.RecProfileAuditHistory(
+            recId,
+            "UnknownField",
+            SortDirections.Descending);
+
+        var model = result.ShouldBeOfType<ViewResult>()
+            .Model.ShouldBeOfType<ReviewBodyAuditTrailViewModel>();
+
+        model.Items.ShouldBe(items);
     }
 }
