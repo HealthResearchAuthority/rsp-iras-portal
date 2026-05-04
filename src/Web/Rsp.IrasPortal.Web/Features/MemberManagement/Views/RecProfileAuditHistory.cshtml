@@ -1,0 +1,79 @@
+﻿@using Rsp.Portal.Application.DTOs.Responses
+@using Rsp.Portal.Web.Areas.Admin.Models
+@model ReviewBodyAuditTrailViewModel
+
+@{
+    ViewBag.Title = "Audit history - Research Ethics Committees - Member Management";
+
+    var recId = Context.Request.Query["recId"].ToString();
+
+    var tableId = "recAuditTable";
+
+    var sortableHeaders = new[]
+    {
+        new { Field = nameof(ReviewBodyAuditTrailDto.DateTimeStamp ), Label = "Date" },
+        new { Field = nameof(ReviewBodyAuditTrailDto.Description ), Label = "Event description" },
+    };
+}
+
+@section Breadcrumb {
+    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+    {
+        ("Member management", Url.RouteUrl("mm:home")),
+        ("Research ethics committees", Url.RouteUrl("mm:researchethicscommittees")),
+        ($"Research ethics committee profile: {Model.BodyName}", Url.RouteUrl("mm:researchethicscommitteesprofile", new { id = recId }))}
+    )
+}
+
+<div class="govuk-grid-row govuk-!-margin-bottom-2">
+    <div class="govuk-grid-column-three-quarters">
+        <h1 class="govuk-heading-l">Audit history: @Model.BodyName</h1>
+    </div>
+</div>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+
+        <div class="govuk-table-wrapper">
+            <table class="govuk-table govuk-table-users">
+                <thead>
+                    <tr class="govuk-table__row govuk-table__header-sortable govuk-body-s">
+                        @foreach (var header in sortableHeaders)
+                        {
+                            var sortableHeaderModel = new SortableHeaderModel
+                            {
+                                FieldName = header.Field,
+                                DisplayText = header.Label,
+                                CurrentSortField = Model.Pagination?.SortField,
+                                CurrentSortDirection = Model.Pagination?.SortDirection,
+                                TableId = tableId,
+                                AdditionalParameters = new Dictionary<string, string> { ["recId"] = recId ?? Guid.Empty.ToString() }
+                            };
+
+                            <th scope="col" class="govuk-table__header govuk-table__header-sortable">
+                                <partial name="_SortableHeaderButton" model="@sortableHeaderModel" />
+                            </th>
+                        }
+                        <th scope="col" class="govuk-table__header govuk-table__header-sortable govuk-table--email line-break-anywhere">Actioned by</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Items != null)
+                    {
+                        foreach (var record in Model.Items)
+                        {
+                            <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">@record.DateTimeStamp.ToString("dd MMM yyyy HH:mm")</td>
+                                <td class="govuk-table__cell line-break-anywhere">@record.Description</td>
+                                <td class="govuk-table__cell line-break-anywhere">@record.User</td>
+                            </tr>
+                        }
+                    }
+
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="_Pagination" model="@Model.Pagination" />
+    </div>
+</div>
