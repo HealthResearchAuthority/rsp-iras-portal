@@ -1,6 +1,5 @@
-﻿@using Rsp.Portal.Application.Constants;
-@using Rsp.Portal.Web.Models
-@using System.Text.Json
+﻿@using System.Text.Json
+@using Rsp.Portal.Application.Constants
 @model ProjectOverviewModel
 
 @{
@@ -9,10 +8,10 @@
 }
 
 @{
-    var routeName = (ViewData["BackRoute"] as string) ?? "app:Welcome";
+    var routeName = ViewData["BackRoute"] as string ?? "app:Welcome";
     var routeValues = ViewData["BackRouteValues"] as Dictionary<string, string>
                       ?? new Dictionary<string, string>();
-	var projectTitle = !string.IsNullOrEmpty(Model.ProjectTitle) ? Model.ProjectTitle : "Project overview";
+    var projectTitle = !string.IsNullOrEmpty(Model.ProjectTitle) ? Model.ProjectTitle : "Project overview";
 
     var tdBackRouteValues = TempData.Peek(TempDataKeys.ProjectOverviewReferrer.BackRouteValues);
     TempData[TempDataKeys.ProjectModification.LinkBackToReferrer] = true;
@@ -24,21 +23,21 @@
 @if (routeName is null || routeName.ToLower() == "app:welcome")
 {
     @section Breadcrumb {
-	    @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
-	    {
-		    ("My research",Url.RouteUrl("app:welcome")),
-		    (projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string>{{"projectRecordId", Model?.ProjectRecordId!}}))
-	    })
+        @await Html.PartialAsync("_Breadcrumb", new List<(string, string?)>
+        {
+            ("My research", Url.RouteUrl("app:welcome")),
+            (projectTitle, Url.RouteUrl("pov:projectdetails", new Dictionary<string, string> { { "projectRecordId", Model?.ProjectRecordId! } }))
+        })
     }
 }
 else
 {
     @section BackNavigation {
-        <partial name="_BackNavigation" model="@(routeName, "Back", backRouteValues)" />
+        <partial name="_BackNavigation" model="@(routeName, "Back", backRouteValues)"/>
     }
 }
 
-<partial name="_NavigationHeaderPartial" model="@Model" />
+<partial name="_NavigationHeaderPartial" model="@Model"/>
 
 <div class="govuk-grid-row">
     <div class="govuk-width-container govuk-!-margin-top-4">
@@ -48,12 +47,12 @@ else
             <dl class="govuk-summary-list">
                 @foreach (var question in group.Questions)
                 {
-                    string questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText;
+                    var questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText) ? question.QuestionText : question.ShortQuestionText;
 
                     <div class="govuk-summary-list__row">
                         <dt class="govuk-summary-list__key">@questionText</dt>
                         <dd class="govuk-summary-list__value">
-                            @Html.Raw(question.GetDisplayText(includePrompt: false))
+                            @Html.Raw(question.GetDisplayText(false))
                         </dd>
                     </div>
                 }
@@ -63,95 +62,112 @@ else
 </div>
 
 
-
 <feature name="@FeatureFlags.ParticipatingOrganisations">
 
-@{
-	var organisationsWithAnswers = Model.ParticipatingOrganisations?
-		.Select(o => new
-		{
-			Organisation = o,
-			AnsweredQuestions = o.Questions?
-				.Select(q => new
-				{
-					Question = q,
-					DisplayText = q.GetDisplayText()
-				})
-				.Where(x => !string.IsNullOrWhiteSpace(x.DisplayText))
-				.ToList()
-		})
-		.Where(x => x.AnsweredQuestions?.Any() == true)
-		.ToList();
-}
+    @{
+        var organisationsWithAnswers = Model.ParticipatingOrganisations?
+            .Select(o => new
+            {
+                Organisation = o,
+                AnsweredQuestions = o.Questions?
+                    .Select(q => new
+                    {
+                        Question = q,
+                        DisplayText = q.GetDisplayText()
+                    })
+                    .Where(x => !string.IsNullOrWhiteSpace(x.DisplayText))
+                    .ToList()
+            })
+            .Where(x => x.AnsweredQuestions?.Any() == true)
+            .ToList();
+    }
 
-	@if (organisationsWithAnswers?.Any() == true)
-	{
-		<div class="govuk-grid-row">
-			<div class="govuk-width-container govuk-!-margin-top-4">
+    @if (organisationsWithAnswers?.Any() == true)
+    {
+        <div class="govuk-grid-row">
+            <div class="govuk-width-container govuk-!-margin-top-4">
 
-				<h2 class="govuk-heading-m">Participating organisations</h2>
+                <h2 class="govuk-heading-m">Participating organisations</h2>
 
-				@foreach (var item in organisationsWithAnswers)
-				{
-					var organisation = item.Organisation;
-					var answeredQuestions = item.AnsweredQuestions;
+                @foreach (var item in organisationsWithAnswers)
+                {
+                    var organisation = item.Organisation;
+                    var answeredQuestions = item.AnsweredQuestions;
 
-					<div class="govuk-!-margin-bottom-6">
-						<dl class="govuk-summary-list">
+                    <div class="govuk-!-margin-bottom-6">
+                        <dl class="govuk-summary-list">
 
-							<div class="govuk-summary-list__row">
-								<dt class="govuk-summary-list__key">
-									Participating organisation
-								</dt>
-								<dd class="govuk-summary-list__value">
-									@organisation.OrganisationName
-									@if (!string.IsNullOrWhiteSpace(organisation.OrganisationAddress))
-									{
-										<br />
-										@organisation.OrganisationAddress
-									}
-								</dd>
-							</div>
+                            <div class="govuk-summary-list__row">
+                                <dt class="govuk-summary-list__key">
+                                    Participating organisation
+                                </dt>
+                                <dd class="govuk-summary-list__value">
+                                    @organisation.OrganisationName
+                                    @if (!string.IsNullOrWhiteSpace(organisation.OrganisationAddress))
+                                    {
+                                        <br/>
+                                        @organisation.OrganisationAddress
+                                    }
+                                </dd>
+                            </div>
 
-                    <!-- Answered questions only -->
-							@foreach (var q in answeredQuestions)
-							{
-								var question = q.Question;
+                            <!-- Answered questions only -->
+                            @foreach (var q in answeredQuestions)
+                            {
+                                var question = q.Question;
 
-								if (question.AnswerText != null)
-								{
-									var isConditional = question is { IsOptional: false, IsMandatory: false }
+                                @if (question.AnswerText != null || question.QuestionId == "IQA0752")
+                                {
+                                    var isConditional = question is { IsOptional: false, IsMandatory: false }
                                                         && question.Rules.Any();
 
-									var conditionalClass = isConditional ? "po-conditional" : "";
+                                    var conditionalClass = isConditional ? "po-conditional" : "";
 
-									var parentAttributes = isConditional
-										? $"data-parents=\"{string.Join(',', question.Rules.Select(r => r.ParentQuestionId))}\" data-questionid=\"{question.QuestionId}\""
-										: "";
+                                    var parentAttributes = isConditional
+                                        ? $"data-parents=\"{string.Join(',', question.Rules.Select(r => r.ParentQuestionId))}\" data-questionid=\"{question.QuestionId}\""
+                                        : "";
 
-									var questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText)
-										? question.QuestionText
-										: question.ShortQuestionText;
+                                    var questionText = string.IsNullOrWhiteSpace(question.ShortQuestionText)
+                                        ? question.QuestionText
+                                        : question.ShortQuestionText;
 
-									<div class="@conditionalClass govuk-summary-list__row"
-										 style="border: none"
-										 id="@question.QuestionId"
-										@Html.Raw(parentAttributes)>
-										<dt class="govuk-summary-list__key">@questionText</dt>
-										<dd class="govuk-summary-list__value">
-											@Html.Raw(q.DisplayText)
-										</dd>
-									</div>
-								}
-							}
-						</dl>
-					</div>
-				}
+                                    var answerHtml = "";
 
-			</div>
-        <!-- Will only show for 10 or more -->
-			<partial name="_Pagination" model="@Model.Pagination" />
-		</div>
-	}
+                                    if (question.QuestionId == "IQA0752")
+                                    {
+                                        // Always show "No" first
+                                        answerHtml = "No";
 
-								</feature>
+                                        // If we have display text, switch to Yes + content
+                                        if (!string.IsNullOrWhiteSpace(q.Question.AnswerText))
+                                        {
+                                            answerHtml = $"Yes<br />{q.Question.AnswerText}";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        answerHtml = q.DisplayText;
+                                    }
+
+                                    <div class="@conditionalClass govuk-summary-list__row"
+                                         style="border: none"
+                                         id="@question.QuestionId"
+                                         @Html.Raw(parentAttributes)>
+                                        <dt class="govuk-summary-list__key">@questionText</dt>
+                                        <dd class="govuk-summary-list__value">
+                                            @Html.Raw(answerHtml)
+                                        </dd>
+                                    </div>
+                                }
+                            }
+                        </dl>
+                    </div>
+                }
+
+            </div>
+            <!-- Will only show for 10 or more -->
+            <partial name="_Pagination" model="@Model.Pagination"/>
+        </div>
+    }
+
+</feature>
