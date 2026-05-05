@@ -1,5 +1,6 @@
 ﻿@using Rsp.Portal.Application.Constants
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Domain.AccessControl
 @using Rsp.Portal.Web.Features.Modifications.Models
 @model Rsp.Portal.Web.Features.Modifications.Models.ModificationDetailsViewModel
 @{
@@ -46,7 +47,7 @@
         </div>
     </div>
 </div>
-<div class="govuk-grid-row">
+<div class="govuk-grid-row" permission="@Permissions.MyResearch.Modifications_Submit">
     <div class="govuk-grid-column-two-thirds">
         <div class="govuk-heading-m">
             <strong> @Html.Raw(nextStepsTitle?.Value)</strong>

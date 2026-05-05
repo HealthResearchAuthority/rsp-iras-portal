@@ -49,7 +49,7 @@ public class ProjectCollaboratorsSearchController
     {
         if (string.IsNullOrWhiteSpace(model.Email))
         {
-            ModelState.AddModelError(nameof(model.Email), "Please enter an email address to search for a collaborator");
+            ModelState.AddModelError(nameof(model.Email), "Enter an email address");
 
             return View(nameof(AddCollaborator), model);
         }

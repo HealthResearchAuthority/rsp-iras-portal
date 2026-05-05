@@ -1,6 +1,7 @@
 ﻿@using Rsp.Portal.Application.Constants
 @using System.Text.Json
 @using Rsp.Portal.Application.DTOs.Responses.CmsContent
+@using Rsp.Portal.Domain.AccessControl
 @using Rsp.Portal.Web.Features.Modifications.Models
 @model ModificationDetailsViewModel
 
@@ -92,7 +93,9 @@
         <p class="govuk-body">
             @Html.Raw(rfiRespondText?.Value)
         </p>
-        <a asp-route="rfi:rfiresponses" asp-all-route-data="backRouteValues" class="govuk-button">
+        <a permission="@Permissions.MyResearch.Modifications_Update"
+            asp-route="rfi:rfiresponses"
+            asp-all-route-data="backRouteValues" class="govuk-button">
             Respond
         </a>
         @{

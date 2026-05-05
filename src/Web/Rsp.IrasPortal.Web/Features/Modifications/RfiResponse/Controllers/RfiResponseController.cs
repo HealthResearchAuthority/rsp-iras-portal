@@ -69,7 +69,7 @@ public class RfiResponseController(
 
         // only allow access to RFI details page when the modification is in RFI status,
         // otherwise return 403 forbidden
-        if (modification.Content!.Status != ModificationStatus.RequestForInformation)
+        if (modification.Content!.Status is not ModificationStatus.RequestForInformation and not ModificationStatus.ResponseRequestRevisions)
         {
             return Forbid();
         }
@@ -105,7 +105,7 @@ public class RfiResponseController(
     }
 
     [HttpGet]
-    [ModificationAuthorise(Permissions.MyResearch.Modifications_Read)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Review)]
     public async Task<IActionResult> RfiResponses
     (
         string projectRecordId,
@@ -245,7 +245,7 @@ public class RfiResponseController(
     }
 
     [HttpPost]
-    [ModificationAuthorise(Permissions.MyResearch.Modifications_Update)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Review)]
     public async Task<IActionResult> SendRfiResponses(ModificationDetailsViewModel model, bool saveForLater = false)
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(model);
@@ -469,7 +469,7 @@ public class RfiResponseController(
     }
 
     [HttpGet]
-    [ModificationAuthorise(Permissions.MyResearch.Modifications_Submit)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Review)]
     public async Task<IActionResult> RfiCheckAndSubmitResponses()
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new ModificationDetailsViewModel());
@@ -552,7 +552,7 @@ public class RfiResponseController(
     }
 
     [HttpGet]
-    [ModificationAuthorise(Permissions.MyResearch.Modifications_Read)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Review)]
     public IActionResult RfiResponsesConfirmation()
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());

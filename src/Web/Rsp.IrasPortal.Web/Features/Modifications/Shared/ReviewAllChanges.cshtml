@@ -222,9 +222,9 @@ else
     </feature>
 }
 <feature name="@FeatureFlags.RequestForInformation">
-    <authorized role-is="@Roles.Applicant"
+    <authorized permission="@Permissions.MyResearch.Modifications_Update"
                 status-for="Status"
-                status-is="@ModificationStatus.RequestForInformation">
+                status-in="@([ModificationStatus.ResponseRequestRevisions, ModificationStatus.RequestForInformation])">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <div class="govuk-heading-m">

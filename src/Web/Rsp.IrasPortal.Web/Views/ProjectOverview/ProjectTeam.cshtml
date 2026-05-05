@@ -133,7 +133,7 @@ else
                             JsonSerializer.Deserialize<List<CollaboratorProjectResponse>>(projects) ??
                             [];
 
-                        var userIsCollaboratorWithEditAccess = User.IsCollaboratorWithEditAccess
+                        var userIsCollaboratorWithEditAccess = User.IsInRole(Roles.SystemAdministrator) || User.IsCollaboratorWithEditAccess
                         (
                             collaboratorProjects,
                             Model.ProjectOverviewModel.ProjectRecordId!
@@ -149,87 +149,78 @@ else
                             <td class="govuk-table__cell">@collaborator.Email</td>
                             <td class="govuk-table__cell">@collaborator.ProjectAccessLevel</td>
                             <td class="govuk-table__cell">
-
-                                <ul class="govuk-summary-card__actions">
-                                    <!--If there is only one collaborator, no actions are available-->
-                                    @if (totalCollaborators == 1)
+                                <!--If there is only one collaborator, no actions are available-->
+                                @if (totalCollaborators == 1)
+                                {
+                                    <text>Not available</text>
+                                }
+                                else
+                                {
+                                    var routeParams = new Dictionary<string, string>
                                     {
-                                        <li class="govuk-summary-card__action">
-                                            Not available
-                                        </li>
-                                    }
-                                    else
-                                    {
-                                        var routeParams = new Dictionary<string, string>
-                                        {
-                                            { "id", collaborator.Id!.ToString() },
-                                            { "projectAccessLevel", collaborator.ProjectAccessLevel! },
-                                            { "email", collaborator.Email! },
-                                            { "userId", collaborator.UserId! },
-                                            { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId! },
-                                            { "self", collaborator.Self.ToString() }
-                                        };
+                                        { "id", collaborator.Id!.ToString() },
+                                        { "projectAccessLevel", collaborator.ProjectAccessLevel! },
+                                        { "email", collaborator.Email! },
+                                        { "userId", collaborator.UserId! },
+                                        { "projectRecordId", Model.ProjectOverviewModel.ProjectRecordId! },
+                                        { "self", collaborator.Self.ToString() }
+                                    };
 
-                                        var (showChangeLink, showRemoveLink) = userIsCollaboratorWithEditAccess switch
+
+                                    var (showChangeLink, showRemoveLink) = userIsCollaboratorWithEditAccess switch
+                                    {
+                                        // current and other users with edit access
+                                        true when totalCollaboratorsWithEditAccess > 1 => (collaborator.Self, collaborator.IsOwner) switch
                                         {
-                                            // current and other users with edit access
-                                            true when totalCollaboratorsWithEditAccess > 1 => (collaborator.Self, collaborator.IsOwner) switch
-                                            {
-                                                (true, true) => (false, false),  // user is current and owner, don't allow links
-                                                (true, false) => (true, true),   // user is current but not owner, allow change / remove
-                                                (false, true) => (false, false), // user is not current but is owner, don't allow links
-                                                (false, false) => (true, true)   // user is not current and not owner, allow links
-                                            },
+                                            (true, true) => (false, false),  // user is current and owner, don't allow links
+                                            (true, false) => (true, true),   // user is current but not owner, allow change / remove
+                                            (false, true) => (false, false), // user is not current but is owner, don't allow links
+                                            (false, false) => (true, true)   // user is not current and not owner, allow links
+                                        },
                                             
-                                            // current user is only one with edit access
-                                            true when totalCollaboratorsWithEditAccess == 1 => (collaborator.Self, collaborator.IsOwner) switch // 
-                                            {
-                                                (true, true) => (false, false),  // user is current and owner, don't allow links
-                                                (true, false) => (false, false), // user is current but not owner, don't allow links
-                                                (false, true) => (false, false), // user is not current but is owner, don't allow links
-                                                (false, false) => (true, true)   // user is not current and not owner, allow links
-                                            },
-                                            // user doesn't have edit access
-                                            _ => (collaborator.Self, collaborator.IsOwner) switch
-                                            {
-                                                (true, true) => (false, false),  // user is current and owner, don't allow links
-                                                (true, false) => (false, true),  // user is current but not owner, allow remove
-                                                (false, true) => (false, false), // user is not current but is owner, don't allow links
-                                                (false, false) => (false, false) // user is not current and not owner, don't allow links
-                                            }
-                                        };
-
-
-                                        if (showChangeLink)
+                                        // current user is only one with edit access
+                                        true when totalCollaboratorsWithEditAccess == 1 => (collaborator.Self, collaborator.IsOwner) switch // 
                                         {
-                                            <li class="govuk-summary-card__action">
-                                                <a asp-route="col:selectcollaboratoraccess"
-                                                asp-all-route-data="@routeParams"
-                                                class="govuk-link" aria-label="Change access">
-                                                    Change access
-                                                </a>
-                                            </li>
-                                        }
+                                            (true, true) => (false, false),  // user is current and owner, don't allow links
+                                            (true, false) => (false, false), // user is current but not owner, don't allow links
+                                            (false, true) => (false, false), // user is not current but is owner, don't allow links
+                                            (false, false) => (true, true)   // user is not current and not owner, allow links
+                                        },
 
-                                        if (showRemoveLink)
+                                        // user doesn't have edit access
+                                        _ => (collaborator.Self, collaborator.IsOwner) switch
                                         {
-                                            <li class="govuk-summary-card__action">
-                                                <a asp-route="col:removecollaborator"
-                                                asp-all-route-data="@routeParams"
-                                                class="govuk-link" aria-label="Remove collaborator">
-                                                    Remove
-                                                </a>
-                                            </li>
+                                            (true, true) => (false, false),  // user is current and owner, don't allow links
+                                            (true, false) => (false, true),  // user is current but not owner, allow remove
+                                            (false, true) => (false, false), // user is not current but is owner, don't allow links
+                                            (false, false) => (false, false) // user is not current and not owner, don't allow links
                                         }
+                                    };
 
-                                        if (!showChangeLink && !showRemoveLink)
-                                        {
-                                            <li class="govuk-summary-card__action">
-                                                Not available
-                                            </li>
-                                        }
+
+                                    if (showChangeLink)
+                                    {
+                                        <a asp-route="col:selectcollaboratoraccess"
+                                        asp-all-route-data="@routeParams"
+                                        class="govuk-link govuk-summary-card__action" aria-label="Change access">
+                                            Change access
+                                        </a>
                                     }
-                                </ul>
+
+                                    if (showRemoveLink)
+                                    {
+                                        <a asp-route="col:removecollaborator"
+                                        asp-all-route-data="@routeParams"
+                                               class="govuk-link govuk-summary-card__action" aria-label="Remove collaborator">
+                                            Remove
+                                        </a>
+                                    }
+
+                                    if (!showChangeLink && !showRemoveLink)
+                                    {
+                                        <text>Not available</text>
+                                    }
+                                }
                             </td>
                         </tr>
                     }
