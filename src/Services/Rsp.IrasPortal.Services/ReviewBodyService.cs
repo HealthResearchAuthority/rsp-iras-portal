@@ -68,6 +68,13 @@ public class ReviewBodyService(IReviewBodyServiceClient client) : IReviewBodySer
         return apiResponse.ToServiceResponse();
     }
 
+    public async Task<ServiceResponse<ReviewBodyAuditTrailResponse>> ReviewBodyUserAuditTrail(Guid id, Guid userId, int skip, int take, string sortField, string sortDirection)
+    {
+        var apiResponse = await client.GetReviewBodyUserAuditTrail(id, userId, skip, take, sortField, sortDirection);
+
+        return apiResponse.ToServiceResponse();
+    }
+
     public async Task<ServiceResponse<ReviewBodyUserDto>> AddUserToReviewBody(ReviewBodyUserDto reviewBodyUser)
     {
         var apiResponse = await client.AddUserToReviewBody(reviewBodyUser);

@@ -34,4 +34,31 @@ public class GetReviewBodyAuditTrail : TestServiceBase<ReviewBodyService>
         // Verify
         client.Verify(c => c.GetReviewBodyAuditTrail(id, skip, take), Times.Once());
     }
+
+    [Theory, AutoData]
+    public async Task GetReviewBodyUserAuditTrail(Guid id, Guid userId)
+    {
+        const int skip = 0;
+        const int take = 10;
+        const string sortField = nameof(ReviewBodyAuditTrailDto.DateTimeStamp);
+        const string sortDirection = nameof(SortDirection.Descending);
+
+        var apiResponse = Mock.Of<IApiResponse<ReviewBodyAuditTrailResponse>>(
+            apiResponse => apiResponse.IsSuccessStatusCode &&
+                           apiResponse.StatusCode == HttpStatusCode.OK);
+
+        var client = Mocker.GetMock<IReviewBodyServiceClient>();
+        client.Setup(c => c.GetReviewBodyUserAuditTrail(id, userId, skip, take, sortField, sortDirection))
+            .ReturnsAsync(apiResponse);
+
+        var sut = new ReviewBodyService(client.Object);
+
+        var result = await sut.ReviewBodyUserAuditTrail(id, userId, skip, take, sortField, sortDirection);
+
+        result.ShouldBeOfType<ServiceResponse<ReviewBodyAuditTrailResponse>>();
+        result.IsSuccessStatusCode.ShouldBeTrue();
+        result.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        client.Verify(c => c.GetReviewBodyUserAuditTrail(id, userId, skip, take, sortField, sortDirection), Times.Once());
+    }
 }
