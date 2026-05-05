@@ -106,19 +106,28 @@
 				</rsp-gds-checkbox-group>
 			}
 			else
-			{			
-				<div class="select-search conditional-field"
-					 id="reviewbody-select"
+			{
+				var reviewBodyError = ViewData.ModelState.ContainsKey(nameof(Model.ReviewBodies)) && ViewData.ModelState[nameof(Model.ReviewBodies)]?.Errors.Count > 0;
+				var reviewBodyErrorMessage = reviewBodyError ? ViewData.ModelState[nameof(Model.ReviewBodies)]?.Errors.FirstOrDefault()?.ErrorMessage : null;
+
+				<div class="select-search conditional-field 
+					@(reviewBodyError ? "multi-selector-error" : "")"
+					 id="ReviewBodies"
 					 data-role="study-wide reviewer,workflow co-ordinator,administrator,research ethics committee manager,reviewer"
 					 data-model-property-name="ReviewBodies">
 
-					<label for="reviewBodies" class="select-search__label">
+					<label for="reviewBodies-select" class="select-search__label">
 						Review body
 					</label>
 					<p>Enter the name of the review body and select the correct one from the options that appear. You can add more than one review body.</p>
 
+					@if (reviewBodyError)
+					{
+						<span class="govuk-error-message">@reviewBodyErrorMessage</span>
+					}
+
 					<!-- REAL select (fallback) for JS disabled-->
-					<select id="reviewBodies" name="SelectedReviewBodies" multiple class="select-search__native">
+					<select id="reviewBodies-select" name="SelectedReviewBodies" multiple class="select-search__native">
 						@foreach (var reviewBody in Model.ReviewBodies)
 						{
 							if (reviewBody.IsSelected)
@@ -154,7 +163,7 @@
 							}
 						</div>
 					</div>
-				</div>				
+				</div>
 			}
 
 			<partial name="_SubmitButton" model="@(submitActionName, buttonText, new Dictionary<string, string>())" />
@@ -174,7 +183,7 @@
 
 	<script>
 		$(function () {
-			initSelectSearch("#reviewbody-select");
+			initSelectSearch("#ReviewBodies");
 		});
 	</script>
 	}
