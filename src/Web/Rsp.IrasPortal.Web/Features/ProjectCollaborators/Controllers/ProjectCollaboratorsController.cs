@@ -30,7 +30,7 @@ public class ProjectCollaboratorsController
     {
         if (string.IsNullOrWhiteSpace(model.ProjectAccessLevel))
         {
-            ModelState.AddModelError(nameof(model.ProjectAccessLevel), "Please select access level");
+            ModelState.AddModelError(nameof(model.ProjectAccessLevel), "Select View project or Edit project");
 
             return View("CollaboratorAccess", model);
         }

@@ -201,7 +201,7 @@ else
 
             @if (!Model.ModificationChanges.Any() && Model.Status is ModificationStatus.InDraft)
             {
-                <a permissions="@([Permissions.MyResearch.Modifications_Update, Permissions.Sponsor.Modifications_Authorise])"
+                <a permission="@Permissions.MyResearch.Modifications_Update"
                    asp-route="pmc:saveforlater"
                    asp-route-projectRecordId="@Model.ProjectRecordId"
                    asp-route-routeName="pov:postapproval" class="govuk-button govuk-button--secondary">
@@ -212,11 +212,13 @@ else
     </div>
 </div>
 
-<authorized role-is="@Roles.Applicant" status-for="@Model.Status" status-is="@ModificationStatus.InDraft">
+<authorized permission="@Permissions.MyResearch.Modifications_Update"
+            status-for="@Model.Status"
+            status-is="@ModificationStatus.InDraft">
     @* Only show the Overall ranking if we have the changes *@
     @if (Model.ModificationChanges.Any())
     {
-        <div class="govuk-grid-row" permissions="@([Permissions.MyResearch.ProjectDocuments_Upload, Permissions.Sponsor.Modifications_Authorise])">
+        <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <h2 class="govuk-heading-m">Supporting documents</h2>
                 <p class="govuk-body">
@@ -224,7 +226,7 @@ else
                 </p>
             </div>
         </div>
-        <div class="govuk-button-group" permissions="@([Permissions.MyResearch.ProjectDocuments_Upload, Permissions.Sponsor.Modifications_Authorise])">
+        <div class="govuk-button-group">
             <form method="get">
                 @{
                     ViewBag.Style = "govuk-button govuk-button--secondary";
@@ -232,7 +234,7 @@ else
                 <partial name="_SubmitButton" model="@("pmc:projectdocument", "Add documents", new Dictionary<string, string> { })" />
             </form>
         </div>
-        <div class="govuk-grid-row" permissions="@([Permissions.MyResearch.Modifications_Submit, Permissions.Sponsor.Modifications_Authorise])">
+        <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
                 <h2 class="govuk-heading-m">Add summary and review modification before sending to sponsor</h2>
                 <p class="govuk-body">
@@ -257,8 +259,7 @@ else
         </div>
     }
 
-    <a permissions="@([Permissions.MyResearch.Modifications_Delete, Permissions.Sponsor.Modifications_Authorise])"
-       status-for="Status"
+    <a status-for="Status"
        status-is="@ModificationStatus.InDraft"
        asp-route-projectRecordId="@Model.ProjectRecordId"
        asp-route-irasId="@(Model.ModificationIdentifier?.Split('/')[0])"
@@ -394,9 +395,9 @@ else
 </authorized>
 
 <feature name="@FeatureFlags.RequestRevisions">
-    <authorized role-is="@Roles.Applicant"
-                status-for="@Model.Status"
-                status-is="@ModificationStatus.RequestRevisions">
+    <authorized permission="@Permissions.MyResearch.Modifications_Update"
+            status-for="@Model.Status"
+            status-is="@ModificationStatus.RequestRevisions">
         <partial name="MakeRevision" model="Model" view-data="ViewData" />
     </authorized>
 </feature>
@@ -406,7 +407,7 @@ else
                 status-for="@Model.Status"
                 status-is="@ModificationStatus.ResponseRequestRevisions">
         <partial name="_ReviewModification" model="Model" />
-        <div class="govuk-grid-row">
+        <div class="govuk-grid-row" permission="@Permissions.MyResearch.Modifications_Update">
             <div class="govuk-grid-column-two-thirds">
                 <div class="govuk-heading-m">
                     Withdraw this modification
@@ -417,7 +418,7 @@ else
                 </a>
             </div>
         </div>
-        <div class="govuk-grid-row">
+        <div class="govuk-grid-row" permission="@Permissions.MyResearch.Modifications_Update">
             <div class="govuk-grid-column-two-thirds">
                 <a asp-route="rfi:RfiResponses"
                    asp-all-route-data="@rfiResponseParams"
