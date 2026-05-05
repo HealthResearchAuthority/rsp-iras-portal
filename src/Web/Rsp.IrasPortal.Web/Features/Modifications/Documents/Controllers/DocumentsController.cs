@@ -392,6 +392,7 @@ public class DocumentsController
         request.ReplacesDocumentId = documentDetailsResponse?.Content?.ReplacesDocumentId;
         request.ReplacedByDocumentId = documentDetailsResponse?.Content?.ReplacedByDocumentId;
         request.LinkedDocumentId = documentDetailsResponse?.Content?.LinkedDocumentId;
+        request.IsMalwareScanSuccessful = documentDetailsResponse?.Content?.IsMalwareScanSuccessful;
 
         var viewModel = new ModificationDeleteDocumentViewModel
         {
@@ -399,6 +400,17 @@ public class DocumentsController
         };
 
         viewModel.BackRoute = backRoute;
+
+        var status = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string ?? string.Empty;
+
+        if (status is ModificationStatus.RequestForInformation or
+                      ModificationStatus.ResponseRequestRevisions or
+                      ModificationStatus.ResponseWithSponsor or
+                      ModificationStatus.ResponseReviseAndAuthorise)
+        {
+            return View("DeleteDocumentsRfi", viewModel);
+        }
+
         return View("DeleteDocuments", viewModel);
     }
 
@@ -429,11 +441,23 @@ public class DocumentsController
                     FileSize = doc.FileSize,
                     ReplacesDocumentId = doc.ReplacesDocumentId,
                     ReplacedByDocumentId = doc.ReplacedByDocumentId,
-                    LinkedDocumentId = doc.LinkedDocumentId
+                    LinkedDocumentId = doc.LinkedDocumentId,
+                    IsMalwareScanSuccessful = doc.IsMalwareScanSuccessful
                 })
                 .OrderBy(dto => dto.FileName, StringComparer.OrdinalIgnoreCase)],
                 BackRoute = backRoute
             };
+
+            var status = TempData.Peek(TempDataKeys.ProjectModification.ProjectModificationStatus) as string ?? string.Empty;
+
+            if (status is ModificationStatus.RequestForInformation or
+                          ModificationStatus.ResponseRequestRevisions or
+                          ModificationStatus.ResponseWithSponsor or
+                          ModificationStatus.ResponseReviseAndAuthorise)
+            {
+                return View("DeleteDocumentsRfi", viewModel);
+            }
+
             return View("DeleteDocuments", viewModel);
         }
 

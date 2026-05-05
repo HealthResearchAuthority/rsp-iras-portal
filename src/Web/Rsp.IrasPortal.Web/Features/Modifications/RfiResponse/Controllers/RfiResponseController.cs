@@ -182,7 +182,7 @@ public class RfiResponseController(
         return View(model);
     }
 
-    protected void MergeRfiResponseDataFromTempData(ModificationDetailsViewModel model, string responsesJson)
+    internal static void MergeRfiResponseDataFromTempData(ModificationDetailsViewModel model, string responsesJson)
     {
         if (string.IsNullOrWhiteSpace(responsesJson))
         {
@@ -202,23 +202,46 @@ public class RfiResponseController(
             .ToList()
             .ForEach(pair =>
             {
-                CopyIfNotEmpty(pair.temp.InitialResponse, pair.target.InitialResponse);
-                CopyIfNotEmpty(pair.temp.RequestRevisionsByApplicant, pair.target.RequestRevisionsByApplicant);
-                CopyIfNotEmpty(pair.temp.RequestRevisionsBySponsor, pair.target.RequestRevisionsBySponsor);
-                CopyIfNotEmpty(pair.temp.ReviseAndAuthorise, pair.target.ReviseAndAuthorise);
-                CopyIfNotEmpty(pair.temp.ReasonForReviseAndAuthorise, pair.target.ReasonForReviseAndAuthorise);
+                CopyDependingOnStatus(
+                              pair.temp.InitialResponse,
+                              pair.target.InitialResponse,
+                              model.Status == ModificationStatus.RequestForInformation);
+                CopyDependingOnStatus(
+                               pair.temp.RequestRevisionsByApplicant,
+                               pair.target.RequestRevisionsByApplicant,
+                               model.Status == ModificationStatus.ResponseRequestRevisions);
+                CopyDependingOnStatus(
+                               pair.temp.RequestRevisionsBySponsor,
+                               pair.target.RequestRevisionsBySponsor,
+                               model.Status == ModificationStatus.ResponseWithSponsor);
+                CopyDependingOnStatus(
+                               pair.temp.ReviseAndAuthorise,
+                               pair.target.ReviseAndAuthorise,
+                               model.Status == ModificationStatus.ResponseReviseAndAuthorise);
+                CopyDependingOnStatus(
+                              pair.temp.ReasonForReviseAndAuthorise,
+                              pair.target.ReasonForReviseAndAuthorise,
+                              model.Status == ModificationStatus.ResponseReviseAndAuthorise);
             });
     }
 
-    private static void CopyIfNotEmpty(
-    IList<string> source,
-    IList<string> target)
+    private static void CopyDependingOnStatus(
+        IList<string> source,
+        IList<string> target,
+        bool allowOverwriteWithEmpty)
     {
-        if (source.Count > 0 &&
-            !string.IsNullOrWhiteSpace(source[0]))
+        if (source.Count == 0)
+            return;
+
+        var value = source[0];
+
+        if (!allowOverwriteWithEmpty &&
+            string.IsNullOrWhiteSpace(value))
         {
-            target[0] = source[0];
+            return;
         }
+
+        target[0] = value ?? string.Empty;
     }
 
     [HttpPost]

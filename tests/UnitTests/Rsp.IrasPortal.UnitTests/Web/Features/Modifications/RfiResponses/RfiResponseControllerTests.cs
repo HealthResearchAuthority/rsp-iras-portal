@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Controllers;
+using Rsp.IrasPortal.Web.Features.Modifications.RfiResponse.Models;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.CmsQuestionset;
@@ -216,6 +217,89 @@ public class RfiResponseControllerTests : TestServiceBase<RfiResponseController>
         var result = await Sut.RfiDetails(projectId, modificationId);
 
         var viewResult = result.ShouldBeOfType<ForbidResult>();
+    }
+
+    [Theory]
+    [InlineData(
+        ModificationStatus.ResponseRequestRevisions,
+        nameof(RfiResponsesDTO.RequestRevisionsByApplicant),
+        true)]
+    [InlineData(
+        ModificationStatus.ResponseRequestRevisions,
+        nameof(RfiResponsesDTO.ReviseAndAuthorise),
+        false)]
+    [InlineData(
+        ModificationStatus.ResponseReviseAndAuthorise,
+        nameof(RfiResponsesDTO.ReviseAndAuthorise),
+        true)]
+    [InlineData(
+        ModificationStatus.ResponseReviseAndAuthorise,
+        nameof(RfiResponsesDTO.RequestRevisionsByApplicant),
+        false)]
+    [InlineData(
+        ModificationStatus.RequestForInformation,
+        nameof(RfiResponsesDTO.RequestRevisionsByApplicant),
+        false)]
+    [InlineData(
+        ModificationStatus.RequestForInformation,
+        nameof(RfiResponsesDTO.ReviseAndAuthorise),
+        false)]
+    public void MergeRfiResponseDataFromTempData_OverwriteWithEmpty_DependsOnStatus(
+    string status,
+    string fieldName,
+    bool shouldOverwrite)
+    {
+        // Arrange
+        var tempResponses = new List<RfiResponsesDTO>
+        {
+            new()
+            {
+                RequestRevisionsByApplicant = new List<string> { "" },
+                ReviseAndAuthorise = new List<string> { "" }
+            }
+        };
+
+        var model = new ModificationDetailsViewModel
+        {
+            Status = status,
+            RfiModel = new RfiDetailsViewModel
+            {
+                RfiResponses = new List<RfiResponsesDTO>
+                {
+                    new()
+                    {
+                        RequestRevisionsByApplicant = new List<string> { "OLD_APPLICANT" },
+                        ReviseAndAuthorise = new List<string> { "OLD_REVISE" }
+                    }
+                }
+            }
+        };
+
+        var json = JsonSerializer.Serialize(tempResponses);
+
+        // Act
+        RfiResponseController.MergeRfiResponseDataFromTempData(model, json);
+
+        // Assert
+        var actualValue = fieldName switch
+        {
+            nameof(RfiResponsesDTO.RequestRevisionsByApplicant)
+                => model.RfiModel.RfiResponses[0].RequestRevisionsByApplicant[0],
+
+            nameof(RfiResponsesDTO.ReviseAndAuthorise)
+                => model.RfiModel.RfiResponses[0].ReviseAndAuthorise[0],
+
+            _ => throw new InvalidOperationException()
+        };
+
+        if (shouldOverwrite)
+        {
+            actualValue.ShouldBe(string.Empty);
+        }
+        else
+        {
+            actualValue.ShouldNotBe(string.Empty);
+        }
     }
 
     [Theory, AutoData]
