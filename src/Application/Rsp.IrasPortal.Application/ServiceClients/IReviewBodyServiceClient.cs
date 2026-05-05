@@ -59,6 +59,12 @@ public interface IReviewBodyServiceClient
     [Get("/reviewbody/audittrail")]
     public Task<IApiResponse<ReviewBodyAuditTrailResponse>> GetReviewBodyAuditTrail(Guid id, int skip, int take);
 
+    /// <summary>
+    /// Gets review bodies audit trails for a specific user
+    /// </summary>
+    [Get("/reviewbody/audittrail/{userId}")]
+    public Task<IApiResponse<ReviewBodyAuditTrailResponse>> GetReviewBodyUserAuditTrail(Guid id, Guid userId, int skip, int take, string sortField, string sortDirection);
+
     [Post("/reviewbody/adduser")]
     public Task<IApiResponse<ReviewBodyUserDto>> AddUserToReviewBody([Body] ReviewBodyUserDto reviewBodyUser);
 

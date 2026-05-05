@@ -1415,8 +1415,16 @@ button.govuk-pagination__item--current {
     padding: 10px;
 }
 
-// Multi select component END
+.multi-selector-error {
+    padding-left: 15px;
+    border-left: 5px solid #d4351c;
 
+    .select-search__control {
+        border-color: #d4351c;
+    }
+}
+
+// Multi select component END
 .govuk-accordion-toggle-link {
     text-decoration: none; /* remove underline */
     display: inline-flex;

@@ -460,7 +460,7 @@ public class RecMemberManagementController(
 
             foreach (var userDetails in usersDetails.Content.Users)
             {
-                tempRecUsers.Add(PopulateRecMemberViewModel(userDetails, recProfile.Content!, recUsers.First(x => x.UserId.ToString() == userDetails.Id), false));
+                tempRecUsers.Add(PopulateRecMemberViewModel(userDetails, recProfile.Content!, recUsers.First(x => x.UserId.ToString().Equals(userDetails.Id, StringComparison.CurrentCultureIgnoreCase)), false));
             }
 
             tempRecUsers = SortMembers(sortField, sortDirection, tempRecUsers);
@@ -512,6 +512,65 @@ public class RecMemberManagementController(
         };
 
         return View(resultModel);
+    }
+
+    
+    [HttpGet]
+    public async Task<IActionResult> RecMemberAuditHistory
+    (
+        Guid recId,
+        Guid userId,
+        int pageNumber = 1,
+        int pageSize = 10,
+        string sortField = nameof(RecMemberAuditHistoryEntryViewModel.DateTimeStamp),
+        string sortDirection = SortDirections.Descending
+    )
+    {
+        var recProfile = await reviewBodyService.GetReviewBodyById(recId);
+
+        if (!recProfile.IsSuccessStatusCode || recProfile.Content == null)
+        {
+            return this.ServiceError(recProfile);
+        }
+
+        var recUser = await userService.GetUser(userId.ToString(), null);
+
+        if (!recUser.IsSuccessStatusCode || recUser.Content == null)
+        {
+            return this.ServiceError(recUser);
+        }
+
+        var auditTrailResponse =
+            await reviewBodyService.ReviewBodyUserAuditTrail(recId, userId, (pageNumber - 1) * pageSize, pageSize, sortField, sortDirection);
+
+        if (!auditTrailResponse.IsSuccessStatusCode || auditTrailResponse.Content == null)
+        {
+            return this.ServiceError(auditTrailResponse);
+        }
+
+        var model = new RecMemberAuditHistoryViewModel
+        {
+            ReviewBody = recProfile.Content,
+            AuditHistoryEntries = [.. auditTrailResponse.Content.Items.Select(at => new RecMemberAuditHistoryEntryViewModel
+            {
+                DateTimeStamp = at.DateTimeStamp,
+                Description = at.Description,
+                User = at.User
+            })],
+            User = recUser.Content.User,
+            Pagination = new PaginationViewModel(pageNumber, pageSize, auditTrailResponse.Content.TotalCount)
+            {
+                SortField = sortField,
+                SortDirection = sortDirection,
+                AdditionalParameters = new Dictionary<string, string>
+                {
+                    { "recId", recId.ToString() },
+                    { "userId", userId.ToString() }
+                }
+            }
+        };
+
+        return View(model);
     }
 
     private static readonly Dictionary<string, Func<RecMemberViewModel, string?>> SortMembersSelectors =

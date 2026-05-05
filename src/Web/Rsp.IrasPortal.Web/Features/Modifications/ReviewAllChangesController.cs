@@ -358,9 +358,24 @@ public class ReviewAllChangesController
             return View(storedModel);
         }
 
-        if (!saveForLater && model.RequestForInformationReasons.Any(r => r != null && r.Length > 300))
+        if (!saveForLater && model.RequestForInformationReasons.Any(r => r is { Length: > 300 }))
         {
-            return View(storedModel);
+            for (var i = 0; i < model.RequestForInformationReasons.Count; i++)
+            {
+                var reason = model.RequestForInformationReasons[i];
+
+                if (!string.IsNullOrWhiteSpace(reason) && reason.Length > 300)
+                {
+                    var overLimit = reason.Length - 300;
+
+                    ModelState.AddModelError(
+                        $"{nameof(model.RequestForInformationReasons)}_{i}_",
+                        $"You have {overLimit} characters too many"
+                    );
+
+                    return View(storedModel);
+                }
+            }
         }
 
         storedModel.RequestForInformationReasons = [.. model.RequestForInformationReasons.Where(r => !string.IsNullOrEmpty(r))];
