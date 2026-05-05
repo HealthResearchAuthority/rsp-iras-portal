@@ -514,7 +514,6 @@ public class RecMemberManagementController(
         return View(resultModel);
     }
 
-    
     [HttpGet]
     public async Task<IActionResult> RecMemberAuditHistory
     (
@@ -573,7 +572,7 @@ public class RecMemberManagementController(
         return View(model);
     }
 
-    private static readonly Dictionary<string, Func<RecMemberViewModel, string?>> SortMembersSelectors =
+private static readonly Dictionary<string, Func<RecMemberViewModel, string?>> SortMembersSelectors =
     new()
     {
         [nameof(RecMemberViewModel.FirstName)] = u => u.FirstName,
