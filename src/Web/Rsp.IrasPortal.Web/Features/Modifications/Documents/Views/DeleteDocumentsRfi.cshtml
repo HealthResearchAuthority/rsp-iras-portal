@@ -1,0 +1,118 @@
+﻿@using Rsp.Portal.Application.Constants
+@model ModificationDeleteDocumentViewModel
+
+@{
+    var isSingle = Model?.Documents != null && Model.Documents.Count == 1;
+    var title = isSingle
+        ? "Are you sure you want to remove this document?"
+        : "Are you sure you want to remove these documents?";
+
+    var body = isSingle
+        ? "Removing this document will permanently remove it from this modification."
+        : "Removing these documents will permanently remove them from this modification.";
+
+    var routeParameters = new Dictionary<string, string> {
+                             { "projectRecordId", Context.Request.Query["projectRecordId"].ToString() },
+                             { "irasId", Context.Request.Query["irasId"].ToString()  },
+                             { "shortTitle", Context.Request.Query["shortTitle"].ToString() ?? string.Empty},
+                             { "projectModificationId", Context.Request.Query["projectModificationId"].ToString() ?? string.Empty },
+                             { "sponsorOrganisationUserId",  Context.Request.Query["sponsorOrganisationUserId"].ToString() ?? string.Empty },
+                             { "rtsId", Context.Request.Query["rtsId"].ToString() ?? string.Empty }
+                             };
+}
+@{
+    string cancelUrl;
+    (string routeName, string linkText, Dictionary<string, string> routeValues)? navModel = null;
+    if (isSingle)
+    {
+        if (Model.BackRoute == "toaddpage")
+        {
+            cancelUrl = Url.RouteUrl("pmc:modificationdocumentsadded");
+            navModel = ("pmc:modificationdocumentsadded", "Back", new());
+        }
+        else if (Model.BackRoute == "responseRequestRevision")
+        {
+            cancelUrl = Url.RouteUrl("rfi:RfiResponses", routeParameters);
+            navModel = ("rfi:RfiResponses", "Back", routeParameters);
+        }
+        else
+        {
+            cancelUrl = Url.RouteUrl("pmc:continuetodetails");
+            navModel = ("pmc:continuetodetails", "Back", new Dictionary<string, string> { { "documentId", Model.Documents[0].Id.ToString() } });
+        }
+    }
+    else
+    {
+        cancelUrl = Url.RouteUrl("pmc:modificationdocumentsadded");
+        navModel = ("pmc:modificationdocumentsadded", "Back", new());
+    }
+
+    @* @section is added for the back button, so that we can render something below the back button
+        and before the RenderBody() in the _Layout.cshtml. As RenderBody() renders anything that is not within
+        the named section *@
+    @section BackNavigation {
+        <partial name="_BackNavigation" model="navModel.Value" />
+    }
+}
+<div class="govuk-form-group @(ViewData.ModelState.IsValid ? "" : "govuk-form-group--error")">
+    <h1 class="govuk-heading-l">@title</h1>
+
+    @if (Model?.Documents != null)
+    {
+        <table class="govuk-table">
+            <thead class="govuk-visually-hidden">
+                <tr>
+                    <th>Document name</th>
+                    <th>Size</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var doc in Model.Documents)
+                {
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell" style="width: 60%;">
+                            @if (doc.IsMalwareScanSuccessful == true)
+                            {
+                                <a href="@doc.DocumentStoragePath" class="govuk-link" target="_blank">@doc.FileName</a>
+                            }
+                            else
+                            {
+                                @doc.FileName
+                            }
+                        </td>
+                        <td class="govuk-table__cell" style="width: 20%;">
+                            <span class="govuk-body">@doc.DisplaySize</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <p class="govuk-body">
+        @body
+    </p>
+
+    <form asp-action="DeleteDocuments" method="post">
+        @for (int i = 0; i < Model.Documents.Count; i++)
+        {
+            <input type="hidden" name="Documents[@i].Id" value="@Model.Documents[i].Id" />
+            <input type="hidden" name="Documents[@i].FileName" value="@Model.Documents[i].FileName" />
+            <input type="hidden" name="Documents[@i].FileSize" value="@Model.Documents[i].FileSize" />
+            <input type="hidden" name="Documents[@i].DocumentStoragePath" value="@Model.Documents[i].DocumentStoragePath" />
+            <input type="hidden" name="Documents[@i].ReplacesDocumentId" value="@Model.Documents[i].ReplacesDocumentId" />
+            <input type="hidden" name="Documents[@i].ReplacedByDocumentId" value="@Model.Documents[i].ReplacedByDocumentId" />
+            <input type="hidden" name="Documents[@i].LinkedDocumentId" value="@Model.Documents[i].LinkedDocumentId" />
+        }       
+
+        <div class="save-buttons">
+            <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">
+                @(isSingle ? "Remove document" : "Remove documents")
+            </button>
+            <a href="@cancelUrl"                    
+                    class="govuk-button govuk-button--secondary">
+                @(isSingle ? "Keep document" : "Keep documents")                
+            </a>
+        </div>
+    </form>
+</div>

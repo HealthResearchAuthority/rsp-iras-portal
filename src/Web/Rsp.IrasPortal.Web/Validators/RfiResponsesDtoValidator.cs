@@ -17,7 +17,7 @@ public class RfiResponsesDtoValidator : AbstractValidator<RfiResponsesDTO>
        "You have not provided a reason. Enter the reason for revised response to reason before you continue.";
 
     private static readonly string MaxLengthErrorMessage =
-        $"The description must be between 1 and {MaxCharactersCount} characters";
+        $"The response must be between 1 and {MaxCharactersCount} characters";
 
     private const string SponsorRequestRevisionRequiredMessage =
         "You have not provided a revision to response. Enter a response before you continue.";

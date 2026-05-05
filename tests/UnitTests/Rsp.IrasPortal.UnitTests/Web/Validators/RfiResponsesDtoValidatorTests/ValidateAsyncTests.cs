@@ -37,7 +37,7 @@ public class ValidateAsyncTests : TestServiceBase<RfiResponsesDtoValidator>
         var result = Sut.TestValidate(model);
 
         result.ShouldHaveValidationErrorFor("InitialResponse_0")
-            .WithErrorMessage("The description must be between 1 and 300 characters");
+            .WithErrorMessage("The response must be between 1 and 300 characters");
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public class ValidateAsyncTests : TestServiceBase<RfiResponsesDtoValidator>
         var result = Sut.TestValidate(model);
 
         result.ShouldHaveValidationErrorFor("ReviseAndAuthorise_0")
-            .WithErrorMessage("The description must be between 1 and 300 characters");
+            .WithErrorMessage("The response must be between 1 and 300 characters");
     }
 
     [Fact]
@@ -129,7 +129,7 @@ public class ValidateAsyncTests : TestServiceBase<RfiResponsesDtoValidator>
         var result = Sut.TestValidate(model);
 
         result.ShouldHaveValidationErrorFor("ReasonForReviseAndAuthorise_0")
-            .WithErrorMessage("The description must be between 1 and 300 characters");
+            .WithErrorMessage("The response must be between 1 and 300 characters");
     }
 
     [Fact]

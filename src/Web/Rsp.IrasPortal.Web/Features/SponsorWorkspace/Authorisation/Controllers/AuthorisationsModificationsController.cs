@@ -244,7 +244,7 @@ public class AuthorisationsModificationsController
         var allDocuments = modificationDocumentsResponseResult.Item1?.Content?.Documents ?? [];
 
         // Map the document types and statuses to user-friendly text for display in the view.
-        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, allDocuments);
+        await MapDocumentTypesAndStatusesAsync(modificationDocumentsResponseResult.Item2, allDocuments, false);
 
         // apply pagination
         var paginatedDocuments = GetSortedAndPaginatedDocuments(allDocuments, sortField, sortDirection, pageSize, pageNumber);
