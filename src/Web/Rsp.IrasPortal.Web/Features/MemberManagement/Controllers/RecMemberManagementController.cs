@@ -6,12 +6,14 @@ using Rsp.IrasPortal.Web.Features.MemberManagement.Models;
 using Rsp.IrasPortal.Web.Helpers;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
+using Rsp.Portal.Application.DTOs.Responses;
 using Rsp.Portal.Application.Filters;
 using Rsp.Portal.Application.Services;
 using Rsp.Portal.Domain.AccessControl;
 using Rsp.Portal.Domain.Identity;
 using Rsp.Portal.Web.Areas.Admin.Models;
 using Rsp.Portal.Web.Extensions;
+using Rsp.Portal.Web.Models;
 
 namespace Rsp.IrasPortal.Web.Features.MemberManagement.Controllers;
 
@@ -469,6 +471,49 @@ public class RecMemberManagementController(
         return View(model);
     }
 
+    /// <summary>
+    ///     Displays a Research Ethics Committee Profile Audit History
+    /// </summary>
+    [Route("/membermanagement/researchethicscommitteeaudit", Name = "mm:recaudithistory")]
+    [Authorize(Policy = Permissions.MemberManagement.ResearchEthicsCommittees_Access)]
+    [HttpGet]
+    public async Task<IActionResult> RecProfileAuditHistory(Guid recId, string? sortField, string? sortDirection, int pageSize = 20, int pageNumber = 1)
+    {
+        var skip = (pageNumber - 1) * pageSize;
+        var response = await reviewBodyService.ReviewBodyAuditTrail(recId, skip, pageSize);
+
+        var auditTrailResponse = response?.Content;
+        var items = auditTrailResponse?.Items;
+
+        if (items is not null && items.Any())
+        {
+            items = SortAuditEntries(sortField, sortDirection, items!.ToList());
+        }
+
+        var paginationModel = new PaginationViewModel(pageNumber, pageSize, auditTrailResponse != null ? auditTrailResponse.TotalCount : -1)
+        {
+            SortField = sortField,
+            SortDirection = sortDirection,
+            RouteName = "mm:recaudithistory",
+            AdditionalParameters =
+                {
+                    { "recId", recId.ToString() }
+                }
+        };
+
+        var reviewBody = await reviewBodyService.GetReviewBodyById(recId);
+        var reviewBodyName = reviewBody?.Content?.RegulatoryBodyName;
+
+        var resultModel = new ReviewBodyAuditTrailViewModel
+        {
+            BodyName = reviewBodyName,
+            Pagination = paginationModel,
+            Items = items!
+        };
+
+        return View(resultModel);
+    }
+
     [HttpGet]
     public async Task<IActionResult> RecMemberAuditHistory
     (
@@ -527,7 +572,7 @@ public class RecMemberManagementController(
         return View(model);
     }
 
-    private static readonly Dictionary<string, Func<RecMemberViewModel, string?>> SortSelectors =
+private static readonly Dictionary<string, Func<RecMemberViewModel, string?>> SortMembersSelectors =
     new()
     {
         [nameof(RecMemberViewModel.FirstName)] = u => u.FirstName,
@@ -535,6 +580,13 @@ public class RecMemberManagementController(
         [nameof(RecMemberViewModel.EmailAddress)] = u => u.EmailAddress,
         [nameof(RecMemberViewModel.CommitteeRole)] = u => u.CommitteeRole,
         [nameof(RecMemberViewModel.Designation)] = u => u.Designation
+    };
+
+    private static readonly Dictionary<string, Func<ReviewBodyAuditTrailDto, string?>> SortAuditEntriesSelectors =
+    new()
+    {
+        [nameof(ReviewBodyAuditTrailDto.DateTimeStamp)] = u => u.DateTimeStamp.ToString(),
+        [nameof(ReviewBodyAuditTrailDto.Description)] = u => u.Description
     };
 
     private static List<RecMemberViewModel> SortMembers(
@@ -547,7 +599,7 @@ public class RecMemberManagementController(
             return users;
         }
 
-        if (!SortSelectors.TryGetValue(sortField, out var selector))
+        if (!SortMembersSelectors.TryGetValue(sortField, out var selector))
         {
             return users;
         }
@@ -557,5 +609,27 @@ public class RecMemberManagementController(
         return ascending
             ? users.OrderBy(selector).ToList()
             : users.OrderByDescending(selector).ToList();
+    }
+
+    private static List<ReviewBodyAuditTrailDto> SortAuditEntries(
+    string? sortField,
+    string? sortDirection,
+    List<ReviewBodyAuditTrailDto> entries)
+    {
+        if (string.IsNullOrEmpty(sortField))
+        {
+            return entries;
+        }
+
+        if (!SortAuditEntriesSelectors.TryGetValue(sortField, out var selector))
+        {
+            return entries;
+        }
+
+        var ascending = sortDirection == SortDirections.Ascending;
+
+        return ascending
+            ? entries.OrderBy(selector).ToList()
+            : entries.OrderByDescending(selector).ToList();
     }
 }

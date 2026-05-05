@@ -85,7 +85,7 @@
                     <b>Audit</b>
                 </td>
                 <td class="govuk-table__cell">
-                <a asp-route="rbc:viewresearchethicscommitteesaudit" asp-all-route-data="@(new Dictionary<string, string> { { "researchEthicsCommitteeId", Model.Id.ToString() } })" class="govuk-link">View this research ethics committee’s audit history</a>
+                <a asp-route="mm:recaudithistory" asp-all-route-data="@(new Dictionary<string, string> { { "recId", Model.Id.ToString() } })" class="govuk-link">View this research ethics committee’s audit history</a>
                 </td>
             </tr>
 
