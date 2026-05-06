@@ -305,18 +305,25 @@
                     </p>
                 }
 
+                @{
+                    var isFirstRadioButton = true;
+                }                
+
                 @foreach (var option in outcomeOptions)
                 {
+                    // Match first input id with property name, for validation link
+                    var inputId = isFirstRadioButton ? nameof(Model.Outcome) : $"{nameof(Model.Outcome)}_{option.Value}";
+
                     <div class="govuk-radios__item">
                         <input class="govuk-radios__input"
-                               id="@option.Value"
+                               id="@inputId"
                                name="Outcome"
                                type="radio"
                                value="@option.Value"
                                checked="@(Model.Outcome == option.Value ? "checked" : null)" />
 
                         <label class="govuk-label govuk-radios__label"
-                               for="@option.Value">
+                               for="@inputId">
                             @option.Label
                         </label>
                         <feature name="@FeatureFlags.SponsorAuthorisation">
@@ -330,6 +337,7 @@
                             </authorized>
                         </feature>
                     </div>
+                    isFirstRadioButton = false;
                 }
             </div>
             <partial name="_SubmitButton"
