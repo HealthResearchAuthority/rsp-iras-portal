@@ -130,7 +130,7 @@ public class ModificationsController
     /// CreateModificationOutcome
     /// </summary>
     /// <returns></returns>
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Submit)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Submit)]
     [HttpGet]
     public IActionResult CreateModificationOutcome(ModificationCreationCheckResult result)
     {

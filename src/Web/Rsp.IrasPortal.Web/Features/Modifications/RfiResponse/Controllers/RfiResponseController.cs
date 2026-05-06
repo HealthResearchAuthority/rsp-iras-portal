@@ -45,7 +45,7 @@ public class RfiResponseController(
     private const string DocumentDetailsSection = "pdm-document-metadata";
 
     [HttpGet]
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
+    [ModificationAuthorise( Permissions.MyResearch.Modifications_Read)]
     public async Task<IActionResult> RfiDetails(string projectId, Guid modificationId)
     {
         var model = new ModificationDetailsViewModel();

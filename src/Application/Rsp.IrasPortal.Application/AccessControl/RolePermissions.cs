@@ -61,9 +61,6 @@ public static class RolePermissions
                 MyResearch.ProjectDocuments_List,
                 MyResearch.ProjectDocuments_Download,
 
-                MyResearch.Modifications_Read,
-                MyResearch.Modifications_Update,
-                MyResearch.Modifications_Submit,
                 MyResearch.Modifications_List,
                 MyResearch.Modifications_Review,
                 MyResearch.ModificationsHistory_Read,

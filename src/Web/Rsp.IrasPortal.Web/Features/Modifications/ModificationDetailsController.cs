@@ -282,7 +282,7 @@ public class ModificationDetailsController
         });
     }
 
-    [Authorize(Policy = Permissions.MyResearch.Modifications_Read)]
+    [ModificationAuthorise(Permissions.MyResearch.Modifications_Read)]
     [FeatureGate(FeatureFlags.RequestRevisions)]
     [HttpGet]
     public async Task<IActionResult> RequestForRevision(string projectRecordId,
