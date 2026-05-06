@@ -46,31 +46,32 @@
                     </div>
 
                     @Html.ValidationMessage("ProjectAccessLevel", new { @class = "govuk-error-message" })
+                    <div id="ProjectAccessLevel">
+                        <div class="govuk-radios" data-module="govuk-radios">
+                            <div class="govuk-radios__item">
+                                <input class="govuk-radios__input"
+                                       id="project-access-view"
+                                       name="ProjectAccessLevel"
+                                       type="radio"
+                                       value="View"
+                                       checked="@(isViewSelected ? "checked" : null)" />
+                                <label class="govuk-label govuk-radios__label" for="project-access-view">
+                                    View project
+                                </label>
+                            </div>
 
-                    <div class="govuk-radios" data-module="govuk-radios">
-                        <div class="govuk-radios__item">
-                            <input class="govuk-radios__input"
-                                   id="project-access-view"
-                                   name="ProjectAccessLevel"
-                                   type="radio"
-                                   value="View"
-                                   checked="@(isViewSelected ? "checked" : null)" />
-                            <label class="govuk-label govuk-radios__label" for="project-access-view">
-                                View project
-                            </label>
-                        </div>
+                            <div class="govuk-radios__item">
+                                <input class="govuk-radios__input"
+                                       id="project-access-edit"
+                                       name="ProjectAccessLevel"
+                                       type="radio"
+                                       value="Edit"
+                                       checked="@(isEditSelected ? "checked" : null)" />
 
-                        <div class="govuk-radios__item">
-                            <input class="govuk-radios__input"
-                                   id="project-access-edit"
-                                   name="ProjectAccessLevel"
-                                   type="radio"
-                                   value="Edit"
-                                   checked="@(isEditSelected ? "checked" : null)" />
-
-                            <label class="govuk-label govuk-radios__label" for="project-access-edit">
-                                Edit project
-                            </label>
+                                <label class="govuk-label govuk-radios__label" for="project-access-edit">
+                                    Edit project
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </fieldset>
