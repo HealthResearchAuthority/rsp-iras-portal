@@ -552,7 +552,7 @@ public class RfiResponseController(
     }
 
     [HttpGet]
-    [ModificationAuthorise(Permissions.MyResearch.Modifications_Read)]
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Review)]
     public IActionResult RfiResponsesConfirmation()
     {
         var viewModel = TempData.PopulateBaseProjectModificationProperties(new BaseProjectModificationViewModel());

@@ -131,7 +131,7 @@ public class ModificationAuthoriseFilter : IAsyncAuthorizationFilter, IAsyncActi
                 tempData[TempDataKeys.RevisionSponsorOrganisationUserId] = sponsorOrganisationUserIdGuid;
                 tempData[TempDataKeys.RevisionRtsId] = rtsId;
             }
-            if (modificationResult.Content?.Status is not (ModificationStatus.ReviseAndAuthorise or ModificationStatus.ResponseReviseAndAuthorise))
+            if (modificationResult.Content?.Status is not (ModificationStatus.ReviseAndAuthorise or ModificationStatus.ResponseReviseAndAuthorise or ModificationStatus.ResponseWithSponsor))
             {
                 if (!context.HttpContext.User.HasPermission(_permission))
                 {
