@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 using Rsp.IrasPortal.Application.Constants;
-using Rsp.IrasPortal.Web.Attributes;
 using Rsp.Portal.Application.Constants;
 using Rsp.Portal.Application.DTOs;
 using Rsp.Portal.Application.DTOs.Requests;
@@ -469,7 +468,7 @@ public class ReviewAllChangesController
         return View();
     }
 
-    [ModificationAuthorise(Permissions.MyResearch.Modifications_Submit)]
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Submit)]
     public async Task<IActionResult> SendModificationToSponsor(string projectRecordId, Guid projectModificationId, string? applicantRevisionResponse)
     {
         // Fetch all modification documents (up to 200)
@@ -559,7 +558,7 @@ public class ReviewAllChangesController
     /// ModificationSendToSponsor
     /// </summary>
     /// <returns></returns>
-    [ModificationAuthorise(Permissions.MyResearch.Modifications_Submit)]
+    [Authorize(Policy = Permissions.MyResearch.Modifications_Submit)]
     [HttpGet]
     public IActionResult ModificationSendToSponsor()
     {
