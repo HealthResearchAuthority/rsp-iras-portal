@@ -284,7 +284,7 @@ button.govuk-link {
 }
 
 .govuk-back-link-button--inverse:active, .govuk-back-link-button--inverse:hover {
-  color: hsla(0deg, 0%, 100%, 0.99);
+  color: hsla(0, 0%, 100%, 0.99);
 }
 
 .govuk-back-link-button--inverse:focus {
@@ -1394,4 +1394,10 @@ button.govuk-pagination__item--current {
 
 .govuk-accordion-toggle-link[aria-expanded=true] .govuk-accordion-toggle-link__icon {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='white' stroke='%231d70b8' stroke-width='2'/><path d='M8 14l4-4 4 4' stroke='%231d70b8' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+}
+
+.action-link-compact {
+  display: inline-block;
+  padding: 4px 0;
+  line-height: 1.5;
 }

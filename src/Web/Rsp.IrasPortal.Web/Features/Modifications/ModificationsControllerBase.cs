@@ -567,17 +567,17 @@ public abstract class ModificationsControllerBase
             // ---- B. Update completion status ----
 
             // skip validation for incomplete - if document status is ReviseAndAuthorise and its not Review and authorise view
-            if (!showIncompleteForReviseAndAuthoriseStatus &&
-                doc.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase))
+            var skipStatuses = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                doc.Status = DocumentStatus.ReviseAndAuthorise;
-                continue;
-            }
+                DocumentStatus.ReviseAndAuthorise,
+                DocumentStatus.ResponseReviseAndAuthorise,
+                DocumentStatus.RequestForInformation,
+                DocumentStatus.ResponseRequestRevisions,
+            };
 
             if (!showIncompleteForReviseAndAuthoriseStatus &&
-                doc.Status.Equals(DocumentStatus.ResponseReviseAndAuthorise, StringComparison.OrdinalIgnoreCase))
+                skipStatuses.Contains(doc.Status))
             {
-                doc.Status = DocumentStatus.ResponseReviseAndAuthorise;
                 continue;
             }
 
@@ -591,17 +591,7 @@ public abstract class ModificationsControllerBase
             {
                 bool isIncomplete = await EvaluateDocumentCompletion(doc.Id, questionnaire, addModelErrors);
 
-                if (doc.Status.Equals(DocumentStatus.ReviseAndAuthorise, StringComparison.OrdinalIgnoreCase)
-                    && !isIncomplete)
-                {
-                    doc.Status = DocumentStatus.ReviseAndAuthorise;
-                }
-                else if (doc.Status.Equals(DocumentStatus.ResponseReviseAndAuthorise, StringComparison.OrdinalIgnoreCase)
-                    && !isIncomplete)
-                {
-                    doc.Status = DocumentStatus.ResponseReviseAndAuthorise;
-                }
-                else
+                if (isIncomplete || !skipStatuses.Contains(doc.Status))
                 {
                     doc.Status = (isIncomplete
                         ? DocumentDetailStatus.Incomplete

@@ -134,9 +134,9 @@
     {
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-one-third">
-                <label class="govuk-label" for="RfiReasons_@(i)_">
+                <p class="govuk-label">
                     Reason @(i + 1)
-                </label>
+                </p>
             </div>
             <div class="govuk-grid-column-two-thirds">
                 <p class="govuk-body">
@@ -159,7 +159,7 @@
                 }
 
                 <div class="govuk-grid-column-one-third">
-                    <label class="govuk-label" for="RfiResponses_@(i)__InitialResponse_0__">
+                    <label class="govuk-label" for="RfiModel_RfiResponses_@(i)__InitialResponse_0_">
                         Response to reason @(i + 1)
                     </label>
                 </div>
@@ -214,7 +214,7 @@
 
                 <div class="govuk-grid-column-one-third">
                     <label class="govuk-label"
-                           for="RfiResponses_@(i)__ReviseAndAuthorise_0__">
+                           for="RfiModel_RfiResponses_@(i)__ReviseAndAuthorise_0_">
                         Revise response to reason @(i + 1)
                     </label>
                 </div>
@@ -270,7 +270,7 @@
 
                 <div class="govuk-grid-column-one-third">
                     <label class="govuk-label"
-                           for="RfiResponses_@(i)__ReasonForReviseAndAuthorise_0__">
+                           for="RfiModel_RfiResponses_@(i)__ReasonForReviseAndAuthorise_0_">
                         Reason for revised response to reason @(i + 1)
                     </label>
                 </div>
@@ -330,12 +330,12 @@
                 }
                 <div class="govuk-grid-row">
                     <div class="govuk-grid-column-one-third">
-                        <label class="govuk-label" for="RfiModel_RfiResponses_@(i)__InitialResponse_0_">
+                        <p class="govuk-label">
                             Response to reason @(i + 1)
-                        </label>
+                        </p>
                     </div>
                     <div class="govuk-grid-column-two-thirds">
-                        <label class="govuk-label" for="RfiModel_RfiResponses_@(i)__InitialResponse_0_">
+                        <p class="govuk-label">
                             @{
                                 var response = Model.RfiModel.RfiResponses
                                 .ElementAtOrDefault(i)?
@@ -343,13 +343,13 @@
                                 .FirstOrDefault();
                             }
                             @response
-                        </label>
+                        </p>
                     </div>
                 </div>
                 <br />
                 <div class="govuk-grid-row">
                     <div class="govuk-grid-column-one-third">
-                        <label class="govuk-label" for="RfiResponses_@(i)__InitialResponse[0]">
+                        <label class="govuk-label" for="RfiModel_RfiResponses_@(i)__InitialResponse_0_">
                             Requested revisions to response to reason @(i + 1)
                         </label>
                     </div>
@@ -408,12 +408,12 @@
                 }
                 <div class="govuk-grid-row">
                     <div class="govuk-grid-column-one-third">
-                        <label class="govuk-label" for="RfiModel_RfiResponses_@(i)__RequestRevisionsBySponsor_0_">
+                        <p class="govuk-label">
                             Revisions requested to response @(i + 1)
-                        </label>
+                        </p>
                     </div>
                     <div class="govuk-grid-column-two-thirds">
-                        <label class="govuk-label" for="RfiModel_RfiResponses_@(i)__RequestRevisionsBySponsor_0_">
+                        <p class="govuk-label">
                             @{
                                 var requestRevisionsBySponsor = Model.RfiModel.RfiResponses
                                 .ElementAtOrDefault(i)?
@@ -421,13 +421,13 @@
                                 .FirstOrDefault();
                             }
                             @requestRevisionsBySponsor
-                        </label>
+                        </p>
                     </div>
                 </div>
                 <br />
                 <div class="govuk-grid-row">
                     <div class="govuk-grid-column-one-third">
-                        <label class="govuk-label" for="RfiResponses_@(i)__InitialResponse[0]">
+                        <label class="govuk-label" for="RfiModel_RfiResponses_@(i)__InitialResponse_0_">
                             Make revisions to response @(i + 1)
                         </label>
                     </div>
