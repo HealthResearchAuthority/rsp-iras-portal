@@ -210,23 +210,23 @@
                                         </strong>
                                     </td>
                                     @if
-(
-(
-Model.Status is ModificationStatus.InDraft ||
-Model.Status is ModificationStatus.RequestRevisions ||
-Model.Status is ModificationStatus.RequestForInformation ||
-Model.Status is ModificationStatus.ResponseRequestRevisions ||
-(
-                        isRevisionBySponsor &&
-                        Model.Status is ModificationStatus.ReviseAndAuthorise
-) ||
-(
-                        isRevisionBySponsor &&
-                        Model.Status is ModificationStatus.ResponseReviseAndAuthorise
-)
-) &&
-ViewBag.AreDocumentsReadOnly is not true
-)
+                                    (
+                                    (
+                                    Model.Status is ModificationStatus.InDraft ||
+                                    Model.Status is ModificationStatus.RequestRevisions ||
+                                    Model.Status is ModificationStatus.RequestForInformation ||
+                                    Model.Status is ModificationStatus.ResponseRequestRevisions ||
+                                    (
+                                        isRevisionBySponsor &&
+                                        Model.Status is ModificationStatus.ReviseAndAuthorise
+                                    ) ||
+                                    (
+                                        isRevisionBySponsor &&
+                                        Model.Status is ModificationStatus.ResponseReviseAndAuthorise
+                                    )
+                                    ) &&
+                                    ViewBag.AreDocumentsReadOnly is not true
+                                    )
                                     {
                                         <td class="govuk-table__cell">
                                             @if (!isFailed && !isTracked)
@@ -235,7 +235,7 @@ ViewBag.AreDocumentsReadOnly is not true
                                                    asp-route="pmc:continuetodetails"
                                                    asp-route-documentId="@modification.Id"
                                                    asp-route-reviewAllChanges="true"
-                                                   class="govuk-link">
+                                                   class="govuk-link action-link-compact">
                                                     Change details
                                                 </a>
                                                 @*<feature name="@FeatureFlags.RequestForInformation">
@@ -263,7 +263,7 @@ ViewBag.AreDocumentsReadOnly is not true
                                                        asp-route-projectModificationId="@Model.ModificationId"
                                                        asp-route-sponsorOrganisationUserId="@Model.SponsorOrganisationUserId"
                                                        asp-route-rtsId="@Model.RtsId"
-                                                       class="govuk-link">
+                                                       class="govuk-link action-link-compact">
                                                         Remove
                                                         <span class="govuk-visually-hidden"> @modification.FileName</span>
                                                     </a>

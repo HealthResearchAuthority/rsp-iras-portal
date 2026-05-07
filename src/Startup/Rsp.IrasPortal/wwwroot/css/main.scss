@@ -1470,3 +1470,9 @@ button.govuk-pagination__item--current {
 <path d='M8 14l4-4 4 4' stroke='%231d70b8' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/>\
 </svg>");
 }
+
+.action-link-compact {
+    display: inline-block;
+    padding: 4px 0;
+    line-height: 1.5;
+}
